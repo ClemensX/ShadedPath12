@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "ShadedPath12.h"
+#include "winmain.h"
 
 #define MAX_LOADSTRING 100
 
