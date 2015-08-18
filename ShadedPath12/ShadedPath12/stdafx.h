@@ -24,7 +24,9 @@
 #define new DBG_NEW
 #endif
 #endif  // _DEBUG
+#pragma warning( disable : 4005 )
 #include <crtdbg.h>
+#pragma warning( default : 4005 )
 
 
 // TODO: reference additional headers your program requires here

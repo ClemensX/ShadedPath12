@@ -62,8 +62,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// debug heap test
 	//_RPTF0(_CRT_WARN, "heap report test\n");
 	//_CrtMemDumpAllObjectsSince(NULL);
-	delete carray;
-	free(c2array);
+	//delete carray;
+	//free(c2array);
 	// debug heap end
     return (int) msg.wParam;
 }
