@@ -16,6 +16,15 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+#include <algorithm>
+#include <sstream>
+#include <iostream>
+#include <fstream>
+#include <array>
+#include <vector>
+#include <unordered_map>
+using namespace std;
+#include <assert.h>
 
 #define _CRTDBG_MAP_ALLOC
 #ifdef _DEBUG
@@ -27,6 +36,24 @@
 #pragma warning( disable : 4005 )
 #include <crtdbg.h>
 #pragma warning( default : 4005 )
+
+#if defined(DEBUG) | defined(_DEBUG)
+#define LogCond(y,x) if(y){Log(x)}
+#define Log(x)\
+{\
+	wstringstream s1764;  s1764 << x; \
+	OutputDebugString(s1764.str().c_str()); \
+}
+#elif defined(LOGFILE)
+#define Log(x)\
+{\
+	wstringstream s1764;  s1764 << x; \
+	LogFile(s1764.str().c_str()); \
+}
+#else
+#define Log(x)
+#define LogCond(y,x)
+#endif
 
 
 // TODO: reference additional headers your program requires here

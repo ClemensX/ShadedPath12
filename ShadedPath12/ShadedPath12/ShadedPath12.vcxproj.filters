@@ -30,12 +30,24 @@
     <ClInclude Include="winmain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="xapp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sample1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="winmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xapp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sample1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
