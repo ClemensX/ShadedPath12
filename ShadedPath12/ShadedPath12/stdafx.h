@@ -25,6 +25,7 @@
 #include <unordered_map>
 using namespace std;
 #include <assert.h>
+#include <typeinfo.h>
 
 #define _CRTDBG_MAP_ALLOC
 #ifdef _DEBUG
@@ -56,4 +57,5 @@ using namespace std;
 #endif
 
 
-// TODO: reference additional headers your program requires here
+// framework headers
+#include "xapp.h"

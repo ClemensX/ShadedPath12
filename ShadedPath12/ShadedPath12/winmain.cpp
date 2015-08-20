@@ -65,6 +65,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	delete carray;
 	free(c2array);
 	// debug heap end
+	xappDestroy();
     return (int) msg.wParam;
 }
 

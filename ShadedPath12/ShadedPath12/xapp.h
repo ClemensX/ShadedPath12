@@ -13,5 +13,21 @@ public:
 
 protected:
 	string myClass;
+
 };
 
+class XApp
+{
+public:
+	XApp();
+	~XApp();
+
+	void registerApp(string name, XAppBase*);
+
+private:
+	unordered_map<string, XAppBase *> appMap;
+};
+
+// reference to global instance:
+XApp& xapp();
+void xappDestroy();
