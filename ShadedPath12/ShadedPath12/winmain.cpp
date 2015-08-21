@@ -33,7 +33,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	char *carray = new char[100];
 	char *c2array = (char*)malloc(120);
 	// debug heap end
-	// TODO: Place code here.
+
+	wstring wcmd = wstring(lpCmdLine);
+	string cmd = w2s(wcmd);
+	xapp().commandline = cmd;
+	xapp().parseCommandLine(xapp().commandline);
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -109,15 +113,38 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   hInst = hInstance; // Store instance handle in our global variable
+    hInst = hInstance; // Store instance handle in our global variable
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+    // Create the main window. 
+    string name = xapp().parameters["app"];
+    if (name.length() > 0) {
+		xapp().setRunningApp(name);
+    }
+    Log("++++ " << xapp().parameters["w"].c_str() << endl);
+    bool isFullscreen = xapp().getBoolParam("fullscreen");
+    Log("isFullscreen: " << isFullscreen << endl);
+    int w = xapp().getIntParam("w", CW_USEDEFAULT);
+    int h = xapp().getIntParam("h", CW_USEDEFAULT);
+	xapp().ovrRendering = xapp().getBoolParam("ovr");
+    Log("ovrRendering: " << xapp().ovrRendering << endl);
+
+    int style;
+    if (isFullscreen) {
+	    style = 0;
+    }
+    else {
+	    style = WS_OVERLAPPEDWINDOW;
+    }
+    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
       return FALSE;
    }
+
+   xapp().setHWND(hWnd);
+   xapp().init();
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);

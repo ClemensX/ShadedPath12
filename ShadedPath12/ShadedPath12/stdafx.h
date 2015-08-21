@@ -23,9 +23,18 @@
 #include <array>
 #include <vector>
 #include <unordered_map>
+#include <locale>
+#include <codecvt>
 using namespace std;
 #include <assert.h>
 #include <typeinfo.h>
+
+#include <dxgi1_4.h>
+
+#include <wrl.h>
+
+//using namespace DirectX;
+using namespace Microsoft::WRL;
 
 #define _CRTDBG_MAP_ALLOC
 #ifdef _DEBUG
@@ -56,6 +65,14 @@ using namespace std;
 #define LogCond(y,x)
 #endif
 
+inline void ThrowIfFailed(HRESULT hr)
+{
+	if (FAILED(hr))
+	{
+		throw;
+	}
+}
 
 // framework headers
+#include "util.h"
 #include "xapp.h"

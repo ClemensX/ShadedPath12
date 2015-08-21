@@ -14,7 +14,11 @@ Sample1::~Sample1()
 }
 
 string Sample1::getWindowTitle() {
-	return "Text Sample";
+	return "DX12 Sample";
+}
+
+void Sample1::init()
+{
 }
 
 static Sample1 sample1;

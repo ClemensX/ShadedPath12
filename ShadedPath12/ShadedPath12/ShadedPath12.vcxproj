@@ -22,7 +22,7 @@
     <ProjectGuid>{B85ABA67-F40C-40BF-9329-6B46FE15E677}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ShadedPath12</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -144,6 +144,7 @@
   <ItemGroup>
     <ClInclude Include="Resource.h" />
     <ClInclude Include="sample1.h" />
+    <ClInclude Include="util.h" />
     <ClInclude Include="winmain.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -151,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sample1.cpp" />
+    <ClCompile Include="util.cpp" />
     <ClCompile Include="winmain.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
