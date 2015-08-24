@@ -44,8 +44,18 @@ public:
 	int requestWidth, requestHeight;
 
 private:
+	static const UINT FrameCount = 3;
+
 	unordered_map<string, XAppBase *> appMap;
 	ComPtr<IDXGISwapChain3> swapChain;
+	ComPtr<ID3D12Device> device;
+	ComPtr<ID3D12CommandAllocator> commandAllocators[FrameCount];
+	ComPtr<ID3D12CommandQueue> commandQueue;
+	ComPtr<ID3D12RootSignature> rootSignature;
+	ComPtr<ID3D12DescriptorHeap> rtvHeap;
+	ComPtr<ID3D12PipelineState> pipelineState;
+	ComPtr<ID3D12GraphicsCommandList> commandList;
+
 	bool initialized = false;
 	string appName;
 };

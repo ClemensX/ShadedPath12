@@ -30,6 +30,7 @@ using namespace std;
 #include <typeinfo.h>
 
 #include <dxgi1_4.h>
+#include <d3d12.h>
 
 #include <wrl.h>
 
