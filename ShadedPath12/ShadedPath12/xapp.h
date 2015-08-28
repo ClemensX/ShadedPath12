@@ -27,6 +27,7 @@ public:
 	void update();
 	void draw();
 	void report();
+	void calcBackbufferSize();
 	void registerApp(string name, XAppBase*);
 	XAppBase* getApp(string appName);
 	void setRunningApp(string appName);
@@ -42,6 +43,8 @@ public:
 	HWND hwnd = 0;
 	bool ovrRendering;   // use split screen ovr rendering
 	int requestWidth, requestHeight;
+	// all drawing takes place in backbuffer - output to whatever size the window currently has is only last step
+	unsigned int backbufferWidth = 0, backbufferHeight = 0;
 
 private:
 	static const UINT FrameCount = 3;

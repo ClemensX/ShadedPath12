@@ -82,21 +82,22 @@ void XApp::init()
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
 	ThrowIfFailed(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue)));
-/*
+
+	calcBackbufferSize();
 	// Describe the swap chain.
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 	swapChainDesc.BufferCount = FrameCount;
-	swapChainDesc.BufferDesc.Width = m_width;
-	swapChainDesc.BufferDesc.Height = m_height;
+	swapChainDesc.BufferDesc.Width = backbufferWidth;
+	swapChainDesc.BufferDesc.Height = backbufferHeight;
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-	swapChainDesc.OutputWindow = m_hwnd;
+	swapChainDesc.OutputWindow = getHWND();
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.Windowed = TRUE;
 
 	ComPtr<IDXGISwapChain> swapChain;
-	ThrowIfFailed(factory->CreateSwapChain(
+/*	ThrowIfFailed(factory->CreateSwapChain(
 		m_commandQueue.Get(),		// Swap chain needs the queue so that it can force a flush on it.
 		&swapChainDesc,
 		&swapChain
@@ -106,6 +107,13 @@ void XApp::init()
 
 	m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 	*/
+}
+
+void XApp::calcBackbufferSize()
+{
+	// Full HD is default - should be overidden by specific devices like Rift
+	backbufferHeight = 1080;
+	backbufferWidth = 1980;
 }
 
 void XApp::registerApp(string name, XAppBase *app)
