@@ -21,4 +21,12 @@ void Sample1::init()
 {
 }
 
+void Sample1::update()
+{
+}
+
+void Sample1::draw()
+{
+}
+
 static Sample1 sample1;

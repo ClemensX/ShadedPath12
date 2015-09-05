@@ -52,17 +52,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_SHADEDPATH12));
 
-    MSG msg;
+	MSG msg = { 0 };
+	while (true)
+	{
+		// Process any messages in the queue.
+		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
 
-    // Main message loop:
-    while (GetMessage(&msg, nullptr, 0, 0))
-    {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-    }
+			if (msg.message == WM_QUIT)
+				break;
+		}
+		xapp().update();
+		xapp().draw();
+	}
+	xapp().destroy();
+
 	// debug heap test
 	//_RPTF0(_CRT_WARN, "heap report test\n");
 	//_CrtMemDumpAllObjectsSince(NULL);

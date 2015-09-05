@@ -143,6 +143,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="d3dx12.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="sample1.h" />
     <ClInclude Include="util.h" />

@@ -75,5 +75,6 @@ inline void ThrowIfFailed(HRESULT hr)
 }
 
 // framework headers
+#include "d3dx12.h"
 #include "util.h"
 #include "xapp.h"

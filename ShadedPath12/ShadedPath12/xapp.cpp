@@ -28,8 +28,39 @@ XApp::~XApp()
 {
 }
 
+void XApp::update() {
+
+}
+
+void XApp::draw() {
+	// Record all the commands we need to render the scene into the command list.
+	PopulateCommandList();
+
+	// Execute the command list.
+	ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
+	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+	//RenderUI();
+
+	// Present the frame.
+	ThrowIfFailed(swapChain->Present(1, 0));
+
+	MoveToNextFrame();
+
+}
+
+void XApp::destroy()
+{
+	// Wait for the GPU to be done with all resources.
+	WaitForGpu();
+
+	CloseHandle(fenceEvent);
+}
+
 void XApp::init()
 {
+
+	//// Basic initialization
 	if (initialized) return;
 	initialized = true;
 	if (appName.length() == 0) {
@@ -63,6 +94,22 @@ void XApp::init()
 	}
 #endif
 
+	//// Viewport and Scissor
+	D3D12_RECT rect;
+	if (GetWindowRect(getHWND(), &rect))
+	{
+		int width = rect.right - rect.left;
+		int height = rect.bottom - rect.top;
+		viewport.Width = static_cast<float>(width);
+		viewport.Height = static_cast<float>(height);
+		viewport.MaxDepth = 1.0f;
+
+		scissorRect.right = static_cast<LONG>(width);
+		scissorRect.bottom = static_cast<LONG>(height);
+	}
+
+	//// Pipeline 
+
 	ComPtr<IDXGIFactory4> factory;
 	ThrowIfFailed(CreateDXGIFactory2(0
 #ifdef _DEBUG
@@ -75,6 +122,14 @@ void XApp::init()
 		D3D_FEATURE_LEVEL_11_1,
 		IID_PPV_ARGS(&device)
 		));
+
+	// disable auto alt-enter fullscreen switch (does leave an unresponsive window during debug sessions)
+	ThrowIfFailed(factory->MakeWindowAssociation(getHWND(), DXGI_MWA_NO_ALT_ENTER));
+	//IDXGIFactory4 *parentFactoryPtr = nullptr;
+	//if (SUCCEEDED(swapChain->GetParent(__uuidof(IDXGIFactory4), (void **)&parentFactoryPtr))) {
+	//	parentFactoryPtr->MakeWindowAssociation(getHWND(), DXGI_MWA_NO_ALT_ENTER);
+	//	parentFactoryPtr->Release();
+	//}
 
 	// Describe and create the command queue.
 	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
@@ -96,24 +151,190 @@ void XApp::init()
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.Windowed = TRUE;
 
-	ComPtr<IDXGISwapChain> swapChain;
-/*	ThrowIfFailed(factory->CreateSwapChain(
-		m_commandQueue.Get(),		// Swap chain needs the queue so that it can force a flush on it.
+	ComPtr<IDXGISwapChain> swapChain0; // we cannot use create IDXGISwapChain3 directly - create IDXGISwapChain, then call As() to map to IDXGISwapChain3
+	ThrowIfFailed(factory->CreateSwapChain(
+		commandQueue.Get(),		// Swap chain needs the queue so that it can force a flush on it.
 		&swapChainDesc,
-		&swapChain
+		&swapChain0
 		));
 
-	ThrowIfFailed(swapChain.As(&m_swapChain));
+	ThrowIfFailed(swapChain0.As(&swapChain));
+	frameIndex = swapChain->GetCurrentBackBufferIndex();
 
-	m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
-	*/
+	// Create descriptor heaps.
+	{
+		// Describe and create a render target view (RTV) descriptor heap.
+
+		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
+		rtvHeapDesc.NumDescriptors = FrameCount;
+		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+		ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap)));
+
+		rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	}
+
+	// Create frame resources.
+	{
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart());
+
+		// Create a RTV for each frame.
+		for (UINT n = 0; n < FrameCount; n++)
+		{
+			ThrowIfFailed(swapChain->GetBuffer(n, IID_PPV_ARGS(&renderTargets[n])));
+			device->CreateRenderTargetView(renderTargets[n].Get(), nullptr, rtvHandle);
+			rtvHandle.Offset(1, rtvDescriptorSize);
+			ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
+		}
+	}
+
+	//// Assets
+
+	// Create an empty root signature.
+	{
+		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+		rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		ComPtr<ID3DBlob> signature;
+		ComPtr<ID3DBlob> error;
+		ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
+		ThrowIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
+	}
+
+	// Create the pipeline state, which includes compiling and loading shaders.
+	{
+		// Define the vertex input layout.
+		D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		};
+
+		// Describe and create the graphics pipeline state object (PSO).
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		//psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
+		psoDesc.pRootSignature = rootSignature.Get();
+		//psoDesc.VS = { reinterpret_cast<UINT8*>(vertexShader->GetBufferPointer()), vertexShader->GetBufferSize() };
+		//psoDesc.PS = { reinterpret_cast<UINT8*>(pixelShader->GetBufferPointer()), pixelShader->GetBufferSize() };
+		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+		psoDesc.DepthStencilState.DepthEnable = FALSE;
+		psoDesc.DepthStencilState.StencilEnable = FALSE;
+		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		psoDesc.NumRenderTargets = 1;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.SampleDesc.Count = 1;
+		//ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
+
+	}
+
+	ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocators[frameIndex].Get(), pipelineState.Get(), IID_PPV_ARGS(&commandList)));
+
+	// Close the command list and execute it to begin the vertex buffer copy into
+	// the default heap.
+	ThrowIfFailed(commandList->Close());
+	ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
+	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+	// Create synchronization objects and wait until assets have been uploaded to the GPU.
+	{
+		ThrowIfFailed(device->CreateFence(fenceValues[frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf())));
+		fenceValues[frameIndex]++;
+
+		// Create an event handle to use for frame synchronization.
+		fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+		if (fenceEvent == nullptr)
+		{
+			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+		}
+
+		// Wait for the command list to execute; we are reusing the same command 
+		// list in our main loop but for now, we just want to wait for setup to 
+		// complete before continuing.
+		WaitForGpu();
+	}
+}
+
+void XApp::PopulateCommandList()
+{
+	// Command list allocators can only be reset when the associated 
+	// command lists have finished execution on the GPU; apps should use 
+	// fences to determine GPU execution progress.
+	ThrowIfFailed(commandAllocators[frameIndex]->Reset());
+
+	// However, when ExecuteCommandList() is called on a particular command 
+	// list, that command list can then be reset at any time and must be before 
+	// re-recording.
+	ThrowIfFailed(commandList->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
+
+	// Set necessary state.
+	commandList->SetGraphicsRootSignature(rootSignature.Get());
+	commandList->RSSetViewports(1, &viewport);
+	commandList->RSSetScissorRects(1, &scissorRect);
+
+	// Indicate that the back buffer will be used as a render target.
+//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescriptorSize);
+	commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+
+	// Record commands.
+	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
+	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	//commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+	//commandList->DrawInstanced(3, 1, 0, 0);
+
+	// Note: do not transition the render target to present here.
+	// the transition will occur when the wrapped 11On12 render
+	// target resource is released.
+
+	// Indicate that the back buffer will now be used to present.
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+	ThrowIfFailed(commandList->Close());
+}
+
+// Wait for pending GPU work to complete.
+void XApp::WaitForGpu()
+{
+	// Schedule a Signal command in the queue.
+	ThrowIfFailed(commandQueue->Signal(fence.Get(), fenceValues[frameIndex]));
+
+	// Wait until the fence has been processed.
+	ThrowIfFailed(fence->SetEventOnCompletion(fenceValues[frameIndex], fenceEvent));
+	WaitForSingleObjectEx(fenceEvent, INFINITE, FALSE);
+
+	// Increment the fence value for the current frame.
+	fenceValues[frameIndex]++;
+}
+
+void XApp::MoveToNextFrame()
+{
+	// Schedule a Signal command in the queue.
+	const UINT64 currentFenceValue = fenceValues[frameIndex];
+	ThrowIfFailed(commandQueue->Signal(fence.Get(), currentFenceValue));
+
+	// Update the frame index.
+	frameIndex = swapChain->GetCurrentBackBufferIndex();
+
+	// If the next frame is not ready to be rendered yet, wait until it is ready.
+	if (fence->GetCompletedValue() < fenceValues[frameIndex])
+	{
+		ThrowIfFailed(fence->SetEventOnCompletion(fenceValues[frameIndex], fenceEvent));
+		WaitForSingleObjectEx(fenceEvent, INFINITE, FALSE);
+	}
+
+	// Set the fence value for the next frame.
+	fenceValues[frameIndex] = currentFenceValue + 1;
 }
 
 void XApp::calcBackbufferSize()
 {
 	// Full HD is default - should be overidden by specific devices like Rift
 	backbufferHeight = 1080;
-	backbufferWidth = 1980;
+	backbufferWidth = 1920;
 }
 
 void XApp::registerApp(string name, XAppBase *app)

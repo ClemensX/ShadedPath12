@@ -26,6 +26,7 @@ public:
 	void resize();
 	void update();
 	void draw();
+	void destroy();
 	void report();
 	void calcBackbufferSize();
 	void registerApp(string name, XAppBase*);
@@ -49,18 +50,37 @@ public:
 private:
 	static const UINT FrameCount = 3;
 
-	unordered_map<string, XAppBase *> appMap;
+	// Pipeline objects
+	D3D12_VIEWPORT viewport;
+	D3D12_RECT scissorRect;
 	ComPtr<IDXGISwapChain3> swapChain;
 	ComPtr<ID3D12Device> device;
 	ComPtr<ID3D12CommandAllocator> commandAllocators[FrameCount];
+	ComPtr<ID3D12Resource> renderTargets[FrameCount];
+	//ComPtr<ID3D11Resource> m_wrappedBackBuffers[FrameCount];
+	//ComPtr<ID2D1Bitmap1> m_d2dRenderTargets[FrameCount];
 	ComPtr<ID3D12CommandQueue> commandQueue;
 	ComPtr<ID3D12RootSignature> rootSignature;
-	ComPtr<ID3D12DescriptorHeap> rtvHeap;
+	ComPtr<ID3D12DescriptorHeap> rtvHeap;  // Resource Target View Heap
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12GraphicsCommandList> commandList;
 
+	// App resources
+	UINT rtvDescriptorSize;
+
+	// Synchronization objects.
+	UINT frameIndex;
+	HANDLE fenceEvent;
+	ComPtr<ID3D12Fence> fence;
+	UINT64 fenceValues[FrameCount];
+
+	unordered_map<string, XAppBase *> appMap;
 	bool initialized = false;
 	string appName;
+
+	void PopulateCommandList();
+	void WaitForGpu();
+	void MoveToNextFrame();
 };
 
 // reference to global instance:

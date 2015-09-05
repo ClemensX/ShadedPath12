@@ -7,8 +7,8 @@ public:
 	virtual ~Sample1();
 
 	void init();
-//	void update();
-//	void draw();
+	void update();
+	void draw();
 	string getWindowTitle();
 };
 
