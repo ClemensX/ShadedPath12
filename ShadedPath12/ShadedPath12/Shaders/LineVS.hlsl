@@ -1,11 +1,19 @@
-#define MyRS1 "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
-              "CBV(b0, space = 0), " \
-              "DescriptorTable( CBV(b1)), "
+#include "Line.hlsli"
 
-
-[RootSignature(MyRS1)]
-
-float4 main( float4 pos : POSITION ) : SV_POSITION
+float4 PSMain(PSInput input) : SV_TARGET
 {
-	return pos;
+	return input.color;
+}
+
+
+[RootSignature(LinesRS)]
+
+PSInput main( VSInput input )
+{
+	PSInput result;
+
+	result.position = input.position;
+	result.color = input.color;
+
+	return result;
 }

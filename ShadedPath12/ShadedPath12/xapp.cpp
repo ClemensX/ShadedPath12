@@ -227,6 +227,14 @@ void XApp::init()
 		psoDesc.SampleDesc.Count = 1;
 		//ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
 
+	//}
+#include "CompiledShaders/LineVS.h"
+	// test shade library functions
+	//{
+		//D3DLoadModule() uses ID3D11Module
+		//ComPtr<ID3DBlob> vShader;
+		//ThrowIfFailed(D3DReadFileToBlob(L"", &vShader));
+		psoDesc.VS = { binShader_LineVS, sizeof(binShader_LineVS) };
 	}
 
 	ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocators[frameIndex].Get(), pipelineState.Get(), IID_PPV_ARGS(&commandList)));
