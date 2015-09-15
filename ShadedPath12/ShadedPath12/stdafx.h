@@ -31,12 +31,12 @@ using namespace std;
 
 #include <dxgi1_4.h>
 #include <D3Dcompiler.h>
+#include <DirectXMath.h>
 #include <d3d12.h>
 
 #include <wrl.h>
-
-//using namespace DirectX;
 using namespace Microsoft::WRL;
+using namespace DirectX;
 
 #define _CRTDBG_MAP_ALLOC
 #ifdef _DEBUG

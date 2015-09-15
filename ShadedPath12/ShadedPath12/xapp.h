@@ -28,7 +28,7 @@ public:
 	void draw();
 	void destroy();
 	void report();
-	void calcBackbufferSize();
+	void calcBackbufferSizeAndAspectRatio();
 	void registerApp(string name, XAppBase*);
 	XAppBase* getApp(string appName);
 	void setRunningApp(string appName);
@@ -46,6 +46,12 @@ public:
 	int requestWidth, requestHeight;
 	// all drawing takes place in backbuffer - output to whatever size the window currently has is only last step
 	unsigned int backbufferWidth = 0, backbufferHeight = 0;
+	float aspectRatio;
+	struct Vertex
+	{
+		XMFLOAT3 position;
+		XMFLOAT4 color;
+	};
 
 private:
 	static const UINT FrameCount = 3;
@@ -67,6 +73,8 @@ private:
 
 	// App resources
 	UINT rtvDescriptorSize;
+	ComPtr<ID3D12Resource> vertexBuffer;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 
 	// Synchronization objects.
 	UINT frameIndex;

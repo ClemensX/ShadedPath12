@@ -138,7 +138,7 @@ void XApp::init()
 
 	ThrowIfFailed(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue)));
 
-	calcBackbufferSize();
+	calcBackbufferSizeAndAspectRatio();
 	// Describe the swap chain.
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 	swapChainDesc.BufferCount = FrameCount;
@@ -229,15 +229,64 @@ void XApp::init()
 
 	//}
 #include "CompiledShaders/LineVS.h"
+#include "CompiledShaders/LinePS.h"
 	// test shade library functions
 	//{
 		//D3DLoadModule() uses ID3D11Module
 		//ComPtr<ID3DBlob> vShader;
 		//ThrowIfFailed(D3DReadFileToBlob(L"", &vShader));
 		psoDesc.VS = { binShader_LineVS, sizeof(binShader_LineVS) };
+		psoDesc.PS = { binShader_LinePS, sizeof(binShader_LinePS) };
+		ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
 	}
 
 	ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocators[frameIndex].Get(), pipelineState.Get(), IID_PPV_ARGS(&commandList)));
+
+	ComPtr<ID3D12Resource> vertexBufferUpload;
+
+	// Create the vertex buffer.
+	{
+		// Define the geometry for a triangle.
+		Vertex triangleVertices[] =
+		{
+			{ { 0.0f, 0.25f * aspectRatio, 0.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
+			{ { 0.25f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
+			{ { -0.25f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } }
+		};
+
+		const UINT vertexBufferSize = sizeof(triangleVertices);
+
+		ThrowIfFailed(device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			nullptr,
+			IID_PPV_ARGS(&vertexBuffer)));
+
+		ThrowIfFailed(device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&vertexBufferUpload)));
+
+		// Copy data to the intermediate upload heap and then schedule a copy 
+		// from the upload heap to the vertex buffer.
+		D3D12_SUBRESOURCE_DATA vertexData = {};
+		vertexData.pData = reinterpret_cast<UINT8*>(triangleVertices);
+		vertexData.RowPitch = vertexBufferSize;
+		vertexData.SlicePitch = vertexData.RowPitch;
+
+		UpdateSubresources<1>(commandList.Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData);
+		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+
+		// Initialize the vertex buffer view.
+		vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
+		vertexBufferView.StrideInBytes = sizeof(Vertex);
+		vertexBufferView.SizeInBytes = vertexBufferSize;
+	}
 
 	// Close the command list and execute it to begin the vertex buffer copy into
 	// the default heap.
@@ -338,11 +387,13 @@ void XApp::MoveToNextFrame()
 	fenceValues[frameIndex] = currentFenceValue + 1;
 }
 
-void XApp::calcBackbufferSize()
+void XApp::calcBackbufferSizeAndAspectRatio()
 {
 	// Full HD is default - should be overidden by specific devices like Rift
 	backbufferHeight = 1080;
 	backbufferWidth = 1920;
+	aspectRatio = static_cast<float>(backbufferWidth) / static_cast<float>(backbufferHeight);
+
 }
 
 void XApp::registerApp(string name, XAppBase *app)
