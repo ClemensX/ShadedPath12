@@ -12,7 +12,8 @@ PSInput main( VSInput input )
 {
 	PSInput result;
 
-	result.position = input.position;
+	result.position.w = 1.0;
+	result.position.xyz = input.position;
 	result.color = input.color;
 
 	return result;

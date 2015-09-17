@@ -43,7 +43,7 @@ void XApp::draw() {
 	//RenderUI();
 
 	// Present the frame.
-	ThrowIfFailed(swapChain->Present(1, 0));
+	ThrowIfFailed(swapChain->Present(0, 0));
 
 	MoveToNextFrame();
 
@@ -100,10 +100,15 @@ void XApp::init()
 	{
 		int width = rect.right - rect.left;
 		int height = rect.bottom - rect.top;
+		viewport.MinDepth = 0.0f;
+		viewport.TopLeftX = 0.0f;
+		viewport.TopLeftY = 0.0f;
 		viewport.Width = static_cast<float>(width);
 		viewport.Height = static_cast<float>(height);
 		viewport.MaxDepth = 1.0f;
 
+		scissorRect.left = 0;
+		scissorRect.top = 0;
 		scissorRect.right = static_cast<LONG>(width);
 		scissorRect.bottom = static_cast<LONG>(height);
 	}
@@ -212,7 +217,7 @@ void XApp::init()
 
 		// Describe and create the graphics pipeline state object (PSO).
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-		//psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
+		psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
 		psoDesc.pRootSignature = rootSignature.Get();
 		//psoDesc.VS = { reinterpret_cast<UINT8*>(vertexShader->GetBufferPointer()), vertexShader->GetBufferSize() };
 		//psoDesc.PS = { reinterpret_cast<UINT8*>(pixelShader->GetBufferPointer()), pixelShader->GetBufferSize() };
@@ -340,8 +345,8 @@ void XApp::PopulateCommandList()
 	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	//commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-	//commandList->DrawInstanced(3, 1, 0, 0);
+	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+	commandList->DrawInstanced(3, 1, 0, 0);
 
 	// Note: do not transition the render target to present here.
 	// the transition will occur when the wrapped 11On12 render

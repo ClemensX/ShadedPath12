@@ -38,6 +38,10 @@ using namespace std;
 using namespace Microsoft::WRL;
 using namespace DirectX;
 
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
+//d2d1.lib;dwrite.lib;d3d11.lib;d3d12.lib;dxgi.lib;
+
 #define _CRTDBG_MAP_ALLOC
 #ifdef _DEBUG
 #ifndef DBG_NEW
