@@ -154,6 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3dx12.h" />
+    <ClInclude Include="Effects\lines.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="sample1.h" />
     <ClInclude Include="util.h" />
@@ -163,6 +164,7 @@
     <ClInclude Include="xapp.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Effects\lines.cpp" />
     <ClCompile Include="sample1.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="winmain.cpp" />

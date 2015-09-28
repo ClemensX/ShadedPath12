@@ -17,6 +17,9 @@
       <UniqueIdentifier>{f7773aaf-b54f-4837-933a-ebf1340f4d71}</UniqueIdentifier>
       <Extensions>hlsl;hlsi</Extensions>
     </Filter>
+    <Filter Include="Effects">
+      <UniqueIdentifier>{2a7ea5cf-1942-41d5-8c26-c18844ecfbdb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -46,6 +49,9 @@
     <ClInclude Include="d3dx12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Effects\lines.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -62,6 +68,9 @@
     </ClCompile>
     <ClCompile Include="util.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Effects\lines.cpp">
+      <Filter>Effects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
