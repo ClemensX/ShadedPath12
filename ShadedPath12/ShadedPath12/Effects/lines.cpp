@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "../stdafx.h"
 #include "lines.h"
 
 void LinesEffect::init()
