@@ -53,6 +53,9 @@ public:
 		XMFLOAT4 color;
 	};
 
+	ComPtr<ID3D12Device> device;
+	ComPtr<ID3D12GraphicsCommandList> commandList;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 private:
 	static const UINT FrameCount = 3;
 
@@ -60,7 +63,6 @@ private:
 	D3D12_VIEWPORT viewport;
 	D3D12_RECT scissorRect;
 	ComPtr<IDXGISwapChain3> swapChain;
-	ComPtr<ID3D12Device> device;
 	ComPtr<ID3D12CommandAllocator> commandAllocators[FrameCount];
 	ComPtr<ID3D12Resource> renderTargets[FrameCount];
 	//ComPtr<ID3D11Resource> m_wrappedBackBuffers[FrameCount];
@@ -69,12 +71,10 @@ private:
 	ComPtr<ID3D12RootSignature> rootSignature;
 	ComPtr<ID3D12DescriptorHeap> rtvHeap;  // Resource Target View Heap
 	ComPtr<ID3D12PipelineState> pipelineState;
-	ComPtr<ID3D12GraphicsCommandList> commandList;
 
 	// App resources
 	UINT rtvDescriptorSize;
 	ComPtr<ID3D12Resource> vertexBuffer;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 
 	// Synchronization objects.
 	UINT frameIndex;
@@ -89,6 +89,7 @@ private:
 	void PopulateCommandList();
 	void WaitForGpu();
 	void MoveToNextFrame();
+	XAppBase *app = nullptr;
 };
 
 // reference to global instance:

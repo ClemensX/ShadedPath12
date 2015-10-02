@@ -10,5 +10,9 @@ public:
 	void update();
 	void draw();
 	string getWindowTitle();
+
+private:
+	// used effects:
+	LinesEffect linesEffect;
 };
 

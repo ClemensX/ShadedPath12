@@ -5,7 +5,7 @@ struct LineDef {
 };
 
 
-class Lines {
+class LinesEffect {
 public:
 	struct Vertex {
 		XMFLOAT3 pos;
@@ -15,7 +15,7 @@ public:
 		XMFLOAT4X4 wvp;
 	};
 
-	void prepare();
+	void init();
 	// add lines - they will never  be removed
 	void add(vector<LineDef> &linesToAdd);
 	// add lines just for next draw call
@@ -32,4 +32,9 @@ private:
 	ConstantBufferFixed cb;
 	bool dirty;
 	int drawAddLinesSize;
+
+	ComPtr<ID3D12Resource> vertexBuffer;
+	ComPtr<ID3D12Resource> vertexBufferUpload;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	//XApp *xapp;  done through global instance from xapp.cpp
 };

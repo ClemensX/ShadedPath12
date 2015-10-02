@@ -29,7 +29,7 @@ XApp::~XApp()
 }
 
 void XApp::update() {
-
+	app->update();
 }
 
 void XApp::draw() {
@@ -73,11 +73,10 @@ void XApp::init()
 		}
 	}
 	//assert(appName.length() > 0);
-	XAppBase *app = getApp(appName);
+	app = getApp(appName);
 	if (app != nullptr) {
 		//Log("initializing " << appName.c_str() << "\n");
 		SetWindowText(getHWND(), string2wstring(app->getWindowTitle()));
-		app->init();
 	} else {
 		Log("ERROR: xapp not available " << appName.c_str() << endl);
 		// throw assertion error in debug mode
@@ -226,7 +225,7 @@ void XApp::init()
 		psoDesc.DepthStencilState.DepthEnable = FALSE;
 		psoDesc.DepthStencilState.StencilEnable = FALSE;
 		psoDesc.SampleMask = UINT_MAX;
-		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 		psoDesc.NumRenderTargets = 1;
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 		psoDesc.SampleDesc.Count = 1;
@@ -246,7 +245,7 @@ void XApp::init()
 	}
 
 	ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocators[frameIndex].Get(), pipelineState.Get(), IID_PPV_ARGS(&commandList)));
-
+	
 	ComPtr<ID3D12Resource> vertexBufferUpload;
 
 	// Create the vertex buffer.
@@ -256,7 +255,16 @@ void XApp::init()
 		{
 			{ { 0.0f, 0.25f * aspectRatio, 0.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
 			{ { 0.25f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
-			{ { -0.25f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } }
+			{ { 0.25f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
+			{ { -0.25f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
+			{ { -0.25f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
+			{ { 0.0f, 0.25f * aspectRatio, 0.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
+		{ { 0.2f, 0.25f * aspectRatio, 0.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
+		{ { 0.45f, -0.28f * aspectRatio, 0.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
+		{ { 0.45f, -0.28f * aspectRatio, 0.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
+		{ { -0.05f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
+		{ { -0.05f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
+		{ { 0.2f, 0.25f * aspectRatio, 0.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } }
 		};
 
 		const UINT vertexBufferSize = sizeof(triangleVertices);
@@ -276,6 +284,7 @@ void XApp::init()
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr,
 			IID_PPV_ARGS(&vertexBufferUpload)));
+		vertexBufferUpload.Get()->SetName(L"vertexBufferUpload");
 
 		// Copy data to the intermediate upload heap and then schedule a copy 
 		// from the upload heap to the vertex buffer.
@@ -284,14 +293,16 @@ void XApp::init()
 		vertexData.RowPitch = vertexBufferSize;
 		vertexData.SlicePitch = vertexData.RowPitch;
 
-		UpdateSubresources<1>(commandList.Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData);
-		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+		//UpdateSubresources<1>(commandList.Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData);
+		//commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 
 		// Initialize the vertex buffer view.
 		vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
 		vertexBufferView.StrideInBytes = sizeof(Vertex);
 		vertexBufferView.SizeInBytes = vertexBufferSize;
 	}
+	app->init();
+	app->update();
 
 	// Close the command list and execute it to begin the vertex buffer copy into
 	// the default heap.
@@ -344,10 +355,11 @@ void XApp::PopulateCommandList()
 	// Record commands.
 	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-	commandList->DrawInstanced(3, 1, 0, 0);
-
+	app->draw();
+	//commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+	//commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+	//commandList->DrawInstanced(6, 1, 0, 0);
+	
 	// Note: do not transition the render target to present here.
 	// the transition will occur when the wrapped 11On12 render
 	// target resource is released.
