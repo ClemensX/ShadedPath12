@@ -33,6 +33,7 @@ using namespace std;
 #include <D3Dcompiler.h>
 #include <DirectXMath.h>
 #include <d3d12.h>
+#include <pix.h>
 
 #include <wrl.h>
 using namespace Microsoft::WRL;
@@ -81,5 +82,6 @@ inline void ThrowIfFailed(HRESULT hr)
 
 // framework headers
 #include "d3dx12.h"
+#include "gametime.h"
 #include "util.h"
 #include "xapp.h"

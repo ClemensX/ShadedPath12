@@ -56,8 +56,11 @@ void LinesEffect::update() {
 		vertexData.RowPitch = vertexBufferSize;
 		vertexData.SlicePitch = vertexData.RowPitch;
 
+		PIXBeginEvent(xapp().commandList.Get(), 0, L"lines: update vertex buffer");
+		//xapp().commandList.Get()->Reset(xapp().getCommandAllocator().Get(), xapp().getPipelineState().Get());
 		UpdateSubresources<1>(xapp().commandList.Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData);
 		xapp().commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+		PIXEndEvent(xapp().commandList.Get());
 
 		// Initialize the vertex buffer view.
 		vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();

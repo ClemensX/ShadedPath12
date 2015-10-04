@@ -12,7 +12,11 @@ public:
 	string getWindowTitle();
 
 private:
+	// Engine classes:
+	GameTime gameTime;
 	// used effects:
 	LinesEffect linesEffect;
+	// other:
+	LONGLONG startTime;
 };
 

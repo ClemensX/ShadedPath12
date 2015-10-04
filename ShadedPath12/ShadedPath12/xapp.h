@@ -53,9 +53,13 @@ public:
 		XMFLOAT4 color;
 	};
 
+	// 
 	ComPtr<ID3D12Device> device;
 	ComPtr<ID3D12GraphicsCommandList> commandList;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	UINT getFrameIndex() { return frameIndex; };
+	auto getCommandAllocator() { return commandAllocators[frameIndex]; };
+	auto getPipelineState() { return pipelineState; };
 private:
 	static const UINT FrameCount = 3;
 

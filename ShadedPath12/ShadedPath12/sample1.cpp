@@ -32,12 +32,29 @@ void Sample1::init()
 	vector<LineDef> lines;
 	// add all intializer objects to vector:
 	for_each(begin(myLines), end(myLines), [&lines](LineDef l) {lines.push_back(l);});
-	//for_each(lines.begin(), lines.end(), [](LineDef l) {Log(l.start.x << endl);});
 	linesEffect.add(lines);
+	// initialize game time to real time:
+	gameTime.init(1);
+	startTime = gameTime.getRealTime();
 }
 
 void Sample1::update()
 {
+	gameTime.advanceTime();
+	LONGLONG now = gameTime.getRealTime();
+	if (gameTime.getSecondsBetween(startTime, now) > 3) {
+		float aspectRatio = xapp().aspectRatio;
+		LineDef myLines[] = {
+			// start, end, color
+			{ XMFLOAT3(0.1f, 0.15f * aspectRatio, 0.0f), XMFLOAT3(0.15f, -0.35f * aspectRatio, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
+			{ XMFLOAT3(0.15f, -0.35f * aspectRatio, 0.0f), XMFLOAT3(-0.15f, -0.35f * aspectRatio, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
+			{ XMFLOAT3(-0.15f, -0.35f * aspectRatio, 0.0f), XMFLOAT3(0.1f, 0.15f * aspectRatio, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) }
+		};
+		// add all intializer objects to vector:
+		vector<LineDef> lines;
+		for_each(begin(myLines), end(myLines), [&lines](LineDef l) {lines.push_back(l);});
+		linesEffect.add(lines);
+	}
 	linesEffect.update();
 }
 
