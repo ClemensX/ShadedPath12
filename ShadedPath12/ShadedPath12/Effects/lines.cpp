@@ -48,6 +48,9 @@ void LinesEffect::init()
 	{
 		ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
 		ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocators[n].Get(), pipelineState.Get(), IID_PPV_ARGS(&commandLists[n])));
+		// Command lists are created in the recording state, but there is nothing
+		// to record yet. The main loop expects it to be closed, so close it now.
+		ThrowIfFailed(commandLists[n]->Close());
 	}
 }
 
@@ -103,7 +106,7 @@ void LinesEffect::update() {
 		vertexData.SlicePitch = vertexData.RowPitch;
 
 		PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"lines: update vertex buffer");
-		//xapp().commandList.Get()->Reset(xapp().getCommandAllocator().Get(), xapp().getPipelineState().Get());
+		commandLists[frameIndex].Get()->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get());
 		UpdateSubresources<1>(commandLists[frameIndex].Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData);
 		commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 		PIXEndEvent(commandLists[frameIndex].Get());
@@ -151,6 +154,38 @@ void LinesEffect::WaitForGpu()
 
 	// Increment the fence value for the current frame.
 	fenceValues[frameIndex]++;
+	Log("fence frame " << frameIndex << endl);
+}
+
+void LinesEffect::next() {
+	MoveToNextFrame();
+}
+
+void LinesEffect::destroy()
+{
+	WaitForGpu();
+	CloseHandle(fenceEvent);
+}
+
+void LinesEffect::MoveToNextFrame()
+{
+	auto frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	// Schedule a Signal command in the queue.
+	const UINT64 currentFenceValue = fenceValues[frameIndex];
+	ThrowIfFailed(xapp().commandQueue->Signal(fence.Get(), currentFenceValue));
+
+	// Update the frame index.
+	frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+
+	// If the next frame is not ready to be rendered yet, wait until it is ready.
+	if (fence->GetCompletedValue() < fenceValues[frameIndex])
+	{
+		ThrowIfFailed(fence->SetEventOnCompletion(fenceValues[frameIndex], fenceEvent));
+		WaitForSingleObjectEx(fenceEvent, INFINITE, FALSE);
+	}
+
+	// Set the fence value for the next frame.
+	fenceValues[frameIndex] = currentFenceValue + 1;
 }
 
 
@@ -160,7 +195,8 @@ void LinesEffect::draw()
 	preDraw();
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
-	commandLists[frameIndex]->DrawInstanced(6, 1, 0, 0);
+	auto numVertices = lines.size() * 2;
+	commandLists[frameIndex]->DrawInstanced(numVertices, 1, 0, 0);
 	postDraw();
 }
 
@@ -202,4 +238,7 @@ void LinesEffect::postDraw() {
 	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(xapp().renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
 	ThrowIfFailed(commandLists[frameIndex]->Close());
+	// Execute the command list.
+	ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
+	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 }

@@ -20,6 +20,14 @@ void XAppBase::draw() {
 
 }
 
+void XAppBase::next() {
+
+}
+
+void XAppBase::destroy() {
+
+}
+
 XApp::XApp()
 {
 }
@@ -34,27 +42,31 @@ void XApp::update() {
 
 void XApp::draw() {
 	// Record all the commands we need to render the scene into the command list.
-	PopulateCommandList();
+	//PopulateCommandList();
 
 	// Execute the command list.
-	ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
-	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	//ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
+	//commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
 	//RenderUI();
+
+	app->draw();
 
 	// Present the frame.
 	ThrowIfFailed(swapChain->Present(0, 0));
 
-	MoveToNextFrame();
+	app->next();
+	//MoveToNextFrame();
 
 }
 
 void XApp::destroy()
 {
 	// Wait for the GPU to be done with all resources.
-	WaitForGpu();
+	//WaitForGpu();
+	app->destroy();
 
-	CloseHandle(fenceEvent);
+	//CloseHandle(fenceEvent);
 }
 
 void XApp::init()
@@ -141,6 +153,7 @@ void XApp::init()
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
 	ThrowIfFailed(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue)));
+	commandQueue->SetName(L"commandQueue_xapp");
 
 	calcBackbufferSizeAndAspectRatio();
 	// Describe the swap chain.
@@ -174,6 +187,7 @@ void XApp::init()
 		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap)));
+		rtvHeap->SetName(L"rtvHeap_xapp");
 
 		rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	}
@@ -187,8 +201,11 @@ void XApp::init()
 		{
 			ThrowIfFailed(swapChain->GetBuffer(n, IID_PPV_ARGS(&renderTargets[n])));
 			device->CreateRenderTargetView(renderTargets[n].Get(), nullptr, rtvHandle);
+			wstringstream s;
+			s << L"renderTarget_xapp[" << n << "]";
+			renderTargets[n]->SetName(s.str().c_str());
 			rtvHandle.Offset(1, rtvDescriptorSize);
-			ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
+			//ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
 		}
 	}
 
@@ -205,7 +222,7 @@ void XApp::init()
 		ThrowIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
 	}
 
-	// Create the pipeline state, which includes compiling and loading shaders.
+/*	// Create the pipeline state, which includes compiling and loading shaders.
 	{
 		// Define the vertex input layout.
 		D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
@@ -300,10 +317,10 @@ void XApp::init()
 		vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
 		vertexBufferView.StrideInBytes = sizeof(Vertex);
 		vertexBufferView.SizeInBytes = vertexBufferSize;
-	}
+	} */
 	app->init();
 	app->update();
-
+	/*
 	// Close the command list and execute it to begin the vertex buffer copy into
 	// the default heap.
 	ThrowIfFailed(commandList->Close());
@@ -326,7 +343,7 @@ void XApp::init()
 		// list in our main loop but for now, we just want to wait for setup to 
 		// complete before continuing.
 		WaitForGpu();
-	}
+	} */
 }
 
 void XApp::PopulateCommandList()

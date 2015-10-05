@@ -42,7 +42,9 @@ void Sample1::update()
 {
 	gameTime.advanceTime();
 	LONGLONG now = gameTime.getRealTime();
-	if (gameTime.getSecondsBetween(startTime, now) > 3) {
+	static bool done = false;
+	if (!done && gameTime.getSecondsBetween(startTime, now) > 30000) {
+		done = true;
 		float aspectRatio = xapp().aspectRatio;
 		LineDef myLines[] = {
 			// start, end, color
@@ -61,6 +63,16 @@ void Sample1::update()
 void Sample1::draw()
 {
 	linesEffect.draw();
+}
+
+void Sample1::next()
+{
+	linesEffect.next();
+}
+
+void Sample1::destroy()
+{
+	linesEffect.destroy();
 }
 
 static Sample1 sample1;

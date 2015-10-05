@@ -23,8 +23,11 @@ public:
 	// update cbuffer and vertex buffer
 	void update();
 	void WaitForGpu();
+	void MoveToNextFrame();
 	// draw all lines in single call to GPU
 	void draw();
+	void next();
+	void destroy();
 	//ComPtr<ID3D11Buffer> vertexBuffer;    // for fixed lines
 	//ComPtr<ID3D11Buffer> vertexBufferAdd; // for one time lines
 private:
