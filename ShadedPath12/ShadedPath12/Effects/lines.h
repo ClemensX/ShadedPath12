@@ -22,6 +22,7 @@ public:
 	void addOneTime(vector<LineDef> &linesToAdd);
 	// update cbuffer and vertex buffer
 	void update();
+	void WaitForGpu();
 	// draw all lines in single call to GPU
 	void draw();
 	//ComPtr<ID3D11Buffer> vertexBuffer;    // for fixed lines
@@ -36,5 +37,13 @@ private:
 	ComPtr<ID3D12Resource> vertexBuffer;
 	ComPtr<ID3D12Resource> vertexBufferUpload;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	ComPtr<ID3D12PipelineState> pipelineState;
+	ComPtr<ID3D12CommandAllocator> commandAllocators[XApp::FrameCount];
+	ComPtr<ID3D12GraphicsCommandList> commandLists[XApp::FrameCount];
+	HANDLE fenceEvent;
+	ComPtr<ID3D12Fence> fence;
+	UINT64 fenceValues[XApp::FrameCount];
 	//XApp *xapp;  done through global instance from xapp.cpp
+	void preDraw();
+	void postDraw();
 };

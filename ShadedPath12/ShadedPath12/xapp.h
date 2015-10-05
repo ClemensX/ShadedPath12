@@ -55,30 +55,30 @@ public:
 
 	// 
 	ComPtr<ID3D12Device> device;
-	ComPtr<ID3D12GraphicsCommandList> commandList;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
-	UINT getFrameIndex() { return frameIndex; };
-	auto getCommandAllocator() { return commandAllocators[frameIndex]; };
-	auto getPipelineState() { return pipelineState; };
-private:
+	//UINT getFrameIndex() { return frameIndex; };
+	//auto getCommandAllocator() { return commandAllocators[frameIndex]; };
+	//auto getPipelineState() { return pipelineState; };
+	ComPtr<ID3D12RootSignature> rootSignature;
 	static const UINT FrameCount = 3;
-
-	// Pipeline objects
+	ComPtr<IDXGISwapChain3> swapChain;
+	ComPtr<ID3D12CommandQueue> commandQueue;
 	D3D12_VIEWPORT viewport;
 	D3D12_RECT scissorRect;
-	ComPtr<IDXGISwapChain3> swapChain;
-	ComPtr<ID3D12CommandAllocator> commandAllocators[FrameCount];
+	ComPtr<ID3D12DescriptorHeap> rtvHeap;  // Resource Target View Heap
+	UINT rtvDescriptorSize;
 	ComPtr<ID3D12Resource> renderTargets[FrameCount];
+private:
+
+	// Pipeline objects
+	ComPtr<ID3D12CommandAllocator> commandAllocators[FrameCount];
+	ComPtr<ID3D12GraphicsCommandList> commandList;
 	//ComPtr<ID3D11Resource> m_wrappedBackBuffers[FrameCount];
 	//ComPtr<ID2D1Bitmap1> m_d2dRenderTargets[FrameCount];
-	ComPtr<ID3D12CommandQueue> commandQueue;
-	ComPtr<ID3D12RootSignature> rootSignature;
-	ComPtr<ID3D12DescriptorHeap> rtvHeap;  // Resource Target View Heap
 	ComPtr<ID3D12PipelineState> pipelineState;
 
 	// App resources
-	UINT rtvDescriptorSize;
 	ComPtr<ID3D12Resource> vertexBuffer;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 
 	// Synchronization objects.
 	UINT frameIndex;
