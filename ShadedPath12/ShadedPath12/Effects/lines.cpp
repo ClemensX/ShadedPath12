@@ -169,13 +169,12 @@ void LinesEffect::destroy()
 
 void LinesEffect::MoveToNextFrame()
 {
-	auto frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	// Schedule a Signal command in the queue.
-	const UINT64 currentFenceValue = fenceValues[frameIndex];
+	const UINT64 currentFenceValue = fenceValues[xapp().lastPresentedFrame];
 	ThrowIfFailed(xapp().commandQueue->Signal(fence.Get(), currentFenceValue));
 
 	// Update the frame index.
-	frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	auto frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 
 	// If the next frame is not ready to be rendered yet, wait until it is ready.
 	if (fence->GetCompletedValue() < fenceValues[frameIndex])

@@ -69,6 +69,7 @@ public:
 	ComPtr<ID3D12DescriptorHeap> rtvHeap;  // Resource Target View Heap
 	UINT rtvDescriptorSize;
 	ComPtr<ID3D12Resource> renderTargets[FrameCount];
+	UINT lastPresentedFrame = -100;  // set directly before Present() to have 'old' frame number available
 private:
 
 	// Pipeline objects

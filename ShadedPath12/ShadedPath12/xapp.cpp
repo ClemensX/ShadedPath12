@@ -53,6 +53,7 @@ void XApp::draw() {
 	app->draw();
 
 	// Present the frame.
+	lastPresentedFrame = swapChain->GetCurrentBackBufferIndex();
 	ThrowIfFailed(swapChain->Present(0, 0));
 
 	app->next();
