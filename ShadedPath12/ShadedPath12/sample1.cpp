@@ -43,7 +43,7 @@ void Sample1::update()
 	gameTime.advanceTime();
 	LONGLONG now = gameTime.getRealTime();
 	static bool done = false;
-	if (!done && gameTime.getSecondsBetween(startTime, now) > 30000) {
+	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
 		done = true;
 		float aspectRatio = xapp().aspectRatio;
 		LineDef myLines[] = {

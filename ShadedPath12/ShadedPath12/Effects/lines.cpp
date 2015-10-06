@@ -64,6 +64,10 @@ void LinesEffect::add(vector<LineDef> &linesToAdd) {
 void LinesEffect::update() {
 	// handle fixed lines:
 	if (dirty) {
+		// release resources from last update:
+		if (fence != nullptr) {
+			fence.ReleaseAndGetAddressOf();
+		}
 		// recreate vertex input buffer
 		dirty = false;
 		vector<Vertex> all;
@@ -95,7 +99,6 @@ void LinesEffect::update() {
 			nullptr,
 			IID_PPV_ARGS(&vertexBufferUpload)));
 		vertexBufferUpload.Get()->SetName(L"vertexBufferUpload_lines");
-
 		// Copy data to the intermediate upload heap and then schedule a copy 
 		// from the upload heap to the vertex buffer.
 		D3D12_SUBRESOURCE_DATA vertexData = {};
@@ -124,6 +127,7 @@ void LinesEffect::update() {
 		// Create synchronization objects and wait until assets have been uploaded to the GPU.
 		{
 			ThrowIfFailed(xapp().device->CreateFence(fenceValues[frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf())));
+			fence.Get()->SetName(L"fence_line");
 			fenceValues[frameIndex]++;
 
 			// Create an event handle to use for frame synchronization.
