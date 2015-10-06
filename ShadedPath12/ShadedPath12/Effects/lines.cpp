@@ -154,7 +154,7 @@ void LinesEffect::WaitForGpu()
 
 	// Increment the fence value for the current frame.
 	fenceValues[frameIndex]++;
-	Log("fence frame " << frameIndex << endl);
+	//Log("fence frame " << frameIndex << endl);
 }
 
 void LinesEffect::next() {
