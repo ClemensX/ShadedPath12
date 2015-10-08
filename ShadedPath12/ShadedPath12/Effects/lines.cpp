@@ -16,7 +16,7 @@ void LinesEffect::init()
 		// Describe and create the graphics pipeline state object (PSO).
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 		psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
-		psoDesc.pRootSignature = xapp().rootSignature.Get();  // TODO get it from shader compile later
+		psoDesc.pRootSignature = nullptr;//xapp().rootSignature.Get();  // TODO get it from shader compile later
 		//psoDesc.VS = { reinterpret_cast<UINT8*>(vertexShader->GetBufferPointer()), vertexShader->GetBufferSize() };
 		//psoDesc.PS = { reinterpret_cast<UINT8*>(pixelShader->GetBufferPointer()), pixelShader->GetBufferSize() };
 		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -41,6 +41,7 @@ void LinesEffect::init()
 		psoDesc.VS = { binShader_LineVS, sizeof(binShader_LineVS) };
 		psoDesc.PS = { binShader_LinePS, sizeof(binShader_LinePS) };
 		ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
+		pipelineState.Get()->SetName(L"state_lines_init");
 	}
 
 	// Create command allocators and command lists for each frame.
