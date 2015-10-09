@@ -220,7 +220,7 @@ void LinesEffect::preDraw() {
 	ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
 
 	// Set necessary state.
-	commandLists[frameIndex]->SetGraphicsRootSignature(xapp().rootSignature.Get());
+	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
 	commandLists[frameIndex]->RSSetViewports(1, &xapp().viewport);
 	commandLists[frameIndex]->RSSetScissorRects(1, &xapp().scissorRect);
 
