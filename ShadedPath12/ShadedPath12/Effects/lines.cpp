@@ -40,6 +40,9 @@ void LinesEffect::init()
 		//ThrowIfFailed(D3DReadFileToBlob(L"", &vShader));
 		psoDesc.VS = { binShader_LineVS, sizeof(binShader_LineVS) };
 		psoDesc.PS = { binShader_LinePS, sizeof(binShader_LinePS) };
+		ThrowIfFailed(xapp().device->CreateRootSignature(0, binShader_LinePS, sizeof(binShader_LinePS), IID_PPV_ARGS(&rootSignature)));
+		rootSignature.Get()->SetName(L"lines_root_signature");
+		psoDesc.pRootSignature = rootSignature.Get();
 		ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
 		pipelineState.Get()->SetName(L"state_lines_init");
 	}
