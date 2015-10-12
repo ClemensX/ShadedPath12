@@ -35,6 +35,10 @@ public:
 	}
 };
 
+inline UINT calcConstantBufferSize(UINT originalSize) {
+	return (originalSize + (D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1)) & ~(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1); // must be a multiple 256 bytes
+};
+
 /*
 inline XMVECTOR XM_CALLCONV XMVector3ProjectOnVector
 (

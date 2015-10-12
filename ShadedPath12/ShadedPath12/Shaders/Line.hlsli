@@ -9,6 +9,12 @@
 #define LinesRS "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
               "CBV(b0, space = 0) "
 
+struct LinesConstantBuffer {
+	float4x4 wvp;
+};
+
+ConstantBuffer<LinesConstantBuffer> cbv: register(b0);
+
 
 struct VSInput
 {

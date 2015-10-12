@@ -29,7 +29,15 @@ void LinesEffect::init()
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 		psoDesc.SampleDesc.Count = 1;
 		//ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
-
+		/////////////////////// HALLLLLLLOOOO   NIIKKKLLLASSSSSS  /////////////////////////
+		//Das mit der Fernsteuerung ist voll geil wir können immer schreiben und der Chef denkt du programmierst :)//
+		// Hihi. Stimmt genau....
+		//Wann kommst du heim?//
+		// ich fahr in 5 minuten
+		//bist du noch da?//
+        // geht system.out.println hier auch?//
+		// jo, sstem.out geht hier ned, nur in Java, das hier ist C++//
+		//aha...//// wart mal, ich zeig dir was
 		//}
 #include "CompiledShaders/LineVS.h"
 #include "CompiledShaders/LinePS.h"
@@ -45,8 +53,38 @@ void LinesEffect::init()
 		psoDesc.pRootSignature = rootSignature.Get();
 		ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
 		pipelineState.Get()->SetName(L"state_lines_init");
-	}
 
+		// set cbv:
+		// flow of control:
+		// initial phase:
+		// --> device->CreateCommittedResource()  (resource type is constant buffer)
+		// --> ID3D12Resource::GetGPUVirtualAddress
+		// --> constantBuffer->Map() to get GPUAdress to copy to from C++ code
+		// --> initially memcpy the cbv data to GPU
+		//
+		// update/render phase:
+		// -->SetGraphicsRootConstantBufferView(0, D3D12_GPU_VIRTUAL_ADDRESS); // on command list
+		// -->memcpy(GPUAdress, changed constant buffer content)
+
+		// CBV:
+		UINT cbvSize = calcConstantBufferSize(sizeof(cbv));
+		ThrowIfFailed(xapp().device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE, // do not set - dx12 does this automatically depending on resource type
+			&CD3DX12_RESOURCE_DESC::Buffer(cbvSize),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&cbvResource)));
+		cbvResource.Get()->SetName(L"lines_cbv_resource");
+		//Log("GPU virtual: " <<  cbvResource->GetGPUVirtualAddress(); << endl);
+		//ThrowIfFailed(m_constantBuffer->Map(0, nullptr, reinterpret_cast<void**>(&m_pCbvDataBegin)));
+		cbvResource->Map(0, nullptr, reinterpret_cast<void**>(&cbvGPUDest));
+		// set cbv data:
+		XMMATRIX ident = XMMatrixIdentity();
+		XMStoreFloat4x4(&cbv.wvp, ident);
+		//cbv.wvp._11 += 2.0f;
+		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+	}
 	// Create command allocators and command lists for each frame.
 	for (UINT n = 0; n < XApp::FrameCount; n++)
 	{
@@ -66,6 +104,11 @@ void LinesEffect::add(vector<LineDef> &linesToAdd) {
 }
 
 void LinesEffect::update() {
+	if (signalUpdateCBV) {
+		signalUpdateCBV = false;
+		cbv = updatedCBV;
+		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+	}
 	// handle fixed lines:
 	if (dirty) {
 		// release resources from last update:
@@ -84,7 +127,7 @@ void LinesEffect::update() {
 			all.push_back(v1);
 			all.push_back(v2);
 		}
-		UINT vertexBufferSize = sizeof(Vertex) * lines.size() * 2; //sizeof(triangleVertices);
+		UINT vertexBufferSize = (UINT)(sizeof(Vertex) * lines.size() * 2);
 		UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 		ThrowIfFailed(xapp().device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
@@ -103,6 +146,7 @@ void LinesEffect::update() {
 			nullptr,
 			IID_PPV_ARGS(&vertexBufferUpload)));
 		vertexBufferUpload.Get()->SetName(L"vertexBufferUpload_lines");
+		//Log(vertexBufferUpload->GetGPUVirtualAddress());
 		// Copy data to the intermediate upload heap and then schedule a copy 
 		// from the upload heap to the vertex buffer.
 		D3D12_SUBRESOURCE_DATA vertexData = {};
@@ -147,6 +191,13 @@ void LinesEffect::update() {
 			WaitForGpu();
 		}
 	}
+}
+
+void LinesEffect::updateCBV(LinesEffect::cbv_ newCBV)
+{
+	updatedCBV = newCBV;
+	signalUpdateCBV = true;
+	//cbv.wvp._11 += 2.0f;
 }
 
 // Wait for pending GPU work to complete.
@@ -203,7 +254,7 @@ void LinesEffect::draw()
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
 	auto numVertices = lines.size() * 2;
-	commandLists[frameIndex]->DrawInstanced(numVertices, 1, 0, 0);
+	commandLists[frameIndex]->DrawInstanced((UINT)numVertices, 1, 0, 0);
 	postDraw();
 }
 
@@ -223,6 +274,9 @@ void LinesEffect::preDraw() {
 	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
 	commandLists[frameIndex]->RSSetViewports(1, &xapp().viewport);
 	commandLists[frameIndex]->RSSetScissorRects(1, &xapp().scissorRect);
+
+	// Set CBV
+	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress());
 
 	// Indicate that the back buffer will be used as a render target.
 	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));

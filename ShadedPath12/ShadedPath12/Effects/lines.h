@@ -11,7 +11,7 @@ public:
 		XMFLOAT3 pos;
 		XMFLOAT4 color;
 	};
-	struct ConstantBufferFixed {
+	struct cbv_ {
 		XMFLOAT4X4 wvp;
 	};
 
@@ -22,6 +22,7 @@ public:
 	void addOneTime(vector<LineDef> &linesToAdd);
 	// update cbuffer and vertex buffer
 	void update();
+	void updateCBV(LinesEffect::cbv_ newCBV);
 	void WaitForGpu();
 	void MoveToNextFrame();
 	// draw all lines in single call to GPU
@@ -33,7 +34,6 @@ public:
 private:
 	vector<LineDef> lines;
 	vector<LineDef> addLines;
-	ConstantBufferFixed cb;
 	bool dirty;
 	int drawAddLinesSize;
 
@@ -50,4 +50,8 @@ private:
 	//XApp *xapp;  done through global instance from xapp.cpp
 	void preDraw();
 	void postDraw();
+	cbv_ cbv, updatedCBV;
+	ComPtr<ID3D12Resource> cbvResource;
+	UINT8* cbvGPUDest;  // mempy changed cbv data to this address before draw()
+	bool signalUpdateCBV = false;
 };

@@ -56,6 +56,11 @@ void Sample1::update()
 		vector<LineDef> lines;
 		for_each(begin(myLines), end(myLines), [&lines](LineDef l) {lines.push_back(l);});
 		linesEffect.add(lines);
+		LinesEffect::cbv_ c;
+		XMMATRIX ident = XMMatrixIdentity();
+		XMStoreFloat4x4(&c.wvp, ident);
+		c.wvp._11 += 2.0f;
+		linesEffect.updateCBV(c);
 	}
 	linesEffect.update();
 }

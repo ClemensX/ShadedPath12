@@ -1,11 +1,5 @@
 #include "Line.hlsli"
 
-float4 PSMain(PSInput input) : SV_TARGET
-{
-	return input.color;
-}
-
-
 [RootSignature(LinesRS)]
 
 PSInput main( VSInput input )
@@ -13,7 +7,11 @@ PSInput main( VSInput input )
 	PSInput result;
 
 	result.position.w = 1.0;
-	result.position.xyz = input.position;
+	float4x4 wvp = cbv.wvp;
+	float4 v;
+	v.xyz = input.position;
+	v.w = 1.0;
+	result.position = mul(v, wvp);
 	result.color = input.color;
 
 	return result;
