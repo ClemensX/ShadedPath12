@@ -29,16 +29,6 @@ void LinesEffect::init()
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 		psoDesc.SampleDesc.Count = 1;
 		//ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
-		/////////////////////// HALLLLLLLOOOO   NIIKKKLLLASSSSSS  /////////////////////////
-		//Das mit der Fernsteuerung ist voll geil wir können immer schreiben und der Chef denkt du programmierst :)//
-		// Hihi. Stimmt genau....
-		//Wann kommst du heim?//
-		// ich fahr in 5 minuten
-		//bist du noch da?//
-        // geht system.out.println hier auch?//
-		// jo, sstem.out geht hier ned, nur in Java, das hier ist C++//
-		//aha...//// wart mal, ich zeig dir was
-		//}
 #include "CompiledShaders/LineVS.h"
 #include "CompiledShaders/LinePS.h"
 		// test shade library functions

@@ -70,6 +70,11 @@ public:
 	UINT rtvDescriptorSize;
 	ComPtr<ID3D12Resource> renderTargets[FrameCount];
 	UINT lastPresentedFrame = -100;  // set directly before Present() to have 'old' frame number available
+	BYTE key_state[256];
+	int mouseDx;
+	int mouseDy;
+	bool mouseTodo;
+	bool anyKeyDown = false;
 private:
 
 	// Pipeline objects

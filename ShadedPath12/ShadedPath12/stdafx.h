@@ -12,6 +12,7 @@
 #include <windows.h>
 
 // C RunTime Header Files
+#include <Strsafe.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>

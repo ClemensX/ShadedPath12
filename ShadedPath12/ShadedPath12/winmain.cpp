@@ -17,6 +17,93 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+void registerRawInput()
+{
+	RAWINPUTDEVICE Rid[2];
+
+	Rid[0].usUsagePage = 0x01;
+	Rid[0].usUsage = 0x02;
+	Rid[0].dwFlags = 0;// RIDEV_NOLEGACY;   // adds HID mouse and also ignores legacy mouse messages
+	Rid[0].hwndTarget = 0;
+
+	//Rid[1].usUsagePage = 0x01;
+	//Rid[1].usUsage = 0x06;
+	//Rid[1].dwFlags = 0;// RIDEV_NOLEGACY;   // adds HID keyboard and also ignores legacy keyboard messages
+	//Rid[1].hwndTarget = 0;
+
+	if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) == FALSE) {
+		Log("raw input not working!!");
+	}
+}
+
+void handleRawInput(LPARAM lParam, XApp *xapp)
+{
+	BYTE* keystates = xapp->key_state;
+	UINT dwSize;
+
+	GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
+	LPBYTE lpb = new BYTE[dwSize];
+	if (lpb == NULL)
+	{
+		return;
+	}
+
+	if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
+		OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
+
+	RAWINPUT* raw = (RAWINPUT*)lpb;
+	TCHAR szTempOutput[500];
+	HRESULT hResult;
+	// TODO raw keyboard no longer used - remove!!!
+	if (raw->header.dwType == RIM_TYPEKEYBOARD)
+	{
+		hResult = StringCchPrintf(szTempOutput, STRSAFE_MAX_CCH, TEXT(" Kbd: make=%04x Flags:%04x Reserved:%04x ExtraInformation:%08x, msg=%04x VK=%04x \n"),
+			raw->data.keyboard.MakeCode,
+			raw->data.keyboard.Flags,
+			raw->data.keyboard.Reserved,
+			raw->data.keyboard.ExtraInformation,
+			raw->data.keyboard.Message,
+			raw->data.keyboard.VKey);
+		if (FAILED(hResult))
+		{
+			// TODO: write error handler
+		}
+		//OutputDebugString(szTempOutput);
+		USHORT key = raw->data.keyboard.VKey;
+		if ((raw->data.keyboard.Flags & RI_KEY_BREAK) && key < 255) {
+			// key is not up
+			keystates[key] = true;
+			xapp->anyKeyDown = true;  // important to reset this at end of frame;
+		}
+		else {
+			keystates[key] = false;
+		}
+	}
+	else if (raw->header.dwType == RIM_TYPEMOUSE)
+	{
+		hResult = StringCchPrintf(szTempOutput, STRSAFE_MAX_CCH, TEXT("Mouse: usFlags=%04x ulButtons=%04x usButtonFlags=%04x usButtonData=%04x ulRawButtons=%04x lLastX=%04x lLastY=%04x ulExtraInformation=%04x\r\n"),
+			raw->data.mouse.usFlags,
+			raw->data.mouse.ulButtons,
+			raw->data.mouse.usButtonFlags,
+			raw->data.mouse.usButtonData,
+			raw->data.mouse.ulRawButtons,
+			raw->data.mouse.lLastX,
+			raw->data.mouse.lLastY,
+			raw->data.mouse.ulExtraInformation);
+
+		if (FAILED(hResult))
+		{
+			// TODO: write error handler
+		}
+		OutputDebugString(szTempOutput);
+		xapp->mouseDx = raw->data.mouse.lLastX;
+		xapp->mouseDy = raw->data.mouse.lLastY;
+		xapp->mouseTodo = true;
+	}
+
+	delete[] lpb;
+}
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -119,7 +206,8 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-    hInst = hInstance; // Store instance handle in our global variable
+	registerRawInput();
+	hInst = hInstance; // Store instance handle in our global variable
 
     // Create the main window. 
     string name = xapp().parameters["app"];
@@ -172,7 +260,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
-    case WM_COMMAND:
+	case WM_INPUT:
+		handleRawInput(lParam, &xapp());
+		return 0;
+	case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
             // Parse the menu selections:
