@@ -1,4 +1,20 @@
 #pragma once
+
+namespace Colors {
+	const XMFLOAT4 xm{ 1.0f, 0.0f, 1.0f, 1.0f };
+	const XMFLOAT4 White = { 1.0f, 1.0f, 1.0f, 1.0f };
+	const XMFLOAT4 Black = { 0.0f, 0.0f, 0.0f, 1.0f };
+	const XMFLOAT4 Red = { 1.0f, 0.0f, 0.0f, 1.0f };
+	const XMFLOAT4 Green = { 0.0f, 1.0f, 0.0f, 1.0f };
+	const XMFLOAT4 Blue = { 0.0f, 0.0f, 1.0f, 1.0f };
+	const XMFLOAT4 Yellow = { 1.0f, 1.0f, 0.0f, 1.0f };
+	const XMFLOAT4 Cyan = { 0.0f, 1.0f, 1.0f, 1.0f };
+	const XMFLOAT4 Magenta = { 1.0f, 0.0f, 1.0f, 1.0f };
+
+	const XMFLOAT4 Silver = { 0.75f, 0.75f, 0.75f, 1.0f };
+	const XMFLOAT4 LightSteelBlue = { 0.69f, 0.77f, 0.87f, 1.0f };
+};
+
 class XAppBase
 {
 public:
@@ -39,6 +55,9 @@ public:
 	bool getBoolParam(string key, bool default_value = false);
 	int getIntParam(string key, int default_value = 0);
 
+	// query virtual key definitions (VK_) from Winuser.h
+	bool keyDown(BYTE key);
+
 	void setHWND(HWND h);
 	void resize(int width, int height);
 	HWND getHWND();
@@ -49,11 +68,6 @@ public:
 	// all drawing takes place in backbuffer - output to whatever size the window currently has is only last step
 	unsigned int backbufferWidth = 0, backbufferHeight = 0;
 	float aspectRatio;
-	struct Vertex
-	{
-		XMFLOAT3 position;
-		XMFLOAT4 color;
-	};
 
 	// 
 	ComPtr<ID3D12Device> device;
@@ -74,7 +88,14 @@ public:
 	int mouseDx;
 	int mouseDy;
 	bool mouseTodo;
+	unsigned long framenum;
+	int fps;
 	bool anyKeyDown = false;
+
+	// Other framework instances:
+	World world;
+	Camera camera;
+	GameTime gametime;
 private:
 
 	// Pipeline objects

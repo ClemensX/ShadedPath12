@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Effects/lines.h"
 #include "sample1.h"
 
 

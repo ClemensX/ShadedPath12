@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "lines.h"
 
 void LinesEffect::init()
 {
@@ -84,6 +83,12 @@ void LinesEffect::init()
 		// to record yet. The main loop expects it to be closed, so close it now.
 		ThrowIfFailed(commandLists[n]->Close());
 	}
+}
+
+void LinesEffect::addOneTime(vector<LineDef> &linesToAdd) {
+	if (linesToAdd.size() == 0 && lines.size() == 0)
+		return;
+	addLines.insert(addLines.end(), linesToAdd.begin(), linesToAdd.end());
 }
 
 void LinesEffect::add(vector<LineDef> &linesToAdd) {

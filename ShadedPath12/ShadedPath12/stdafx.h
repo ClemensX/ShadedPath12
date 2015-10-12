@@ -33,6 +33,9 @@ using namespace std;
 #include <dxgi1_4.h>
 #include <D3Dcompiler.h>
 #include <DirectXMath.h>
+#include <DirectXPackedVector.h>
+#include <DirectXCollision.h>
+using namespace DirectX;
 #include <d3d12.h>
 #include <pix.h>
 
@@ -85,4 +88,7 @@ inline void ThrowIfFailed(HRESULT hr)
 #include "d3dx12.h"
 #include "gametime.h"
 #include "util.h"
+#include "world.h"
+#include "camera.h"
 #include "xapp.h"
+#include "Effects\lines.h"

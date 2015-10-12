@@ -95,7 +95,7 @@ void handleRawInput(LPARAM lParam, XApp *xapp)
 		{
 			// TODO: write error handler
 		}
-		OutputDebugString(szTempOutput);
+		//OutputDebugString(szTempOutput);
 		xapp->mouseDx = raw->data.mouse.lLastX;
 		xapp->mouseDy = raw->data.mouse.lLastY;
 		xapp->mouseTodo = true;

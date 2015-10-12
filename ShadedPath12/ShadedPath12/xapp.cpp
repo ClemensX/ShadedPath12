@@ -28,8 +28,13 @@ void XAppBase::destroy() {
 
 }
 
-XApp::XApp()
+XApp::XApp() : camera(world), world(this)
 {
+	requestHeight = requestWidth = 0;
+	mouseTodo = true;
+	framenum = 0;
+	//objectStore.xapp = this;
+	//hud.setXApp(this);
 }
 
 XApp::~XApp()
@@ -37,7 +42,201 @@ XApp::~XApp()
 }
 
 void XApp::update() {
-	app->update();
+	static long callnum = 0;
+	GetKeyboardState(key_state);
+	LONGLONG old = gametime.getRealTime();
+	gametime.advanceTime();
+	float dt = gametime.getDeltaTime();
+	if ((framenum % 30) == 0) {
+		// calculate fps every 30 frames
+		LONGLONG now = gametime.getRealTime();
+		float seconds = gametime.getSecondsBetween(old, now);
+		fps = (int)(1 / seconds);
+	}
+	for (BYTE b = 1; b < 255; b++) {
+		if (keyDown(b)) {
+			switch (b) {
+				// prevent toggle keys from triggering keydown state
+			case VK_CAPITAL:
+			case VK_NUMLOCK:
+			case VK_SCROLL:
+				// nothing to do
+				break;
+			default: anyKeyDown = true;
+			}
+		}
+	}
+	// handle keyboard input
+	if (keyDown('W') || keyDown(VK_UP))
+		camera.walk(dt);
+	if (keyDown('S') || keyDown(VK_DOWN))
+		camera.walk(-dt);
+	if (keyDown('D') || keyDown(VK_RIGHT))
+		camera.strafe(dt);
+	if (keyDown('A') || keyDown(VK_LEFT))
+		camera.strafe(-dt);
+
+	// Query the HMD for the current tracking state.
+	camera.viewTransform();
+	camera.projectionTransform();
+	if (ovrRendering) camera.recalcOVR(*this);
+#if defined (ENABLE_OVR2)
+	if (ovrRendering && false) {
+		ovrTrackingState ts = ovrHmd_GetTrackingState(hmd, ovr_GetTimeInSeconds());
+		if (ts.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)) {
+			//auto pose = ts.HeadPose;
+			//Log(" head pose" << pose.ThePose.Orientation.x << " " << pose.ThePose.Orientation.y << " " << pose.ThePose.Orientation.z << endl);
+			//Posef pose = ts.HeadPose;
+			ovrPoseStatef pose = ts.HeadPose;// .ThePose;
+
+											 // fake ovr
+											 //pose.ThePose.Orientation.x = 0.1f;
+											 //pose.ThePose.Orientation.y = 0.1f;
+											 //pose.ThePose.Orientation.z = 0.1f;
+
+											 // try new method:
+			XMFLOAT4 af = XMFLOAT4(1.0f, 2.0f, 0.0f, 0.0f);
+			XMFLOAT4 bf = XMFLOAT4(4.5f, 1.5f, 0.0f, 0.0f);
+			XMVECTOR a = XMLoadFloat4(&af);
+			XMVECTOR b = XMLoadFloat4(&bf);
+			//XMVECTOR proj = XMVector3ProjectOnVector(a, b);
+			XMVECTOR proj = XMVector3ReflecttOnVector(a, b);
+			XMFLOAT4 p;
+			XMStoreFloat4(&p, proj);
+			//Log(" vec " << p.x << " " << p.y << endl);
+
+			//Log(" head pose" << pose.ThePose.Orientation.x << " " << pose.ThePose.Orientation.y << " " << pose.ThePose.Orientation.z << endl);
+			//float yaw, eyePitch, eyeRoll;
+			//pose.ThePose.Orientation.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&yaw, &eyePitch, &eyeRoll);
+			XMFLOAT4 lookQ = XMFLOAT4(pose.ThePose.Orientation.x, pose.ThePose.Orientation.y, pose.ThePose.Orientation.z, pose.ThePose.Orientation.w);
+			XMVECTOR lookQV = XMLoadFloat4(&lookQ);
+			//lookQV = XMQuaternionNormalize(lookQV);  //TODO do we need to normalize here?
+			XMMATRIX lookM = XMMatrixRotationQuaternion(lookQV);
+			// fix orientation of reversed coords:
+			////lookM = XMMatrixScaling(1.0f, -1.0f, 1.0f) * lookM;
+			lookM = (XMMatrixScaling(-1.0f, -1.0f, -1.0f) * lookM) * XMMatrixScaling(-1.0f, -1.0f, -1.0f);
+			//lookM = XMMatrixTranspose(lookM);
+
+			//const XMFLOAT3* camPos = &world.path.getPos(PATHID_CAM_INTRO, xapp->gametime.getRealTime(), 0);
+			//camera.pos
+			XMFLOAT4 pos(camera.pos.x, camera.pos.y, camera.pos.z, 0.0f);
+			XMFLOAT4 target(0.0f, 0.0f, 100.0f, 1.0f);
+			//XMFLOAT4 target(camera.pos.x, camera.pos.y, camera.pos.z + 100.0f, 1.0f);
+			XMVECTOR targetV = XMLoadFloat4(&target);
+			XMVECTOR axis = targetV;
+			targetV = XMVector3Transform(targetV, lookM);
+			targetV = XMVector3ReflecttOnVector(targetV, axis);
+			XMFLOAT4 up(0.0f, 1.0f, 0.0f, 0.0f);
+			XMFLOAT4 xmpos, xmtarget, xmup;
+			xmpos = XMFLOAT4(pos);
+			XMStoreFloat4(&xmtarget, targetV);
+			// adjust lookat:
+			xmtarget.x += camera.pos.x;
+			xmtarget.y += camera.pos.y;
+			xmtarget.z += camera.pos.z;
+
+			//xmtarget.y *= -1.0f;
+			//xmtarget.x *= -1.0f;
+			// adjust up vector:
+			XMVECTOR upPoseV = XMLoadFloat4(&lookQ);
+			XMMATRIX upM = XMMatrixRotationQuaternion(lookQV);
+			XMVECTOR upV = XMLoadFloat4(&up);
+			axis = upV;
+			upV = XMVector3Transform(upV, upM);
+			upV = XMVector3ReflecttOnVector(upV, axis);
+			XMStoreFloat4(&xmup, upV);
+			//xmup.y *= -1.0f;
+
+			xmup = XMFLOAT4(up);
+			camera.lookAt(xmpos, xmtarget, xmup);
+			camera.viewTransform();
+			// now do it the oculus way:
+			// Get both eye poses simultaneously, with IPD offset already included. 
+			ovrVector3f useHmdToEyeViewOffset[2] = { EyeRenderDesc[0].HmdToEyeViewOffset, EyeRenderDesc[1].HmdToEyeViewOffset };
+			ovrPosef temp_EyeRenderPose[2];
+			ovrHmd_GetEyePoses(hmd, 0, useHmdToEyeViewOffset, temp_EyeRenderPose, &ts);
+
+			ovrPosef    * useEyePose = &EyeRenderPose[0];
+			float       * useYaw = &YawAtRender[0];
+			float Yaw = XM_PI;
+			*useEyePose = temp_EyeRenderPose[0];
+			*useYaw = Yaw;
+
+			// Get view and projection matrices (note near Z to reduce eye strain)
+			Matrix4f rollPitchYaw = Matrix4f::RotationY(Yaw);
+			Matrix4f finalRollPitchYaw = rollPitchYaw * Matrix4f(useEyePose->Orientation);
+			Vector3f finalUp = finalRollPitchYaw.Transform(Vector3f(0, 1, 0));
+			Vector3f finalForward = finalRollPitchYaw.Transform(Vector3f(0, 0, -1));
+			Vector3f Pos;
+			Pos.x = camera.pos.x;
+			Pos.y = camera.pos.y;
+			Pos.z = camera.pos.z;
+			Vector3f shiftedEyePos = Pos + rollPitchYaw.Transform(useEyePose->Position);
+
+			Matrix4f view = Matrix4f::LookAtLH(shiftedEyePos, shiftedEyePos + finalForward, finalUp);
+			Matrix4f projO = ovrMatrix4f_Projection(EyeRenderDesc[0].Fov, 0.2f, 1000.0f, true);
+			float f = projO.M[0][0];
+			XMFLOAT4X4 xmProjO;
+			xmProjO._11 = projO.M[0][0];
+			xmProjO._12 = projO.M[0][1];
+			xmProjO._13 = projO.M[0][2];
+			xmProjO._14 = projO.M[0][3];
+			xmProjO._21 = projO.M[1][0];
+			xmProjO._22 = projO.M[1][1];
+			xmProjO._23 = projO.M[1][2];
+			xmProjO._24 = projO.M[1][3];
+			xmProjO._31 = projO.M[2][0];
+			xmProjO._32 = projO.M[2][1];
+			xmProjO._33 = projO.M[2][2];
+			xmProjO._34 = projO.M[2][3];
+			xmProjO._41 = projO.M[3][0];
+			xmProjO._42 = projO.M[3][1];
+			xmProjO._43 = projO.M[3][2];
+			xmProjO._44 = projO.M[3][3];
+			XMMATRIX xmProjOM = XMLoadFloat4x4(&xmProjO);
+			camera.projection = xmProjO;
+		}
+	}
+#endif
+	if (mouseTodo /*&& !ovrRendering*/) {
+		mouseTodo = false;
+		// mouse input
+		float ROTATION_GAIN = 0.003f;
+		float pitch = camera.pitch;
+		float yaw = camera.yaw;
+		XMFLOAT2 rotationDelta;
+		rotationDelta.x = mouseDx * ROTATION_GAIN;   // scale for control sensitivity
+		rotationDelta.y = mouseDy * ROTATION_GAIN;
+		//Log(callnum++ << "mouse dx dy == " << mouseDx << " " << mouseDy);
+		//Log(" delta x y == " << rotationDelta.x << " " << rotationDelta.y << "\n");
+
+		// Update our orientation based on the command.
+		pitch -= rotationDelta.y;
+		yaw += rotationDelta.x;
+
+		// Limit pitch to straight up or straight down.
+		float limit = XM_PI / 2.0f - 0.01f;
+		pitch = __max(-limit, pitch);
+		pitch = __min(+limit, pitch);
+
+		// Keep longitude in same range by wrapping.
+		if (yaw > XM_PI)
+		{
+			yaw -= XM_PI * 2.0f;
+		}
+		else if (yaw < -XM_PI)
+		{
+			yaw += XM_PI * 2.0f;
+		}
+		camera.pitch = pitch;
+		camera.yaw = yaw;
+		camera.apply_pitch_yaw();
+		//camera.apply_yaw(camera.yaw);
+	}
+	XAppBase *app = getApp(appName);
+	if (app != nullptr) {
+		app->update();
+	}
 }
 
 void XApp::draw() {
@@ -87,10 +286,16 @@ void XApp::destroy()
 
 void XApp::init()
 {
-
 	//// Basic initialization
 	if (initialized) return;
+
 	initialized = true;
+	camera.ovrCamera = true;
+	if (!ovrRendering) camera.ovrCamera = false;
+
+	gametime.init(1); // init to real time
+	camera.setSpeed(1.0f);
+
 	if (appName.length() == 0) {
 		// no app name specified - just use first one from iterator
 		auto it = appMap.begin();
@@ -444,6 +649,10 @@ void XApp::calcBackbufferSizeAndAspectRatio()
 	backbufferWidth = 1920;
 	aspectRatio = static_cast<float>(backbufferWidth) / static_cast<float>(backbufferHeight);
 
+}
+
+bool XApp::keyDown(BYTE key) {
+	return (key_state[key] & 0x80) != 0;
 }
 
 void XApp::registerApp(string name, XAppBase *app)
