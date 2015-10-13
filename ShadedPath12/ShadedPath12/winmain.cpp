@@ -150,9 +150,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 			if (msg.message == WM_QUIT)
 				break;
+		} else {
+			xapp().update();
+			xapp().draw();
 		}
-		xapp().update();
-		xapp().draw();
 	}
 	xapp().destroy();
 
@@ -281,7 +282,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     case WM_PAINT:
-        {
+		// immediately validate all regions - drawing done entirely by X
+		//ValidateRect(hWnd, nullptr);
+		//return 0;
+		{
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: Add any drawing code that uses hdc here...

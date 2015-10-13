@@ -166,6 +166,10 @@ XMMATRIX Camera::worldViewProjection() {
 	//look = pos;
 	//look.z += 1000.0f;
 	//up = xmfloat4(0.0f, 1.0f, 0.0f, 0.0f);
+	//auto pt = pos;
+	//Log("  Pos: " << pt.x << " " << pt.y << " " << pt.z);
+	//auto pt2 = look;
+	//Log("  Look: " << pt2.x << " " << pt2.y << " " << pt2.z << endl);
 	XMMATRIX v = XMMatrixLookToLH(XMLoadFloat4(&pos), XMLoadFloat4(&look), XMLoadFloat4(&up));
 #if defined(ENABLE_OVR2)
 	if (ovrCamera) {

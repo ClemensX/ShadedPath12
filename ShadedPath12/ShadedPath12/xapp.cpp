@@ -32,6 +32,8 @@ XApp::XApp() : camera(world), world(this)
 {
 	requestHeight = requestWidth = 0;
 	mouseTodo = true;
+	mouseDx = 0;
+	mouseDy = 0;
 	framenum = 0;
 	//objectStore.xapp = this;
 	//hud.setXApp(this);
@@ -377,6 +379,11 @@ void XApp::init()
 	commandQueue->SetName(L"commandQueue_xapp");
 
 	calcBackbufferSizeAndAspectRatio();
+	camera.aspectRatio = aspectRatio;
+	if (ovrRendering) {
+		camera.aspectRatio /= 2.0f;
+	}
+	camera.projectionTransform();
 	// Describe the swap chain.
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 	swapChainDesc.BufferCount = FrameCount;

@@ -35,13 +35,28 @@ void Sample1::init()
 	// initialize game time to real time:
 	gameTime.init(1);
 	startTime = gameTime.getRealTime();
+
+	// most from old kitchen.cpp
+	float textSize = 0.5f;
+	float lineHeight = 2 * textSize;
+	xapp().camera.nearZ = 0.2f;
+	xapp().camera.farZ = 1000.0f;
+	//xapp->camera.pos.z = -3.0f;
+	//xapp().camera.pos = XMFLOAT4(1.0f, 1.7f, 1.0f, 0.0f);
+	xapp().camera.pos = XMFLOAT4(0.0f, 0.0f, -5.0f, 0.0f);
+	xapp().camera.setSpeed(0.5f);
+	//xapp->camera.setSpeed(50.5f);
+	xapp().camera.fieldOfViewAngleY = 1.289f;
+
+	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
+	Grid *g = xapp().world.createWorldGrid(50.0f);
 }
 
 void Sample1::update()
 {
 	gameTime.advanceTime();
 	LONGLONG now = gameTime.getRealTime();
-	static bool done = false;
+	static bool done = true;
 	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
 		done = true;
 		float aspectRatio = xapp().aspectRatio;
@@ -62,6 +77,9 @@ void Sample1::update()
 		linesEffect.updateCBV(c);
 	}
 	linesEffect.update();
+	LinesEffect::cbv_ c;
+	XMStoreFloat4x4(&c.wvp, xapp().camera.worldViewProjection());
+	linesEffect.updateCBV(c);
 }
 
 void Sample1::draw()
