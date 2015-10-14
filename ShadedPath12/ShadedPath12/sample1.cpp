@@ -40,16 +40,16 @@ void Sample1::init()
 	float textSize = 0.5f;
 	float lineHeight = 2 * textSize;
 	xapp().camera.nearZ = 0.2f;
-	xapp().camera.farZ = 1000.0f;
+	xapp().camera.farZ = 2000.0f;
 	//xapp->camera.pos.z = -3.0f;
 	//xapp().camera.pos = XMFLOAT4(1.0f, 1.7f, 1.0f, 0.0f);
 	xapp().camera.pos = XMFLOAT4(0.0f, 0.0f, -5.0f, 0.0f);
-	xapp().camera.setSpeed(0.5f);
-	//xapp->camera.setSpeed(50.5f);
+	//xapp().camera.setSpeed(0.5f);
+	xapp().camera.setSpeed(50.5f);
 	xapp().camera.fieldOfViewAngleY = 1.289f;
 
 	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
-	Grid *g = xapp().world.createWorldGrid(1.0f);
+	Grid *g = xapp().world.createWorldGrid(10.0f);
 	linesEffect.add(g->lines);
 }
 

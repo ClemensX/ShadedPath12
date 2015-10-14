@@ -40,6 +40,12 @@ void handleRawInput(LPARAM lParam, XApp *xapp)
 {
 	BYTE* keystates = xapp->key_state;
 	UINT dwSize;
+	// store last x and y coord for use with absilute mouse coords, -1 indicates not being used yet
+	static LONG lastx = -1;
+	static LONG lasty = -1;
+	// absolute mouse coords seem to jump many positions for a small movement, use this to divide to smaller values:
+	static LONG ABS_MOUSE_DIVIDER = 32;
+
 
 	GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
 	LPBYTE lpb = new BYTE[dwSize];
@@ -96,8 +102,26 @@ void handleRawInput(LPARAM lParam, XApp *xapp)
 			// TODO: write error handler
 		}
 		//OutputDebugString(szTempOutput);
-		xapp->mouseDx = raw->data.mouse.lLastX;
-		xapp->mouseDy = raw->data.mouse.lLastY;
+		if (raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) {
+			// when using e.g. virtual desktops Windows decides to send absolue instead of relative coord
+			// then we must recalculate this to be relative
+			if (lastx == -1) {
+				lastx = raw->data.mouse.lLastX;
+			}
+			if (lasty == -1) {
+				lasty = raw->data.mouse.lLastY;
+			}
+			xapp->mouseDx = raw->data.mouse.lLastX - lastx;
+			xapp->mouseDy = raw->data.mouse.lLastY - lasty;
+			xapp->mouseDx /= ABS_MOUSE_DIVIDER;
+			xapp->mouseDy /= ABS_MOUSE_DIVIDER;
+			lastx = raw->data.mouse.lLastX;
+			lasty = raw->data.mouse.lLastY;
+		} else {
+			// relative mouse coord - use them directly
+			xapp->mouseDx = raw->data.mouse.lLastX;
+			xapp->mouseDy = raw->data.mouse.lLastY;
+		}
 		xapp->mouseTodo = true;
 	}
 
