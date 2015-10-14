@@ -49,7 +49,8 @@ void Sample1::init()
 	xapp().camera.fieldOfViewAngleY = 1.289f;
 
 	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
-	Grid *g = xapp().world.createWorldGrid(50.0f);
+	Grid *g = xapp().world.createWorldGrid(1.0f);
+	linesEffect.add(g->lines);
 }
 
 void Sample1::update()
