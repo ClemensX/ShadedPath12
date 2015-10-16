@@ -20,6 +20,7 @@ string Sample1::getWindowTitle() {
 void Sample1::init()
 {
 	linesEffect.init();
+	postEffect.init();
 	float aspectRatio = xapp().aspectRatio;
 
 	LineDef myLines[] = {

@@ -18,6 +18,7 @@ private:
 	GameTime gameTime;
 	// used effects:
 	LinesEffect linesEffect;
+	PostEffect postEffect;
 	// other:
 	LONGLONG startTime;
 };

@@ -358,7 +358,7 @@ void XApp::init()
 
 	ThrowIfFailed(D3D12CreateDevice(
 		nullptr,
-		D3D_FEATURE_LEVEL_11_1,
+		D3D_FEATURE_LEVEL_11_0,
 		IID_PPV_ARGS(&device)
 		));
 
@@ -387,8 +387,8 @@ void XApp::init()
 	// Describe the swap chain.
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 	swapChainDesc.BufferCount = FrameCount;
-	swapChainDesc.BufferDesc.Width = backbufferWidth;
-	swapChainDesc.BufferDesc.Height = backbufferHeight;
+	swapChainDesc.BufferDesc.Width = 0; //backbufferWidth;
+	swapChainDesc.BufferDesc.Height = 0; //backbufferHeight;
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;

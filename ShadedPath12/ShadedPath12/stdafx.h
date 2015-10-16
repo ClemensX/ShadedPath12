@@ -92,3 +92,4 @@ inline void ThrowIfFailed(HRESULT hr)
 #include "camera.h"
 #include "xapp.h"
 #include "Effects\lines.h"
+#include "Effects\posteffect.h"
