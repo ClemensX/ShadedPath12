@@ -91,6 +91,79 @@ void PostEffect::init()
 		// to record yet. The main loop expects it to be closed, so close it now.
 		ThrowIfFailed(commandLists[n]->Close());
 	}
+	init2();
+}
+
+void PostEffect::init2()
+{
+	// create 2 triangles covering the whole area in device coords:
+	Vertex all[] = {
+		XMFLOAT3(-1, -1, 0), XMFLOAT3(-1, 1, 0), XMFLOAT3(1, -1, 0),
+		XMFLOAT3( 1, -1, 0), XMFLOAT3(-1, 1, 0), XMFLOAT3(1,  1, 0)
+	};
+	UINT vertexBufferSize = (UINT)(sizeof(all));
+	ComPtr<ID3D12Resource> vertexBuffer;
+	ComPtr<ID3D12Resource> vertexBufferUpload;
+	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	ThrowIfFailed(xapp().device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		nullptr,
+		IID_PPV_ARGS(&vertexBuffer)));
+	vertexBuffer.Get()->SetName(L"vertexBuffer_post");
+
+	ThrowIfFailed(xapp().device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&vertexBufferUpload)));
+	vertexBufferUpload.Get()->SetName(L"vertexBufferUpload_post");
+	//Log(vertexBufferUpload->GetGPUVirtualAddress());
+	// Copy data to the intermediate upload heap and then schedule a copy 
+	// from the upload heap to the vertex buffer.
+	D3D12_SUBRESOURCE_DATA vertexData = {};
+	vertexData.pData = reinterpret_cast<UINT8*>(&all);
+	vertexData.RowPitch = vertexBufferSize;
+	vertexData.SlicePitch = vertexData.RowPitch;
+
+	PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"lines: update vertex buffer for postEffect");
+	commandLists[frameIndex].Get()->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get());
+	UpdateSubresources<1>(commandLists[frameIndex].Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData);
+	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+	PIXEndEvent(commandLists[frameIndex].Get());
+
+	// Initialize the vertex buffer view.
+	vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
+	vertexBufferView.StrideInBytes = sizeof(Vertex);
+	vertexBufferView.SizeInBytes = vertexBufferSize;
+	// Close the command list and execute it to begin the vertex buffer copy into
+	// the default heap.
+	ThrowIfFailed(commandLists[frameIndex]->Close());
+	ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
+	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+	// Create synchronization objects and wait until assets have been uploaded to the GPU.
+	{
+		ThrowIfFailed(xapp().device->CreateFence(fenceValues[frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf())));
+		fence.Get()->SetName(L"fence_line");
+		fenceValues[frameIndex]++;
+
+		// Create an event handle to use for frame synchronization.
+		fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+		if (fenceEvent == nullptr)
+		{
+			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+		}
+
+		// Wait for the command list to execute; we are reusing the same command 
+		// list in our main loop but for now, we just want to wait for setup to 
+		// complete before continuing.
+		WaitForGpu();
+	}
 }
 
 void PostEffect::draw()
@@ -115,6 +188,12 @@ void PostEffect::preDraw() {
 	// list, that command list can then be reset at any time and must be before 
 	// re-recording.
 	ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
+
+	// Indicate that the back buffer will now be used as pixel shader input.
+	ID3D12Resource *resource = xapp().renderTargets[frameIndex].Get();
+	D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
+	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 
 	// Set necessary state.
 	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
@@ -144,8 +223,6 @@ void PostEffect::postDraw() {
 	// Indicate that the back buffer will now be used to present.
 	ID3D12Resource *resource = xapp().renderTargets[frameIndex].Get();
 	D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
-	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-			D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PRESENT,
 		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 	ThrowIfFailed(commandLists[frameIndex]->Close());

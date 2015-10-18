@@ -387,8 +387,8 @@ void XApp::init()
 	// Describe the swap chain.
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 	swapChainDesc.BufferCount = FrameCount;
-	swapChainDesc.BufferDesc.Width = 0; //backbufferWidth;
-	swapChainDesc.BufferDesc.Height = 0; //backbufferHeight;
+	swapChainDesc.BufferDesc.Width = backbufferWidth;
+	swapChainDesc.BufferDesc.Height = backbufferHeight;
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
@@ -655,6 +655,17 @@ void XApp::calcBackbufferSizeAndAspectRatio()
 	backbufferHeight = 1080;
 	backbufferWidth = 1920;
 	aspectRatio = static_cast<float>(backbufferWidth) / static_cast<float>(backbufferHeight);
+	viewport.MinDepth = 0.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	viewport.Width = static_cast<float>(backbufferWidth);
+	viewport.Height = static_cast<float>(backbufferHeight);
+	viewport.MaxDepth = 1.0f;
+
+	scissorRect.left = 0;
+	scissorRect.top = 0;
+	scissorRect.right = static_cast<LONG>(backbufferWidth);
+	scissorRect.bottom = static_cast<LONG>(backbufferHeight);
 
 }
 

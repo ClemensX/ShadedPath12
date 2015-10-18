@@ -64,6 +64,9 @@
     <ClInclude Include="Effects\posteffect.h">
       <Filter>Effects</Filter>
     </ClInclude>
+    <ClInclude Include="Effects\effectbase.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -94,6 +97,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Effects\posteffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="Effects\effectbase.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
   </ItemGroup>

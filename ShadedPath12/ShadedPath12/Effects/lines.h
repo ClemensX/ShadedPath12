@@ -5,7 +5,7 @@ struct LineDef {
 };
 
 
-class LinesEffect {
+class LinesEffect : EffectBase {
 public:
 	struct Vertex {
 		XMFLOAT3 pos;
@@ -23,7 +23,6 @@ public:
 	// update cbuffer and vertex buffer
 	void update();
 	void updateCBV(LinesEffect::cbv_ newCBV);
-	void WaitForGpu();
 	void MoveToNextFrame();
 	// draw all lines in single call to GPU
 	void draw();
@@ -44,9 +43,6 @@ private:
 	ComPtr<ID3D12CommandAllocator> commandAllocators[XApp::FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> commandLists[XApp::FrameCount];
 	ComPtr<ID3D12RootSignature> rootSignature;
-	HANDLE fenceEvent;
-	ComPtr<ID3D12Fence> fence;
-	UINT64 fenceValues[XApp::FrameCount];
 	//XApp *xapp;  done through global instance from xapp.cpp
 	void preDraw();
 	void postDraw();

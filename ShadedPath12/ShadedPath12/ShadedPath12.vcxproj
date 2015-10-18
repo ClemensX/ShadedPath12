@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClInclude Include="camera.h" />
     <ClInclude Include="d3dx12.h" />
+    <ClInclude Include="Effects\effectbase.h" />
     <ClInclude Include="Effects\lines.h" />
     <ClInclude Include="Effects\posteffect.h" />
     <ClInclude Include="gametime.h" />
@@ -170,6 +171,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="camera.cpp" />
+    <ClCompile Include="Effects\effectbase.cpp" />
     <ClCompile Include="Effects\lines.cpp" />
     <ClCompile Include="Effects\posteffect.cpp" />
     <ClCompile Include="gametime.cpp" />
