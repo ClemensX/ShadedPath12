@@ -46,7 +46,7 @@ void Sample1::init()
 	//xapp().camera.pos = XMFLOAT4(1.0f, 1.7f, 1.0f, 0.0f);
 	xapp().camera.pos = XMFLOAT4(0.0f, 0.0f, -5.0f, 0.0f);
 	//xapp().camera.setSpeed(0.5f);
-	xapp().camera.setSpeed(50.5f);
+	xapp().camera.setSpeed(10.5f);
 	xapp().camera.fieldOfViewAngleY = 1.289f;
 
 	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
@@ -87,6 +87,7 @@ void Sample1::update()
 void Sample1::draw()
 {
 	linesEffect.draw();
+	postEffect.draw();
 }
 
 void Sample1::next()
