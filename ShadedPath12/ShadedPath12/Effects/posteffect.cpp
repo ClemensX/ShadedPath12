@@ -36,20 +36,20 @@ void PostEffect::init()
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 		psoDesc.SampleDesc.Count = 1;
 		//ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
-#include "CompiledShaders/LineVS.h"
-#include "CompiledShaders/LinePS.h"
+#include "CompiledShaders/PostVS.h"
+#include "CompiledShaders/PostPS.h"
 		// test shade library functions
 		//{
 		//D3DLoadModule() uses ID3D11Module
 		//ComPtr<ID3DBlob> vShader;
 		//ThrowIfFailed(D3DReadFileToBlob(L"", &vShader));
-		psoDesc.VS = { binShader_LineVS, sizeof(binShader_LineVS) };
-		psoDesc.PS = { binShader_LinePS, sizeof(binShader_LinePS) };
-		ThrowIfFailed(xapp().device->CreateRootSignature(0, binShader_LinePS, sizeof(binShader_LinePS), IID_PPV_ARGS(&rootSignature)));
-		rootSignature.Get()->SetName(L"lines_root_signature");
+		psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
+		psoDesc.PS = { binShader_PostPS, sizeof(binShader_PostPS) };
+		ThrowIfFailed(xapp().device->CreateRootSignature(0, binShader_PostPS, sizeof(binShader_PostPS), IID_PPV_ARGS(&rootSignature)));
+		rootSignature.Get()->SetName(L"post_root_signature");
 		psoDesc.pRootSignature = rootSignature.Get();
 		ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
-		pipelineState.Get()->SetName(L"state_lines_init");
+		pipelineState.Get()->SetName(L"state_post_init");
 
 		// set cbv:
 		// flow of control:
