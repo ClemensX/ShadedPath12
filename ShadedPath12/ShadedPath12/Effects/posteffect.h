@@ -16,5 +16,7 @@ private:
 	ComPtr<ID3D12CommandAllocator> commandAllocators[XApp::FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> commandLists[XApp::FrameCount];
 	ComPtr<ID3D12RootSignature> rootSignature;
+	ComPtr<ID3D12DescriptorHeap> m_srvHeap;
+	ComPtr<ID3D12Resource> m_texture;
 
 };
