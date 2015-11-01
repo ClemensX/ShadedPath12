@@ -17,7 +17,7 @@ void PostEffect::init()
 		D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 		};
 
 		// Describe and create the graphics pipeline state object (PSO).
@@ -31,7 +31,7 @@ void PostEffect::init()
 		psoDesc.DepthStencilState.DepthEnable = FALSE;
 		psoDesc.DepthStencilState.StencilEnable = FALSE;
 		psoDesc.SampleMask = UINT_MAX;
-		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		psoDesc.NumRenderTargets = 1;
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 		psoDesc.SampleDesc.Count = 1;
@@ -50,7 +50,11 @@ void PostEffect::init()
 		psoDesc.pRootSignature = rootSignature.Get();
 		ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
 		pipelineState.Get()->SetName(L"state_post_init");
-
+		ComPtr<ID3D12RootSignatureDeserializer> de;
+		//D3D12CreateRootSignatureDeserializer(binShader_PostPS, sizeof(binShader_PostPS), __uuidof(ID3D12RootSignatureDeserializer), );
+		ThrowIfFailed(D3D12CreateRootSignatureDeserializer(binShader_PostPS, sizeof(binShader_PostPS), IID_PPV_ARGS(&de)));
+		const D3D12_ROOT_SIGNATURE_DESC *rt = de->GetRootSignatureDesc();
+		Log("num samplers: " << rt->NumStaticSamplers << endl);
 		// set cbv:
 		// flow of control:
 		// initial phase:
@@ -122,6 +126,7 @@ void PostEffect::init()
 			D3D12_RESOURCE_STATE_COPY_DEST,
 			nullptr,
 			IID_PPV_ARGS(&m_texture)));
+		m_texture.Get()->SetName(L"post_copy_frame");
 
 		//const UINT64 uploadBufferSize = GetRequiredIntermediateSize(m_texture.Get(), 0, 1);
 
@@ -140,13 +145,18 @@ void PostEffect::init()
 void PostEffect::init2()
 {
 	// create 2 triangles covering the whole area in device coords:
+	// remember to revert y for texture because top coord is 0 !!
 	Vertex all[] = {
-		XMFLOAT3(-1, -1, 0), XMFLOAT3(-1, 1, 0), XMFLOAT3(1, -1, 0),
-		XMFLOAT3( 1, -1, 0), XMFLOAT3(-1, 1, 0), XMFLOAT3(1,  1, 0)
+		// 1st triangle
+		{ XMFLOAT3(-1, -1, 0), XMFLOAT2(0, 1) },
+		{ XMFLOAT3(-1, 1, 0),  XMFLOAT2(0, 0) },
+		{ XMFLOAT3(1, -1, 0),  XMFLOAT2(1, 1) },
+		// 2nd triangle
+		{ XMFLOAT3(1, -1, 0),  XMFLOAT2(1, 1) },
+		{ XMFLOAT3(-1, 1, 0),  XMFLOAT2(0, 0) },
+		{ XMFLOAT3(1,  1, 0),  XMFLOAT2(1, 0) }
 	};
 	UINT vertexBufferSize = (UINT)(sizeof(all));
-	ComPtr<ID3D12Resource> vertexBuffer;
-	ComPtr<ID3D12Resource> vertexBufferUpload;
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	ThrowIfFailed(xapp().device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
@@ -173,7 +183,7 @@ void PostEffect::init2()
 	vertexData.RowPitch = vertexBufferSize;
 	vertexData.SlicePitch = vertexData.RowPitch;
 
-	PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"lines: update vertex buffer for postEffect");
+	PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"posteffect: update vertex buffer for postEffect");
 	commandLists[frameIndex].Get()->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get());
 	UpdateSubresources<1>(commandLists[frameIndex].Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData);
 	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
@@ -209,17 +219,6 @@ void PostEffect::init2()
 	}
 }
 
-void PostEffect::draw()
-{
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
-	preDraw();
-	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-//	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
-//	auto numVertices = lines.size() * 2;
-//	commandLists[frameIndex]->DrawInstanced((UINT)numVertices, 1, 0, 0);
-	postDraw();
-}
-
 void PostEffect::preDraw() {
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	// Command list allocators can only be reset when the associated 
@@ -235,7 +234,9 @@ void PostEffect::preDraw() {
 	// Indicate that the back buffer will now be used as pixel shader input.
 	ID3D12Resource *resource = xapp().renderTargets[frameIndex].Get();
 	D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
-	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+	//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+	//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE,
 		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 
 	// Set necessary state.
@@ -253,10 +254,33 @@ void PostEffect::preDraw() {
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
 	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+}
 
-	// Record commands.
-	const float clearColor[] = { 1.0f, 0.2f, 0.4f, 1.0f };
-	//commandLists[frameIndex]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+void PostEffect::draw()
+{
+	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	preDraw();
+	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	ID3D12Resource *frame = xapp().renderTargets[frameIndex].Get();
+	CD3DX12_TEXTURE_COPY_LOCATION Dst(m_texture.Get(), 0);
+	CD3DX12_TEXTURE_COPY_LOCATION Src(frame, 0);
+	commandLists[frameIndex]->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
+	//	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
+	//	auto numVertices = lines.size() * 2;
+	//	commandLists[frameIndex]->DrawInstanced((UINT)numVertices, 1, 0, 0);
+	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(frame, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET,
+		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+	const float clearColor[] = { 0.0f, 1.0f, 0.0f, 1.0f };
+	commandLists[frameIndex]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	// we now have the current frame in the texture - make draw calls to refill our rtv
+	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
+	UINT numVertices = 6;
+	commandLists[frameIndex]->DrawInstanced(numVertices, 1, 0, 0);
+
+	postDraw();
 }
 
 void PostEffect::postDraw() {
@@ -268,11 +292,15 @@ void PostEffect::postDraw() {
 	// Indicate that the back buffer will now be used to present.
 	ID3D12Resource *resource = xapp().renderTargets[frameIndex].Get();
 	D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
-	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PRESENT,
+	//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PRESENT,
+	//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT,
 		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+	// Record commands.
 	ThrowIfFailed(commandLists[frameIndex]->Close());
 	// Execute the command list.
 	ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	//Sleep(50);
 	rDesc = resource->GetDesc();
 }

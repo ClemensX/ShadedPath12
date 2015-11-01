@@ -226,17 +226,6 @@ void LinesEffect::MoveToNextFrame()
 }
 
 
-void LinesEffect::draw()
-{
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
-	preDraw();
-	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
-	auto numVertices = lines.size() * 2;
-	commandLists[frameIndex]->DrawInstanced((UINT)numVertices, 1, 0, 0);
-	postDraw();
-}
-
 void LinesEffect::preDraw() {
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	// Command list allocators can only be reset when the associated 
@@ -266,6 +255,17 @@ void LinesEffect::preDraw() {
 	// Record commands.
 	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 	commandLists[frameIndex]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+}
+
+void LinesEffect::draw()
+{
+	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	preDraw();
+	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
+	auto numVertices = lines.size() * 2;
+	commandLists[frameIndex]->DrawInstanced((UINT)numVertices, 1, 0, 0);
+	postDraw();
 }
 
 void LinesEffect::postDraw() {

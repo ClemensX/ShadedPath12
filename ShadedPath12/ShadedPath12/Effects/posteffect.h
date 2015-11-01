@@ -9,9 +9,12 @@ public:
 	void postDraw();
 	struct Vertex {
 		XMFLOAT3 pos;
+		XMFLOAT2 uv;
 	};
 private:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	ComPtr<ID3D12Resource> vertexBuffer;
+	ComPtr<ID3D12Resource> vertexBufferUpload;
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12CommandAllocator> commandAllocators[XApp::FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> commandLists[XApp::FrameCount];
