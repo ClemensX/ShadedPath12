@@ -61,9 +61,12 @@ public:
 	void setHWND(HWND h);
 	void resize(int width, int height);
 	HWND getHWND();
+	// command line and parameters
 	string commandline;
 	HWND hwnd = 0;
 	bool ovrRendering;   // use split screen ovr rendering
+	bool warp; //use warp device to render (a.k.a. software rendering)
+
 	int requestWidth, requestHeight;
 	// all drawing takes place in backbuffer - output to whatever size the window currently has is only last step
 	unsigned int backbufferWidth = 0, backbufferHeight = 0;

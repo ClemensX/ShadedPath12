@@ -312,7 +312,8 @@ void XApp::init()
 	if (app != nullptr) {
 		//Log("initializing " << appName.c_str() << "\n");
 		SetWindowText(getHWND(), string2wstring(app->getWindowTitle()));
-	} else {
+	}
+	else {
 		Log("ERROR: xapp not available " << appName.c_str() << endl);
 		// throw assertion error in debug mode
 		assert(app != nullptr);
@@ -356,11 +357,24 @@ void XApp::init()
 #endif
 		, IID_PPV_ARGS(&factory)));
 
-	ThrowIfFailed(D3D12CreateDevice(
-		nullptr,
-		D3D_FEATURE_LEVEL_11_0,
-		IID_PPV_ARGS(&device)
-		));
+	if (warp)
+	{
+		ComPtr<IDXGIAdapter> warpAdapter;
+		ThrowIfFailed(factory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
+
+		ThrowIfFailed(D3D12CreateDevice(
+			warpAdapter.Get(),
+			D3D_FEATURE_LEVEL_11_0,
+			IID_PPV_ARGS(&device)
+			));
+	}
+	else {
+		ThrowIfFailed(D3D12CreateDevice(
+			nullptr,
+			D3D_FEATURE_LEVEL_11_0,
+			IID_PPV_ARGS(&device)
+			));
+	}
 
 	// disable auto alt-enter fullscreen switch (does leave an unresponsive window during debug sessions)
 	ThrowIfFailed(factory->MakeWindowAssociation(getHWND(), DXGI_MWA_NO_ALT_ENTER));

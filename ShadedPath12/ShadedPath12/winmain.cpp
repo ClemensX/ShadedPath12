@@ -246,6 +246,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     int h = xapp().getIntParam("h", CW_USEDEFAULT);
 	xapp().ovrRendering = xapp().getBoolParam("ovr");
     Log("ovrRendering: " << xapp().ovrRendering << endl);
+	xapp().warp = xapp().getBoolParam("warp", false);
 
     int style;
     if (isFullscreen) {
