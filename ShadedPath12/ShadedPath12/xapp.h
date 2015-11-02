@@ -74,9 +74,6 @@ public:
 
 	// 
 	ComPtr<ID3D12Device> device;
-	//UINT getFrameIndex() { return frameIndex; };
-	//auto getCommandAllocator() { return commandAllocators[frameIndex]; };
-	//auto getPipelineState() { return pipelineState; };
 	ComPtr<ID3D12RootSignature> rootSignature;
 	static const UINT FrameCount = 3;
 	ComPtr<IDXGISwapChain3> swapChain;
@@ -100,31 +97,12 @@ public:
 	Camera camera;
 	GameTime gametime;
 private:
-
-	// Pipeline objects
-	ComPtr<ID3D12CommandAllocator> commandAllocators[FrameCount];
-	ComPtr<ID3D12GraphicsCommandList> commandList;
-	//ComPtr<ID3D11Resource> m_wrappedBackBuffers[FrameCount];
-	//ComPtr<ID2D1Bitmap1> m_d2dRenderTargets[FrameCount];
-	ComPtr<ID3D12PipelineState> pipelineState;
-
-	// App resources
-	ComPtr<ID3D12Resource> vertexBuffer;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
-
-	// Synchronization objects.
 	UINT frameIndex;
-	HANDLE fenceEvent;
-	ComPtr<ID3D12Fence> fence;
-	UINT64 fenceValues[FrameCount];
 
 	unordered_map<string, XAppBase *> appMap;
 	bool initialized = false;
 	string appName;
 
-	void PopulateCommandList();
-	void WaitForGpu();
-	void MoveToNextFrame();
 	XAppBase *app = nullptr;
 };
 

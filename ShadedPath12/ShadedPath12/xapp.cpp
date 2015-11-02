@@ -242,15 +242,6 @@ void XApp::update() {
 }
 
 void XApp::draw() {
-	// Record all the commands we need to render the scene into the command list.
-	//PopulateCommandList();
-
-	// Execute the command list.
-	//ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
-	//commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-
-	//RenderUI();
-
 	app->draw();
 
 	// Present the frame.
@@ -259,7 +250,6 @@ void XApp::draw() {
 
 	app->next();
 	//MoveToNextFrame();
-
 }
 
 #include "Initguid.h"
@@ -464,203 +454,8 @@ void XApp::init()
 		ThrowIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
 	}
 
-/*	// Create the pipeline state, which includes compiling and loading shaders.
-	{
-		// Define the vertex input layout.
-		D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
-		{
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-		};
-
-		// Describe and create the graphics pipeline state object (PSO).
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
-		psoDesc.pRootSignature = rootSignature.Get();
-		//psoDesc.VS = { reinterpret_cast<UINT8*>(vertexShader->GetBufferPointer()), vertexShader->GetBufferSize() };
-		//psoDesc.PS = { reinterpret_cast<UINT8*>(pixelShader->GetBufferPointer()), pixelShader->GetBufferSize() };
-		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		psoDesc.DepthStencilState.DepthEnable = FALSE;
-		psoDesc.DepthStencilState.StencilEnable = FALSE;
-		psoDesc.SampleMask = UINT_MAX;
-		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-		psoDesc.NumRenderTargets = 1;
-		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-		psoDesc.SampleDesc.Count = 1;
-		//ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
-
-	//}
-#include "CompiledShaders/LineVS.h"
-#include "CompiledShaders/LinePS.h"
-	// test shade library functions
-	//{
-		//D3DLoadModule() uses ID3D11Module
-		//ComPtr<ID3DBlob> vShader;
-		//ThrowIfFailed(D3DReadFileToBlob(L"", &vShader));
-		psoDesc.VS = { binShader_LineVS, sizeof(binShader_LineVS) };
-		psoDesc.PS = { binShader_LinePS, sizeof(binShader_LinePS) };
-		ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
-	}
-
-	ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocators[frameIndex].Get(), pipelineState.Get(), IID_PPV_ARGS(&commandList)));
-	
-	ComPtr<ID3D12Resource> vertexBufferUpload;
-
-	// Create the vertex buffer.
-	{
-		// Define the geometry for a triangle.
-		Vertex triangleVertices[] =
-		{
-			{ { 0.0f, 0.25f * aspectRatio, 0.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
-			{ { 0.25f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
-			{ { 0.25f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
-			{ { -0.25f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
-			{ { -0.25f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
-			{ { 0.0f, 0.25f * aspectRatio, 0.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
-		{ { 0.2f, 0.25f * aspectRatio, 0.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
-		{ { 0.45f, -0.28f * aspectRatio, 0.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
-		{ { 0.45f, -0.28f * aspectRatio, 0.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
-		{ { -0.05f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
-		{ { -0.05f, -0.25f * aspectRatio, 0.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
-		{ { 0.2f, 0.25f * aspectRatio, 0.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } }
-		};
-
-		const UINT vertexBufferSize = sizeof(triangleVertices);
-
-		ThrowIfFailed(device->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
-			D3D12_RESOURCE_STATE_COPY_DEST,
-			nullptr,
-			IID_PPV_ARGS(&vertexBuffer)));
-
-		ThrowIfFailed(device->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&vertexBufferUpload)));
-		vertexBufferUpload.Get()->SetName(L"vertexBufferUpload");
-
-		// Copy data to the intermediate upload heap and then schedule a copy 
-		// from the upload heap to the vertex buffer.
-		D3D12_SUBRESOURCE_DATA vertexData = {};
-		vertexData.pData = reinterpret_cast<UINT8*>(triangleVertices);
-		vertexData.RowPitch = vertexBufferSize;
-		vertexData.SlicePitch = vertexData.RowPitch;
-
-		//UpdateSubresources<1>(commandList.Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData);
-		//commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
-
-		// Initialize the vertex buffer view.
-		vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
-		vertexBufferView.StrideInBytes = sizeof(Vertex);
-		vertexBufferView.SizeInBytes = vertexBufferSize;
-	} */
 	app->init();
 	app->update();
-	/*
-	// Close the command list and execute it to begin the vertex buffer copy into
-	// the default heap.
-	ThrowIfFailed(commandList->Close());
-	ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
-	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-
-	// Create synchronization objects and wait until assets have been uploaded to the GPU.
-	{
-		ThrowIfFailed(device->CreateFence(fenceValues[frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf())));
-		fenceValues[frameIndex]++;
-
-		// Create an event handle to use for frame synchronization.
-		fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-		if (fenceEvent == nullptr)
-		{
-			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-		}
-
-		// Wait for the command list to execute; we are reusing the same command 
-		// list in our main loop but for now, we just want to wait for setup to 
-		// complete before continuing.
-		WaitForGpu();
-	} */
-}
-
-void XApp::PopulateCommandList()
-{
-	// Command list allocators can only be reset when the associated 
-	// command lists have finished execution on the GPU; apps should use 
-	// fences to determine GPU execution progress.
-	ThrowIfFailed(commandAllocators[frameIndex]->Reset());
-
-	// However, when ExecuteCommandList() is called on a particular command 
-	// list, that command list can then be reset at any time and must be before 
-	// re-recording.
-	ThrowIfFailed(commandList->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
-
-	// Set necessary state.
-	commandList->SetGraphicsRootSignature(rootSignature.Get());
-	commandList->RSSetViewports(1, &viewport);
-	commandList->RSSetScissorRects(1, &scissorRect);
-
-	// Indicate that the back buffer will be used as a render target.
-//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescriptorSize);
-	commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
-
-	// Record commands.
-	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-	app->draw();
-	//commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
-	//commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-	//commandList->DrawInstanced(6, 1, 0, 0);
-	
-	// Note: do not transition the render target to present here.
-	// the transition will occur when the wrapped 11On12 render
-	// target resource is released.
-
-	// Indicate that the back buffer will now be used to present.
-	//commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
-
-	ThrowIfFailed(commandList->Close());
-}
-
-// Wait for pending GPU work to complete.
-void XApp::WaitForGpu()
-{
-	// Schedule a Signal command in the queue.
-	ThrowIfFailed(commandQueue->Signal(fence.Get(), fenceValues[frameIndex]));
-
-	// Wait until the fence has been processed.
-	ThrowIfFailed(fence->SetEventOnCompletion(fenceValues[frameIndex], fenceEvent));
-	WaitForSingleObjectEx(fenceEvent, INFINITE, FALSE);
-
-	// Increment the fence value for the current frame.
-	fenceValues[frameIndex]++;
-}
-
-void XApp::MoveToNextFrame()
-{
-	// Schedule a Signal command in the queue.
-	const UINT64 currentFenceValue = fenceValues[frameIndex];
-	ThrowIfFailed(commandQueue->Signal(fence.Get(), currentFenceValue));
-
-	// Update the frame index.
-	frameIndex = swapChain->GetCurrentBackBufferIndex();
-
-	// If the next frame is not ready to be rendered yet, wait until it is ready.
-	if (fence->GetCompletedValue() < fenceValues[frameIndex])
-	{
-		ThrowIfFailed(fence->SetEventOnCompletion(fenceValues[frameIndex], fenceEvent));
-		WaitForSingleObjectEx(fenceEvent, INFINITE, FALSE);
-	}
-
-	// Set the fence value for the next frame.
-	fenceValues[frameIndex] = currentFenceValue + 1;
 }
 
 void XApp::calcBackbufferSizeAndAspectRatio()
