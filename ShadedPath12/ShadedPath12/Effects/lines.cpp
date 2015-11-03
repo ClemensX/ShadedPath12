@@ -113,6 +113,7 @@ void LinesEffect::update() {
 		// recreate vertex input buffer
 		dirty = false;
 		vector<Vertex> all;
+		mutex_lines.lock();
 		for (LineDef line : lines) {
 			Vertex v1, v2;
 			v1.color = line.color;
@@ -123,6 +124,7 @@ void LinesEffect::update() {
 			all.push_back(v2);
 		}
 		UINT vertexBufferSize = (UINT)(sizeof(Vertex) * lines.size() * 2);
+		mutex_lines.unlock();
 		UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 		ThrowIfFailed(xapp().device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
