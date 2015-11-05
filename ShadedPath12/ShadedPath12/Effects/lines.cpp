@@ -99,6 +99,14 @@ void LinesEffect::add(vector<LineDef> &linesToAdd) {
 }
 
 void LinesEffect::update() {
+	//dirty = true; TODO dumps if set to true!!!
+	LinesEffect *l = this;
+	auto fut = async([l]{ return l->updateTask(); });
+	//return l->updateTask();
+}
+
+void LinesEffect::updateTask()
+{
 	if (signalUpdateCBV) {
 		signalUpdateCBV = false;
 		cbv = updatedCBV;

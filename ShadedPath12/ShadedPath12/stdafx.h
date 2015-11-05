@@ -27,6 +27,7 @@
 #include <locale>
 #include <codecvt>
 #include <mutex>
+#include <future>
 using namespace std;
 #include <assert.h>
 #include <typeinfo.h>

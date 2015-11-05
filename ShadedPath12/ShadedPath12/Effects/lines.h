@@ -22,6 +22,7 @@ public:
 	void addOneTime(vector<LineDef> &linesToAdd);
 	// update cbuffer and vertex buffer
 	void update();
+	void updateTask();
 	void updateCBV(LinesEffect::cbv_ newCBV);
 	void MoveToNextFrame();
 	// draw all lines in single call to GPU
