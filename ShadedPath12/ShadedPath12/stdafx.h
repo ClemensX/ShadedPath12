@@ -32,7 +32,9 @@ using namespace std;
 #include <assert.h>
 #include <typeinfo.h>
 
+#include <DXGItype.h>
 #include <dxgi1_4.h>
+#include <DXProgrammableCapture.h>
 #include <D3Dcompiler.h>
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
@@ -78,6 +80,19 @@ using namespace DirectX;
 #define LogCond(y,x)
 #endif
 
+inline void ThrowIfFailedWithDevice(HRESULT hr, ID3D12Device *device)
+{
+	if (FAILED(hr))
+	{
+		if (hr == 0x887a0005) {
+			Log("Device was removed ");
+			HRESULT hr2 = device->GetDeviceRemovedReason();
+			Log(hr << endl);
+			throw;
+		}
+		throw;
+	}
+}
 inline void ThrowIfFailed(HRESULT hr)
 {
 	if (FAILED(hr))

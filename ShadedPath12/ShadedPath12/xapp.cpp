@@ -246,7 +246,7 @@ void XApp::draw() {
 
 	// Present the frame.
 	lastPresentedFrame = swapChain->GetCurrentBackBufferIndex();
-	ThrowIfFailed(swapChain->Present(0, 0));
+	ThrowIfFailedWithDevice(swapChain->Present(0, 0), xapp().device.Get());
 
 	app->next();
 	//MoveToNextFrame();
@@ -316,6 +316,7 @@ void XApp::init()
 		{
 			debugController->EnableDebugLayer();
 		}
+		HRESULT getAnalysis = DXGIGetDebugInterface1(0, __uuidof(pGraphicsAnalysis), reinterpret_cast<void**>(&pGraphicsAnalysis));
 	}
 #endif
 

@@ -99,10 +99,10 @@ void LinesEffect::add(vector<LineDef> &linesToAdd) {
 }
 
 void LinesEffect::update() {
-	//dirty = true; TODO dumps if set to true!!!
+	dirty = true; //TODO dumps if set to true!!!
 	LinesEffect *l = this;
-	auto fut = async([l]{ return l->updateTask(); });
-	//return l->updateTask();
+	//auto fut = async([l]{ return l->updateTask(); });
+	return l->updateTask();
 }
 
 void LinesEffect::updateTask()
@@ -114,10 +114,7 @@ void LinesEffect::updateTask()
 	}
 	// handle fixed lines:
 	if (dirty) {
-		// release resources from last update:
-		if (fence != nullptr) {
-			fence.ReleaseAndGetAddressOf();
-		}
+		//if (xapp().pGraphicsAnalysis != nullptr) xapp().pGraphicsAnalysis->BeginCapture();
 		// recreate vertex input buffer
 		dirty = false;
 		vector<Vertex> all;
@@ -179,7 +176,10 @@ void LinesEffect::updateTask()
 
 		// Create synchronization objects and wait until assets have been uploaded to the GPU.
 		{
-			ThrowIfFailed(xapp().device->CreateFence(fenceValues[frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf())));
+			if (fence == nullptr) {
+				ThrowIfFailed(xapp().device->CreateFence(fenceValues[frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf())));
+				//fence.ReleaseAndGetAddressOf();
+			}
 			fence.Get()->SetName(L"fence_line");
 			fenceValues[frameIndex]++;
 

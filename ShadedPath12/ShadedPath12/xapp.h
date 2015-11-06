@@ -96,6 +96,7 @@ public:
 	World world;
 	Camera camera;
 	GameTime gametime;
+	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
 private:
 	UINT frameIndex;
 
