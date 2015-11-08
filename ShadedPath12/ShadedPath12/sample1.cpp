@@ -61,6 +61,9 @@ void Sample1::update()
 	static bool done = false;
 	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
 		done = true;
+		//if (xapp().pGraphicsAnalysis != nullptr) xapp().pGraphicsAnalysis->BeginCapture();
+		//Sleep(1000);
+
 		float aspectRatio = xapp().aspectRatio;
 		LineDef myLines[] = {
 			// start, end, color

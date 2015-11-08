@@ -178,22 +178,32 @@ void LinesEffect::updateTask()
 		{
 			if (fence == nullptr) {
 				ThrowIfFailed(xapp().device->CreateFence(fenceValues[frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf())));
+				fence.Get()->SetName(L"fence_line");
 				//fence.ReleaseAndGetAddressOf();
 			}
-			fence.Get()->SetName(L"fence_line");
-			fenceValues[frameIndex]++;
+			Log("fence val = " << fenceValues[frameIndex] << endl);
+			// Signal and increment the fence value.
+/*			const UINT64 fenceToWaitFor = fenceValues[frameIndex];
+			ThrowIfFailed(xapp().commandQueue->Signal(fence.Get(), fenceToWaitFor));
+			m_fenceValue++;
 
-			// Create an event handle to use for frame synchronization.
-			fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-			if (fenceEvent == nullptr)
-			{
-				ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-			}
+			// Wait until the fence is completed.
+			ThrowIfFailed(m_fence->SetEventOnCompletion(fenceToWaitFor, m_fenceEvent));
+			WaitForSingleObject(m_fenceEvent, INFINITE);
+*/			//fenceValues[frameIndex]++;
+
+			//// Create an event handle to use for frame synchronization.
+			//fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+			//if (fenceEvent == nullptr)
+			//{
+			//	ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+			//}
 
 			// Wait for the command list to execute; we are reusing the same command 
 			// list in our main loop but for now, we just want to wait for setup to 
 			// complete before continuing.
-			WaitForGpu();
+			//WaitForGpu();
+			//Sleep(10);
 		}
 	}
 }
