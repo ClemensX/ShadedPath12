@@ -4,6 +4,11 @@ struct LineDef {
 	XMFLOAT4 color;
 };
 
+struct FrameRessource {
+	HANDLE fenceEvent;
+	ComPtr<ID3D12Fence> fence;
+	UINT64 fenceValue;
+};
 
 class LinesEffect : EffectBase {
 public:
@@ -52,4 +57,7 @@ private:
 	UINT8* cbvGPUDest;  // mempy changed cbv data to this address before draw()
 	bool signalUpdateCBV = false;
 	mutex mutex_lines;
+
+	// fences for update
+	FrameRessource frames[XApp::FrameCount];
 };

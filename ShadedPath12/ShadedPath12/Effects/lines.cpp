@@ -75,6 +75,9 @@ void LinesEffect::init()
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 	}
 	// Create command allocators and command lists for each frame.
+	static LPCWSTR fence_names[XApp::FrameCount] = {
+		L"fence_lines_0", L"fence_lines_1", L"fence_lines_2"
+	};
 	for (UINT n = 0; n < XApp::FrameCount; n++)
 	{
 		ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
@@ -82,6 +85,14 @@ void LinesEffect::init()
 		// Command lists are created in the recording state, but there is nothing
 		// to record yet. The main loop expects it to be closed, so close it now.
 		ThrowIfFailed(commandLists[n]->Close());
+		// init fences:
+		ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frames[n].fence.GetAddressOf())));
+		frames[n].fence->SetName(fence_names[n]);
+		frames[n].fenceValue = 0;
+		frames[n].fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+		if (frames[n].fenceEvent == nullptr) {
+			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+		}
 	}
 }
 
@@ -101,8 +112,8 @@ void LinesEffect::add(vector<LineDef> &linesToAdd) {
 void LinesEffect::update() {
 	dirty = true; //TODO dumps if set to true!!!
 	LinesEffect *l = this;
-	//auto fut = async([l]{ return l->updateTask(); });
-	return l->updateTask();
+	auto fut = async([l]{ return l->updateTask(); });
+	//return l->updateTask();
 }
 
 void LinesEffect::updateTask()
@@ -181,7 +192,13 @@ void LinesEffect::updateTask()
 				fence.Get()->SetName(L"fence_line");
 				//fence.ReleaseAndGetAddressOf();
 			}
-			Log("fence val = " << fenceValues[frameIndex] << endl);
+			// Wait for the gpu to complete the update.
+			auto &f = frames[frameIndex];
+			UINT64 threadFenceValue = InterlockedIncrement(&f.fenceValue);
+			ThrowIfFailed(xapp().commandQueue->Signal(f.fence.Get(), threadFenceValue));
+			ThrowIfFailed(f.fence->SetEventOnCompletion(threadFenceValue, f.fenceEvent));
+			WaitForSingleObject(f.fenceEvent, INFINITE);
+			//Log("frame " << frameIndex << " fence val = " << f.fenceValue << endl);
 			// Signal and increment the fence value.
 /*			const UINT64 fenceToWaitFor = fenceValues[frameIndex];
 			ThrowIfFailed(xapp().commandQueue->Signal(fence.Get(), fenceToWaitFor));
@@ -216,7 +233,7 @@ void LinesEffect::updateCBV(LinesEffect::cbv_ newCBV)
 }
 
 void LinesEffect::next() {
-	MoveToNextFrame();
+	//MoveToNextFrame();
 }
 
 void LinesEffect::destroy()
@@ -301,4 +318,20 @@ void LinesEffect::postDraw() {
 	// Execute the command list.
 	ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	// tests
+	auto &f = frames[frameIndex];
+	// Wait for the gpu to complete the draw.
+	UINT64 threadFenceValue = InterlockedIncrement(&f.fenceValue);
+	ThrowIfFailed(xapp().commandQueue->Signal(f.fence.Get(), threadFenceValue));
+	//Sleep(100);
+	UINT64 completed = f.fence->GetCompletedValue();
+	if (completed < f.fenceValue)
+	{
+		////Log("not ready");
+		//ThrowIfFailed(f.fence->SetEventOnCompletion(f.fenceValue, f.fenceEvent));
+		//WaitForSingleObjectEx(f.fenceEvent, INFINITE, FALSE);
+	}
+	ThrowIfFailed(f.fence->SetEventOnCompletion(threadFenceValue, f.fenceEvent));
+	WaitForSingleObject(f.fenceEvent, INFINITE);
+	//Log("frame " << frameIndex << " fence val = " << f.fenceValue << endl);
 }
