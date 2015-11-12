@@ -107,6 +107,7 @@ inline void ThrowIfFailed(HRESULT hr)
 #include "util.h"
 #include "world.h"
 #include "camera.h"
+#include "vr.h"
 #include "xapp.h"
 #include "Effects\effectbase.h"
 #include "Effects\lines.h"

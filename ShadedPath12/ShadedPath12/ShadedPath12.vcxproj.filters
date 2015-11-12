@@ -67,6 +67,9 @@
     <ClInclude Include="Effects\effectbase.h">
       <Filter>Effects</Filter>
     </ClInclude>
+    <ClInclude Include="vr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -101,6 +104,9 @@
     </ClCompile>
     <ClCompile Include="Effects\effectbase.cpp">
       <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="vr.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

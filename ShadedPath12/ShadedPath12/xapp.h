@@ -64,7 +64,7 @@ public:
 	// command line and parameters
 	string commandline;
 	HWND hwnd = 0;
-	bool ovrRendering;   // use split screen ovr rendering
+	bool ovrRendering = false;   // use split screen ovr rendering
 	bool warp; //use warp device to render (a.k.a. software rendering)
 
 	int requestWidth, requestHeight;
@@ -96,6 +96,7 @@ public:
 	World world;
 	Camera camera;
 	GameTime gametime;
+	VR vr;
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
 private:
 	UINT frameIndex;

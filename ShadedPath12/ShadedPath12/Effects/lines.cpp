@@ -264,8 +264,8 @@ void LinesEffect::preDraw() {
 
 	// Set necessary state.
 	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
-	commandLists[frameIndex]->RSSetViewports(1, &xapp().viewport);
-	commandLists[frameIndex]->RSSetScissorRects(1, &xapp().scissorRect);
+	commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
+	commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
 
 	// Set CBV
 	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress());

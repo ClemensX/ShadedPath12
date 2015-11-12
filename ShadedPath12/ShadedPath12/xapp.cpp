@@ -28,7 +28,7 @@ void XAppBase::destroy() {
 
 }
 
-XApp::XApp() : camera(world), world(this)
+XApp::XApp() : camera(world), world(this), vr(this)
 {
 	requestHeight = requestWidth = 0;
 	mouseTodo = true;
@@ -337,6 +337,7 @@ void XApp::init()
 		scissorRect.top = 0;
 		scissorRect.right = static_cast<LONG>(width);
 		scissorRect.bottom = static_cast<LONG>(height);
+		vr.adaptViews(viewport, scissorRect);
 	}
 
 	//// Pipeline 
@@ -476,7 +477,7 @@ void XApp::calcBackbufferSizeAndAspectRatio()
 	scissorRect.top = 0;
 	scissorRect.right = static_cast<LONG>(backbufferWidth);
 	scissorRect.bottom = static_cast<LONG>(backbufferHeight);
-
+	vr.adaptViews(viewport, scissorRect);
 }
 
 bool XApp::keyDown(BYTE key) {
@@ -501,7 +502,7 @@ void XApp::parseCommandLine(string commandline) {
 		if (s.at(0) != '-') continue;
 		s = s.substr(1);
 		size_t eqPos = s.find('=');
-		if (eqPos < 0) {
+		if (eqPos == string::npos) {
 			// parse options without '='
 			parameters[s] = "true";
 		}
