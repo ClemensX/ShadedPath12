@@ -4,7 +4,7 @@ struct LineDef {
 	XMFLOAT4 color;
 };
 
-struct FrameRessource {
+struct FrameResource {
 	HANDLE fenceEvent;
 	ComPtr<ID3D12Fence> fence;
 	UINT64 fenceValue;
@@ -59,5 +59,7 @@ private:
 	mutex mutex_lines;
 
 	// fences for update
-	FrameRessource frames[XApp::FrameCount];
+	FrameResource frameData[XApp::FrameCount];
+	void createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue);
+	void waitForSyncPoint(FrameResource &f);
 };

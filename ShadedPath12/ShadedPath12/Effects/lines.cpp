@@ -86,11 +86,11 @@ void LinesEffect::init()
 		// to record yet. The main loop expects it to be closed, so close it now.
 		ThrowIfFailed(commandLists[n]->Close());
 		// init fences:
-		ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frames[n].fence.GetAddressOf())));
-		frames[n].fence->SetName(fence_names[n]);
-		frames[n].fenceValue = 0;
-		frames[n].fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-		if (frames[n].fenceEvent == nullptr) {
+		ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frameData[n].fence.GetAddressOf())));
+		frameData[n].fence->SetName(fence_names[n]);
+		frameData[n].fenceValue = 0;
+		frameData[n].fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+		if (frameData[n].fenceEvent == nullptr) {
 			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
 		}
 	}
@@ -187,16 +187,14 @@ void LinesEffect::updateTask()
 
 		// Create synchronization objects and wait until assets have been uploaded to the GPU.
 		{
-			if (fence == nullptr) {
-				ThrowIfFailed(xapp().device->CreateFence(fenceValues[frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf())));
-				fence.Get()->SetName(L"fence_line");
-				//fence.ReleaseAndGetAddressOf();
-			}
+			//if (fence == nullptr) {
+			//	ThrowIfFailed(xapp().device->CreateFence(fenceValues[frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf())));
+			//	fence.Get()->SetName(L"fence_line");
+			//	//fence.ReleaseAndGetAddressOf();
+			//}
 			// Wait for the gpu to complete the update.
-			auto &f = frames[frameIndex];
-			UINT64 threadFenceValue = InterlockedIncrement(&f.fenceValue);
-			ThrowIfFailed(xapp().commandQueue->Signal(f.fence.Get(), threadFenceValue));
-			ThrowIfFailed(f.fence->SetEventOnCompletion(threadFenceValue, f.fenceEvent));
+			auto &f = frameData[frameIndex];
+			createSyncPoint(f, xapp().commandQueue);
 			WaitForSingleObject(f.fenceEvent, INFINITE);
 			//Log("frame " << frameIndex << " fence val = " << f.fenceValue << endl);
 			// Signal and increment the fence value.
@@ -238,8 +236,8 @@ void LinesEffect::next() {
 
 void LinesEffect::destroy()
 {
-	WaitForGpu();
-	CloseHandle(fenceEvent);
+	//WaitForGpu();
+	//CloseHandle(fenceEvent);
 }
 
 void LinesEffect::MoveToNextFrame()
@@ -264,7 +262,12 @@ void LinesEffect::MoveToNextFrame()
 
 
 void LinesEffect::preDraw() {
+	// last frame must have been finished before we run here!!!
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	//auto &f = frameData[xapp().lastPresentedFrame];
+	//waitForSyncPoint(f);
+	auto &f = frameData[frameIndex];
+	waitForSyncPoint(f);
 	// Command list allocators can only be reset when the associated 
 	// command lists have finished execution on the GPU; apps should use 
 	// fences to determine GPU execution progress.
@@ -319,19 +322,26 @@ void LinesEffect::postDraw() {
 	ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 	// tests
-	auto &f = frames[frameIndex];
+	auto &f = frameData[frameIndex];
 	// Wait for the gpu to complete the draw.
-	UINT64 threadFenceValue = InterlockedIncrement(&f.fenceValue);
-	ThrowIfFailed(xapp().commandQueue->Signal(f.fence.Get(), threadFenceValue));
+	createSyncPoint(f, xapp().commandQueue);
+	waitForSyncPoint(f); // ok, but not optimal
 	//Sleep(100);
+	//Log("frame " << frameIndex << " fence val = " << f.fenceValue << endl);
+}
+
+void LinesEffect::createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue)
+{
+	UINT64 threadFenceValue = InterlockedIncrement(&f.fenceValue);
+	ThrowIfFailed(queue->Signal(f.fence.Get(), threadFenceValue));
+	ThrowIfFailed(f.fence->SetEventOnCompletion(threadFenceValue, f.fenceEvent));
+}
+
+void LinesEffect::waitForSyncPoint(FrameResource & f)
+{
 	UINT64 completed = f.fence->GetCompletedValue();
 	if (completed < f.fenceValue)
 	{
-		////Log("not ready");
-		//ThrowIfFailed(f.fence->SetEventOnCompletion(f.fenceValue, f.fenceEvent));
-		//WaitForSingleObjectEx(f.fenceEvent, INFINITE, FALSE);
+		WaitForSingleObject(f.fenceEvent, INFINITE);
 	}
-	ThrowIfFailed(f.fence->SetEventOnCompletion(threadFenceValue, f.fenceEvent));
-	WaitForSingleObject(f.fenceEvent, INFINITE);
-	//Log("frame " << frameIndex << " fence val = " << f.fenceValue << endl);
 }
