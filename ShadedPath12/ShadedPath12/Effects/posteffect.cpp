@@ -86,6 +86,9 @@ void PostEffect::init()
 		//cbv.wvp._11 += 2.0f;
 //		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 	}
+	static LPCWSTR fence_names[XApp::FrameCount] = {
+		L"fence_post_0", L"fence_post_1", L"fence_post_2"
+	};
 	// Create command allocators and command lists for each frame.
 	for (UINT n = 0; n < XApp::FrameCount; n++)
 	{
@@ -94,6 +97,14 @@ void PostEffect::init()
 		// Command lists are created in the recording state, but there is nothing
 		// to record yet. The main loop expects it to be closed, so close it now.
 		ThrowIfFailed(commandLists[n]->Close());
+		// init fences:
+		ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frameData[n].fence.GetAddressOf())));
+		frameData[n].fence->SetName(fence_names[n]);
+		frameData[n].fenceValue = 0;
+		frameData[n].fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+		if (frameData[n].fenceEvent == nullptr) {
+			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+		}
 	}
 
 	// Describe and create a shader resource view (SRV) heap for the texture.
@@ -200,23 +211,9 @@ void PostEffect::init2()
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
 	// Create synchronization objects and wait until assets have been uploaded to the GPU.
-	{
-		ThrowIfFailed(xapp().device->CreateFence(fenceValues[frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf())));
-		fence.Get()->SetName(L"fence_line");
-		fenceValues[frameIndex]++;
-
-		// Create an event handle to use for frame synchronization.
-		fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-		if (fenceEvent == nullptr)
-		{
-			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-		}
-
-		// Wait for the command list to execute; we are reusing the same command 
-		// list in our main loop but for now, we just want to wait for setup to 
-		// complete before continuing.
-		WaitForGpu();
-	}
+	auto &f = frameData[frameIndex];
+	createSyncPoint(f, xapp().commandQueue);
+	waitForSyncPoint(f);
 }
 
 void PostEffect::preDraw() {

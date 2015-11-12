@@ -4,12 +4,6 @@ struct LineDef {
 	XMFLOAT4 color;
 };
 
-struct FrameResource {
-	HANDLE fenceEvent;
-	ComPtr<ID3D12Fence> fence;
-	UINT64 fenceValue;
-};
-
 class LinesEffect : EffectBase {
 public:
 	struct Vertex {
@@ -58,8 +52,4 @@ private:
 	bool signalUpdateCBV = false;
 	mutex mutex_lines;
 
-	// fences for update
-	FrameResource frameData[XApp::FrameCount];
-	void createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue);
-	void waitForSyncPoint(FrameResource &f);
 };

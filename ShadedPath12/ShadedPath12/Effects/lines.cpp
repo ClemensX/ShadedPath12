@@ -110,7 +110,7 @@ void LinesEffect::add(vector<LineDef> &linesToAdd) {
 }
 
 void LinesEffect::update() {
-	dirty = true; //TODO dumps if set to true!!!
+	//dirty = true; // uncomment to force CBV update every frame
 	LinesEffect *l = this;
 	auto fut = async([l]{ return l->updateTask(); });
 	//return l->updateTask();
@@ -242,22 +242,6 @@ void LinesEffect::destroy()
 
 void LinesEffect::MoveToNextFrame()
 {
-	// Schedule a Signal command in the queue.
-	const UINT64 currentFenceValue = fenceValues[xapp().lastPresentedFrame];
-	ThrowIfFailed(xapp().commandQueue->Signal(fence.Get(), currentFenceValue));
-
-	// Update the frame index.
-	auto frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
-
-	// If the next frame is not ready to be rendered yet, wait until it is ready.
-	if (fence->GetCompletedValue() < fenceValues[frameIndex])
-	{
-		ThrowIfFailed(fence->SetEventOnCompletion(fenceValues[frameIndex], fenceEvent));
-		WaitForSingleObjectEx(fenceEvent, INFINITE, FALSE);
-	}
-
-	// Set the fence value for the next frame.
-	fenceValues[frameIndex] = currentFenceValue + 1;
 }
 
 
@@ -330,18 +314,3 @@ void LinesEffect::postDraw() {
 	//Log("frame " << frameIndex << " fence val = " << f.fenceValue << endl);
 }
 
-void LinesEffect::createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue)
-{
-	UINT64 threadFenceValue = InterlockedIncrement(&f.fenceValue);
-	ThrowIfFailed(queue->Signal(f.fence.Get(), threadFenceValue));
-	ThrowIfFailed(f.fence->SetEventOnCompletion(threadFenceValue, f.fenceEvent));
-}
-
-void LinesEffect::waitForSyncPoint(FrameResource & f)
-{
-	UINT64 completed = f.fence->GetCompletedValue();
-	if (completed < f.fenceValue)
-	{
-		WaitForSingleObject(f.fenceEvent, INFINITE);
-	}
-}
