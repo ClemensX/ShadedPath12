@@ -81,7 +81,7 @@ void XApp::update() {
 	// Query the HMD for the current tracking state.
 	camera.viewTransform();
 	camera.projectionTransform();
-	if (ovrRendering) camera.recalcOVR(*this);
+	//if (ovrRendering) camera.recalcOVR(*this);
 #if defined (ENABLE_OVR2)
 	if (ovrRendering && false) {
 		ovrTrackingState ts = ovrHmd_GetTrackingState(hmd, ovr_GetTimeInSeconds());
@@ -237,11 +237,21 @@ void XApp::update() {
 	}
 	XAppBase *app = getApp(appName);
 	if (app != nullptr) {
-		app->update();
+		if (ovrRendering) {
+			// currently we do nothing special for VR update: one single pass shouls be enough
+			// different EyePos are then only generated for WVP generation before drawing
+			// possible errors: Bounding boxes / vsibility calculations may be incorrect
+			app->update();
+		} else {
+			app->update();
+		}
 	}
 }
 
 void XApp::draw() {
+	if (ovrRendering) {
+		vr.startFrame();
+	}
 	app->draw();
 
 	// Present the frame.
@@ -250,6 +260,9 @@ void XApp::draw() {
 
 	app->next();
 	//MoveToNextFrame();
+	if (ovrRendering) {
+		vr.endFrame();
+	}
 }
 
 #include "Initguid.h"
@@ -321,7 +334,7 @@ void XApp::init()
 #endif
 
 	//// Viewport and Scissor
-	D3D12_RECT rect;
+/*	D3D12_RECT rect;
 	if (GetWindowRect(getHWND(), &rect))
 	{
 		int width = rect.right - rect.left;
@@ -339,7 +352,7 @@ void XApp::init()
 		scissorRect.bottom = static_cast<LONG>(height);
 		vr.adaptViews(viewport, scissorRect);
 	}
-
+*/
 	//// Pipeline 
 
 	ComPtr<IDXGIFactory4> factory;

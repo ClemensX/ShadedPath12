@@ -10,6 +10,8 @@ public:
 	~VR();
 	void init();
 	void initFrame();
+	void startFrame();
+	void endFrame();
 	EyePos getCurrentEye() { return curEye; };
 	void adaptViews(D3D12_VIEWPORT &viewport, D3D12_RECT &scissorRect);
 	D3D12_VIEWPORT *getViewport() { return &viewports[curEye]; };

@@ -246,6 +246,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     int h = xapp().getIntParam("h", CW_USEDEFAULT);
 	xapp().ovrRendering = xapp().getBoolParam("vr");
     Log("ovrRendering: " << xapp().ovrRendering << endl);
+	xapp().vr.enabled = xapp().ovrRendering;  // vr stays off if this is commented - even if -vr command line is set
+
 	xapp().warp = xapp().getBoolParam("warp", false);
 
     int style;

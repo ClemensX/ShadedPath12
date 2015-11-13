@@ -21,7 +21,6 @@ void Sample1::init()
 {
 	linesEffect.init();
 	postEffect.init();
-	xapp().vr.init();  // vr stays off if this is commented - even if -vr command line is set
 	float aspectRatio = xapp().aspectRatio;
 
 	LineDef myLines[] = {
