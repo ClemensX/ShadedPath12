@@ -490,7 +490,7 @@ void XApp::calcBackbufferSizeAndAspectRatio()
 	scissorRect.top = 0;
 	scissorRect.right = static_cast<LONG>(backbufferWidth);
 	scissorRect.bottom = static_cast<LONG>(backbufferHeight);
-	vr.adaptViews(viewport, scissorRect);
+	vr.prepareViews(viewport, scissorRect);
 }
 
 bool XApp::keyDown(BYTE key) {

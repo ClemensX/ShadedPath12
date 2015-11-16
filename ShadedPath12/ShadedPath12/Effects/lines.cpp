@@ -277,11 +277,32 @@ void LinesEffect::preDraw() {
 	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	// Record commands.
-	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-	commandLists[frameIndex]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	if (!xapp().ovrRendering || (xapp().ovrRendering && xapp().vr.isFirstEye())) {
+		const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
+		commandLists[frameIndex]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	}
 }
 
 void LinesEffect::draw()
+{
+	if (!xapp().ovrRendering) {
+		return drawInternal();
+	}
+	// draw VR, iterate over both eyes
+	xapp().vr.prepareDraw();
+	for (int eyeNum = 0; eyeNum < 2; eyeNum++) {
+		// adjust PVW matrix
+		XMMATRIX adjustedEyeMatrix;
+		xapp().vr.adjustEyeMatrix(adjustedEyeMatrix);
+		XMStoreFloat4x4(&cbv.wvp, adjustedEyeMatrix);
+		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+		drawInternal();
+		xapp().vr.nextEye();
+	}
+	xapp().vr.endDraw();
+}
+
+void LinesEffect::drawInternal()
 {
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	preDraw();

@@ -51,5 +51,6 @@ private:
 	UINT8* cbvGPUDest;  // mempy changed cbv data to this address before draw()
 	bool signalUpdateCBV = false;
 	mutex mutex_lines;
+	void drawInternal();
 
 };
