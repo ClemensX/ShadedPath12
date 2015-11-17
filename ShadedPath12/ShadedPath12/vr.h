@@ -1,5 +1,12 @@
 #pragma once
 
+#if defined(_OVR_)
+#include "../../../OculusSDK/LibOVR/Include/OVR_CAPI.h"
+#include "../../../OculusSDK/LibOVR/Include/Extras/OVR_Math.h"
+using namespace OVR;
+#pragma comment(lib, "../../../OculusSDK/LibOVR/Lib/Windows/x64/Release/VS2015/LibOVR.lib")
+#endif
+
 enum EyePos { EyeLeft, EyeRight };
 
 class XApp;
@@ -27,6 +34,7 @@ public:
 	void nextEye();
 	// return if this run is for the first eye - some initializations are not needed for 2nd eye
 	bool isFirstEye();
+	void nextTracking();
 
 	bool enabled = false;  // default: VR is off, switch on by command line option -vr
 protected:
@@ -39,4 +47,14 @@ private:
 	XApp* xapp;
 	XMFLOAT4 cam_look, cam_up, cam_pos;
 	bool firstEye = false;
+
+#if defined(_OVR_)
+	ovrHmdDesc desc;
+	ovrSizei resolution;
+	ovrSession session;
+	ovrGraphicsLuid luid;
+	ovrEyeRenderDesc eyeRenderDesc[2];
+	ovrPosef         EyeRenderPose[2];     // Useful to remember where the rendered eye originated
+	float            YawAtRender[2];       // Useful to remember where the rendered eye originated
+#endif
 };

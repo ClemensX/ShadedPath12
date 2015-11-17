@@ -100,6 +100,19 @@ inline void ThrowIfFailed(HRESULT hr)
 		throw;
 	}
 }
+inline void ErrorExt(wstring msg, const char* file, DWORD line)
+{
+	wstringstream s;
+	s << "ERROR " << msg << '\n';
+	s << file << " " << line << '\n';
+	Log(s.str());
+	s << "\n\nClick 'yes' to break and 'no' to continue.";
+	int nResult = MessageBoxW(GetForegroundWindow(), s.str().c_str(), L"Unexpected error encountered", MB_YESNO | MB_ICONERROR);
+	if (nResult == IDYES)
+		DebugBreak();
+}
+
+#define Error(x) ErrorExt((x), __FILE__,  (DWORD)__LINE__)
 
 // framework headers
 #include "d3dx12.h"

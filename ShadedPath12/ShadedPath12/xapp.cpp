@@ -81,6 +81,7 @@ void XApp::update() {
 	// Query the HMD for the current tracking state.
 	camera.viewTransform();
 	camera.projectionTransform();
+	vr.nextTracking();
 	//if (ovrRendering) camera.recalcOVR(*this);
 #if defined (ENABLE_OVR2)
 	if (ovrRendering && false) {
@@ -200,7 +201,7 @@ void XApp::update() {
 		}
 	}
 #endif
-	if (mouseTodo /*&& !ovrRendering*/) {
+	if (mouseTodo && !ovrRendering) {
 		mouseTodo = false;
 		// mouse input
 		float ROTATION_GAIN = 0.003f;
@@ -297,6 +298,9 @@ void XApp::init()
 	initialized = true;
 	camera.ovrCamera = true;
 	if (!ovrRendering) camera.ovrCamera = false;
+	if (ovrRendering) {
+		vr.init();
+	}
 
 	gametime.init(1); // init to real time
 	camera.setSpeed(1.0f);
