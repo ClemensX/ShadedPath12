@@ -35,6 +35,8 @@ public:
 	// return if this run is for the first eye - some initializations are not needed for 2nd eye
 	bool isFirstEye();
 	void nextTracking();
+	XMFLOAT4X4 getOVRViewMatrix() { return viewOVR[curEye]; };
+	XMFLOAT4X4 getOVRProjectionMatrix() { return projOVR[curEye]; };
 
 	bool enabled = false;  // default: VR is off, switch on by command line option -vr
 protected:
@@ -56,5 +58,6 @@ private:
 	ovrEyeRenderDesc eyeRenderDesc[2];
 	ovrPosef         EyeRenderPose[2];     // Useful to remember where the rendered eye originated
 	float            YawAtRender[2];       // Useful to remember where the rendered eye originated
+	XMFLOAT4X4 viewOVR[2], projOVR[2];
 #endif
 };

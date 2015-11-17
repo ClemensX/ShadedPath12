@@ -13,7 +13,7 @@ Camera::Camera(World& w) : world(w) {
 	aspectRatio = 1920.0f / 1080.0f;
 	nearZ = 0.1f;
 	farZ = 1000.0f;
-	projectionTransform();
+	//projectionTransform();
 	speed = 1.0f;
 	pitch = yaw = 0.0f;
 }
@@ -117,21 +117,19 @@ void Camera::recalcOVR(XApp &xapp) {
 	}
 #else
 	// simple fallback if no OVR code included:
-	for (int eye = 0; eye < 2; eye++) {
-		this->viewOVR[eye] = view;
-		this->projOVR[eye] = projection;
-	}
+	//for (int eye = 0; eye < 2; eye++) {
+	//	this->viewOVR[eye] = view;
+	//	this->projOVR[eye] = projection;
+	//}
 #endif
 }
 
 void Camera::viewTransform() {
 	XMMATRIX v = XMMatrixLookToLH(XMLoadFloat4(&pos), XMLoadFloat4(&look), XMLoadFloat4(&up));
 	XMStoreFloat4x4(&view, v);
-#if defined(ENABLE_OVR2)
 	if (ovrCamera) {
-		view = viewOVR[activeEye];
+		view = xapp().vr.getOVRViewMatrix();
 	}
-#endif
 }
 
 void Camera::projectionTransform() {
@@ -143,6 +141,9 @@ void Camera::projectionTransform() {
 	XMMATRIX v = XMMatrixPerspectiveFovLH(fieldOfViewAngleY, aspectRatio, nearZ, farZ);
 	//XMMATRIX v = XMMatrixPerspectiveFovLH(fieldOfViewAngleY, aspectRatio, mNearWindowHeight, mFarWindowHeight);
 	XMStoreFloat4x4(&projection, v);
+	if (ovrCamera) {
+		projection = xapp().vr.getOVRProjectionMatrix();
+	}
 #if defined(ENABLE_OVR2)
 	ovrFovPort fov;
 	//fov.UpTan = 1.32928634f;
@@ -172,6 +173,10 @@ XMMATRIX Camera::worldViewProjection() {
 	//if (pt2.x != 0.0f)
 	//Log("  Look: " << pt2.x << " " << pt2.y << " " << pt2.z << endl);
 	XMMATRIX v = XMMatrixLookToLH(XMLoadFloat4(&pos), XMLoadFloat4(&look), XMLoadFloat4(&up));
+	if (ovrCamera) {
+		XMFLOAT4X4 vxm = xapp().vr.getOVRViewMatrix();
+		v = XMLoadFloat4x4(&vxm);
+	}
 #if defined(ENABLE_OVR2)
 	if (ovrCamera) {
 		//recalcOVR(*world.getApp());

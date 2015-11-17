@@ -43,7 +43,7 @@ public:
 
 	// oculus support
 	bool ovrCamera = true;
-	XMFLOAT4X4 viewOVR[2], projOVR[2];
+	//XMFLOAT4X4 viewOVR[2], projOVR[2];
 	int activeEye = 0;
 	void recalcOVR(XApp &xapp);
 
