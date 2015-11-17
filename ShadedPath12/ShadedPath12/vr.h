@@ -34,8 +34,11 @@ public:
 	void nextEye();
 	// return if this run is for the first eye - some initializations are not needed for 2nd eye
 	bool isFirstEye();
+	// read HMD position and generate view parameters for both eyes
 	void nextTracking();
+	// get view matrix for current eye
 	XMFLOAT4X4 getOVRViewMatrix() { return viewOVR[curEye]; };
+	// get projection matrix for current eye
 	XMFLOAT4X4 getOVRProjectionMatrix() { return projOVR[curEye]; };
 
 	bool enabled = false;  // default: VR is off, switch on by command line option -vr
@@ -44,8 +47,6 @@ protected:
 private:
 	D3D12_VIEWPORT viewports[2];
 	D3D12_RECT scissorRects[2];
-	//D3D12_VIEWPORT orig_viewport;
-	//D3D12_RECT orig_scissorRect;
 	XApp* xapp;
 	XMFLOAT4 cam_look, cam_up, cam_pos;
 	bool firstEye = false;

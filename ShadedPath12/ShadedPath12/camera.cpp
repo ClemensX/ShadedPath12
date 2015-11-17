@@ -47,82 +47,7 @@ void Camera::setWorld(World& w) {
 	world = w;
 }
 
-#if defined(ENABLE_OVR2)
-void Matrix4fToXM(XMFLOAT4X4 &xm, Matrix4f &m) {
-	xm._11 = m.M[0][0];
-	xm._12 = m.M[0][1];
-	xm._13 = m.M[0][2];
-	xm._14 = m.M[0][3];
-	xm._21 = m.M[1][0];
-	xm._22 = m.M[1][1];
-	xm._23 = m.M[1][2];
-	xm._24 = m.M[1][3];
-	xm._31 = m.M[2][0];
-	xm._32 = m.M[2][1];
-	xm._33 = m.M[2][2];
-	xm._34 = m.M[2][3];
-	xm._41 = m.M[3][0];
-	xm._42 = m.M[3][1];
-	xm._43 = m.M[3][2];
-	xm._44 = m.M[3][3];
-}
-#endif
 
-void Camera::recalcOVR(XApp &xapp) {
-#if defined(ENABLE_OVR2)
-	// now do it the oculus way:
-	// Get both eye poses simultaneously, with IPD offset already included. 
-	ovrVector3f useHmdToEyeViewOffset[2] = { xapp.EyeRenderDesc[0].HmdToEyeViewOffset, xapp.EyeRenderDesc[1].HmdToEyeViewOffset };
-	ovrPosef temp_EyeRenderPose[2];
-	ovrHmd_GetEyePoses(xapp.hmd, 0, useHmdToEyeViewOffset, temp_EyeRenderPose, NULL);
-
-	// Render the two undistorted eye views into their render buffers.  
-	for (int eye = 0; eye < 2; eye++)
-	//for (int eye = 1; eye >= 0; eye--)
-		{
-		ovrPosef    * useEyePose = &xapp.EyeRenderPose[eye];
-		float       * useYaw = &xapp.YawAtRender[eye];
-		float Yaw = XM_PI;
-		*useEyePose = temp_EyeRenderPose[eye];
-		*useYaw = Yaw;
-
-		// Get view and projection matrices (note near Z to reduce eye strain)
-		Matrix4f rollPitchYaw = Matrix4f::RotationY(Yaw);
-		Matrix4f finalRollPitchYaw = rollPitchYaw * Matrix4f(useEyePose->Orientation);
-		// fix finalRollPitchYaw for LH coordinate system:
-		Matrix4f s = Matrix4f::Scaling(1.0f, -1.0f, -1.0f);  // 1 1 -1
-		finalRollPitchYaw = s * finalRollPitchYaw * s;
-
-		Vector3f finalUp = finalRollPitchYaw.Transform(Vector3f(0, 1, 0));
-		Vector3f finalForward = finalRollPitchYaw.Transform(Vector3f(0, 0, -1));//0 0 1
-		Vector3f Posf;
-		Posf.x = pos.x;
-		Posf.y = pos.y;
-		Posf.z = pos.z;
-		//Vector3f shiftedEyePos = Posf + rollPitchYaw.Transform(useEyePose->Position);
-		//Vector3f shiftedEyePos = Posf - rollPitchYaw.Transform(useEyePose->Position);
-		Vector3f diff = rollPitchYaw.Transform(useEyePose->Position);
-		Vector3f shiftedEyePos;
-		shiftedEyePos.x = Posf.x - diff.x;
-		shiftedEyePos.y = Posf.y + diff.y;
-		shiftedEyePos.z = Posf.z + diff.z;
-		look.x = finalForward.x;
-		look.y = finalForward.y;
-		look.z = finalForward.z;
-
-		Matrix4f view = Matrix4f::LookAtLH(shiftedEyePos, shiftedEyePos + finalForward, finalUp);
-		Matrix4f projO = ovrMatrix4f_Projection(xapp.EyeRenderDesc[eye].Fov, 0.2f, 2000.0f, false);
-		Matrix4fToXM(this->viewOVR[eye], view.Transposed());
-		Matrix4fToXM(this->projOVR[eye], projO.Transposed());
-	}
-#else
-	// simple fallback if no OVR code included:
-	//for (int eye = 0; eye < 2; eye++) {
-	//	this->viewOVR[eye] = view;
-	//	this->projOVR[eye] = projection;
-	//}
-#endif
-}
 
 void Camera::viewTransform() {
 	XMMATRIX v = XMMatrixLookToLH(XMLoadFloat4(&pos), XMLoadFloat4(&look), XMLoadFloat4(&up));
@@ -133,41 +58,16 @@ void Camera::viewTransform() {
 }
 
 void Camera::projectionTransform() {
-	//float mNearWindowHeight = 2.0f * nearZ * tanf(0.5f*fieldOfViewAngleY);
-	//float mFarWindowHeight = 2.0f * farZ * tanf(0.5f*fieldOfViewAngleY);
-	// TODO check usefullness of plane equations above (from book)
-
 	//Log("aspect == " << aspectRatio << "\n");
 	XMMATRIX v = XMMatrixPerspectiveFovLH(fieldOfViewAngleY, aspectRatio, nearZ, farZ);
-	//XMMATRIX v = XMMatrixPerspectiveFovLH(fieldOfViewAngleY, aspectRatio, mNearWindowHeight, mFarWindowHeight);
 	XMStoreFloat4x4(&projection, v);
 	if (ovrCamera) {
 		projection = xapp().vr.getOVRProjectionMatrix();
 	}
-#if defined(ENABLE_OVR2)
-	ovrFovPort fov;
-	//fov.UpTan = 1.32928634f;
-	//fov.DownTan = 1.32928634f;
-	//fov.LeftTan = 1.05865765f;
-	//fov.RightTan = 1.09236801f;
-	//projection._31 *= -1.0f;
-	//projection._32 *= -1.0f;
-	//projection._33 *= -1.0f;
-	//projection._34 *= -1.0f;
-	if (ovrCamera) {
-		Matrix4f projO = ovrMatrix4f_Projection((*world.getApp()).EyeRenderDesc[0].Fov, 0.2f, 1000.0f, false);
-		Matrix4fToXM(projection, projO.Transposed());
-		projection = projOVR[activeEye];
-	}
-#endif
 }
 
 XMMATRIX Camera::worldViewProjection() {
 	XMMATRIX p = XMLoadFloat4x4(&projection);
-	//look = pos;
-	//look.z += 1000.0f;
-	//up = xmfloat4(0.0f, 1.0f, 0.0f, 0.0f);
-	//auto pt = pos;
 	//Log("  Pos: " << pt.x << " " << pt.y << " " << pt.z << endl);
 	//auto pt2 = look;
 	//if (pt2.x != 0.0f)
@@ -177,46 +77,8 @@ XMMATRIX Camera::worldViewProjection() {
 		XMFLOAT4X4 vxm = xapp().vr.getOVRViewMatrix();
 		v = XMLoadFloat4x4(&vxm);
 	}
-#if defined(ENABLE_OVR2)
-	if (ovrCamera) {
-		//recalcOVR(*world.getApp());
-		//p = XMLoadFloat4x4(&projOVR[activeEye]);
-		//v = XMLoadFloat4x4(&viewOVR[activeEye]);
-		//v = XMMatrixIdentity();
-		//return XMMatrixTranspose(p);
-		Vector3f eye;
-		eye.x = this->pos.x;
-		eye.y = this->pos.y;
-		eye.z = this->pos.z;
-		Vector3f at;
-		at.x = eye.x + look.x;
-		at.y = eye.y + look.y;
-		at.z = eye.z + look.z;
-		//Vector3f up = Vector3f(0, 1, 0);
-		Vector3f upf;
-		upf.x = up.x;
-		upf.y = up.y;
-		upf.z = up.z;
-		Matrix4f view = Matrix4f::LookAtLH(eye, at, upf);
-		XMFLOAT4X4 vxm;
-		Matrix4fToXM(vxm, view);
-		v = XMMatrixTranspose( XMLoadFloat4x4(&vxm));
-		v = XMLoadFloat4x4(&viewOVR[activeEye]);
-	}
-#endif
 	XMMATRIX wvp = v*p;
-	//return wvp;
-	//XMFLOAT4 t(0.0f, 0.0f, 0.0f, 1.0f);
-	//XMVECTOR tv = XMLoadFloat4(&t);
-	//tv = XMVector4Transform(tv, wvp);
-	//XMStoreFloat4(&t, tv);
-	//t.x /= t.w;
-	//t.y /= t.w;
-	//t.z /= t.w;
-	//t.w = 1.0f;
-	//Log("transformed " << t.x << " " << t.y << " " << t.z << " " << t.w << "\n");
 	return XMMatrixTranspose(wvp);
-	//return XMMatrixTranspose(v);
 }
 
 int Camera::calculateVisibility(BoundingBox &box, XMMATRIX &toWorld) {
