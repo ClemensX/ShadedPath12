@@ -174,8 +174,9 @@ void XApp::init()
 {
 	//// Basic initialization
 	if (initialized) return;
-
 	initialized = true;
+
+	if (ovrRendering) vr.init();
 
 	if (appName.length() == 0) {
 		// no app name specified - just use first one from iterator
@@ -388,7 +389,7 @@ void XApp::init()
 	camera.ovrCamera = true;
 	if (!ovrRendering) camera.ovrCamera = false;
 	if (ovrRendering) {
-		vr.init();
+		vr.initD3D();
 	}
 
 	gametime.init(1); // init to real time
@@ -403,6 +404,10 @@ void XApp::calcBackbufferSizeAndAspectRatio()
 	// Full HD is default - should be overidden by specific devices like Rift
 	backbufferHeight = 1080;
 	backbufferWidth = 1920;
+	if (ovrRendering) {
+		backbufferHeight = vr.getHeight();
+		backbufferWidth = vr.getWidth();
+	}
 	aspectRatio = static_cast<float>(backbufferWidth) / static_cast<float>(backbufferHeight);
 	viewport.MinDepth = 0.0f;
 	viewport.TopLeftX = 0.0f;

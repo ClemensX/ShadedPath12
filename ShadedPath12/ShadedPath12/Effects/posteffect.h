@@ -7,6 +7,7 @@ public:
 	void draw();
 	void preDraw();
 	void postDraw();
+	void ovrDraw();
 	struct Vertex {
 		XMFLOAT3 pos;
 		XMFLOAT2 uv;

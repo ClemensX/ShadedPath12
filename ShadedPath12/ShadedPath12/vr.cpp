@@ -48,14 +48,34 @@ void VR::init()
 	// Configure Stereo settings.
 	Sizei recommenedTex0Size = ovr_GetFovTextureSize(session, ovrEye_Left, desc.DefaultEyeFov[0], 1.0f);
 	Sizei recommenedTex1Size = ovr_GetFovTextureSize(session, ovrEye_Right, desc.DefaultEyeFov[1], 1.0f);
-	Sizei bufferSize;
-	bufferSize.w = recommenedTex0Size.w + recommenedTex1Size.w;
-	bufferSize.h = max(recommenedTex0Size.h, recommenedTex1Size.h);
+	buffersize_width = recommenedTex0Size.w + recommenedTex1Size.w;
+	buffersize_height = max(recommenedTex0Size.h, recommenedTex1Size.h);
+#endif
+}
 
-	ovrSwapTextureSet *      pTextureSet = 0;
-	ID3D11RenderTargetView * pTexRtv[3];
+void VR::initD3D()
+{
+#if defined(_OVR_)
+	Sizei bufferSize;
+	bufferSize.w = buffersize_width;
+	bufferSize.h = buffersize_height;
+
 
 	// xapp->d3d11Device.Get() will not work, we need a real D3D11 device
+	
+	for (int i = 0; i < xapp->FrameCount; i++) {
+		ID3D12Resource *resource = xapp->renderTargets[i].Get();
+		D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
+		D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
+		ThrowIfFailed(xapp->d3d11On12Device->CreateWrappedResource(
+			resource,
+			&d3d11Flags,
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_STATE_PRESENT,
+			IID_PPV_ARGS(&xapp->wrappedBackBuffers[i])
+			));
+		//xapp->d3d11On12Device->AcquireWrappedResources(xapp->wrappedBackBuffers[i].GetAddressOf(), 1);
+	}
 
 	D3D11_TEXTURE2D_DESC dsDesc;
 	dsDesc.Width = bufferSize.w;
@@ -74,9 +94,27 @@ void VR::init()
 		for (int i = 0; i < pTextureSet->TextureCount; ++i)
 		{
 			ovrD3D11Texture* tex = (ovrD3D11Texture*)&pTextureSet->Textures[i];
-			//xapp->reald3d11Device->CreateRenderTargetView(tex->D3D11.pTexture, NULL, &pTexRtv[i]);
+			ComPtr<IDXGIResource> dxgires;
+			tex->D3D11.pTexture->QueryInterface<IDXGIResource>(&dxgires);
+			Log("dxgires = " << dxgires.GetAddressOf() << endl);
+			HANDLE shHandle;
+			dxgires->GetSharedHandle(&shHandle);
+			Log("shared handle = " << shHandle << endl);
+			//ComPtr<ID3D11Texture2D> tex11; 
+			xapp->d3d11Device->OpenSharedResource(shHandle, IID_PPV_ARGS(&xapp->wrappedTextures[i]));
+			xapp->reald3d11Device->CreateRenderTargetView(tex->D3D11.pTexture, NULL, &pTexRtv[i]);
 		}
 	}
+	// Initialize our single full screen Fov layer.
+	layer.Header.Type = ovrLayerType_EyeFov;
+	layer.Header.Flags = 0;
+	layer.ColorTexture[0] = pTextureSet;
+	layer.ColorTexture[1] = pTextureSet;
+	layer.Fov[0] = eyeRenderDesc[0].Fov;
+	layer.Fov[1] = eyeRenderDesc[1].Fov;
+	layer.Viewport[0] = Recti(0, 0, bufferSize.w / 2, bufferSize.h);
+	layer.Viewport[1] = Recti(bufferSize.w / 2, 0, bufferSize.w / 2, bufferSize.h);
+	// ld.RenderPose and ld.SensorSampleTime are updated later per frame.
 #endif
 }
 
@@ -228,4 +266,22 @@ void VR::nextTracking()
 		Matrix4fToXM(this->viewOVR[eye], view.Transposed());
 		Matrix4fToXM(this->projOVR[eye], projO.Transposed());
 	}
+}
+
+void VR::submitFrame()
+{
+	UINT frameIndex = xapp->swapChain->GetCurrentBackBufferIndex();
+
+	// Increment to use next texture, just before writing
+	pTextureSet->CurrentIndex = (pTextureSet->CurrentIndex + 1) % pTextureSet->TextureCount;
+	xapp->d3d11On12Device->AcquireWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+	xapp->d3d11DeviceContext->CopyResource(xapp->wrappedTextures[pTextureSet->CurrentIndex].Get(), xapp->wrappedBackBuffers[frameIndex].Get());
+	xapp->d3d11On12Device->ReleaseWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+	xapp->d3d11DeviceContext->Flush();
+
+	// Submit frame with one layer we have.
+	ovrLayerHeader* layers = &layer.Header;
+	ovrResult       result = ovr_SubmitFrame(session, 0, nullptr, &layers, 1);
+	bool isVisible = (result == ovrSuccess); 
+	//Log
 }

@@ -277,7 +277,29 @@ void PostEffect::draw()
 	UINT numVertices = 6;
 	commandLists[frameIndex]->DrawInstanced(numVertices, 1, 0, 0);
 
+	if (xapp().ovrRendering) ovrDraw();
 	postDraw();
+}
+
+void PostEffect::ovrDraw() {
+	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	// Note: do not transition the render target to present here.
+	// the transition will occur when the wrapped 11On12 render
+	// target resource is released.
+
+	//ThrowIfFailed(commandLists[frameIndex]->Close());
+	//// Execute the command list.
+	//ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
+	//xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+	//xapp().d3d11On12Device->AcquireWrappedResources(xapp().wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+	//xapp().d3d11DeviceContext->CopyResource(xapp().wrappedTextures[frameIndex].Get(), xapp().wrappedBackBuffers[frameIndex].Get());
+	//xapp().d3d11On12Device->ReleaseWrappedResources(xapp().wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+	//xapp().d3d11DeviceContext->Flush();
+
+	xapp().vr.submitFrame();
+
+	//rDesc = resource->GetDesc();
 }
 
 void PostEffect::postDraw() {

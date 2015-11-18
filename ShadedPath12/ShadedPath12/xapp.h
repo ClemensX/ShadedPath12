@@ -88,6 +88,8 @@ public:
 	ComPtr<ID3D12DescriptorHeap> rtvHeap;  // Resource Target View Heap
 	UINT rtvDescriptorSize;
 	ComPtr<ID3D12Resource> renderTargets[FrameCount];
+	ComPtr<ID3D11Resource> wrappedBackBuffers[FrameCount];
+	ComPtr<ID3D11Texture2D> wrappedTextures[FrameCount];
 	UINT lastPresentedFrame = 0;  // set directly before Present() to have 'old' frame number available
 	BYTE key_state[256];
 	int mouseDx;

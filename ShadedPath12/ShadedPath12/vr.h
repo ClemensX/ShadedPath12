@@ -16,7 +16,10 @@ class VR {
 public:
 	VR(XApp *xapp);
 	~VR();
+	// basic OVR initialization, called at start of xapp.init()
 	void init();
+	// init d3d resources, needs d3d11 devices ready, called within xapp.init()
+	void initD3D();
 	void initFrame();
 	void startFrame();
 	void endFrame();
@@ -25,6 +28,9 @@ public:
 	void prepareViews(D3D12_VIEWPORT &viewport, D3D12_RECT &scissorRect);
 	D3D12_VIEWPORT *getViewport() { return &viewports[curEye]; };
 	D3D12_RECT *getScissorRect() { return &scissorRects[curEye]; };
+	// getHeight and getWidth should only be called after init()
+	int getHeight() { return buffersize_height; };
+	int getWidth() { return buffersize_width; };
 	// prepare VR draw: save current camera pos/look/up, viewport and scissor rect
 	void prepareDraw();
 	// undo the chages to the camera made by prepareDraw
@@ -37,6 +43,7 @@ public:
 	bool isFirstEye();
 	// read HMD position and generate view parameters for both eyes
 	void nextTracking();
+	void submitFrame();
 	// get view matrix for current eye
 	XMFLOAT4X4 getOVRViewMatrix() { return viewOVR[curEye]; };
 	// get projection matrix for current eye
@@ -51,6 +58,8 @@ private:
 	XApp* xapp;
 	XMFLOAT4 cam_look, cam_up, cam_pos;
 	bool firstEye = false;
+	int buffersize_width = 0;
+	int buffersize_height = 0;
 
 #if defined(_OVR_)
 	ovrHmdDesc desc;
@@ -61,5 +70,9 @@ private:
 	ovrPosef         EyeRenderPose[2];     // Useful to remember where the rendered eye originated
 	float            YawAtRender[2];       // Useful to remember where the rendered eye originated
 	XMFLOAT4X4 viewOVR[2], projOVR[2];
+	ovrSwapTextureSet *      pTextureSet = 0;
+	ID3D11RenderTargetView * pTexRtv[3];
+	ovrLayerEyeFov layer;
+
 #endif
 };
