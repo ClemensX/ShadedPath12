@@ -74,6 +74,11 @@ public:
 
 	// 
 	ComPtr<ID3D12Device> device;
+	ComPtr<ID3D11Device> d3d11Device;
+	ComPtr<ID3D11DeviceContext> d3d11DeviceContext;
+	ComPtr<ID3D11Device> reald3d11Device;
+	ComPtr<ID3D11DeviceContext> reald3d11DeviceContext;
+	ComPtr<ID3D11On12Device> d3d11On12Device;
 	ComPtr<ID3D12RootSignature> rootSignature;
 	static const UINT FrameCount = 3;
 	ComPtr<IDXGISwapChain3> swapChain;

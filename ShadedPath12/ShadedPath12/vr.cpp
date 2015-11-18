@@ -42,6 +42,41 @@ void VR::init()
 	eyeRenderDesc[1] = ovr_GetRenderDesc(session, ovrEye_Right, desc.DefaultEyeFov[1]);
 
 	nextTracking();
+
+	// tracking setup complete, now init rendering:
+
+	// Configure Stereo settings.
+	Sizei recommenedTex0Size = ovr_GetFovTextureSize(session, ovrEye_Left, desc.DefaultEyeFov[0], 1.0f);
+	Sizei recommenedTex1Size = ovr_GetFovTextureSize(session, ovrEye_Right, desc.DefaultEyeFov[1], 1.0f);
+	Sizei bufferSize;
+	bufferSize.w = recommenedTex0Size.w + recommenedTex1Size.w;
+	bufferSize.h = max(recommenedTex0Size.h, recommenedTex1Size.h);
+
+	ovrSwapTextureSet *      pTextureSet = 0;
+	ID3D11RenderTargetView * pTexRtv[3];
+
+	// xapp->d3d11Device.Get() will not work, we need a real D3D11 device
+
+	D3D11_TEXTURE2D_DESC dsDesc;
+	dsDesc.Width = bufferSize.w;
+	dsDesc.Height = bufferSize.h;
+	dsDesc.MipLevels = 1;
+	dsDesc.ArraySize = 1;
+	dsDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;//DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+	dsDesc.SampleDesc.Count = 1;
+	dsDesc.SampleDesc.Quality = 0;
+	dsDesc.Usage = D3D11_USAGE_DEFAULT;
+	dsDesc.CPUAccessFlags = 0;
+	dsDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
+	dsDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+	if (ovr_CreateSwapTextureSetD3D11(session, xapp->reald3d11Device.Get(), &dsDesc, 0, &pTextureSet) == ovrSuccess)
+	{
+		for (int i = 0; i < pTextureSet->TextureCount; ++i)
+		{
+			ovrD3D11Texture* tex = (ovrD3D11Texture*)&pTextureSet->Textures[i];
+			//xapp->reald3d11Device->CreateRenderTargetView(tex->D3D11.pTexture, NULL, &pTexRtv[i]);
+		}
+	}
 #endif
 }
 

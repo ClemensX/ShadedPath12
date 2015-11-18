@@ -2,6 +2,7 @@
 
 #if defined(_OVR_)
 #include "../../../OculusSDK/LibOVR/Include/OVR_CAPI.h"
+#include "../../../OculusSDK/LibOVR/Include/OVR_CAPI_D3D.h"
 #include "../../../OculusSDK/LibOVR/Include/Extras/OVR_Math.h"
 using namespace OVR;
 #pragma comment(lib, "../../../OculusSDK/LibOVR/Lib/Windows/x64/Release/VS2015/LibOVR.lib")

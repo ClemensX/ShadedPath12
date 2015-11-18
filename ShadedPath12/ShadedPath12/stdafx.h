@@ -40,6 +40,7 @@ using namespace std;
 #include <DirectXPackedVector.h>
 #include <DirectXCollision.h>
 using namespace DirectX;
+#include <d3d11on12.h>
 #include <d3d12.h>
 #include <pix.h>
 
@@ -48,6 +49,7 @@ using namespace Microsoft::WRL;
 using namespace DirectX;
 
 #pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
 //d2d1.lib;dwrite.lib;d3d11.lib;d3d12.lib;dxgi.lib;
 

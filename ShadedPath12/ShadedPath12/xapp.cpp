@@ -176,14 +176,6 @@ void XApp::init()
 	if (initialized) return;
 
 	initialized = true;
-	camera.ovrCamera = true;
-	if (!ovrRendering) camera.ovrCamera = false;
-	if (ovrRendering) {
-		vr.init();
-	}
-
-	gametime.init(1); // init to real time
-	camera.setSpeed(1.0f);
 
 	if (appName.length() == 0) {
 		// no app name specified - just use first one from iterator
@@ -352,6 +344,55 @@ void XApp::init()
 		ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
 		ThrowIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
 	}
+	// 11 on 12 device support
+	UINT d3d11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+#if defined(_DEBUG)
+	d3d11DeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+	ThrowIfFailed(D3D11On12CreateDevice(
+		device.Get(),
+		d3d11DeviceFlags,
+		nullptr,
+		0,
+		reinterpret_cast<IUnknown**>(commandQueue.GetAddressOf()),
+		1,
+		0,
+		&d3d11Device,
+		&d3d11DeviceContext,
+		nullptr
+		));
+
+	// Query the 11On12 device from the 11 device.
+	ThrowIfFailed(d3d11Device.As(&d3d11On12Device));
+	// feature levels: we need DX 10.1 as minimum
+	D3D_FEATURE_LEVEL out_level;
+	array<D3D_FEATURE_LEVEL, 3> levels{ {
+			D3D_FEATURE_LEVEL_11_1,
+			D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL_10_1
+		} };
+	//ID3D11DeviceContext* context = nullptr;
+	ThrowIfFailed(D3D11CreateDevice(nullptr,
+		D3D_DRIVER_TYPE_HARDWARE,
+		nullptr,
+		D3D11_CREATE_DEVICE_DEBUG,
+		&levels[0],
+		levels.size(),
+		D3D11_SDK_VERSION,
+		&reald3d11Device,
+		&out_level,
+		&reald3d11DeviceContext));
+
+	// 11 on 12 end
+
+	camera.ovrCamera = true;
+	if (!ovrRendering) camera.ovrCamera = false;
+	if (ovrRendering) {
+		vr.init();
+	}
+
+	gametime.init(1); // init to real time
+	camera.setSpeed(1.0f);
 
 	app->init();
 	app->update();
