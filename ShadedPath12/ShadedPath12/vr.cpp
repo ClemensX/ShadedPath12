@@ -109,7 +109,7 @@ void VR::initD3D()
 	layer.Header.Type = ovrLayerType_EyeFov;
 	layer.Header.Flags = 0;
 	layer.ColorTexture[0] = pTextureSet;
-	layer.ColorTexture[1] = pTextureSet;
+	layer.ColorTexture[1] = nullptr;
 	layer.Fov[0] = eyeRenderDesc[0].Fov;
 	layer.Fov[1] = eyeRenderDesc[1].Fov;
 	layer.Viewport[0] = Recti(0, 0, bufferSize.w / 2, bufferSize.h);
@@ -226,9 +226,9 @@ void VR::nextTracking()
 {
 	// Get both eye poses simultaneously, with IPD offset already included. 
 	ovrVector3f useHmdToEyeViewOffset[2] = { eyeRenderDesc[0].HmdToEyeViewOffset, eyeRenderDesc[1].HmdToEyeViewOffset };
-	ovrPosef temp_EyeRenderPose[2];
+	//ovrPosef temp_EyeRenderPose[2];
 	ovrTrackingState ts = ovr_GetTrackingState(session, ovr_GetTimeInSeconds(), false);
-	ovr_CalcEyePoses(ts.HeadPose.ThePose, useHmdToEyeViewOffset, temp_EyeRenderPose);
+	ovr_CalcEyePoses(ts.HeadPose.ThePose, useHmdToEyeViewOffset, layer.RenderPose);
 
 	// Render the two undistorted eye views into their render buffers.  
 	for (int eye = 0; eye < 2; eye++)
@@ -236,7 +236,7 @@ void VR::nextTracking()
 		ovrPosef    * useEyePose = &EyeRenderPose[eye];
 		float       * useYaw = &YawAtRender[eye];
 		float Yaw = XM_PI;
-		*useEyePose = temp_EyeRenderPose[eye];
+		*useEyePose = layer.RenderPose[eye];
 		*useYaw = Yaw;
 
 		// Get view and projection matrices (note near Z to reduce eye strain)
