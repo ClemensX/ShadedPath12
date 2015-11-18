@@ -96,13 +96,12 @@ void VR::initD3D()
 			ovrD3D11Texture* tex = (ovrD3D11Texture*)&pTextureSet->Textures[i];
 			ComPtr<IDXGIResource> dxgires;
 			tex->D3D11.pTexture->QueryInterface<IDXGIResource>(&dxgires);
-			Log("dxgires = " << dxgires.GetAddressOf() << endl);
+			//Log("dxgires = " << dxgires.GetAddressOf() << endl);
 			HANDLE shHandle;
 			dxgires->GetSharedHandle(&shHandle);
-			Log("shared handle = " << shHandle << endl);
-			//ComPtr<ID3D11Texture2D> tex11; 
+			//Log("shared handle = " << shHandle << endl);
 			xapp->d3d11Device->OpenSharedResource(shHandle, IID_PPV_ARGS(&xapp->wrappedTextures[i]));
-			xapp->reald3d11Device->CreateRenderTargetView(tex->D3D11.pTexture, NULL, &pTexRtv[i]);
+			//xapp->reald3d11Device->CreateRenderTargetView(tex->D3D11.pTexture, NULL, &pTexRtv[i]);
 		}
 	}
 	// Initialize our single full screen Fov layer.

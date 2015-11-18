@@ -71,7 +71,6 @@ private:
 	float            YawAtRender[2];       // Useful to remember where the rendered eye originated
 	XMFLOAT4X4 viewOVR[2], projOVR[2];
 	ovrSwapTextureSet *      pTextureSet = 0;
-	ID3D11RenderTargetView * pTexRtv[3];
 	ovrLayerEyeFov layer;
 
 #endif
