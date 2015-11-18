@@ -23,7 +23,8 @@ If you now compile/run the sample will run only in a window. To render to the Ri
 Running the sample now should give you lots of lines to see inside the rift. 
 
 # Features for 0.0.1
-This is no end-user engine! The code is provided as a playground to test DirectX12 and/or Rift coding.
+This is no end-user engine! The code is provided as a playground to test DirectX 12 and/or Rift coding.
+Let the sample run. Look at the code. Use anything you find useful in your own projects.
 * Shader Code: Only very simple line drawing currently :blush: This is because I want to gather experience with DX12 before I invest a lot of time in shaders that I would have to rewrite with every major engine change
 More will definitely come.
 * Engine / Sample separation. Look at Sample1.cpp to see what you can currently do with this engine and see how it is done.
