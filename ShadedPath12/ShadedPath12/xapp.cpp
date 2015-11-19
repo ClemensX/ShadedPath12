@@ -348,7 +348,9 @@ void XApp::init()
 	// 11 on 12 device support
 	UINT d3d11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if defined(_DEBUG)
-	d3d11DeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+	if (disableDX11Debug == false) {
+		d3d11DeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+	}
 #endif
 	ThrowIfFailed(D3D11On12CreateDevice(
 		device.Get(),
@@ -373,10 +375,11 @@ void XApp::init()
 		D3D_FEATURE_LEVEL_10_1
 		} };
 	//ID3D11DeviceContext* context = nullptr;
+	UINT flags = disableDX11Debug ? 0 : D3D11_CREATE_DEVICE_DEBUG;
 	ThrowIfFailed(D3D11CreateDevice(nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
 		nullptr,
-		D3D11_CREATE_DEVICE_DEBUG,
+		flags,
 		&levels[0],
 		levels.size(),
 		D3D11_SDK_VERSION,

@@ -66,6 +66,9 @@ public:
 	HWND hwnd = 0;
 	bool ovrRendering = false;   // use split screen ovr rendering
 	bool warp; //use warp device to render (a.k.a. software rendering)
+	// on some systems there is no debug version of DX 11 available,
+	// then set -disableDX11Debug on command line to be able to let debug build run
+	bool disableDX11Debug = false;
 
 	int requestWidth, requestHeight;
 	// all drawing takes place in backbuffer - output to whatever size the window currently has is only last step
