@@ -9,7 +9,6 @@ public:
 	void init();
 	void update();
 	void draw();
-	void next();
 	void destroy();
 	string getWindowTitle();
 

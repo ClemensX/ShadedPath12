@@ -77,7 +77,7 @@ void Sample1::update()
 		linesEffect.add(lines);
 	}
 	linesEffect.update();
-	LinesEffect::cbv_ c;
+	LinesEffect::CBV c;
 	XMStoreFloat4x4(&c.wvp, xapp().camera.worldViewProjection());
 	linesEffect.updateCBV(c);
 }
@@ -86,11 +86,6 @@ void Sample1::draw()
 {
 	linesEffect.draw();
 	postEffect.draw();
-}
-
-void Sample1::next()
-{
-	linesEffect.next();
 }
 
 void Sample1::destroy()

@@ -20,10 +20,6 @@ void XAppBase::draw() {
 
 }
 
-void XAppBase::next() {
-
-}
-
 void XAppBase::destroy() {
 
 }
@@ -139,8 +135,6 @@ void XApp::draw() {
 	lastPresentedFrame = swapChain->GetCurrentBackBufferIndex();
 	ThrowIfFailedWithDevice(swapChain->Present(0, 0), xapp().device.Get());
 
-	app->next();
-	//MoveToNextFrame();
 	if (ovrRendering) {
 		vr.endFrame();
 	}
@@ -381,7 +375,7 @@ void XApp::init()
 		nullptr,
 		flags,
 		&levels[0],
-		levels.size(),
+		(UINT)levels.size(),
 		D3D11_SDK_VERSION,
 		&reald3d11Device,
 		&out_level,

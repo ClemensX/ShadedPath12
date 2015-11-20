@@ -25,7 +25,6 @@ public:
 	//virtual void resize();
 	virtual void update();
 	virtual void draw();
-	virtual void next();
 	virtual void destroy();
 	virtual string getWindowTitle() = 0;
 

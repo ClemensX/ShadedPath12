@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include "CompiledShaders/LineVS.h"
+#include "CompiledShaders/LinePS.h"
+
 void LinesEffect::init()
 {
 	// try to do all expensive operations like shader loading and PSO creation here
@@ -15,9 +18,6 @@ void LinesEffect::init()
 		// Describe and create the graphics pipeline state object (PSO).
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 		psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
-		psoDesc.pRootSignature = nullptr;//xapp().rootSignature.Get();  // TODO get it from shader compile later
-		//psoDesc.VS = { reinterpret_cast<UINT8*>(vertexShader->GetBufferPointer()), vertexShader->GetBufferSize() };
-		//psoDesc.PS = { reinterpret_cast<UINT8*>(pixelShader->GetBufferPointer()), pixelShader->GetBufferSize() };
 		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 		psoDesc.DepthStencilState.DepthEnable = FALSE;
@@ -27,14 +27,7 @@ void LinesEffect::init()
 		psoDesc.NumRenderTargets = 1;
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 		psoDesc.SampleDesc.Count = 1;
-		//ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
-#include "CompiledShaders/LineVS.h"
-#include "CompiledShaders/LinePS.h"
-		// test shade library functions
-		//{
-		//D3DLoadModule() uses ID3D11Module
-		//ComPtr<ID3DBlob> vShader;
-		//ThrowIfFailed(D3DReadFileToBlob(L"", &vShader));
+
 		psoDesc.VS = { binShader_LineVS, sizeof(binShader_LineVS) };
 		psoDesc.PS = { binShader_LinePS, sizeof(binShader_LinePS) };
 		ThrowIfFailed(xapp().device->CreateRootSignature(0, binShader_LinePS, sizeof(binShader_LinePS), IID_PPV_ARGS(&rootSignature)));
@@ -43,31 +36,7 @@ void LinesEffect::init()
 		ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
 		pipelineState.Get()->SetName(L"state_lines_init");
 
-		// set cbv:
-		// flow of control:
-		// initial phase:
-		// --> device->CreateCommittedResource()  (resource type is constant buffer)
-		// --> ID3D12Resource::GetGPUVirtualAddress
-		// --> constantBuffer->Map() to get GPUAdress to copy to from C++ code
-		// --> initially memcpy the cbv data to GPU
-		//
-		// update/render phase:
-		// -->SetGraphicsRootConstantBufferView(0, D3D12_GPU_VIRTUAL_ADDRESS); // on command list
-		// -->memcpy(GPUAdress, changed constant buffer content)
-
-		// CBV:
-		UINT cbvSize = calcConstantBufferSize(sizeof(cbv));
-		ThrowIfFailed(xapp().device->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-			D3D12_HEAP_FLAG_NONE, // do not set - dx12 does this automatically depending on resource type
-			&CD3DX12_RESOURCE_DESC::Buffer(cbvSize),
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&cbvResource)));
-		cbvResource.Get()->SetName(L"lines_cbv_resource");
-		//Log("GPU virtual: " <<  cbvResource->GetGPUVirtualAddress(); << endl);
-		//ThrowIfFailed(m_constantBuffer->Map(0, nullptr, reinterpret_cast<void**>(&m_pCbvDataBegin)));
-		cbvResource->Map(0, nullptr, reinterpret_cast<void**>(&cbvGPUDest));
+		createConstantBuffer((UINT) sizeof(cbv), L"lines_cbv_resource");
 		// set cbv data:
 		XMMATRIX ident = XMMatrixIdentity();
 		XMStoreFloat4x4(&cbv.wvp, ident);
@@ -139,99 +108,30 @@ void LinesEffect::updateTask()
 			all.push_back(v1);
 			all.push_back(v2);
 		}
-		UINT vertexBufferSize = (UINT)(sizeof(Vertex) * lines.size() * 2);
+		size_t vertexBufferSize = sizeof(Vertex) * lines.size() * 2;
 		mutex_lines.unlock();
+		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get());
 		UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
-		ThrowIfFailed(xapp().device->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
-			D3D12_RESOURCE_STATE_COPY_DEST,
-			nullptr,
-			IID_PPV_ARGS(&vertexBuffer)));
-		vertexBuffer.Get()->SetName(L"vertexBuffer_lines");
 
-		ThrowIfFailed(xapp().device->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&vertexBufferUpload)));
-		vertexBufferUpload.Get()->SetName(L"vertexBufferUpload_lines");
-		//Log(vertexBufferUpload->GetGPUVirtualAddress());
-		// Copy data to the intermediate upload heap and then schedule a copy 
-		// from the upload heap to the vertex buffer.
-		D3D12_SUBRESOURCE_DATA vertexData = {};
-		vertexData.pData = reinterpret_cast<UINT8*>(&(all.at(0)));
-		//vertexData.pData = &(all.at(0));
-		//vertexData.pData = reinterpret_cast<UINT8*>(triangleVertices);
-		vertexData.RowPitch = vertexBufferSize;
-		vertexData.SlicePitch = vertexData.RowPitch;
-
-		PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"lines: update vertex buffer");
-		commandLists[frameIndex].Get()->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get());
-		UpdateSubresources<1>(commandLists[frameIndex].Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData);
-		commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
-		PIXEndEvent(commandLists[frameIndex].Get());
-
-		// Initialize the vertex buffer view.
-		vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
-		vertexBufferView.StrideInBytes = sizeof(Vertex);
-		vertexBufferView.SizeInBytes = vertexBufferSize;
 		// Close the command list and execute it to begin the vertex buffer copy into
 		// the default heap.
 		ThrowIfFailed(commandLists[frameIndex]->Close());
 		ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
 		xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
-		// Create synchronization objects and wait until assets have been uploaded to the GPU.
-		{
-			//if (fence == nullptr) {
-			//	ThrowIfFailed(xapp().device->CreateFence(fenceValues[frameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.GetAddressOf())));
-			//	fence.Get()->SetName(L"fence_line");
-			//	//fence.ReleaseAndGetAddressOf();
-			//}
-			// Wait for the gpu to complete the update.
-			auto &f = frameData[frameIndex];
-			createSyncPoint(f, xapp().commandQueue);
-			WaitForSingleObject(f.fenceEvent, INFINITE);
-			//Log("frame " << frameIndex << " fence val = " << f.fenceValue << endl);
-			// Signal and increment the fence value.
-/*			const UINT64 fenceToWaitFor = fenceValues[frameIndex];
-			ThrowIfFailed(xapp().commandQueue->Signal(fence.Get(), fenceToWaitFor));
-			m_fenceValue++;
-
-			// Wait until the fence is completed.
-			ThrowIfFailed(m_fence->SetEventOnCompletion(fenceToWaitFor, m_fenceEvent));
-			WaitForSingleObject(m_fenceEvent, INFINITE);
-*/			//fenceValues[frameIndex]++;
-
-			//// Create an event handle to use for frame synchronization.
-			//fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-			//if (fenceEvent == nullptr)
-			//{
-			//	ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-			//}
-
-			// Wait for the command list to execute; we are reusing the same command 
-			// list in our main loop but for now, we just want to wait for setup to 
-			// complete before continuing.
-			//WaitForGpu();
-			//Sleep(10);
-		}
+		// Wait for the gpu to complete the update.
+		auto &f = frameData[frameIndex];
+		createSyncPoint(f, xapp().commandQueue);
+		WaitForSingleObject(f.fenceEvent, INFINITE);
+		//Sleep(10);
 	}
 }
 
-void LinesEffect::updateCBV(LinesEffect::cbv_ newCBV)
+void LinesEffect::updateCBV(CBV newCBV)
 {
 	updatedCBV = newCBV;
 	signalUpdateCBV = true;
 	//cbv.wvp._11 += 2.0f;
-}
-
-void LinesEffect::next() {
-	//MoveToNextFrame();
 }
 
 void LinesEffect::destroy()
@@ -239,11 +139,6 @@ void LinesEffect::destroy()
 	//WaitForGpu();
 	//CloseHandle(fenceEvent);
 }
-
-void LinesEffect::MoveToNextFrame()
-{
-}
-
 
 void LinesEffect::preDraw() {
 	// last frame must have been finished before we run here!!!
