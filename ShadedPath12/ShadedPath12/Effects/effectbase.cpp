@@ -31,7 +31,7 @@ void EffectBase::createConstantBuffer(size_t s, wchar_t * name)
 	ThrowIfFailed(cbvResource->Map(0, nullptr, reinterpret_cast<void**>(&cbvGPUDest)));
 }
 
-void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void *data, ID3D12PipelineState *pipelineState)
+void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void *data, ID3D12PipelineState *pipelineState, LPCWSTR baseName)
 {
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	UINT vertexBufferSize = (UINT)bufferSize;
@@ -42,7 +42,8 @@ void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSiz
 		D3D12_RESOURCE_STATE_COPY_DEST,
 		nullptr,
 		IID_PPV_ARGS(&vertexBuffer)));
-	vertexBuffer.Get()->SetName(L"vertexBuffer_lines");
+	wstring vbName = wstring(L"vertexBuffer_") + baseName;
+	vertexBuffer.Get()->SetName(vbName.c_str());
 
 	ThrowIfFailed(xapp().device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
@@ -51,7 +52,8 @@ void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSiz
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS(&vertexBufferUpload)));
-	vertexBufferUpload.Get()->SetName(L"vertexBufferUpload_lines");
+	wstring vbNameUpload = wstring(L"vertexBufferUpload_") + baseName;
+	vertexBufferUpload.Get()->SetName(vbNameUpload.c_str());
 	//Log(vertexBufferUpload->GetGPUVirtualAddress());
 	// Copy data to the intermediate upload heap and then schedule a copy 
 	// from the upload heap to the vertex buffer.

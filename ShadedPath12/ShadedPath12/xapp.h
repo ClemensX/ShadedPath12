@@ -53,6 +53,23 @@ public:
 	void parseCommandLine(string commandline);
 	bool getBoolParam(string key, bool default_value = false);
 	int getIntParam(string key, int default_value = 0);
+	// last shader should call this directly after Present() call
+	void frameFinished();
+	// check if RTV still has to be cleared - take VR rendering into account
+	bool rtvHasToBeCleared() {
+		if (rtvCleared) return false;  // nothing to do - already cleared during this frame
+		if (!ovrRendering || (ovrRendering && vr.isFirstEye())) {
+			return true;
+		}
+		return false;
+	};
+	void handleRTVClearing(ID3D12GraphicsCommandList *commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle) {
+		if (rtvHasToBeCleared()) {
+			rtvCleared = true;
+			const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
+			commandList->ClearRenderTargetView(rtv_handle, clearColor, 0, nullptr);
+		}
+	};
 
 	// query virtual key definitions (VK_) from Winuser.h
 	bool keyDown(BYTE key);
@@ -109,6 +126,7 @@ public:
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
 private:
 	UINT frameIndex;
+	bool rtvCleared = false; // shaders can ask if ClearRenderTargetView still has to be called (usually only first shader needs to)
 
 	unordered_map<string, XAppBase *> appMap;
 	bool initialized = false;

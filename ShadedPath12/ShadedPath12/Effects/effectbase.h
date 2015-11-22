@@ -36,7 +36,7 @@ protected:
 	UINT8* cbvGPUDest;  // mempy changed cbv data to this address before draw()
 
 	// vertex buffer
-	void createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void *data, ID3D12PipelineState *pipelineState);
+	void createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void *data, ID3D12PipelineState *pipelineState, LPCWSTR baseName);
 	ComPtr<ID3D12Resource> vertexBuffer;
 	ComPtr<ID3D12Resource> vertexBufferUpload;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;

@@ -17,6 +17,7 @@ private:
 	GameTime gameTime;
 	// used effects:
 	LinesEffect linesEffect;
+	Dotcross dotcrossEffect;
 	PostEffect postEffect;
 	// other:
 	LONGLONG startTime;

@@ -5,7 +5,7 @@
               "DescriptorTable( CBV(b1)), "
 
 
-// root signature: only has CBV that will hold the MVP matrix
+// root signature: only has CBV that will hold the WVP matrix
 #define LinesRS "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
               "CBV(b0, space = 0) "
 

@@ -19,6 +19,7 @@ string Sample1::getWindowTitle() {
 
 void Sample1::init()
 {
+	//dotcrossEffect.init();
 	linesEffect.init();
 	postEffect.init();
 	float aspectRatio = xapp().aspectRatio;
@@ -52,6 +53,12 @@ void Sample1::init()
 	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	Grid *g = xapp().world.createWorldGrid(10.0f);
 	linesEffect.add(g->lines);
+	XMFLOAT3 myPoints[] = {
+		XMFLOAT3(0.1f, 0.1f, 0.1f)
+	};
+	vector<XMFLOAT3> crossPoints;
+	for_each(begin(myPoints), end(myPoints), [&crossPoints](XMFLOAT3 p) {crossPoints.push_back(p); });
+	//dotcrossEffect.update(crossPoints);
 }
 
 void Sample1::update()
@@ -77,14 +84,17 @@ void Sample1::update()
 		linesEffect.add(lines);
 	}
 	linesEffect.update();
-	LinesEffect::CBV c;
-	XMStoreFloat4x4(&c.wvp, xapp().camera.worldViewProjection());
-	linesEffect.updateCBV(c);
+	//dotcrossEffect.update();
+	// WVP is now updated automatically during draw()
+	//LinesEffect::CBV c;
+	//XMStoreFloat4x4(&c.wvp, xapp().camera.worldViewProjection());
+	//linesEffect.updateCBV(c);
 }
 
 void Sample1::draw()
 {
-	linesEffect.draw();
+	linesEffect.draw(); // ALWAYS draw lineseffect first as it clears the screen
+	//dotcrossEffect.draw();
 	postEffect.draw();
 }
 

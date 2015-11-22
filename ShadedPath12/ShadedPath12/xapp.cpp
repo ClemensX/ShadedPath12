@@ -138,6 +138,7 @@ void XApp::draw() {
 	if (ovrRendering) {
 		vr.endFrame();
 	}
+	frameFinished();
 }
 
 #include "Initguid.h"
@@ -499,6 +500,10 @@ void XApp::resize(int width, int height) {
 }
 
 void XApp::resize() {
+}
+
+void XApp::frameFinished() {
+	rtvCleared = false;
 }
 
 // global instance:

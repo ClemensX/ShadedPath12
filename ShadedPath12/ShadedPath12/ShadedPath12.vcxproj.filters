@@ -70,6 +70,9 @@
     <ClInclude Include="vr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Effects\dotcross.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -107,6 +110,9 @@
     </ClCompile>
     <ClCompile Include="vr.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Effects\dotcross.cpp">
+      <Filter>Effects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

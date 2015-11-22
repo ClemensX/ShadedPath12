@@ -1,9 +1,10 @@
 #include "stdafx.h"
 
-#include "CompiledShaders/LineVS.h"
-#include "CompiledShaders/LinePS.h"
+#include "CompiledShaders/DotcrossVS.h"
+#include "CompiledShaders/DotcrossGS.h"
+#include "CompiledShaders/DotcrossPS.h"
 
-void LinesEffect::init()
+void Dotcross::init()
 {
 	// try to do all expensive operations like shader loading and PSO creation here
 	// Create the pipeline state, which includes compiling and loading shaders.
@@ -23,20 +24,23 @@ void LinesEffect::init()
 		psoDesc.DepthStencilState.DepthEnable = FALSE;
 		psoDesc.DepthStencilState.StencilEnable = FALSE;
 		psoDesc.SampleMask = UINT_MAX;
-		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
 		psoDesc.NumRenderTargets = 1;
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 		psoDesc.SampleDesc.Count = 1;
 
-		psoDesc.VS = { binShader_LineVS, sizeof(binShader_LineVS) };
-		psoDesc.PS = { binShader_LinePS, sizeof(binShader_LinePS) };
-		ThrowIfFailed(xapp().device->CreateRootSignature(0, binShader_LinePS, sizeof(binShader_LinePS), IID_PPV_ARGS(&rootSignature)));
-		rootSignature.Get()->SetName(L"lines_root_signature");
+		psoDesc.VS = { binShader_DotcrossVS, sizeof(binShader_DotcrossVS) };
+		psoDesc.GS = { binShader_DotcrossGS, sizeof(binShader_DotcrossGS) };
+		psoDesc.PS = { binShader_DotcrossPS, sizeof(binShader_DotcrossPS) };
+		//Sleep(4000);
+		xapp().device->CreateRootSignature(0, binShader_DotcrossGS, sizeof(binShader_DotcrossGS), IID_PPV_ARGS(&rootSignature));
+		//ThrowIfFailed(xapp().device->CreateRootSignature(0, binShader_DotcrossGS, sizeof(binShader_DotcrossGS), IID_PPV_ARGS(&rootSignature)));
+		//rootSignature.Get()->SetName(L"dotcross_root_signature");
 		psoDesc.pRootSignature = rootSignature.Get();
 		ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
-		pipelineState.Get()->SetName(L"state_lines_init");
+		pipelineState.Get()->SetName(L"state_dotcross_init");
 
-		createConstantBuffer((UINT) sizeof(cbv), L"lines_cbv_resource");
+		createConstantBuffer((UINT) sizeof(cbv), L"dotcross_cbv_resource");
 		// set cbv data:
 		XMMATRIX ident = XMMatrixIdentity();
 		XMStoreFloat4x4(&cbv.wvp, ident);
@@ -45,7 +49,7 @@ void LinesEffect::init()
 	}
 	// Create command allocators and command lists for each frame.
 	static LPCWSTR fence_names[XApp::FrameCount] = {
-		L"fence_lines_0", L"fence_lines_1", L"fence_lines_2"
+		L"fence_dotcross_0", L"fence_dotcross_1", L"fence_dotcross_2"
 	};
 	for (UINT n = 0; n < XApp::FrameCount; n++)
 	{
@@ -65,82 +69,59 @@ void LinesEffect::init()
 	}
 }
 
-void LinesEffect::addOneTime(vector<LineDef> &linesToAdd) {
-	if (linesToAdd.size() == 0 && lines.size() == 0)
+void Dotcross::update(vector<XMFLOAT3>& pts)
+{
+	if (pts.size() == 0 && points.size() == 0)
 		return;
-	addLines.insert(addLines.end(), linesToAdd.begin(), linesToAdd.end());
+	points.insert(points.end(), pts.begin(), pts.end());
 }
 
-void LinesEffect::add(vector<LineDef> &linesToAdd) {
-	if (linesToAdd.size() == 0 && lines.size() == 0)
-		return;
-	lines.insert(lines.end(), linesToAdd.begin(), linesToAdd.end());
-	dirty = true;
-}
-
-void LinesEffect::update() {
-	//dirty = true; // uncomment to force CBV update every frame
-	LinesEffect *l = this;
-	auto fut = async([l]{ return l->updateTask(); });
-	//return l->updateTask();
-}
-
-void LinesEffect::updateTask()
+void Dotcross::update()
 {
-	if (signalUpdateCBV) {
-		signalUpdateCBV = false;
-		cbv = updatedCBV;
-		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+	Dotcross *l = this;
+	auto fut = async([l] { return l->updateTask(); });
+}
+
+void Dotcross::updateTask()
+{
+	vector<Vertex> all;
+	mutex_dotcross.lock();
+	for (XMFLOAT3 pt : points) {
+		Vertex v1;
+		v1.pos.x = pt.x;
+		v1.pos.y = pt.y;
+		v1.pos.z = pt.z;
+		v1.color = Colors::Green;
+		all.push_back(v1);
 	}
-	// handle fixed lines:
-	if (dirty) {
-		//if (xapp().pGraphicsAnalysis != nullptr) xapp().pGraphicsAnalysis->BeginCapture();
-		// recreate vertex input buffer
-		dirty = false;
-		vector<Vertex> all;
-		mutex_lines.lock();
-		for (LineDef line : lines) {
-			Vertex v1, v2;
-			v1.color = line.color;
-			v1.pos = line.start;
-			v2.color = line.color;
-			v2.pos = line.end;
-			all.push_back(v1);
-			all.push_back(v2);
-		}
-		size_t vertexBufferSize = sizeof(Vertex) * lines.size() * 2;
-		mutex_lines.unlock();
-		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(), L"lines");
-		UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	size_t vertexBufferSize = sizeof(Vertex) * all.size();
+	mutex_dotcross.unlock();
+	createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(), L"dotcross");
+	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 
-		// Close the command list and execute it to begin the vertex buffer copy into
-		// the default heap.
-		ThrowIfFailed(commandLists[frameIndex]->Close());
-		ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
-		xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	// Close the command list and execute it to begin the vertex buffer copy into
+	// the default heap.
+	ThrowIfFailed(commandLists[frameIndex]->Close());
+	ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
+	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
-		// Wait for the gpu to complete the update.
-		auto &f = frameData[frameIndex];
-		createSyncPoint(f, xapp().commandQueue);
-		WaitForSingleObject(f.fenceEvent, INFINITE);
-		//Sleep(10);
-	}
+	// Wait for the gpu to complete the update.
+	auto &f = frameData[frameIndex];
+	createSyncPoint(f, xapp().commandQueue);
+	WaitForSingleObject(f.fenceEvent, INFINITE);
+	//Sleep(10);
 }
 
-void LinesEffect::updateCBV(CBV newCBV)
+void Dotcross::setLineLength(float lineLength)
 {
-	updatedCBV = newCBV;
-	signalUpdateCBV = true;
-	//cbv.wvp._11 += 2.0f;
 }
 
-void LinesEffect::destroy()
+void Dotcross::destroy()
 {
-	//WaitForGpu();
-	//CloseHandle(fenceEvent);
 }
 
-void LinesEffect::preDraw() {
+void Dotcross::preDraw()
+{
 	// last frame must have been finished before we run here!!!
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	//auto &f = frameData[xapp().lastPresentedFrame];
@@ -171,11 +152,13 @@ void LinesEffect::preDraw() {
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
 	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle);
+	// Record commands.
 }
 
-void LinesEffect::draw()
+void Dotcross::draw()
 {
+	if (points.size() == 0)
+		return;
 	if (!xapp().ovrRendering) {
 		XMStoreFloat4x4(&cbv.wvp, xapp().camera.worldViewProjection());
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
@@ -195,25 +178,20 @@ void LinesEffect::draw()
 	xapp().vr.endDraw();
 }
 
-void LinesEffect::drawInternal()
+void Dotcross::drawInternal()
 {
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	preDraw();
-	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
-	auto numVertices = lines.size() * 2;
+	auto numVertices = points.size();
 	commandLists[frameIndex]->DrawInstanced((UINT)numVertices, 1, 0, 0);
 	postDraw();
 }
 
-void LinesEffect::postDraw() {
+void Dotcross::postDraw()
+{
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
-	// Note: do not transition the render target to present here.
-	// the transition will occur when the wrapped 11On12 render
-	// target resource is released.
-
-	// Indicate that the back buffer will now be used to present.
-	//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(xapp().renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
 	ThrowIfFailed(commandLists[frameIndex]->Close());
 	// Execute the command list.
@@ -224,7 +202,5 @@ void LinesEffect::postDraw() {
 	// Wait for the gpu to complete the draw.
 	createSyncPoint(f, xapp().commandQueue);
 	waitForSyncPoint(f); // ok, but not optimal
-	//Sleep(100);
-	//Log("frame " << frameIndex << " fence val = " << f.fenceValue << endl);
 }
 

@@ -21,7 +21,6 @@ public:
 	void addOneTime(vector<LineDef> &linesToAdd);
 	// update cbuffer and vertex buffer
 	void update();
-	void updateTask();
 	void updateCBV(CBV newCBV);
 	// draw all lines in single call to GPU
 	void draw();
@@ -40,5 +39,6 @@ private:
 	bool signalUpdateCBV = false;
 	mutex mutex_lines;
 	void drawInternal();
+	void updateTask();
 
 };
