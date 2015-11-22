@@ -122,7 +122,8 @@ void LinesEffect::updateTask()
 		// Wait for the gpu to complete the update.
 		auto &f = frameData[frameIndex];
 		createSyncPoint(f, xapp().commandQueue);
-		WaitForSingleObject(f.fenceEvent, INFINITE);
+		waitForSyncPoint(f);
+		//WaitForSingleObject(f.fenceEvent, INFINITE);
 		//Sleep(10);
 	}
 }

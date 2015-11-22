@@ -1,26 +1,26 @@
 #include "stdafx.h"
-#include "sample1.h"
+#include "testDotcross.h"
 
 
-Sample1::Sample1() : XAppBase()
+TestDotcross::TestDotcross() : XAppBase()
 {
 	myClass = string(typeid(*this).name());
 	xapp().registerApp(myClass, this);
 }
 
 
-Sample1::~Sample1()
+TestDotcross::~TestDotcross()
 {
 }
 
-string Sample1::getWindowTitle() {
-	return "DX12 Sample";
+string TestDotcross::getWindowTitle() {
+	return "DX12 Sample - Test Dotcross shader";
 }
 
-void Sample1::init()
+void TestDotcross::init()
 {
 	dotcrossEffect.init();
-	linesEffect.init();
+	//linesEffect.init();
 	postEffect.init();
 	float aspectRatio = xapp().aspectRatio;
 
@@ -33,7 +33,7 @@ void Sample1::init()
 	vector<LineDef> lines;
 	// add all intializer objects to vector:
 	for_each(begin(myLines), end(myLines), [&lines](LineDef l) {lines.push_back(l);});
-	linesEffect.add(lines);
+	//linesEffect.add(lines);
 	// initialize game time to real time:
 	gameTime.init(1);
 	startTime = gameTime.getRealTime();
@@ -52,7 +52,7 @@ void Sample1::init()
 
 	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	Grid *g = xapp().world.createWorldGrid(10.0f);
-	linesEffect.add(g->lines);
+	//linesEffect.add(g->lines);
 	XMFLOAT3 myPoints[] = {
 		XMFLOAT3(0.1f, 0.1f, 0.1f)
 	};
@@ -61,7 +61,7 @@ void Sample1::init()
 	dotcrossEffect.update(crossPoints);
 }
 
-void Sample1::update()
+void TestDotcross::update()
 {
 	gameTime.advanceTime();
 	LONGLONG now = gameTime.getRealTime();
@@ -81,9 +81,9 @@ void Sample1::update()
 		// add all intializer objects to vector:
 		vector<LineDef> lines;
 		for_each(begin(myLines), end(myLines), [&lines](LineDef l) {lines.push_back(l);});
-		linesEffect.add(lines);
+		//linesEffect.add(lines);
 	}
-	linesEffect.update();
+	//linesEffect.update();
 	dotcrossEffect.update();
 	// WVP is now updated automatically during draw()
 	//LinesEffect::CBV c;
@@ -91,16 +91,16 @@ void Sample1::update()
 	//linesEffect.updateCBV(c);
 }
 
-void Sample1::draw()
+void TestDotcross::draw()
 {
-	linesEffect.draw(); // ALWAYS draw lineseffect first as it clears the screen
+	//linesEffect.draw(); // ALWAYS draw lineseffect first as it clears the screen
 	dotcrossEffect.draw();
 	postEffect.draw();
 }
 
-void Sample1::destroy()
+void TestDotcross::destroy()
 {
 	//linesEffect.destroy();
 }
 
-static Sample1 sample1;
+static TestDotcross testDotcross;

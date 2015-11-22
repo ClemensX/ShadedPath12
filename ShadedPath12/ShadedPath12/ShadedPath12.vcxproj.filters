@@ -20,6 +20,9 @@
     <Filter Include="Effects">
       <UniqueIdentifier>{2a7ea5cf-1942-41d5-8c26-c18844ecfbdb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Apps">
+      <UniqueIdentifier>{ff89f689-c46c-40da-aff9-cf1db665a1d1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -38,9 +41,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xapp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sample1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="util.h">
@@ -73,6 +73,12 @@
     <ClInclude Include="Effects\dotcross.h">
       <Filter>Effects</Filter>
     </ClInclude>
+    <ClInclude Include="sample1.h">
+      <Filter>Apps</Filter>
+    </ClInclude>
+    <ClInclude Include="testDotcross.h">
+      <Filter>Apps</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -82,9 +88,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="xapp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sample1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="util.cpp">
@@ -113,6 +116,12 @@
     </ClCompile>
     <ClCompile Include="Effects\dotcross.cpp">
       <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="sample1.cpp">
+      <Filter>Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="testDotcross.cpp">
+      <Filter>Apps</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

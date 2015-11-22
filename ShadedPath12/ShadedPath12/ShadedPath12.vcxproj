@@ -163,6 +163,7 @@
     <ClInclude Include="gametime.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="sample1.h" />
+    <ClInclude Include="testDotcross.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="vr.h" />
     <ClInclude Include="winmain.h" />
@@ -179,6 +180,7 @@
     <ClCompile Include="Effects\posteffect.cpp" />
     <ClCompile Include="gametime.cpp" />
     <ClCompile Include="sample1.cpp" />
+    <ClCompile Include="testDotcross.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="vr.cpp" />
     <ClCompile Include="winmain.cpp" />

@@ -44,6 +44,7 @@ void Dotcross::init()
 		// set cbv data:
 		XMMATRIX ident = XMMatrixIdentity();
 		XMStoreFloat4x4(&cbv.wvp, ident);
+		cbv.linelen = this->currentLinerLenth;
 		//cbv.wvp._11 += 2.0f;
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 	}
@@ -80,6 +81,7 @@ void Dotcross::update()
 {
 	Dotcross *l = this;
 	auto fut = async([l] { return l->updateTask(); });
+	//return l->updateTask();
 }
 
 void Dotcross::updateTask()
@@ -108,7 +110,8 @@ void Dotcross::updateTask()
 	// Wait for the gpu to complete the update.
 	auto &f = frameData[frameIndex];
 	createSyncPoint(f, xapp().commandQueue);
-	WaitForSingleObject(f.fenceEvent, INFINITE);
+	waitForSyncPoint(f);
+	//WaitForSingleObject(f.fenceEvent, INFINITE);
 	//Sleep(10);
 }
 
@@ -152,7 +155,7 @@ void Dotcross::preDraw()
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
 	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-	// Record commands.
+	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle);
 }
 
 void Dotcross::draw()
