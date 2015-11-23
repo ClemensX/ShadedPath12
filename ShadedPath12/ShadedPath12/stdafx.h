@@ -127,4 +127,5 @@ inline void ErrorExt(wstring msg, const char* file, DWORD line)
 #include "Effects\effectbase.h"
 #include "Effects\lines.h"
 #include "Effects\dotcross.h"
+#include "Effects\linetext.h"
 #include "Effects\posteffect.h"

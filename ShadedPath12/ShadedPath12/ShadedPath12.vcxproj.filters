@@ -79,6 +79,12 @@
     <ClInclude Include="testDotcross.h">
       <Filter>Apps</Filter>
     </ClInclude>
+    <ClInclude Include="testLinetext.h">
+      <Filter>Apps</Filter>
+    </ClInclude>
+    <ClInclude Include="Effects\linetext.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -123,6 +129,12 @@
     <ClCompile Include="testDotcross.cpp">
       <Filter>Apps</Filter>
     </ClCompile>
+    <ClCompile Include="testLinetext.cpp">
+      <Filter>Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="Effects\linetext.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ShadedPath.rc">
@@ -164,6 +176,12 @@
     <FxCompile Include="Shaders\DotcrossGS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\LinetextGS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\LinetextVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Line.hlsli">
@@ -173,6 +191,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\Dotcross.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\Linetext.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

@@ -159,11 +159,13 @@
     <ClInclude Include="Effects\dotcross.h" />
     <ClInclude Include="Effects\effectbase.h" />
     <ClInclude Include="Effects\lines.h" />
+    <ClInclude Include="Effects\linetext.h" />
     <ClInclude Include="Effects\posteffect.h" />
     <ClInclude Include="gametime.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="sample1.h" />
     <ClInclude Include="testDotcross.h" />
+    <ClInclude Include="testLinetext.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="vr.h" />
     <ClInclude Include="winmain.h" />
@@ -177,10 +179,12 @@
     <ClCompile Include="Effects\dotcross.cpp" />
     <ClCompile Include="Effects\effectbase.cpp" />
     <ClCompile Include="Effects\lines.cpp" />
+    <ClCompile Include="Effects\linetext.cpp" />
     <ClCompile Include="Effects\posteffect.cpp" />
     <ClCompile Include="gametime.cpp" />
     <ClCompile Include="sample1.cpp" />
     <ClCompile Include="testDotcross.cpp" />
+    <ClCompile Include="testLinetext.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="vr.cpp" />
     <ClCompile Include="winmain.cpp" />
@@ -220,6 +224,14 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
     </FxCompile>
+    <FxCompile Include="Shaders\LinetextGS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\LinetextVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Shaders\LineVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
@@ -243,6 +255,7 @@
   <ItemGroup>
     <None Include="Shaders\Dotcross.hlsli" />
     <None Include="Shaders\Line.hlsli" />
+    <None Include="Shaders\Linetext.hlsli" />
     <None Include="Shaders\Post.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
