@@ -179,12 +179,24 @@ void Linetext::drawInternal()
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	int i = 0;
 	for (auto line : lines) {
+		size_t vertexBufferSize = sizeof(TextElement)* line.letters.size();
+		createAndUploadVertexBuffer(vertexBufferSize, sizeof(TextElement), &(lines.at(i++).letters.at(0)), pipelineState.Get(), L"Linetext");
+		UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+
+		// Close the command list and execute it to begin the vertex buffer copy into
+		// the default heap.
+		ThrowIfFailed(commandLists[frameIndex]->Close());
+		ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
+		xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+		// Wait for the gpu to complete the update.
+		auto &f = frameData[frameIndex];
+		createSyncPoint(f, xapp().commandQueue);
+		waitForSyncPoint(f);
+
 		preDraw();
 		commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 		// update buffers for this text line:
-		size_t vertexBufferSize = sizeof(TextElement)* line.letters.size();
-		createAndUploadVertexBuffer(vertexBufferSize, sizeof(TextElement), &(lines.at(i++).letters.at(0)), pipelineState.Get(), L"Linetext");
-
 		//XMStoreFloat4x4(&cbv.wvp, wvp);
 		cbv.rot = line.rot;
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));

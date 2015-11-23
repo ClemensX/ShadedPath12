@@ -52,7 +52,7 @@ void TestLinetext::init()
 	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	//textEffect.addTextLine(XMFLOAT4(14.0f, 2 * lineHeight, 10.0f, 0.0f), "Shaded Path Engine Build 2015_01_11", Linetext::XY);
 	textEffect.addTextLine(XMFLOAT4(0.0f, 0 * lineHeight, 0.0f, 0.0f), "Shaded Path 12 Engine Build 2015_11_23", Linetext::XY);
-	textEffect.addTextLine(XMFLOAT4(0.0f, 1 * lineHeight, 0.0f, 0.0f), "Huhu!", Linetext::XY);
+	//textEffect.addTextLine(XMFLOAT4(0.0f, 1 * lineHeight, 0.0f, 0.0f), "Huhu!", Linetext::XY);
 }
 
 void TestLinetext::update()
