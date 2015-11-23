@@ -18,9 +18,9 @@ public:
 	void draw();
 	void setLineLength(float lineLength);
 	void destroy();
+	vector<XMFLOAT3> points;
 
 private:
-	vector<XMFLOAT3> points;
 	float currentLinerLenth = 1.0f;
 
 	ComPtr<ID3D12PipelineState> pipelineState;

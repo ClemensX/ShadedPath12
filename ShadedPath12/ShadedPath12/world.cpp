@@ -141,6 +141,13 @@ Grid* World::createWorldGrid(float lineGap) {
 	return &grid;
 }
 
+XMFLOAT3 World::getRandomPos() {
+	float x = MathHelper::RandF(-sizex / 2.0f, sizex / 2.0f);
+	float z = MathHelper::RandF(-sizez / 2.0f, sizez / 2.0f);
+	float y = MathHelper::RandF(0.0f, sizey);
+	return XMFLOAT3(x, y, z);
+}
+
 // lights:
 /*
 void World::addPointLight(PointLight pLight, int id) {

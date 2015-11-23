@@ -91,6 +91,9 @@ public:
 	//XApp* getApp() { return xapp; };
 
 	//unique_ptr<WorldObjectStore> objectStore;
+
+	// randomly generate ine position within the defined world coords
+	XMFLOAT3 getRandomPos();
 private:
 	// world size in absolute units around origin, e.g. x is from -x to x
 	float sizex, sizey, sizez;

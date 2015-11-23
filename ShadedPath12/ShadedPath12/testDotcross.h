@@ -21,5 +21,6 @@ private:
 	PostEffect postEffect;
 	// other:
 	LONGLONG startTime;
+	bool autoAdd = true; // auto add crosses every second
 };
 

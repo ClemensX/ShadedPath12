@@ -59,6 +59,7 @@ void TestDotcross::init()
 	vector<XMFLOAT3> crossPoints;
 	for_each(begin(myPoints), end(myPoints), [&crossPoints](XMFLOAT3 p) {crossPoints.push_back(p); });
 	dotcrossEffect.update(crossPoints);
+	autoAdd = true; // set to false for disabling auto cross add
 }
 
 void TestDotcross::update()
@@ -66,22 +67,15 @@ void TestDotcross::update()
 	gameTime.advanceTime();
 	LONGLONG now = gameTime.getRealTime();
 	static bool done = false;
-	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
-		done = true;
-		//if (xapp().pGraphicsAnalysis != nullptr) xapp().pGraphicsAnalysis->BeginCapture();
-		//Sleep(1000);
-
-		float aspectRatio = xapp().aspectRatio;
-		LineDef myLines[] = {
-			// start, end, color
-			{ XMFLOAT3(0.1f, 0.15f * aspectRatio, 0.0f), XMFLOAT3(0.15f, -0.35f * aspectRatio, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
-			{ XMFLOAT3(0.15f, -0.35f * aspectRatio, 0.0f), XMFLOAT3(-0.15f, -0.35f * aspectRatio, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
-			{ XMFLOAT3(-0.15f, -0.35f * aspectRatio, 0.0f), XMFLOAT3(0.1f, 0.15f * aspectRatio, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) }
-		};
-		// add all intializer objects to vector:
-		vector<LineDef> lines;
-		for_each(begin(myLines), end(myLines), [&lines](LineDef l) {lines.push_back(l);});
-		//linesEffect.add(lines);
+	if (gameTime.getSecondsBetween(startTime, now) > 1) {
+		startTime = now;
+		vector<XMFLOAT3> addCrossPoints;
+		for (int i = 0; i < 100; i++) {
+			XMFLOAT3 rnd = xapp().world.getRandomPos();
+			addCrossPoints.push_back(rnd);
+		}
+		dotcrossEffect.update(addCrossPoints);
+		Log("# crosses: " << dotcrossEffect.points.size() << endl);
 	}
 	//linesEffect.update();
 	dotcrossEffect.update();
