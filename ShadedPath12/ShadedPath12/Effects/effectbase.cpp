@@ -9,10 +9,18 @@ void EffectBase::createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> qu
 
 void EffectBase::waitForSyncPoint(FrameResource & f)
 {
+	//UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	UINT64 completed = f.fence->GetCompletedValue();
-	if (completed < f.fenceValue)
+	//Log("ev start " << frameIndex << " " << completed << " " << f.fenceValue << endl);
+	if (completed > 100000) {
+		Log("ev MAX " << completed << " " << f.fenceValue << endl);
+	}
+	if (completed <= f.fenceValue)
 	{
 		WaitForSingleObject(f.fenceEvent, INFINITE);
+	}
+	else {
+		Log("ev " << completed << " " << f.fenceValue << endl);
 	}
 }
 

@@ -129,8 +129,8 @@ void Dotcross::preDraw()
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	//auto &f = frameData[xapp().lastPresentedFrame];
 	//waitForSyncPoint(f);
-	auto &f = frameData[frameIndex];
-	waitForSyncPoint(f);
+	//auto &f = frameData[frameIndex];
+	//waitForSyncPoint(f);
 	// Command list allocators can only be reset when the associated 
 	// command lists have finished execution on the GPU; apps should use 
 	// fences to determine GPU execution progress.

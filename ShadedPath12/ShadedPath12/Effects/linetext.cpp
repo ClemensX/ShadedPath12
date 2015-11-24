@@ -60,7 +60,8 @@ void Linetext::init()
 		// to record yet. The main loop expects it to be closed, so close it now.
 		ThrowIfFailed(commandLists[n]->Close());
 		// init fences:
-		ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frameData[n].fence.GetAddressOf())));
+		//ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frameData[n].fence.GetAddressOf())));
+		ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frameData[n].fence)));
 		frameData[n].fence->SetName(fence_names[n]);
 		frameData[n].fenceValue = 0;
 		frameData[n].fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
@@ -124,8 +125,8 @@ void Linetext::preDraw()
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	//auto &f = frameData[xapp().lastPresentedFrame];
 	//waitForSyncPoint(f);
-	auto &f = frameData[frameIndex];
-	waitForSyncPoint(f);
+	//auto &f = frameData[frameIndex];
+	//waitForSyncPoint(f);
 	// Command list allocators can only be reset when the associated 
 	// command lists have finished execution on the GPU; apps should use 
 	// fences to determine GPU execution progress.
@@ -219,6 +220,7 @@ void Linetext::postDraw()
 	// Wait for the gpu to complete the draw.
 	createSyncPoint(f, xapp().commandQueue);
 	waitForSyncPoint(f); // ok, but not optimal
+	//Sleep(1);
 }
 
 int Linetext::getLetterValue(char c) {

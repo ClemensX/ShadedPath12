@@ -432,9 +432,10 @@ void XApp::registerApp(string name, XAppBase *app)
 		name = name.substr(name.find_last_of(' '/*, name.size()*/) + 1);
 	}
 	appMap[name] = app;
-	for_each(appMap.begin(), appMap.end(), [](auto element) {
-		Log("xapp registered: " << element.first.c_str() << endl);
-	});
+	Log("xapp registered: " << name.c_str() << endl);
+	//for_each(appMap.begin(), appMap.end(), [](auto element) {
+	//	Log("xapp registered: " << element.first.c_str() << endl);
+	//});
 }
 
 void XApp::parseCommandLine(string commandline) {
