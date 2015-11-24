@@ -38,7 +38,7 @@ void World::drawBox(BoundingBox &box, LinesEffect *linestEffect) {
 	linestEffect->addOneTime(v);
 }
 
-/*void World::drawCoordinateSystem(XMFLOAT4 point, string label, unique_ptr<Linetext>& linetextEffect, unique_ptr<Dotcross>& dotcrossEffect, float charHeight) {
+void World::drawCoordinateSystem(XMFLOAT4 point, string label, Linetext &linetextEffect, Dotcross& dotcrossEffect, float charHeight) {
 	wstring l = string2wstring(label);
 	//Log("label for drawCoordinateSystem: " << l << "\n");
 	XMFLOAT4 labelPos = point;
@@ -48,21 +48,21 @@ void World::drawBox(BoundingBox &box, LinesEffect *linestEffect) {
 	XMMATRIX rot = XMMatrixRotationRollPitchYaw(0, XM_PIDIV4, -XM_PIDIV4);
 	XMFLOAT4X4 r;
 	XMStoreFloat4x4(&r, rot);
-	int labelLine = linetextEffect->addTextLine(labelPos, label, r);
+	int labelLine = linetextEffect.addTextLine(labelPos, label, r);
 	XMFLOAT4 xPos = point;
 	XMFLOAT4 yPos = point;
 	XMFLOAT4 zPos = point;
 	float b = charHeight * 3;
 	xPos.x += b;
-	int xLine = linetextEffect->addTextLine(xPos, "-> x", Linetext::XY);
+	int xLine = linetextEffect.addTextLine(xPos, "-> x", Linetext::XY);
 	yPos.y += b;
-	int yLine = linetextEffect->addTextLine(yPos, "-> y", Linetext::YX);
+	int yLine = linetextEffect.addTextLine(yPos, "-> y", Linetext::YX);
 	zPos.z += b;
-	int zLine = linetextEffect->addTextLine(zPos, "-> z", Linetext::ZY);
-	vector<XMFLOAT4> pts;
-	pts.push_back(point);
-	dotcrossEffect->update(pts);
-}*/
+	int zLine = linetextEffect.addTextLine(zPos, "-> z", Linetext::ZY);
+	vector<XMFLOAT3> pts;
+	pts.push_back(XMFLOAT3(point.x, point.y, point.z));
+	dotcrossEffect.update(pts);
+}
 
 void World::createGridXZ(Grid& grid, bool linesmode) {
 	int zLineCount = grid.depthCells + 1;
@@ -118,22 +118,22 @@ void World::createGridXZ(Grid& grid, bool linesmode) {
 	}
 }
 
-Grid* World::createWorldGrid(float lineGap) {
+Grid* World::createWorldGrid(float lineGap, float verticalAdjust) {
 	grid.center = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	grid.depth = sizez;
 	grid.width = sizex;
 	grid.depthCells = (int)(grid.depth / lineGap);
 	grid.widthCells = (int)(grid.width / lineGap);
 	//createGridXZ(grid);
-	float low = 0.0f; // -sizey / 2.0f;
-	float high = sizey;// / 2.0f;
+	float low = 0.0f + verticalAdjust;   // -sizey / 2.0f;
+	float high = sizey + verticalAdjust; // / 2.0f;
 	float step = lineGap;
 	for (float y = low; y <= high; y += step) {
 		grid.center.y = y;
 //		createGridXZ(grid);
 	}
-	grid.center.y = 0;
-	createGridXZ(grid);
+	//grid.center.y = 0;
+	//createGridXZ(grid);
 	grid.center.y = low;
 	createGridXZ(grid);
 	grid.center.y = high;

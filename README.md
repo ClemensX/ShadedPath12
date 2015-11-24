@@ -8,6 +8,7 @@ Target Platform is Windows 10 (64 bit only).
 Some tools are Java based and use eclipse 4. This is mostly done for tools used in asset handling.
 
 # Versions
+* 0.0.2 - added more examples and shaders: draw crosses and 3D text
 * 0.0.1 - line rendering for Oculus Rift
 * 0.0 - port / test / implement DX12 features. Expect drastic changes at any time. Will have very limited use to look at and may not even compile.
 
@@ -20,7 +21,14 @@ Now start the solution file F:\dev\dx12test\ShadedPath12\ShadedPath12\ShadedPath
 
 If you now compile/run the sample will run only in a window. To render to the Rift, go to the configuration properties/Debugging/Command Arguments and add -vr
 
-Running the sample now should give you lots of lines to see inside the rift. 
+Running Sample1 now should give you lots of lines to see inside the rift. 
+
+# Features for 0.0.2
+Added two geometry shaders:
+* Dotcross: Very simple geometry shader to draw crosses consisting of two lines at any world position
+* Linetext: Copy text to the GPU where a geometry shader draws each letter out of simple lines. Intended as a diagnostics tool, e.g. for displaying FPS or other
+info text directly in the 3d world
+
 
 # Features for 0.0.1
 This is no end-user engine! The code is provided as a playground to test DirectX 12 and/or Rift coding.

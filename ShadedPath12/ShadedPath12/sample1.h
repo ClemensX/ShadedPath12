@@ -18,6 +18,7 @@ private:
 	// used effects:
 	LinesEffect linesEffect;
 	Dotcross dotcrossEffect;
+	Linetext textEffect;
 	PostEffect postEffect;
 	// other:
 	LONGLONG startTime;

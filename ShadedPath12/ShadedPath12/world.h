@@ -55,10 +55,10 @@ public:
 	// draw box (used for bounding box drawing)
 	void drawBox(BoundingBox &box, LinesEffect *linesEffect);
 	// draw coordinate system at world position, each axis will be designated via labels
-	//void drawCoordinateSystem(XMFLOAT4 point, string label, unique_ptr<Linetext>& linetextEffect, unique_ptr<Dotcross>& dotcrossEffect, float charHeight = 0.01f);
+	void drawCoordinateSystem(XMFLOAT4 point, string label, Linetext &linetextEffect, Dotcross& dotcrossEffect, float charHeight = 0.01f);
 	// create Grid in x (width) and z (depth) direction, linesmode means create simple long lines, otherwise create vertex/index vectors
 	void createGridXZ(Grid& grid, bool linesmode = true);
-	Grid* createWorldGrid(float lineGap);
+	Grid* createWorldGrid(float lineGap, float verticalAdjust = 0.0f);
 	void setWorldSize(float x, float y, float z) { sizex = x; sizey = y; sizez = z; };
 
 	/*	// objects

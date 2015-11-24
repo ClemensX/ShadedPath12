@@ -117,6 +117,7 @@ void Dotcross::updateTask()
 
 void Dotcross::setLineLength(float lineLength)
 {
+	cbv.linelen = lineLength;
 }
 
 void Dotcross::destroy()
