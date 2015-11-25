@@ -22,5 +22,6 @@ private:
 	PostEffect postEffect;
 	// other:
 	LONGLONG startTime;
+	int framenumLine, fpsLine;  // indexes into the text array for Linetext effect
 };
 

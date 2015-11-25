@@ -52,6 +52,9 @@ void Sample1::init()
 
 	textEffect.setSize(textSize);
 	dotcrossEffect.setLineLength(6.0f * textSize);
+	textEffect.addTextLine(XMFLOAT4(-5.0f, 5 * lineHeight, 0.0f, 0.0f), "Shaded Path 12 Engine Build 2015_11_23", Linetext::XY);
+	fpsLine = textEffect.addTextLine(XMFLOAT4(-5.0f, 4 * lineHeight, 0.0f, 0.0f), "FPS", Linetext::XY);
+	framenumLine = textEffect.addTextLine(XMFLOAT4(-5.0f, 3 * lineHeight, 0.0f, 0.0f), "0123456789", Linetext::XY);
 
 	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	Grid *g = xapp().world.createWorldGrid(10.0f, -1.65f);
@@ -100,6 +103,18 @@ void Sample1::draw()
 {
 	linesEffect.draw();
 	dotcrossEffect.draw();
+	// update and draw text:
+	string fr("Frame ");
+	stringstream ss;
+	ss << xapp().framenum++;
+	fr.append(ss.str());
+	textEffect.changeTextLine(framenumLine, fr);
+
+	string fps_str("FPS ");
+	stringstream sss;
+	sss << xapp().fps;
+	fps_str.append(sss.str());
+	textEffect.changeTextLine(fpsLine, fps_str);
 	textEffect.draw();
 	postEffect.draw();
 }
