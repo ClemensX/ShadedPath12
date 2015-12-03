@@ -55,13 +55,10 @@ void TestLinetext::init()
 
 void TestLinetext::update()
 {
+	static int callNum = 0;
 	gameTime.advanceTime();
 	LONGLONG now = gameTime.getRealTime();
-}
-
-void TestLinetext::draw()
-{
-	// update and draw text:
+	// update text:
 	string fr("Frame ");
 	stringstream ss;
 	ss << xapp().framenum++;
@@ -73,6 +70,14 @@ void TestLinetext::draw()
 	sss << xapp().fps;
 	fps_str.append(sss.str());
 	textEffect.changeTextLine(fpsLine, fps_str);
+	//if (++callNum == 20) {
+		textEffect.update();
+	//	callNum = 0;
+	//}
+}
+
+void TestLinetext::draw()
+{
 	textEffect.draw();
 	//Sleep(5);
 	postEffect.draw();

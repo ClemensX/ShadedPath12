@@ -93,17 +93,7 @@ void Sample1::update()
 	}
 	linesEffect.update();
 	dotcrossEffect.update();
-	// WVP is now updated automatically during draw()
-	//LinesEffect::CBV c;
-	//XMStoreFloat4x4(&c.wvp, xapp().camera.worldViewProjection());
-	//linesEffect.updateCBV(c);
-}
-
-void Sample1::draw()
-{
-	linesEffect.draw();
-	dotcrossEffect.draw();
-	// update and draw text:
+	// update info text:
 	string fr("Frame ");
 	stringstream ss;
 	ss << xapp().framenum++;
@@ -115,6 +105,17 @@ void Sample1::draw()
 	sss << xapp().fps;
 	fps_str.append(sss.str());
 	textEffect.changeTextLine(fpsLine, fps_str);
+	textEffect.update();
+	// WVP is now updated automatically during draw()
+	//LinesEffect::CBV c;
+	//XMStoreFloat4x4(&c.wvp, xapp().camera.worldViewProjection());
+	//linesEffect.updateCBV(c);
+}
+
+void Sample1::draw()
+{
+	linesEffect.draw();
+	dotcrossEffect.draw();
 	textEffect.draw();
 	postEffect.draw();
 }

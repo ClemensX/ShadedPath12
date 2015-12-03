@@ -12,6 +12,9 @@ void Linetext::init()
 		// Define the vertex input layout.
 		D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
 		{
+			//{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			//{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			//{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64 + 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 		};
@@ -80,26 +83,31 @@ void Linetext::setSize(float charHeight) {
 void Linetext::update()
 {
 	Linetext *l = this;
-	//auto fut = async([l] { return l->updateTask(); });
+	auto fut = async([l] { return l->updateTask(); });
 	//return l->updateTask();
 }
 
 void Linetext::updateTask()
 {
-	vector<Vertex> all;
-	mutex_Linetext.lock();
-	//for (XMFLOAT3 pt : points) {
-	//	Vertex v1;
-	//	v1.pos.x = pt.x;
-	//	v1.pos.y = pt.y;
-	//	v1.pos.z = pt.z;
-	//	v1.color = Colors::Green;
-	//	all.push_back(v1);
-	//}
-	size_t vertexBufferSize = sizeof(Vertex) * all.size();
-	mutex_Linetext.unlock();
-	createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(), L"Linetext");
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	// first run: determine size for all text
+	size_t *vertexTotalSize = &vertexBufferElements[frameIndex];
+	*vertexTotalSize = 0;
+	
+	for (auto line : lines) {
+		*vertexTotalSize += line.letters.size();
+	}
+	size_t vertexBufferSize = sizeof(TextElement) * (*vertexTotalSize);
+	//Log("line bufer needs " << vertexBufferSize << endl);
+	vector<TextElement> buffer(vertexBufferSize);
+	// copy all TextElements to buffer
+	size_t pos = 0;
+	for (auto line : lines) {
+		size_t copyBytes = sizeof(TextElement)* line.letters.size();
+		memcpy(&(buffer.at(pos)), &(line.letters.at(0)), copyBytes);
+		pos += line.letters.size();
+	}
+	createAndUploadVertexBuffer(vertexBufferSize, sizeof(TextElement), &(buffer.at(0)), pipelineState.Get(), L"Linetext2");
 
 	// Close the command list and execute it to begin the vertex buffer copy into
 	// the default heap.
@@ -111,8 +119,7 @@ void Linetext::updateTask()
 	auto &f = frameData[frameIndex];
 	createSyncPoint(f, xapp().commandQueue);
 	waitForSyncPoint(f);
-	//WaitForSingleObject(f.fenceEvent, INFINITE);
-	//Sleep(10);
+
 }
 
 void Linetext::destroy()
@@ -178,7 +185,16 @@ void Linetext::draw()
 void Linetext::drawInternal()
 {
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
-	int i = 0;
+	preDraw();
+	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+	// update buffers for this text line:
+	//XMStoreFloat4x4(&cbv.wvp, wvp);
+	cbv.rot = lines[0].rot;
+	memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
+	commandLists[frameIndex]->DrawInstanced((UINT)vertexBufferElements[frameIndex], 1, 0, 0);
+	postDraw();
+	/*	int i = 0;
 	for (auto line : lines) {
 		size_t vertexBufferSize = sizeof(TextElement)* line.letters.size();
 		createAndUploadVertexBuffer(vertexBufferSize, sizeof(TextElement), &(lines.at(i++).letters.at(0)), pipelineState.Get(), L"Linetext");
@@ -204,7 +220,7 @@ void Linetext::drawInternal()
 		commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
 		commandLists[frameIndex]->DrawInstanced((UINT)line.letters.size(), 1, 0, 0);
 		postDraw();
-	}
+	}*/
 }
 
 void Linetext::postDraw()

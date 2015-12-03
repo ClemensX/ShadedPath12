@@ -16,6 +16,7 @@
 
 struct VertexShaderInput
 {
+	//float4x4 rot : BINORMAL;
 	float4 pos : POSITION;
 	float4 info : NORMAL;
 };

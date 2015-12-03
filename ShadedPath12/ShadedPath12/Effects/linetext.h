@@ -2,6 +2,7 @@
 // draw lines of text anywhere in the world. Uses a geometry shader to form letters out of simple lines
 
 struct TextElement {
+	//XMFLOAT4X4 rot;
 	XMFLOAT4 pos;
 	XMFLOAT4 info;
 	//int ch; // letter to draw
@@ -54,5 +55,6 @@ private:
 	vector<TextElement> texts;
 	int getLetterValue(char c);
 	vector<Line> lines;
+	size_t vertexBufferElements[XApp::FrameCount]; // counts all TextElements 
 };
 
