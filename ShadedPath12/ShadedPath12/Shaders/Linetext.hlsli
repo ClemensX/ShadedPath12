@@ -35,7 +35,10 @@ struct GSOutput
 // effect variables
 struct LinetextConstantBuffer {
 	float4x4 wvp;
-	float4x4 rot;
+	float4x4 rot_xy;
+	float4x4 rot_zy;
+	float4x4 rot_yx;
+	float4x4 rot_cs;
 	float du;
 	float dv;
 };

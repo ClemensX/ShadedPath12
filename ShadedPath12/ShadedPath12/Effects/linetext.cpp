@@ -49,6 +49,12 @@ void Linetext::init()
 		XMStoreFloat4x4(&cbv.wvp, ident);
 		cbv.dx = 0.01f;
 		cbv.dy = 0.01f;
+		//
+		XMStoreFloat4x4(&cbv.rot_xy, XMMatrixIdentity());
+		XMStoreFloat4x4(&cbv.rot_zy, XMMatrixRotationRollPitchYaw(0, XM_PIDIV2, 0));
+		XMStoreFloat4x4(&cbv.rot_yx, XMMatrixRotationRollPitchYaw(0, 0, -XM_PIDIV2));
+		XMStoreFloat4x4(&cbv.rot_cs, XMMatrixRotationRollPitchYaw(0, XM_PIDIV4, -XM_PIDIV4)); // 
+		//
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 	}
 	// Create command allocators and command lists for each frame.
@@ -189,7 +195,7 @@ void Linetext::drawInternal()
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 	// update buffers for this text line:
 	//XMStoreFloat4x4(&cbv.wvp, wvp);
-	cbv.rot = lines[0].rot;
+	//cbv.rot = lines[0].rot;
 	memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
 	commandLists[frameIndex]->DrawInstanced((UINT)vertexBufferElements[frameIndex], 1, 0, 0);
@@ -266,14 +272,16 @@ void Linetext::createTextLine(XMFLOAT4 pos, string text, Line& line) {
 			//assert(0 <= i && i <= 25);
 			a.pos.w = *reinterpret_cast<float*>(&letter);
 			a.info.w = *reinterpret_cast<float*>(&i);
+			UINT rotplane = line.rotIndex;
+			a.info.x = *reinterpret_cast<float*>(&rotplane);
 			line.letters.push_back(a);
 		}
 	}
 }
 
-int Linetext::addTextLine(XMFLOAT4 pos, string text, XMFLOAT4X4 rotm) {
+int Linetext::addTextLine(XMFLOAT4 pos, string text, UINT rotIndex) {
 	Line line;
-	line.rot = rotm;
+	line.rotIndex = rotIndex;
 	createTextLine(pos, text, line);
 	if (line.letters.size() > 0) {
 		// at least one char
@@ -285,25 +293,29 @@ int Linetext::addTextLine(XMFLOAT4 pos, string text, XMFLOAT4X4 rotm) {
 
 int Linetext::addTextLine(XMFLOAT4 pos, string text, Plane plane) {
 	XMFLOAT4X4 rot;
+	UINT rotindex = 0;
 	switch (plane) {
 	case XY:
-		XMStoreFloat4x4(&rot, XMMatrixIdentity());
+		rotindex = 0;
 		break;
 	case ZY:
-		XMStoreFloat4x4(&rot, XMMatrixRotationRollPitchYaw(0, XM_PIDIV2, 0));
+		rotindex = 1;
 		break;
 	case YX:
-		XMStoreFloat4x4(&rot, XMMatrixRotationRollPitchYaw(0, 0, -XM_PIDIV2));
+		rotindex = 2;
+		break;
+	case CS:
+		rotindex = 3;
 		break;
 	}
-	return addTextLine(pos, text, rot);
+	return addTextLine(pos, text, rotindex);
 }
 
 void Linetext::changeTextLine(int linenum, string text) {
 	assert(linenum >= 0 && linenum < (int)lines.size());
 	Line oldline = lines.at(linenum);
 	Line newline;
-	newline.rot = oldline.rot;
+	newline.rotIndex = oldline.rotIndex;
 	createTextLine(oldline.letters.at(0).pos, text, newline);
 	lines.at(linenum) = newline;
 }

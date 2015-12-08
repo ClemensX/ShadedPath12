@@ -58,7 +58,7 @@ void Sample1::init()
 
 	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	Grid *g = xapp().world.createWorldGrid(10.0f, -1.65f);
-	linesEffect.add(g->lines);
+	//linesEffect.add(g->lines);
 	XMFLOAT3 myPoints[] = {
 		XMFLOAT3(0.1f, 0.1f, 0.1f)
 	};
