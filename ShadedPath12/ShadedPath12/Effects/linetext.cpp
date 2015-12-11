@@ -88,13 +88,20 @@ void Linetext::setSize(float charHeight) {
 
 void Linetext::update()
 {
+	if (updateRunning) {
+		// no need to start another update task if the old one is not ready
+		Log("lintext update still running." << endl);
+		return;
+	}
 	Linetext *l = this;
-	auto fut = async([l] { return l->updateTask(); });
+	auto fut = async(launch::async, [l] { return l->updateTask(); });
 	//return l->updateTask();
+	Log("update ready" << endl);
 }
 
 void Linetext::updateTask()
 {
+	updateRunning = true;
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	// first run: determine size for all text
 	size_t *vertexTotalSize = &vertexBufferElements[frameIndex];
@@ -120,12 +127,13 @@ void Linetext::updateTask()
 	ThrowIfFailed(commandLists[frameIndex]->Close());
 	ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-
+	Sleep(100);
 	// Wait for the gpu to complete the update.
 	auto &f = frameData[frameIndex];
 	createSyncPoint(f, xapp().commandQueue);
 	waitForSyncPoint(f);
-
+	updateRunning = false;
+	Log("updateTask ready" << endl);
 }
 
 void Linetext::destroy()

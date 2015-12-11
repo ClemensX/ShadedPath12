@@ -61,5 +61,6 @@ private:
 	int getLetterValue(char c);
 	vector<Line> lines;
 	size_t vertexBufferElements[XApp::FrameCount]; // counts all TextElements 
+	atomic<bool> updateRunning = false;
 };
 

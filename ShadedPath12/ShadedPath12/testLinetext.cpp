@@ -47,7 +47,7 @@ void TestLinetext::init()
 
 	bool manyLines = true;
 	if (manyLines) {
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 1000; i++) {
 			textEffect.addTextLine(XMFLOAT4(0.0f, (i+5) * lineHeight, 0.0f, 0.0f), "The big brown fox jumps over the lazy dog!", Linetext::XY);
 		}
 	}
