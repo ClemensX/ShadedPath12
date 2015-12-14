@@ -73,10 +73,16 @@ static const letter_el letters[] = {
 };
 
 // draw a letter in the xy plane
-void draw_letter_xy_plane(in float4 pos, in unsigned int ch, in int charpos, inout LineStream< GSOutput > output)
+void draw_letter_xy_plane(in float4 pos, in unsigned int ch, in int charpos, in int rotIndex, inout LineStream< GSOutput > output)
 {
 	float4x4 wvp = cbv.wvp;
-	float4x4 rot = cbv.rot;
+	//int rotIndex = asuint(input[0].info.x);
+	float4x4 rotList[4];
+	rotList[0] = cbv.rot_xy;
+	rotList[1] = cbv.rot_zy;
+	rotList[2] = cbv.rot_yx;
+	rotList[3] = cbv.rot_cs;
+	float4x4 rot = rotList[rotIndex];
 	float du = cbv.du;
 	float dv = cbv.dv;
 	GSOutput el;
@@ -147,8 +153,9 @@ void main(
 	//draw_letter_xy_plane(pos, 0, 1, output);
 	int letter = asuint(input[0].pos.w);
 	int charpos = asuint(input[0].info.w);
+	int rotIndex = asuint(input[0].info.x);
 	pos.w = 1.0;
-	draw_letter_xy_plane(pos, letter, charpos, output);
+	draw_letter_xy_plane(pos, letter, charpos, rotIndex, output);
 }
 
 

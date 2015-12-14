@@ -48,7 +48,7 @@ void World::drawCoordinateSystem(XMFLOAT4 point, string label, Linetext &linetex
 	XMMATRIX rot = XMMatrixRotationRollPitchYaw(0, XM_PIDIV4, -XM_PIDIV4);
 	XMFLOAT4X4 r;
 	XMStoreFloat4x4(&r, rot);
-	int labelLine = linetextEffect.addTextLine(labelPos, label, r);
+	int labelLine = linetextEffect.addTextLine(labelPos, label, Linetext::Plane::CS);
 	XMFLOAT4 xPos = point;
 	XMFLOAT4 yPos = point;
 	XMFLOAT4 zPos = point;
