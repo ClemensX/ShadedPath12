@@ -44,10 +44,19 @@ public:
 	// read HMD position and generate view parameters for both eyes
 	void nextTracking();
 	void submitFrame();
+#if defined(_OVR_)
 	// get view matrix for current eye
 	XMFLOAT4X4 getOVRViewMatrix() { return viewOVR[curEye]; };
 	// get projection matrix for current eye
 	XMFLOAT4X4 getOVRProjectionMatrix() { return projOVR[curEye]; };
+#else
+	// just return identity matrix if ovr not enabled
+	static XMFLOAT4X4 ident;
+	// get view matrix for current eye
+	XMFLOAT4X4 getOVRViewMatrix() { return ident; };
+	// get projection matrix for current eye
+	XMFLOAT4X4 getOVRProjectionMatrix() { return ident; };
+#endif
 
 	bool enabled = false;  // default: VR is off, switch on by command line option -vr
 protected:
