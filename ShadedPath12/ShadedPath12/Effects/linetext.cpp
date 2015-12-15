@@ -92,7 +92,7 @@ void Linetext::init()
 	updateFrameData.fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
 	if (updateFrameData.fenceEvent == nullptr) {
 		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-	}
+}
 }
 
 void Linetext::setSize(float charHeight) {
@@ -106,15 +106,14 @@ void Linetext::update()
 	mutex_Linetext.lock();
 	if (updateRunning) {
 		// no need to start another update task if the old one is not ready
-		//Log("lintext update still running." << endl);
-		mutex_Linetext.unlock();
+		Log("lintext update still running." << endl);
 		return;
 	}
 	updateRunning = true;
 	mutex_Linetext.unlock();
 	Linetext *l = this;
-	//linetextFuture = async(launch::async, [l] { return l->updateTask(); });
-	return l->updateTask();
+	auto fut = async(launch::async, [l] { return l->updateTask(); });
+	//return l->updateTask();
 	//Log("update ready" << endl);
 }
 
