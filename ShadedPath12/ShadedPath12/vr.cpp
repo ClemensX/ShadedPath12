@@ -2,8 +2,14 @@
 
 VR::VR(XApp *xapp) {
 	this->xapp = xapp;
+#if !defined(_OVR_)
+	XMStoreFloat4x4(&ident, XMMatrixIdentity());
+#endif
 }
 
+#if !defined(_OVR_)
+XMFLOAT4X4 VR::ident;
+#endif
 
 VR::~VR() {
 #if defined(_OVR_)
@@ -202,6 +208,7 @@ bool VR::isFirstEye() {
 	return firstEye;
 }
 
+#if defined(_OVR_)
 void Matrix4fToXM(XMFLOAT4X4 &xm, Matrix4f &m) {
 	xm._11 = m.M[0][0];
 	xm._12 = m.M[0][1];
@@ -284,3 +291,14 @@ void VR::submitFrame()
 	bool isVisible = (result == ovrSuccess); 
 	//Log
 }
+#else
+void VR::nextTracking()
+{
+}
+
+void VR::submitFrame()
+{
+}
+
+#endif
+
