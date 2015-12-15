@@ -150,7 +150,7 @@ void XApp::destroy()
 	//WaitForGpu();
 	app->destroy();
 
-	Sleep(150);
+	//Sleep(150);
 	//CloseHandle(fenceEvent);
 #ifdef _DEBUG
 	//ThrowIfFailed(DXGIGetDebugInterface1(0, ));

@@ -90,13 +90,13 @@ void Linetext::update()
 {
 	if (updateRunning) {
 		// no need to start another update task if the old one is not ready
-		Log("lintext update still running." << endl);
+		//Log("lintext update still running." << endl);
 		return;
 	}
 	Linetext *l = this;
 	auto fut = async(launch::async, [l] { return l->updateTask(); });
 	//return l->updateTask();
-	Log("update ready" << endl);
+	//Log("update ready" << endl);
 }
 
 void Linetext::updateTask()
@@ -133,7 +133,7 @@ void Linetext::updateTask()
 	createSyncPoint(f, xapp().commandQueue);
 	waitForSyncPoint(f);
 	updateRunning = false;
-	Log("updateTask ready" << endl);
+	//Log("updateTask ready" << endl);
 }
 
 void Linetext::destroy()

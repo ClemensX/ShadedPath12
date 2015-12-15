@@ -45,7 +45,7 @@ void TestLinetext::init()
 	fpsLine = textEffect.addTextLine(XMFLOAT4(0.0f, 1 * lineHeight, 0.0f, 0.0f), "FPS", Linetext::XY);
 	framenumLine = textEffect.addTextLine(XMFLOAT4(0.0f, 2 * lineHeight, 0.0f, 0.0f), "0123456789", Linetext::XY);
 
-	bool manyLines = true;
+	bool manyLines = false;
 	if (manyLines) {
 		for (int i = 0; i < 1000; i++) {
 			textEffect.addTextLine(XMFLOAT4(0.0f, (i+5) * lineHeight, 0.0f, 0.0f), "The big brown fox jumps over the lazy dog!", Linetext::XY);
@@ -70,10 +70,10 @@ void TestLinetext::update()
 	sss << xapp().fps;
 	fps_str.append(sss.str());
 	textEffect.changeTextLine(fpsLine, fps_str);
-	//if (++callNum == 20) {
+	if (++callNum == 20) {
 		textEffect.update();
-	//	callNum = 0;
-	//}
+		callNum = 0;
+	}
 }
 
 void TestLinetext::draw()
