@@ -110,8 +110,9 @@ void LinesEffect::updateTask()
 		}
 		size_t vertexBufferSize = sizeof(Vertex) * lines.size() * 2;
 		mutex_lines.unlock();
-		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(), L"lines");
 		UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+		//createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(), L"lines");
+		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(), L"lines", vertexBuffer, vertexBufferUpload, commandAllocators[frameIndex], commandLists[frameIndex], vertexBufferView);
 
 		// Close the command list and execute it to begin the vertex buffer copy into
 		// the default heap.

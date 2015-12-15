@@ -62,5 +62,9 @@ private:
 	vector<Line> lines;
 	size_t vertexBufferElements[XApp::FrameCount]; // counts all TextElements 
 	atomic<bool> updateRunning = false;
+	future<void> linetextFuture;
+	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
+	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
+	FrameResource updateFrameData;
 };
 

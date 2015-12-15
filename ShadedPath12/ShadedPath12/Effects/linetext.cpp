@@ -78,6 +78,21 @@ void Linetext::init()
 			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
 		}
 	}
+	// init resources for update thread:
+	ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&updateCommandAllocator)));
+	ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, updateCommandAllocator.Get(), pipelineState.Get(), IID_PPV_ARGS(&updateCommandList)));
+	// Command lists are created in the recording state, but there is nothing
+	// to record yet. The main loop expects it to be closed, so close it now.
+	ThrowIfFailed(updateCommandList->Close());
+	// init fences:
+	//ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frameData[n].fence.GetAddressOf())));
+	ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&updateFrameData.fence)));
+	updateFrameData.fence->SetName(L"fence_Linetext_update");
+	updateFrameData.fenceValue = 0;
+	updateFrameData.fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+	if (updateFrameData.fenceEvent == nullptr) {
+		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+	}
 }
 
 void Linetext::setSize(float charHeight) {
@@ -88,20 +103,25 @@ void Linetext::setSize(float charHeight) {
 
 void Linetext::update()
 {
+	mutex_Linetext.lock();
 	if (updateRunning) {
 		// no need to start another update task if the old one is not ready
-		Log("lintext update still running." << endl);
+		//Log("lintext update still running." << endl);
+		mutex_Linetext.unlock();
 		return;
 	}
+	updateRunning = true;
+	mutex_Linetext.unlock();
 	Linetext *l = this;
-	auto fut = async(launch::async, [l] { return l->updateTask(); });
-	//return l->updateTask();
-	Log("update ready" << endl);
+	//linetextFuture = async(launch::async, [l] { return l->updateTask(); });
+	return l->updateTask();
+	//Log("update ready" << endl);
 }
 
 void Linetext::updateTask()
 {
-	updateRunning = true;
+	mutex_Linetext.lock();
+	//updateRunning = true; already done in update()
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	// first run: determine size for all text
 	size_t *vertexTotalSize = &vertexBufferElements[frameIndex];
@@ -120,20 +140,34 @@ void Linetext::updateTask()
 		memcpy(&(buffer.at(pos)), &(line.letters.at(0)), copyBytes);
 		pos += line.letters.size();
 	}
-	createAndUploadVertexBuffer(vertexBufferSize, sizeof(TextElement), &(buffer.at(0)), pipelineState.Get(), L"Linetext2");
+	mutex_Linetext.unlock();
+	ComPtr<ID3D12Resource> vertexBufferX;
+	ComPtr<ID3D12Resource> vertexBufferUploadX;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
+	createAndUploadVertexBuffer(vertexBufferSize, sizeof(TextElement), &(buffer.at(0)), pipelineState.Get(), L"Linetext2", vertexBufferX, vertexBufferUploadX, commandAllocators[frameIndex], updateCommandList, vertexBufferViewX);
 
 	// Close the command list and execute it to begin the vertex buffer copy into
 	// the default heap.
-	ThrowIfFailed(commandLists[frameIndex]->Close());
-	ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
+	ThrowIfFailed(updateCommandList->Close());
+	ID3D12CommandList* ppCommandLists[] = { updateCommandList.Get() };
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-	Sleep(100);
+	//Sleep(100);
 	// Wait for the gpu to complete the update.
-	auto &f = frameData[frameIndex];
+	auto &f = updateFrameData;
+//
+	// Close the command list and execute it to begin the vertex buffer copy into
+	// the default heap.
+	//ThrowIfFailed(commandLists[frameIndex]->Close());
+	//ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
+	//xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	////Sleep(100);
+	//// Wait for the gpu to complete the update.
+	//auto &f = frameData[frameIndex];
+//
 	createSyncPoint(f, xapp().commandQueue);
 	waitForSyncPoint(f);
 	updateRunning = false;
-	Log("updateTask ready" << endl);
+	//Log("updateTask ready" << endl);
 }
 
 void Linetext::destroy()
@@ -198,6 +232,7 @@ void Linetext::draw()
 
 void Linetext::drawInternal()
 {
+	mutex_Linetext.lock();
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	preDraw();
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
@@ -208,6 +243,7 @@ void Linetext::drawInternal()
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
 	commandLists[frameIndex]->DrawInstanced((UINT)vertexBufferElements[frameIndex], 1, 0, 0);
 	postDraw();
+	mutex_Linetext.unlock();
 	/*	int i = 0;
 	for (auto line : lines) {
 		size_t vertexBufferSize = sizeof(TextElement)* line.letters.size();

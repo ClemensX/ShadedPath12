@@ -98,8 +98,9 @@ void Dotcross::updateTask()
 	}
 	size_t vertexBufferSize = sizeof(Vertex) * all.size();
 	mutex_dotcross.unlock();
-	createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(), L"dotcross");
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	//createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(), L"dotcross");
+	createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(), L"dotcross", vertexBuffer, vertexBufferUpload, commandAllocators[frameIndex], commandLists[frameIndex], vertexBufferView);
 
 	// Close the command list and execute it to begin the vertex buffer copy into
 	// the default heap.
