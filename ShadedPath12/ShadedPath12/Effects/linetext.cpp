@@ -106,7 +106,7 @@ void Linetext::update()
 	mutex_Linetext.lock();
 	if (updateRunning) {
 		// no need to start another update task if the old one is not ready
-		Log("lintext update still running." << endl);
+		//Log("lintext update still running." << endl);
 		return;
 	}
 	updateRunning = true;
@@ -140,9 +140,6 @@ void Linetext::updateTask()
 		pos += line.letters.size();
 	}
 	mutex_Linetext.unlock();
-	ComPtr<ID3D12Resource> vertexBufferX;
-	ComPtr<ID3D12Resource> vertexBufferUploadX;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
 	createAndUploadVertexBuffer(vertexBufferSize, sizeof(TextElement), &(buffer.at(0)), pipelineState.Get(), L"Linetext2", vertexBufferX, vertexBufferUploadX, commandAllocators[frameIndex], updateCommandList, vertexBufferViewX);
 
 	// Close the command list and execute it to begin the vertex buffer copy into
@@ -165,6 +162,10 @@ void Linetext::updateTask()
 //
 	createSyncPoint(f, xapp().commandQueue);
 	waitForSyncPoint(f);
+	// all is ready - now activate the updated vertexBufferView
+	mutex_Linetext.lock();
+	this->vertexBufferView = vertexBufferViewX;
+	mutex_Linetext.unlock();
 	updateRunning = false;
 	//Log("updateTask ready" << endl);
 }
@@ -329,7 +330,7 @@ int Linetext::addTextLine(XMFLOAT4 pos, string text, UINT rotIndex) {
 	if (line.letters.size() > 0) {
 		// at least one char
 		lines.push_back(line);
-		return lines.size() - 1;
+		return ((int)lines.size()) - 1;
 	}
 	return -1;
 }

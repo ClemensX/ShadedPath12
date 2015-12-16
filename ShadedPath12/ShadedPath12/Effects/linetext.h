@@ -66,5 +66,8 @@ private:
 	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
 	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
 	FrameResource updateFrameData;
+	ComPtr<ID3D12Resource> vertexBufferX;
+	ComPtr<ID3D12Resource> vertexBufferUploadX;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
 };
 
