@@ -121,6 +121,7 @@ void handleRawInput(LPARAM lParam, XApp *xapp)
 			// relative mouse coord - use them directly
 			xapp->mouseDx = raw->data.mouse.lLastX;
 			xapp->mouseDy = raw->data.mouse.lLastY;
+			//Log("" << xapp->mouseDx << " " << xapp->mouseDy << endl);
 		}
 		xapp->mouseTodo = true;
 	}

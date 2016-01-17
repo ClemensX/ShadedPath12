@@ -92,12 +92,14 @@ void XApp::update() {
 		// Update our orientation based on the command.
 		pitch -= rotationDelta.y;
 		yaw += rotationDelta.x;
+		//Log("pich " << pitch);
 
 		// Limit pitch to straight up or straight down.
 		float limit = XM_PI / 2.0f - 0.01f;
 		pitch = __max(-limit, pitch);
 		pitch = __min(+limit, pitch);
 
+		//Log(" " << pitch << endl);
 		// Keep longitude in same range by wrapping.
 		if (yaw > XM_PI)
 		{

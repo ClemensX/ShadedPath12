@@ -126,21 +126,30 @@ void Linetext::updateTask()
 	size_t *vertexTotalSize = &vertexBufferElements[frameIndex];
 	*vertexTotalSize = 0;
 	
-	for (auto line : lines) {
-		*vertexTotalSize += line.letters.size();
+	static bool firstRun = true;
+	static size_t vbs;
+	static void *data;
+	if (firstRun) {
+		firstRun = true;
+		for (auto line : lines) {
+			*vertexTotalSize += line.letters.size();
+		}
+		static size_t vertexBufferSize = sizeof(TextElement) * (*vertexTotalSize);
+		vbs = vertexBufferSize;
+		//Log("line bufer needs " << vertexBufferSize << endl);
+		static vector<TextElement> buffer(vertexBufferSize);
+		// copy all TextElements to buffer
+		size_t pos = 0;
+		for (auto line : lines) {
+			size_t copyBytes = sizeof(TextElement)* line.letters.size();
+			memcpy(&(buffer.at(pos)), &(line.letters.at(0)), copyBytes);
+			pos += line.letters.size();
+		}
+		data = &(buffer.at(0));
 	}
-	size_t vertexBufferSize = sizeof(TextElement) * (*vertexTotalSize);
-	//Log("line bufer needs " << vertexBufferSize << endl);
-	vector<TextElement> buffer(vertexBufferSize);
-	// copy all TextElements to buffer
-	size_t pos = 0;
-	for (auto line : lines) {
-		size_t copyBytes = sizeof(TextElement)* line.letters.size();
-		memcpy(&(buffer.at(pos)), &(line.letters.at(0)), copyBytes);
-		pos += line.letters.size();
-	}
+	//createAndUploadVertexBuffer(vertexBufferSize, sizeof(TextElement), &(buffer.at(0)), pipelineState.Get(), L"Linetext2", vertexBufferX, vertexBufferUploadX, commandAllocators[frameIndex], updateCommandList, vertexBufferViewX);
 	mutex_Linetext.unlock();
-	createAndUploadVertexBuffer(vertexBufferSize, sizeof(TextElement), &(buffer.at(0)), pipelineState.Get(), L"Linetext2", vertexBufferX, vertexBufferUploadX, commandAllocators[frameIndex], updateCommandList, vertexBufferViewX);
+	createAndUploadVertexBuffer(vbs, sizeof(TextElement), data, pipelineState.Get(), L"Linetext2", vertexBufferX, vertexBufferUploadX, commandAllocators[frameIndex], updateCommandList, vertexBufferViewX);
 
 	// Close the command list and execute it to begin the vertex buffer copy into
 	// the default heap.
