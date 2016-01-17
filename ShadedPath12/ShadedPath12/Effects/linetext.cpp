@@ -127,17 +127,21 @@ void Linetext::updateTask()
 	*vertexTotalSize = 0;
 	
 	static bool firstRun = true;
-	static size_t vbs;
-	static void *data;
+	//static 
+		size_t vbs;
+	//static 
+		void *data;
 	if (firstRun) {
 		firstRun = true;
 		for (auto line : lines) {
 			*vertexTotalSize += line.letters.size();
 		}
-		static size_t vertexBufferSize = sizeof(TextElement) * (*vertexTotalSize);
+		//static
+			size_t vertexBufferSize = sizeof(TextElement) * (*vertexTotalSize);
 		vbs = vertexBufferSize;
 		//Log("line bufer needs " << vertexBufferSize << endl);
-		static vector<TextElement> buffer(vertexBufferSize);
+		static 
+			vector<TextElement> buffer(vertexBufferSize);
 		// copy all TextElements to buffer
 		size_t pos = 0;
 		for (auto line : lines) {
