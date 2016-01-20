@@ -61,3 +61,20 @@ FXMVECTOR reflectionVector
 	return vector + (2 * (p-vector));
 }
 
+struct TextElement;
+// provide helper class for fast vectors of several different types:
+// vectors never decrease in size, on return elemnts are already added, so that memory pointer to array may be used
+// returned size should be kept by app to hold current max value
+
+class VectorHelper {
+public:
+	size_t resize(vector<TextElement> &vec, size_t oldmax, size_t newmax) {
+		if (newmax <= oldmax) {
+			return oldmax;
+		}
+		vec.resize(newmax);
+		return newmax;
+	};
+};
+
+extern VectorHelper vectorHelper;

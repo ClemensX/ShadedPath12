@@ -124,36 +124,24 @@ void Linetext::updateTask()
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 	// first run: determine size for all text
 	size_t *vertexTotalSize = &vertexBufferElements[frameIndex];
-	*vertexTotalSize = 0;
-	
-	static bool firstRun = true;
-	//static 
-		size_t vbs;
-	//static 
-		void *data;
-	if (firstRun) {
-		firstRun = true;
-		for (auto line : lines) {
-			*vertexTotalSize += line.letters.size();
-		}
-		//static
-			size_t vertexBufferSize = sizeof(TextElement) * (*vertexTotalSize);
-		vbs = vertexBufferSize;
-		//Log("line bufer needs " << vertexBufferSize << endl);
-		static 
-			vector<TextElement> buffer(vertexBufferSize);
-		// copy all TextElements to buffer
-		size_t pos = 0;
-		for (auto line : lines) {
-			size_t copyBytes = sizeof(TextElement)* line.letters.size();
-			memcpy(&(buffer.at(pos)), &(line.letters.at(0)), copyBytes);
-			pos += line.letters.size();
-		}
-		data = &(buffer.at(0));
+	*vertexTotalSize = 0;  // number of elements in buffer
+	static size_t currentBufferSize = 0; // used with vectorHelper
+	static vector<TextElement> buffer;
+	for (auto& line : lines) {
+		*vertexTotalSize += line.letters.size();
 	}
-	//createAndUploadVertexBuffer(vertexBufferSize, sizeof(TextElement), &(buffer.at(0)), pipelineState.Get(), L"Linetext2", vertexBufferX, vertexBufferUploadX, commandAllocators[frameIndex], updateCommandList, vertexBufferViewX);
+	size_t vertexBufferSize = sizeof(TextElement) * (*vertexTotalSize);
+	//Log("line bufer needs " << vertexBufferSize << endl);
+	currentBufferSize = vectorHelper.resize(buffer, currentBufferSize, *vertexTotalSize);
+	// copy all TextElements to buffer
+	size_t pos = 0;
+	for (auto& line : lines) {
+		size_t copyBytes = sizeof(TextElement)* line.letters.size();
+		memcpy(&(buffer.at(pos)), &(line.letters.at(0)), copyBytes);
+		pos += line.letters.size();
+	}
+	createAndUploadVertexBuffer(vertexBufferSize, sizeof(TextElement), &(buffer.at(0)), pipelineState.Get(), L"Linetext2", vertexBufferX, vertexBufferUploadX, commandAllocators[frameIndex], updateCommandList, vertexBufferViewX);
 	mutex_Linetext.unlock();
-	createAndUploadVertexBuffer(vbs, sizeof(TextElement), data, pipelineState.Get(), L"Linetext2", vertexBufferX, vertexBufferUploadX, commandAllocators[frameIndex], updateCommandList, vertexBufferViewX);
 
 	// Close the command list and execute it to begin the vertex buffer copy into
 	// the default heap.
