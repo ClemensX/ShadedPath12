@@ -68,7 +68,7 @@ void Camera::projectionTransform() {
 
 XMMATRIX Camera::worldViewProjection() {
 	XMMATRIX p = XMLoadFloat4x4(&projection);
-	//Log("  Pos: " << pt.x << " " << pt.y << " " << pt.z << endl);
+	//Log("  Pos: " << pos.x << " " << pos.y << " " << pos.z << endl);
 	//auto pt2 = look;
 	//if (pt2.x != 0.0f)
 	//Log("  Look: " << pt2.x << " " << pt2.y << " " << pt2.z << endl);

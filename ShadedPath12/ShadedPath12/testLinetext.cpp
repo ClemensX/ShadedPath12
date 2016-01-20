@@ -28,7 +28,7 @@ void TestLinetext::init()
 	startTime = gameTime.getRealTime();
 
 	// most from old kitchen.cpp
-	float textSize = 1.0f;
+	float textSize = 0.5f;//1.0f;
 	float lineHeight = 2.0 * textSize;
 	xapp().camera.nearZ = 0.2f;
 	xapp().camera.farZ = 2000.0f;

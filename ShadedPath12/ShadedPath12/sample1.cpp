@@ -46,9 +46,11 @@ void Sample1::init()
 	//xapp->camera.pos.z = -3.0f;
 	//xapp().camera.pos = XMFLOAT4(1.0f, 1.7f, 1.0f, 0.0f);
 	xapp().camera.pos = XMFLOAT4(0.0f, 0.0f, -3.0f, 0.0f);
+	xapp().camera.pos = XMFLOAT4(-0.0696329f, 0.354773f, 0.324679f, 0.0f);
 	//xapp().camera.setSpeed(1.0f); // seems ok for VR
 	xapp().camera.setSpeed(10.5f); // faster for dev usability
 	xapp().camera.fieldOfViewAngleY = 1.289f;
+	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 
 	textEffect.setSize(textSize);
 	dotcrossEffect.setLineLength(6.0f * textSize);
@@ -56,7 +58,6 @@ void Sample1::init()
 	fpsLine = textEffect.addTextLine(XMFLOAT4(-5.0f, 4 * lineHeight, 0.0f, 0.0f), "FPS", Linetext::XY);
 	framenumLine = textEffect.addTextLine(XMFLOAT4(-5.0f, 3 * lineHeight, 0.0f, 0.0f), "0123456789", Linetext::XY);
 
-	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	Grid *g = xapp().world.createWorldGrid(10.0f, -1.65f);
 	linesEffect.add(g->lines);
 	XMFLOAT3 myPoints[] = {
