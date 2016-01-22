@@ -36,14 +36,6 @@ struct Grid {
 //	int id;
 //};
 
-struct TextureInfo
-{
-	//TextureID textureID;
-	wstring filename;
-	//ComPtr<ID3D11ShaderResourceView> texSRV;
-};
-
-
 class World
 {
 public:

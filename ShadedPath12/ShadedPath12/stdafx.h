@@ -28,6 +28,7 @@
 #include <codecvt>
 #include <mutex>
 #include <future>
+//#include <new>
 using namespace std;
 #include <assert.h>
 #include <typeinfo.h>
@@ -118,6 +119,8 @@ inline void ErrorExt(wstring msg, const char* file, DWORD line)
 
 // framework headers
 #include "d3dx12.h"
+#include "DDSTextureLoader.h"
+#include "texture.h"
 #include "gametime.h"
 #include "util.h"
 #include "world.h"
