@@ -23,6 +23,13 @@ If you now compile/run the sample will run only in a window. To render to the Ri
 
 Running Sample1 now should give you lots of lines to see inside the rift. 
 
+Command Line Switches
+* -w=100 Set window width to 100 pixel
+* -h=80  Set window height to 809 pixel
+* -vr Enable VR rendering to Oculus Rift (runtime version 8+)   
+* -warp Use Microsoft Warp SW driver instead of GPU vendor driver
+* -disableDX11Debug Used on systems that don't have DX11 Debug enabled. (Rarely used.)
+
 # Features for 0.0.2
 Added two geometry shaders:
 * Dotcross: Very simple geometry shader to draw crosses consisting of two lines at any world position
