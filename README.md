@@ -23,12 +23,18 @@ If you now compile/run the sample will run only in a window. To render to the Ri
 
 Running Sample1 now should give you lots of lines to see inside the rift. 
 
-Command Line Switches
+# Command Line Switches
+* -app=Name Select which app to start (see list below).
 * -w=100 Set window width to 100 pixel
 * -h=80  Set window height to 809 pixel
 * -vr Enable VR rendering to Oculus Rift (runtime version 8+)   
 * -warp Use Microsoft Warp SW driver instead of GPU vendor driver
 * -disableDX11Debug Used on systems that don't have DX11 Debug enabled. (Rarely used.)
+
+# Sample Apps
+* TestDotcross Draw an increasing number of crosses. Single Thread Example that will show system degredation for generating and transmitting large amounts of objects to the GPU
+* TestLinetext - Optimized Multi Thread example of a geometry shader for drawing 3D text. Displays FPS, some engine info and 100 lines of text. Should render with more than 300 FPS on any system supporting the Oculus Rift (in window mode)
+* Sample1 Draw a lot of lines to mark the floor and ceiling of the world, some lines of text and a coordinate system at the origin point.
 
 # Features for 0.0.2
 Added two geometry shaders:
