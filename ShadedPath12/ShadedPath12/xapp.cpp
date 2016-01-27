@@ -423,6 +423,74 @@ void XApp::calcBackbufferSizeAndAspectRatio()
 	vr.prepareViews(viewport, scissorRect);
 }
 
+#if defined(DEBUG) || defined(_DEBUG)
+#define FX_PATH L"..\\Debug\\"
+#else
+#define FX_PATH L"..\\Release\\"
+#endif
+
+#define TEXTURE_PATH L"..\\..\\data\\texture\\"
+#define MESH_PATH L"..\\..\\data\\mesh\\"
+#define SOUND_PATH L"..\\..\\data\\sound\\"
+
+wstring XApp::findFile(wstring filename, FileCategory cat) {
+	// try without path:
+	ifstream bfile(filename.c_str(), ios::in | ios::binary);
+	if (!bfile) {
+		// try with Debug or release path:
+		switch (cat) {
+		case FX:
+			filename = FX_PATH + filename;
+			break;
+		case TEXTURE:
+			filename = TEXTURE_PATH + filename;
+			break;
+		case MESH:
+			filename = MESH_PATH + filename;
+			break;
+		case SOUND:
+			filename = SOUND_PATH + filename;
+			break;
+		}
+	}
+	else {
+		bfile.close();
+		return filename;
+	}
+	ifstream bfile2(filename.c_str(), ios::in | ios::binary);
+	if (!bfile2) {
+		Error(L"failed reading file: " + filename);
+	}
+	else {
+		bfile.close();
+		return filename;
+	}
+	return nullptr;
+}
+
+void XApp::readFile(wstring filename, vector<byte> &buffer, FileCategory cat) {
+	//ofstream f("fx\\HERE");
+	//f.put('c');
+	//f.flush();
+	//f.close();
+	//if (filename.)
+	filename = findFile(filename, cat);
+	ifstream bfile(filename.c_str(), ios::in | ios::binary);
+	if (!bfile) {
+		Error(L"failed reading file: " + filename);
+	}
+	else {
+		streampos start = bfile.tellg();
+		bfile.seekg(0, std::ios::end);
+		streampos len = bfile.tellg() - start;
+		bfile.seekg(0, (SIZE_T)start);
+		buffer.resize((SIZE_T)len);
+		bfile.read((char*)&(buffer[0]), len);
+		bfile.close();
+	}
+
+}
+
 bool XApp::keyDown(BYTE key) {
 	return (key_state[key] & 0x80) != 0;
 }

@@ -975,7 +975,8 @@ static HRESULT CreateTextureFromDDS( _In_ ID3D12Device* d3dDevice,
                                      _In_ size_t maxsize,
                                      _In_ bool forceSRGB,
                                      _Outptr_opt_ ID3D12Resource** texture,
-                                     _In_ D3D12_CPU_DESCRIPTOR_HANDLE textureView )
+                                     _In_ D3D12_CPU_DESCRIPTOR_HANDLE textureView,
+	                                 _Out_ TextureLoadResult &result)
 {
     HRESULT hr = S_OK;
 
@@ -1189,6 +1190,8 @@ static HRESULT CreateTextureFromDDS( _In_ ID3D12Device* d3dDevice,
 			//GpuResource DestTexture(*texture, D3D12_RESOURCE_STATE_COMMON);
 			//CommandContext::InitializeTexture(DestTexture, subresourceCount, initData.get());
 			// TODO texture creating code goes here, see InitializeTexture()
+			result.NumSubresources = subresourceCount;
+			result.initData = move(initData);
 		}
 	}
 
@@ -1234,6 +1237,7 @@ HRESULT CreateDDSTextureFromMemory(
 	bool forceSRGB,
 	ID3D12Resource** texture,
 	D3D12_CPU_DESCRIPTOR_HANDLE textureView,
+	TextureLoadResult &result,
 	DDS_ALPHA_MODE* alphaMode )
 {
     if ( texture )
@@ -1287,7 +1291,7 @@ HRESULT CreateDDSTextureFromMemory(
 
     HRESULT hr = CreateTextureFromDDS( d3dDevice,
                                        header, ddsData + offset, ddsDataSize - offset, maxsize,
-                                       forceSRGB, texture, textureView );
+                                       forceSRGB, texture, textureView, result );
     if ( SUCCEEDED(hr) )
     {
         if (texture != nullptr && *texture != nullptr)
@@ -1311,6 +1315,7 @@ HRESULT CreateDDSTextureFromFile(
 	bool forceSRGB,
 	ID3D12Resource** texture,
 	D3D12_CPU_DESCRIPTOR_HANDLE textureView,
+	TextureLoadResult &result,
 	DDS_ALPHA_MODE* alphaMode )
 {
     if ( texture )
@@ -1341,7 +1346,7 @@ HRESULT CreateDDSTextureFromFile(
 
     hr = CreateTextureFromDDS( d3dDevice,
                                header, bitData, bitSize, maxsize,
-                               forceSRGB, texture, textureView );
+                               forceSRGB, texture, textureView, result );
 
     if ( alphaMode )
         *alphaMode = GetAlphaMode( header );

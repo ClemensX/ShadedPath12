@@ -46,6 +46,12 @@ public:
 	void destroy();
 	void report();
 	void calcBackbufferSizeAndAspectRatio();
+	// asset handling
+	enum FileCategory { FX, TEXTURE, MESH, SOUND };
+	wstring findFile(wstring filename, FileCategory cat);
+	void readFile(wstring filename, vector<byte>& buffer, FileCategory cat);
+	TextureStore textureStore;
+
 	void registerApp(string name, XAppBase*);
 	XAppBase* getApp(string appName);
 	void setRunningApp(string appName);
