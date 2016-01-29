@@ -206,6 +206,11 @@ void PostEffect::init2()
 	vertexBufferView.SizeInBytes = vertexBufferSize;
 	// Close the command list and execute it to begin the vertex buffer copy into
 	// the default heap.
+
+	// test textures:
+	xapp().textureStore.loadTexture(L"ceil.dds", "default", commandLists[frameIndex].Get());
+	// end test textures
+
 	ThrowIfFailed(commandLists[frameIndex]->Close());
 	ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
