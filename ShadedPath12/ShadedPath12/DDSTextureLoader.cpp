@@ -1180,7 +1180,7 @@ static HRESULT CreateTextureFromDDS( _In_ ID3D12Device* d3dDevice,
                 {
                     hr = CreateD3DResources( d3dDevice, resDim, twidth, theight, tdepth, mipCount - skipMip, arraySize,
                                              format, forceSRGB,
-                                             isCubeMap, initData.get(), texture, textureView );
+                                             isCubeMap, initData.get(), texture, textureView, result );
                 }
             }
         }
