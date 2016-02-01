@@ -1,13 +1,28 @@
 #include "stdafx.h"
 
+TextureInfo* TextureStore::getTexture(string id)
+{
+	TextureInfo *ret = &textures[id];
+	// simple validity check for now:
+	if (ret->id.size() > 0) {
+		// if there is no id the texture could not be loaded (wrong filename?)
+		ret->available = true;
+	}
+	else {
+		ret->available = false;
+	}
+	return ret;
+}
 
-void TextureStore::loadTexture(wstring filename, string id, ID3D12GraphicsCommandList *commandList)
+void TextureStore::loadTexture(wstring filename, string id, ID3D12GraphicsCommandList *commandList, TextureLoadResult &result)
 {
 	wstring binFile = xapp().findFile(filename.c_str(), XApp::TEXTURE);
-	TextureInfo texture;
-	texture.filename = binFile;
-	texture.id = id;
-	textures[id] = texture;
+	TextureInfo initialTexture;  // only use to initialize struct in texture store - do not access this after assignment to store
+	initialTexture.filename = binFile;
+	initialTexture.id = id;
+	textures[id] = initialTexture;
+	TextureInfo *texture = &textures[id];
+
 	//D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
 	// create heap - TODO adjust for one heap for multiple textures
 	// Describe and create a shader resource view (SRV) heap for the texture.
@@ -15,27 +30,26 @@ void TextureStore::loadTexture(wstring filename, string id, ID3D12GraphicsComman
 	srvHeapDesc.NumDescriptors = 1;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	ThrowIfFailed(xapp().device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&texture.m_srvHeap)));
+	ThrowIfFailed(xapp().device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&texture->m_srvHeap)));
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle(texture.m_srvHeap->GetCPUDescriptorHandleForHeapStart());
+	CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle(texture->m_srvHeap->GetCPUDescriptorHandleForHeapStart());
 	//CD3DX12_CPU_DESCRIPTOR_HANDLE(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	TextureLoadResult result;
 
 	CreateDDSTextureFromFile(
 		xapp().device.Get(),
-		texture.filename.c_str(),
+		texture->filename.c_str(),
 		0,
 		true,
-		&texture.texSRV,
+		&texture->texSRV,
 		srvHandle,
 		result
 		);
 
 	// upload texture to GPU:
-	ID3D12Resource* UploadBuffer;
+	//ID3D12Resource* UploadBuffer;
 
-	UINT64 uploadBufferSize = GetRequiredIntermediateSize(texture.texSRV.Get(), 0, result.NumSubresources);
+	UINT64 uploadBufferSize = GetRequiredIntermediateSize(texture->texSRV.Get(), 0, result.NumSubresources);
 
 	//CommandContext& InitContext = CommandContext::Begin();
 
@@ -61,17 +75,17 @@ void TextureStore::loadTexture(wstring filename, string id, ID3D12GraphicsComman
 
 	ThrowIfFailed(xapp().device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE,
 		&BufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr, IID_PPV_ARGS(&UploadBuffer)));
+		nullptr, IID_PPV_ARGS(&result.UploadBuffer)));
 
 	// copy data to the intermediate upload heap and then schedule a copy from the upload heap to the default texture
 	//InitContext.TransitionResource(Dest, D3D12_RESOURCE_STATE_COPY_DEST, true);
-	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(texture.texSRV.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST));
-	UpdateSubresources(commandList, texture.texSRV.Get(), UploadBuffer, 0, 0, result.NumSubresources, result.initData.get());
-	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(texture.texSRV.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(texture->texSRV.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST));
+	UpdateSubresources(commandList, texture->texSRV.Get(), result.UploadBuffer, 0, 0, result.NumSubresources, result.initData.get());
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(texture->texSRV.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 	//InitContext.TransitionResource(Dest, D3D12_RESOURCE_STATE_GENERIC_READ, true);
 
 	// Execute the command list and wait for it to finish so we can release the upload buffer
 	//InitContext.CloseAndExecute(true);
 
-	UploadBuffer->Release();
+	//UploadBuffer->Release();
 }

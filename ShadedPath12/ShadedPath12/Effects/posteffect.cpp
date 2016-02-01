@@ -208,7 +208,8 @@ void PostEffect::init2()
 	// the default heap.
 
 	// test textures:
-	xapp().textureStore.loadTexture(L"ceil.dds", "default", commandLists[frameIndex].Get());
+	TextureLoadResult result;
+	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default", commandLists[frameIndex].Get(), result);
 	// end test textures
 
 	ThrowIfFailed(commandLists[frameIndex]->Close());
@@ -219,6 +220,7 @@ void PostEffect::init2()
 	auto &f = frameData[frameIndex];
 	createSyncPoint(f, xapp().commandQueue);
 	waitForSyncPoint(f);
+	result.UploadBuffer->Release();
 }
 
 void PostEffect::preDraw() {
@@ -241,9 +243,13 @@ void PostEffect::preDraw() {
 	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE,
 		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 
+	ID3D12DescriptorHeap* ppHeaps[] = { m_srvHeap.Get() };
+	TextureInfo *tex = xapp().textureStore.getTexture("default");
+	if (tex->available) {
+		ppHeaps[0] = tex->m_srvHeap.Get();
+	}
 	// Set necessary state.
 	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
-	ID3D12DescriptorHeap* ppHeaps[] = { m_srvHeap.Get() };
 	commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	commandLists[frameIndex]->RSSetViewports(1, &xapp().viewport);
 	commandLists[frameIndex]->RSSetScissorRects(1, &xapp().scissorRect);

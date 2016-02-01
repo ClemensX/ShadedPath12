@@ -40,6 +40,8 @@ enum DDS_ALPHA_MODE
 struct TextureLoadResult {
 	UINT NumSubresources;
 	std::unique_ptr<D3D12_SUBRESOURCE_DATA[]> initData;
+	std::unique_ptr<uint8_t[]> ddsData;
+	ID3D12Resource* UploadBuffer;
 };
 
 HRESULT __cdecl CreateDDSTextureFromMemory( _In_ ID3D12Device* d3dDevice,
