@@ -72,6 +72,8 @@ void TestTextures::init()
 	//ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator, xapp().pipelineState.Get(), IID_PPV_ARGS(&commandList)));
 	//xapp().
 	//xapp().textureStore.loadTexture(L"ceil.dds", "default", nullptr);
+	TextureLoadResult result;
+	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default", nullptr, result);
 }
 
 void TestTextures::update()

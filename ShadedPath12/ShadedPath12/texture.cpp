@@ -30,6 +30,14 @@ void TextureStore::init() {
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	psoDesc.SampleDesc.Count = 1;
 	//ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
+#include "CompiledShaders/PostVS.h"
+//#include "CompiledShaders/PostPS.h"
+	// test shade library functions
+	//{
+	//D3DLoadModule() uses ID3D11Module
+	//ComPtr<ID3DBlob> vShader;
+	//ThrowIfFailed(D3DReadFileToBlob(L"", &vShader));
+	psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
 	ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
 	ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
 	ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), pipelineState.Get(), IID_PPV_ARGS(&commandList)));
@@ -51,6 +59,7 @@ TextureInfo* TextureStore::getTexture(string id)
 
 void TextureStore::loadTexture(wstring filename, string id, ID3D12GraphicsCommandList *commandList, TextureLoadResult &result)
 {
+	commandList = this->commandList.Get();
 	wstring binFile = xapp().findFile(filename.c_str(), XApp::TEXTURE);
 	TextureInfo initialTexture;  // only use to initialize struct in texture store - do not access this after assignment to store
 	initialTexture.filename = binFile;
@@ -123,4 +132,15 @@ void TextureStore::loadTexture(wstring filename, string id, ID3D12GraphicsComman
 	//InitContext.CloseAndExecute(true);
 
 	//UploadBuffer->Release();
+	ThrowIfFailed(commandList->Close());
+	ID3D12CommandList* ppCommandLists[] = { this->commandList.Get() };
+	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+	// Create synchronization objects and wait until assets have been uploaded to the GPU.
+	Sleep(300);
+
+	//auto &f = frameData[frameIndex];
+	//createSyncPoint(f, xapp().commandQueue);
+	//waitForSyncPoint(f);
+	result.UploadBuffer->Release();
 }

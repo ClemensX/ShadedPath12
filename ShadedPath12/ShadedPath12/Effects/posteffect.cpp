@@ -209,8 +209,8 @@ void PostEffect::init2()
 
 	// test textures:
 	xapp().textureStore.init();
-	TextureLoadResult result;
-	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default", commandLists[frameIndex].Get(), result);
+	//TextureLoadResult result;
+	//xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default", commandLists[frameIndex].Get(), result);
 	// end test textures
 
 	ThrowIfFailed(commandLists[frameIndex]->Close());
@@ -221,7 +221,7 @@ void PostEffect::init2()
 	auto &f = frameData[frameIndex];
 	createSyncPoint(f, xapp().commandQueue);
 	waitForSyncPoint(f);
-	result.UploadBuffer->Release();
+	//result.UploadBuffer->Release();
 }
 
 void PostEffect::preDraw() {
@@ -256,7 +256,11 @@ void PostEffect::preDraw() {
 	commandLists[frameIndex]->RSSetScissorRects(1, &xapp().scissorRect);
 
 	// Set SRV
-	commandLists[frameIndex]->SetGraphicsRootDescriptorTable(0, m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+	if (tex->available) {
+		commandLists[frameIndex]->SetGraphicsRootDescriptorTable(0, tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+	} else {
+		commandLists[frameIndex]->SetGraphicsRootDescriptorTable(0, m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+	}
 
 	// Indicate that the back buffer will be used as a render target.
 	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
