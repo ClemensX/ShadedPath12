@@ -208,6 +208,7 @@ void PostEffect::init2()
 	// the default heap.
 
 	// test textures:
+	xapp().textureStore.init();
 	TextureLoadResult result;
 	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default", commandLists[frameIndex].Get(), result);
 	// end test textures

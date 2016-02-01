@@ -19,10 +19,10 @@ string TestTextures::getWindowTitle() {
 
 void TestTextures::init()
 {
+	postEffect.init();
 	dotcrossEffect.init();
 	linesEffect.init();
 	textEffect.init();
-	postEffect.init();
 	float aspectRatio = xapp().aspectRatio;
 
 	LineDef myLines[] = {
@@ -65,8 +65,8 @@ void TestTextures::init()
 	xapp().world.drawCoordinateSystem(XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), "Origin", textEffect, dotcrossEffect, textSize);
 
 	// textures
-	ComPtr<ID3D12CommandAllocator> commandAllocator;
-	ComPtr<ID3D12CommandList> commandList;
+	//ComPtr<ID3D12CommandAllocator> commandAllocator;
+	//ComPtr<ID3D12CommandList> commandList;
 
 	//ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
 	//ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator, xapp().pipelineState.Get(), IID_PPV_ARGS(&commandList)));
