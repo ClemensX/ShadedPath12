@@ -15,7 +15,7 @@ public:
 	// init d3d resources needed to initialize/upload textures later
 	void init();
 	// load texture upload to GPU, textures are referenced via id string
-	void loadTexture(wstring filename, string id, ID3D12GraphicsCommandList *commandList, TextureLoadResult &result);
+	void loadTexture(wstring filename, string id);
 	TextureInfo *getTexture(string id);
 private:
 	unordered_map<string, TextureInfo> textures;
@@ -23,5 +23,6 @@ private:
 	ComPtr<ID3D12GraphicsCommandList> commandList;
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
+	FrameResource updateFrameData;
 
 };

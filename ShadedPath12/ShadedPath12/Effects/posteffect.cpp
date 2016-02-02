@@ -245,9 +245,8 @@ void PostEffect::preDraw() {
 		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 
 	ID3D12DescriptorHeap* ppHeaps[] = { m_srvHeap.Get() };
-	TextureInfo *tex = xapp().textureStore.getTexture("default");
-	if (tex->available) {
-		ppHeaps[0] = tex->m_srvHeap.Get();
+	if (alternateFinalFrameHeap) {
+		ppHeaps[0] = alternateFinalFrameHeap;
 	}
 	// Set necessary state.
 	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
@@ -256,8 +255,8 @@ void PostEffect::preDraw() {
 	commandLists[frameIndex]->RSSetScissorRects(1, &xapp().scissorRect);
 
 	// Set SRV
-	if (tex->available) {
-		commandLists[frameIndex]->SetGraphicsRootDescriptorTable(0, tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+	if (alternateFinalFrameHeap) {
+		commandLists[frameIndex]->SetGraphicsRootDescriptorTable(0, alternateFinalFrameHeap->GetGPUDescriptorHandleForHeapStart());
 	} else {
 		commandLists[frameIndex]->SetGraphicsRootDescriptorTable(0, m_srvHeap->GetGPUDescriptorHandleForHeapStart());
 	}
@@ -338,4 +337,8 @@ void PostEffect::postDraw() {
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 	//Sleep(50);
 	rDesc = resource->GetDesc();
+}
+
+void PostEffect::setAlternateFinalFrame(ID3D12DescriptorHeap * heap) {
+	alternateFinalFrameHeap = heap;
 }

@@ -92,7 +92,7 @@ void Linetext::init()
 	updateFrameData.fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
 	if (updateFrameData.fenceEvent == nullptr) {
 		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-}
+	}
 }
 
 void Linetext::setSize(float charHeight) {

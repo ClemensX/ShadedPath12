@@ -120,6 +120,7 @@ inline void ErrorExt(wstring msg, const char* file, DWORD line)
 // framework headers
 #include "d3dx12.h"
 #include "DDSTextureLoader.h"
+#include "forward_structures.h"
 #include "texture.h"
 #include "gametime.h"
 #include "util.h"

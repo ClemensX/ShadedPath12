@@ -72,8 +72,12 @@ void TestTextures::init()
 	//ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator, xapp().pipelineState.Get(), IID_PPV_ARGS(&commandList)));
 	//xapp().
 	//xapp().textureStore.loadTexture(L"ceil.dds", "default", nullptr);
-	TextureLoadResult result;
-	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default", nullptr, result);
+	xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
+	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
+	TextureInfo *tex = xapp().textureStore.getTexture("default");
+	if (tex->available) {
+		postEffect.setAlternateFinalFrame(tex->m_srvHeap.Get());
+	}
 }
 
 void TestTextures::update()
@@ -83,6 +87,10 @@ void TestTextures::update()
 	static bool done = false;
 	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
 		done = true;
+		TextureInfo *tex = xapp().textureStore.getTexture("grass");
+		if (tex->available) {
+			postEffect.setAlternateFinalFrame(tex->m_srvHeap.Get());
+		}
 		//if (xapp().pGraphicsAnalysis != nullptr) xapp().pGraphicsAnalysis->BeginCapture();
 		//Sleep(1000);
 

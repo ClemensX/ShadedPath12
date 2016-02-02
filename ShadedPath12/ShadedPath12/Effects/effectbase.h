@@ -1,9 +1,3 @@
-struct FrameResource {
-	HANDLE fenceEvent;
-	ComPtr<ID3D12Fence> fence;
-	UINT64 fenceValue;
-};
-
 class EffectBase {
 protected:
 	//HANDLE fenceEvent;
@@ -12,9 +6,10 @@ protected:
 	//void WaitForGpu();
 	// fences for update
 	FrameResource frameData[XApp::FrameCount];
-	void createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue);
-	void waitForSyncPoint(FrameResource &f);
-
+public:
+	static void createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue);
+	static void waitForSyncPoint(FrameResource &f);
+protected:
 	ComPtr<ID3D12CommandAllocator> commandAllocators[XApp::FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> commandLists[XApp::FrameCount];
 

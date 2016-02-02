@@ -100,6 +100,9 @@
     <ClInclude Include="testTextures.h">
       <Filter>Apps</Filter>
     </ClInclude>
+    <ClInclude Include="forward_structures.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

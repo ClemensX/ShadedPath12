@@ -41,6 +41,13 @@ void TextureStore::init() {
 	ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
 	ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
 	ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), pipelineState.Get(), IID_PPV_ARGS(&commandList)));
+	ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&updateFrameData.fence)));
+	updateFrameData.fence->SetName(L"fence_texture_update");
+	updateFrameData.fenceValue = 0;
+	updateFrameData.fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+	if (updateFrameData.fenceEvent == nullptr) {
+		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+	}
 }
 
 TextureInfo* TextureStore::getTexture(string id)
@@ -57,9 +64,10 @@ TextureInfo* TextureStore::getTexture(string id)
 	return ret;
 }
 
-void TextureStore::loadTexture(wstring filename, string id, ID3D12GraphicsCommandList *commandList, TextureLoadResult &result)
+void TextureStore::loadTexture(wstring filename, string id)
 {
-	commandList = this->commandList.Get();
+	TextureLoadResult result;
+	ID3D12GraphicsCommandList *commandList = this->commandList.Get();
 	wstring binFile = xapp().findFile(filename.c_str(), XApp::TEXTURE);
 	TextureInfo initialTexture;  // only use to initialize struct in texture store - do not access this after assignment to store
 	initialTexture.filename = binFile;
@@ -137,10 +145,13 @@ void TextureStore::loadTexture(wstring filename, string id, ID3D12GraphicsComman
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
 	// Create synchronization objects and wait until assets have been uploaded to the GPU.
-	Sleep(300);
+	//Sleep(300);
+	EffectBase::createSyncPoint(updateFrameData, xapp().commandQueue);
+	EffectBase::waitForSyncPoint(updateFrameData);
 
 	//auto &f = frameData[frameIndex];
 	//createSyncPoint(f, xapp().commandQueue);
 	//waitForSyncPoint(f);
 	result.UploadBuffer->Release();
+	ThrowIfFailed(commandList->Reset(commandAllocator.Get(), pipelineState.Get()));
 }
