@@ -103,6 +103,9 @@
     <ClInclude Include="forward_structures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Effects\billboard.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -161,6 +164,9 @@
     </ClCompile>
     <ClCompile Include="testTextures.cpp">
       <Filter>Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="Effects\billboard.cpp">
+      <Filter>Effects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

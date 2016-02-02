@@ -23,6 +23,7 @@ void TestTextures::init()
 	dotcrossEffect.init();
 	linesEffect.init();
 	textEffect.init();
+	billboardEffect.init();
 	float aspectRatio = xapp().aspectRatio;
 
 	LineDef myLines[] = {
@@ -78,6 +79,18 @@ void TestTextures::init()
 	if (tex->available) {
 		postEffect.setAlternateFinalFrame(tex->m_srvHeap.Get());
 	}
+
+	// create some billboards:
+	BillboardElement b;
+	b.pos = XMFLOAT3(0.0f, 0.0f, 2.0f);
+	b.normal = XMFLOAT4(0.0f, 0.0f, -1.0f, 1.0f);
+	b.size = XMFLOAT2(2.0f, 1.0f);
+	size_t id1 = billboardEffect.add("default", b);
+	b.pos = XMFLOAT3(-1.0f, 1.5f, 1.0f);
+	size_t id2 = billboardEffect.add("default", b);
+	BillboardElement &ref = billboardEffect.get("default", id1);
+	ref.pos.z -= 0.1f;
+	ref = billboardEffect.get("default", id1);
 }
 
 void TestTextures::update()

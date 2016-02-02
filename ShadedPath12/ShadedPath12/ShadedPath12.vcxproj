@@ -165,6 +165,7 @@
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="dds.h" />
     <ClInclude Include="DDSTextureLoader.h" />
+    <ClInclude Include="Effects\billboard.h" />
     <ClInclude Include="Effects\dotcross.h" />
     <ClInclude Include="Effects\effectbase.h" />
     <ClInclude Include="Effects\lines.h" />
@@ -189,6 +190,7 @@
   <ItemGroup>
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
+    <ClCompile Include="Effects\billboard.cpp" />
     <ClCompile Include="Effects\dotcross.cpp" />
     <ClCompile Include="Effects\effectbase.cpp" />
     <ClCompile Include="Effects\lines.cpp" />

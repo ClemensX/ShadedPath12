@@ -20,6 +20,7 @@ private:
 	Dotcross dotcrossEffect;
 	Linetext textEffect;
 	PostEffect postEffect;
+	Billboard billboardEffect;
 	// other:
 	LONGLONG startTime;
 	int framenumLine, fpsLine;  // indexes into the text array for Linetext effect
