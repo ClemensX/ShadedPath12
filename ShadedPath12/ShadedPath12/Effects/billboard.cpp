@@ -216,11 +216,11 @@ void Billboard::drawInternal()
 	TextureInfo *tex = xapp().textureStore.getTexture("default");
 	ID3D12DescriptorHeap* ppHeaps[] = { tex->m_srvHeap.Get() };
 	commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-	commandLists[frameIndex]->SetGraphicsRootDescriptorTable(0, tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+	commandLists[frameIndex]->SetGraphicsRootDescriptorTable(1, tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
 	commandLists[frameIndex]->DrawInstanced(6, 1, 0, 0);
 	postDraw();
 	mutex_Billboard.unlock();
-	Sleep(25);
+	//Sleep(50);
 }
 
 void Billboard::postDraw()

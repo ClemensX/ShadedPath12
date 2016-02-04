@@ -1,6 +1,6 @@
-#include "Post.hlsli"
+#include "Billboard.hlsli"
 
-[RootSignature(PostRS)]
+[RootSignature(BillboardRS)]
 
 float4 main(PSInput input) : SV_TARGET
 {
