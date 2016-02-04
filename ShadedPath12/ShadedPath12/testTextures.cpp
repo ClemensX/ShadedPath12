@@ -47,7 +47,7 @@ void TestTextures::init()
 	//xapp->camera.pos.z = -3.0f;
 	//xapp().camera.pos = XMFLOAT4(1.0f, 1.7f, 1.0f, 0.0f);
 	xapp().camera.pos = XMFLOAT4(0.0f, 0.0f, -3.0f, 0.0f);
-	xapp().camera.pos = XMFLOAT4(-0.0696329f, 0.354773f, 0.324679f, 0.0f);
+	//xapp().camera.pos = XMFLOAT4(-0.0696329f, 0.354773f, 0.324679f, 0.0f);
 	//xapp().camera.setSpeed(1.0f); // seems ok for VR
 	xapp().camera.setSpeed(10.5f); // faster for dev usability
 	xapp().camera.fieldOfViewAngleY = 1.289f;
@@ -76,7 +76,7 @@ void TestTextures::init()
 	xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
 	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
 	TextureInfo *tex = xapp().textureStore.getTexture("default");
-	if (tex->available) {
+	if (tex->available && textureFullFrameTest) {
 		postEffect.setAlternateFinalFrame(tex->m_srvHeap.Get());
 	}
 
@@ -101,7 +101,7 @@ void TestTextures::update()
 	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
 		done = true;
 		TextureInfo *tex = xapp().textureStore.getTexture("grass");
-		if (tex->available) {
+		if (tex->available && textureFullFrameTest) {
 			postEffect.setAlternateFinalFrame(tex->m_srvHeap.Get());
 		}
 		//if (xapp().pGraphicsAnalysis != nullptr) xapp().pGraphicsAnalysis->BeginCapture();
@@ -134,6 +134,7 @@ void TestTextures::update()
 	fps_str.append(sss.str());
 	textEffect.changeTextLine(fpsLine, fps_str);
 	textEffect.update();
+	billboardEffect.update();
 	// WVP is now updated automatically during draw()
 	//LinesEffect::CBV c;
 	//XMStoreFloat4x4(&c.wvp, xapp().camera.worldViewProjection());
@@ -145,6 +146,7 @@ void TestTextures::draw()
 	linesEffect.draw();
 	dotcrossEffect.draw();
 	textEffect.draw();
+	billboardEffect.draw();
 	postEffect.draw();
 }
 

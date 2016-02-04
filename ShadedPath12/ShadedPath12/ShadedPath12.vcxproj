@@ -222,6 +222,14 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\BillboardPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\BillboardVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Shaders\DotcrossGS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
@@ -286,6 +294,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\Billboard.hlsli" />
     <None Include="Shaders\Dotcross.hlsli" />
     <None Include="Shaders\Line.hlsli" />
     <None Include="Shaders\Linetext.hlsli" />

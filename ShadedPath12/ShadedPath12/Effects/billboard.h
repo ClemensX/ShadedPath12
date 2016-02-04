@@ -5,6 +5,7 @@
 
 // draw call transfers complete lists of triangles in world coords belonging to one texture
 // --> one draw call per used texture
+// all textures have to be already in GPU memory and ready to be used as SRV
 
 // CPU structures
 struct BillboardElement {
@@ -16,8 +17,9 @@ struct BillboardElement {
 class Billboard : EffectBase {
 public:
 	struct Vertex {
-		XMFLOAT3 pos;
+		XMFLOAT4 pos;
 		XMFLOAT4 normal;
+		XMFLOAT2 uv;
 	};
 	struct CBV {
 		XMFLOAT4X4 wvp;
@@ -43,10 +45,10 @@ private:
 	mutex mutex_Billboard;
 	void drawInternal();
 	void updateTask();
+	vector<Vertex>& recreateVertexBufferContent();
 	//vector<BillboardElement> texts;
-	size_t vertexBufferElements[XApp::FrameCount]; // counts all TextElements 
 	atomic<bool> updateRunning = false;
-	future<void> linetextFuture;
+	future<void> billboardFuture;
 	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
 	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
 	FrameResource updateFrameData;
