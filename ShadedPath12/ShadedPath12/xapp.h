@@ -69,11 +69,12 @@ public:
 		}
 		return false;
 	};
-	void handleRTVClearing(ID3D12GraphicsCommandList *commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle) {
+	void handleRTVClearing(ID3D12GraphicsCommandList *commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle, D3D12_CPU_DESCRIPTOR_HANDLE dsv_handle) {
 		if (rtvHasToBeCleared()) {
 			rtvCleared = true;
 			const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 			commandList->ClearRenderTargetView(rtv_handle, clearColor, 0, nullptr);
+			commandList->ClearDepthStencilView(dsv_handle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 		}
 	};
 
@@ -115,6 +116,8 @@ public:
 	ComPtr<ID3D12Resource> renderTargets[FrameCount];
 	ComPtr<ID3D11Resource> wrappedBackBuffers[FrameCount];
 	ComPtr<ID3D11Texture2D> wrappedTextures[FrameCount];
+	ComPtr<ID3D12Resource> depthStencils[FrameCount];
+	ComPtr<ID3D12DescriptorHeap> dsvHeaps[FrameCount];
 	UINT lastPresentedFrame = 0;  // set directly before Present() to have 'old' frame number available
 	BYTE key_state[256];
 	int mouseDx;
