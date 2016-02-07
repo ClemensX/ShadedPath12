@@ -8,6 +8,7 @@ Target Platform is Windows 10 (64 bit only).
 Some tools are Java based and use eclipse 4. This is mostly done for tools used in asset handling.
 
 # Versions
+* 0.0.3 - added DDS texture support
 * 0.0.2 - added more examples and shaders: draw crosses and 3D text
 * 0.0.1 - line rendering for Oculus Rift
 * 0.0 - port / test / implement DX12 features. Expect drastic changes at any time. Will have very limited use to look at and may not even compile.
@@ -32,9 +33,16 @@ Running Sample1 now should give you lots of lines to see inside the rift.
 * **-disableDX11Debug** Used on systems that don't have DX11 Debug enabled. (Rarely used.)
 
 # Sample Apps
+* **TestTextures** Load 12 texture files and display each at 100 different world positions
 * **TestDotcross** Draw an increasing number of crosses. Single Thread Example that will show system degredation for generating and transmitting large amounts of objects to the GPU
-* **TestLinetext** - Optimized Multi Thread example of a geometry shader for drawing 3D text. Displays FPS, some engine info and 1000 lines of text. Should render with more than 300 FPS on any system supporting the Oculus Rift (in window mode)
+* **TestLinetext** Optimized Multi Thread example of a geometry shader for drawing 3D text. Displays FPS, some engine info and 1000 lines of text. Should render with more than 300 FPS on any system supporting the Oculus Rift (in window mode)
 * **Sample1** Draw a lot of lines to mark the floor and ceiling of the world, some lines of text and a coordinate system at the origin point.
+
+# Features for 0.0.3
+Added a texture shader to load DDS files and push them to GPU. This shader uses the DX12 DDSTextureLoader from Microsofts MiniEngine. DDSTextureLoader was
+slightly changed to make it easier to use outside MiniEngine.
+
+Added a billboard shader that uses pre-loaded textures and displays them at user defined position and size
 
 # Features for 0.0.2
 Added two geometry shaders:

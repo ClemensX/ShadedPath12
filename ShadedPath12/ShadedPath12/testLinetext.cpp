@@ -27,7 +27,6 @@ void TestLinetext::init()
 	gameTime.init(1);
 	startTime = gameTime.getRealTime();
 
-	// most from old kitchen.cpp
 	float textSize = 0.5f;//1.0f;
 	float lineHeight = 2.0 * textSize;
 	xapp().camera.nearZ = 0.2f;
@@ -41,7 +40,7 @@ void TestLinetext::init()
 
 	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	textEffect.setSize(textSize);
-	textEffect.addTextLine(XMFLOAT4(0.0f, 0 * lineHeight, 0.0f, 0.0f), "Shaded Path 12 Engine Build 2015_11_23", Linetext::XY);
+	textEffect.addTextLine(XMFLOAT4(0.0f, 0 * lineHeight, 0.0f, 0.0f), xapp().buildInfo, Linetext::XY);
 	fpsLine = textEffect.addTextLine(XMFLOAT4(0.0f, 1 * lineHeight, 0.0f, 0.0f), "FPS", Linetext::XY);
 	framenumLine = textEffect.addTextLine(XMFLOAT4(0.0f, 2 * lineHeight, 0.0f, 0.0f), "0123456789", Linetext::XY);
 

@@ -5,6 +5,7 @@
 
 void LinesEffect::init()
 {
+	if (xapp().disableLineShaders) return;
 	// try to do all expensive operations like shader loading and PSO creation here
 	// Create the pipeline state, which includes compiling and loading shaders.
 	{
@@ -25,6 +26,7 @@ void LinesEffect::init()
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 		psoDesc.NumRenderTargets = 1;
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 		psoDesc.SampleDesc.Count = 1;
 
 		psoDesc.VS = { binShader_LineVS, sizeof(binShader_LineVS) };
@@ -78,6 +80,7 @@ void LinesEffect::add(vector<LineDef> &linesToAdd) {
 }
 
 void LinesEffect::update() {
+	if (xapp().disableLineShaders) return;
 	//dirty = true; // uncomment to force CBV update every frame
 	LinesEffect *l = this;
 	auto fut = async([l]{ return l->updateTask(); });
@@ -179,6 +182,7 @@ void LinesEffect::preDraw() {
 
 void LinesEffect::draw()
 {
+	if (xapp().disableLineShaders) return;
 	if (!xapp().ovrRendering) {
 		XMStoreFloat4x4(&cbv.wvp, xapp().camera.worldViewProjection());
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));

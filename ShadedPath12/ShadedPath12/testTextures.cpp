@@ -55,7 +55,7 @@ void TestTextures::init()
 
 	textEffect.setSize(textSize);
 	dotcrossEffect.setLineLength(6.0f * textSize);
-	textEffect.addTextLine(XMFLOAT4(-5.0f, 5 * lineHeight, 0.0f, 0.0f), "Shaded Path 12 Engine Build 2015_11_23", Linetext::XY);
+	textEffect.addTextLine(XMFLOAT4(-5.0f, 5 * lineHeight, 0.0f, 0.0f), xapp().buildInfo, Linetext::XY);
 	fpsLine = textEffect.addTextLine(XMFLOAT4(-5.0f, 4 * lineHeight, 0.0f, 0.0f), "FPS", Linetext::XY);
 	framenumLine = textEffect.addTextLine(XMFLOAT4(-5.0f, 3 * lineHeight, 0.0f, 0.0f), "0123456789", Linetext::XY);
 
@@ -66,15 +66,20 @@ void TestTextures::init()
 	xapp().world.drawCoordinateSystem(XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), "Origin", textEffect, dotcrossEffect, textSize);
 
 	// textures
-	//ComPtr<ID3D12CommandAllocator> commandAllocator;
-	//ComPtr<ID3D12CommandList> commandList;
-
-	//ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
-	//ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator, xapp().pipelineState.Get(), IID_PPV_ARGS(&commandList)));
-	//xapp().
-	//xapp().textureStore.loadTexture(L"ceil.dds", "default", nullptr);
-	xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
-	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
+	//xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
+	//xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
+	xapp().textureStore.loadTexture(L"vac_00.dds", "vac00");
+	xapp().textureStore.loadTexture(L"vac_01.dds", "vac01");
+	xapp().textureStore.loadTexture(L"vac_02.dds", "vac02");
+	xapp().textureStore.loadTexture(L"vac_03.dds", "vac03");
+	xapp().textureStore.loadTexture(L"vac_04.dds", "vac04");
+	xapp().textureStore.loadTexture(L"vac_05.dds", "vac05");
+	xapp().textureStore.loadTexture(L"vac_06.dds", "vac06");
+	xapp().textureStore.loadTexture(L"vac_07.dds", "vac07");
+	xapp().textureStore.loadTexture(L"vac_08.dds", "vac08");
+	xapp().textureStore.loadTexture(L"vac_09.dds", "vac09");
+	xapp().textureStore.loadTexture(L"vac_10.dds", "vac10");
+	xapp().textureStore.loadTexture(L"vac_11.dds", "vac11");
 	TextureInfo *tex = xapp().textureStore.getTexture("default");
 	if (tex->available && textureFullFrameTest) {
 		postEffect.setAlternateFinalFrame(tex->m_srvHeap.Get());
@@ -82,15 +87,36 @@ void TestTextures::init()
 
 	// create some billboards:
 	BillboardElement b;
-	b.pos = XMFLOAT3(0.0f, 0.0f, 2.0f);
+	b.pos = XMFLOAT3(15.0f, 0.0f, 2.0f);
 	b.normal = XMFLOAT4(0.0f, 0.0f, -1.0f, 1.0f);
 	b.size = XMFLOAT2(2.0f, 1.0f);
-	size_t id1 = billboardEffect.add("default", b);
+	//size_t id1 = billboardEffect.add("default", b);
 	b.pos = XMFLOAT3(-1.0f, 1.5f, 1.0f);
-	size_t id2 = billboardEffect.add("default", b);
-	BillboardElement &ref = billboardEffect.get("default", id1);
-	ref.pos.z -= 0.1f;
-	ref = billboardEffect.get("default", id1);
+	b.size = XMFLOAT2(36.29f, 24.192f);
+	size_t id2 = billboardEffect.add("vac00", b);
+	//BillboardElement &ref = billboardEffect.get("default", id1);
+	//ref.pos.z -= 0.1f;
+	//ref = billboardEffect.get("default", id1);
+
+	// create randomly positioned billboards for each vacXX texture we have:
+	for (int tex_number = 0; tex_number < 12; tex_number++) {
+		//assemble texture name:
+		string texName;
+		if (tex_number < 10)
+			texName = string("vac0").append(to_string(tex_number));
+		else 
+			texName = string("vac").append(to_string(tex_number));
+		//Log(elvec.first.c_str() << endl);
+		auto *tex = xapp().textureStore.getTexture(texName);
+		for (int i = 0; i < 100; i++) {
+			XMFLOAT3 rnd = xapp().world.getRandomPos();
+			b.pos.x = rnd.x;
+			b.pos.y = rnd.y;
+			b.pos.z = rnd.z;
+			billboardEffect.add(texName, b);
+		}
+	}
+
 }
 
 void TestTextures::update()
@@ -135,10 +161,6 @@ void TestTextures::update()
 	textEffect.changeTextLine(fpsLine, fps_str);
 	textEffect.update();
 	billboardEffect.update();
-	// WVP is now updated automatically during draw()
-	//LinesEffect::CBV c;
-	//XMStoreFloat4x4(&c.wvp, xapp().camera.worldViewProjection());
-	//linesEffect.updateCBV(c);
 }
 
 void TestTextures::draw()

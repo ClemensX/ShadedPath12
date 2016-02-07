@@ -6,6 +6,7 @@
 
 void Dotcross::init()
 {
+	if (xapp().disableLineShaders) return;
 	// try to do all expensive operations like shader loading and PSO creation here
 	// Create the pipeline state, which includes compiling and loading shaders.
 	{
@@ -26,6 +27,7 @@ void Dotcross::init()
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
 		psoDesc.NumRenderTargets = 1;
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 		psoDesc.SampleDesc.Count = 1;
 
 		psoDesc.VS = { binShader_DotcrossVS, sizeof(binShader_DotcrossVS) };
@@ -78,6 +80,7 @@ void Dotcross::update(vector<XMFLOAT3>& pts)
 
 void Dotcross::update()
 {
+	if (xapp().disableLineShaders) return;
 	Dotcross *l = this;
 	auto fut = async([l] { return l->updateTask(); });
 	//return l->updateTask();
@@ -163,6 +166,7 @@ void Dotcross::preDraw()
 
 void Dotcross::draw()
 {
+	if (xapp().disableLineShaders) return;
 	if (points.size() == 0)
 		return;
 	if (!xapp().ovrRendering) {

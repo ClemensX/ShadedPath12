@@ -39,6 +39,8 @@ public:
 	XApp();
 	~XApp();
 
+	string buildInfo = "Shaded Path 12 Engine Build 2016_02_06";
+
 	void init();
 	void resize();
 	void update();
@@ -92,6 +94,8 @@ public:
 	// on some systems there is no debug version of DX 11 available,
 	// then set -disableDX11Debug on command line to be able to let debug build run
 	bool disableDX11Debug = false;
+	// Graphics debugging does not like line shaders - it crashes on 2nd line shader initialization
+	bool disableLineShaders = false;
 
 	int requestWidth, requestHeight;
 	// all drawing takes place in backbuffer - output to whatever size the window currently has is only last step

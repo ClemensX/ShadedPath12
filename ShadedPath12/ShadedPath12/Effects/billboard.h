@@ -34,9 +34,9 @@ public:
 	void draw();
 	void drawAll();
 	void destroy();
+	unordered_map<string, vector<BillboardElement>> billboards;
 
 private:
-	unordered_map<string, vector<BillboardElement>> billboards;
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
 	void preDraw();
@@ -46,6 +46,7 @@ private:
 	void drawInternal();
 	void updateTask();
 	vector<Vertex>& recreateVertexBufferContent();
+	void createBillbordVertexData(Vertex *cur_billboard, BillboardElement & bb);
 	//vector<BillboardElement> texts;
 	atomic<bool> updateRunning = false;
 	future<void> billboardFuture;
@@ -55,5 +56,6 @@ private:
 	ComPtr<ID3D12Resource> vertexBufferX;
 	ComPtr<ID3D12Resource> vertexBufferUploadX;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
+	//UINT numberOfVertices = 0;
 };
 

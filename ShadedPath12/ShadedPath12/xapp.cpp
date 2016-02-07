@@ -360,6 +360,9 @@ void XApp::init()
 			//NAME_D3D12_OBJECT(m_depthStencil);
 
 			device->CreateDepthStencilView(depthStencils[n].Get(), &depthStencilDesc, dsvHeaps[n]->GetCPUDescriptorHandleForHeapStart());
+			wstringstream s;
+			s << L"depthStencil_xapp[" << n << "]";
+			depthStencils[n]->SetName(s.str().c_str());
 		}
 	}
 

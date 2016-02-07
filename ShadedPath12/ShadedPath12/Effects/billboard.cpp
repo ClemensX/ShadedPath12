@@ -33,6 +33,7 @@ void Billboard::init() {
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		psoDesc.NumRenderTargets = 1;
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 		psoDesc.SampleDesc.Count = 1;
 
 		psoDesc.VS = { binShader_BillboardVS, sizeof(binShader_BillboardVS) };
@@ -218,12 +219,20 @@ void Billboard::drawInternal()
 	//cbv.rot = lines[0].rot;
 	memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
-	// Set SRV
-	TextureInfo *tex = xapp().textureStore.getTexture("default");
-	ID3D12DescriptorHeap* ppHeaps[] = { tex->m_srvHeap.Get() };
-	commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-	commandLists[frameIndex]->SetGraphicsRootDescriptorTable(1, tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
-	commandLists[frameIndex]->DrawInstanced(6, 1, 0, 0);
+	// now draw all the billboards, one draw call per texture type 
+	// iterate over billboard types
+	UINT cur_vertex_index = 0;
+	for (auto& elvec : billboards) {
+		//Log(elvec.first.c_str() << endl);
+		auto *tex = xapp().textureStore.getTexture(elvec.first);
+		// Set SRV
+		ID3D12DescriptorHeap* ppHeaps[] = { tex->m_srvHeap.Get() };
+		commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+		commandLists[frameIndex]->SetGraphicsRootDescriptorTable(1, tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+		UINT count = elvec.second.size() * 6;
+		if (count > 0) commandLists[frameIndex]->DrawInstanced(count, 1, cur_vertex_index, 0);
+		cur_vertex_index += count;
+	}
 	postDraw();
 	mutex_Billboard.unlock();
 	//Sleep(50);
@@ -260,10 +269,70 @@ vector<Billboard::Vertex>& Billboard::recreateVertexBufferContent()
 		{ XMFLOAT4(-1, 1, 0, 1),  XMFLOAT4(), XMFLOAT2(0, 0) },
 		{ XMFLOAT4(1,  1, 0, 1),  XMFLOAT4(), XMFLOAT2(1, 0) }
 	};
-	for (int i = 0; i < _countof(all); i++) {
-		vertices.push_back(all[i]);
+	//for (int i = 0; i < _countof(all); i++) {
+	//	vertices.push_back(all[i]);
+	//}
+	//return vertices;
+	// iterate over billboard types
+	Vertex cur_billboard[6];
+	for (auto& elvec : billboards) {
+		//Log(elvec.first.c_str() << endl);
+		// iterate over billboards of current type
+		for (auto& bb : elvec.second) {
+			//Log("billboard " << bb.pos.x << endl);
+			createBillbordVertexData(cur_billboard, bb);
+			for (int i = 0; i < 6; i++) {
+				vertices.push_back(cur_billboard[i]);
+			}
+		}
 	}
 	return vertices;
+}
+
+void Billboard::createBillbordVertexData(Vertex *cur_billboard, BillboardElement &bb) {
+	// we know cur_billboard is a Vertex[6]
+	// first create billboard at origin in x/y plane with correct size:
+	float deltaw = bb.size.x / 2;
+	float deltah = bb.size.y / 2;
+	Vertex *c = cur_billboard; // use shorter name
+	// low left
+	c[0].pos.x = 0 - deltaw;
+	c[0].pos.y = 0 - deltah;
+	c[0].pos.z = 0;
+	c[0].pos.w = 1;
+	c[0].uv.x = 0;
+	c[0].uv.y = 1;
+	// top left
+	c[1].pos.x = 0 - deltaw;
+	c[1].pos.y = 0 + deltah;
+	c[1].pos.z = 0;
+	c[1].pos.w = 1;
+	c[1].uv.x = 0;
+	c[1].uv.y = 0;
+	// low right
+	c[2].pos.x = 0 + deltaw;
+	c[2].pos.y = 0 - deltah;
+	c[2].pos.z = 0;
+	c[2].pos.w = 1;
+	c[2].uv.x = 1;
+	c[2].uv.y = 1;
+	// 2nd triangle: copy low right
+	c[3] = c[2];
+	// 2nd triangle: copy top left
+	c[4] = c[1];
+	// 2nd triangle: top right
+	c[5].pos.x = 0 + deltaw;
+	c[5].pos.y = 0 + deltah;
+	c[5].pos.z = 0;
+	c[5].pos.w = 1;
+	c[5].uv.x = 1;
+	c[5].uv.y = 0;
+	// now translate to real position:
+	for (int i = 0; i < 6; i++) {
+		c[i].pos.x += bb.pos.x;
+		c[i].pos.y += bb.pos.y;
+		c[i].pos.z += bb.pos.z;
+	}
 }
 
 BillboardElement & Billboard::get(string texture_id, int order_num) {
