@@ -86,6 +86,17 @@ void ObjectViewer::init()
 
 	xapp().objectStore.loadObject(L"house4_anim.b", "House");
 	xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), 0);
+	// draw lines for mesh:
+	Log(" object created ok, #vertices == " << object.mesh->vertices.size() << endl);
+	vector<LineDef> ol;
+	for (int i = 0; i < object.mesh->vertices.size() - 1; i++) {
+		LineDef l;
+		l.color = XMFLOAT4(0.5f, 0.5f, 0.0f, 1.0f);
+		l.start = object.mesh->vertices[i].Pos;
+		l.end = object.mesh->vertices[i+1].Pos;
+		ol.push_back(l);
+	}
+	linesEffect.add(ol);
 	//pathObject.setAction("Cube");
 	//pathObject.pathDescMove->pathMode = Path_Reverse;
 
