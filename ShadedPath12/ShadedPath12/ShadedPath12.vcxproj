@@ -170,9 +170,12 @@
     <ClInclude Include="Effects\effectbase.h" />
     <ClInclude Include="Effects\lines.h" />
     <ClInclude Include="Effects\linetext.h" />
+    <ClInclude Include="Effects\objecteffect.h" />
     <ClInclude Include="Effects\posteffect.h" />
     <ClInclude Include="forward_structures.h" />
     <ClInclude Include="gametime.h" />
+    <ClInclude Include="objectViewer.h" />
+    <ClInclude Include="path.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="sample1.h" />
     <ClInclude Include="testDotcross.h" />
@@ -185,6 +188,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="world.h" />
+    <ClInclude Include="worldObject.h" />
     <ClInclude Include="xapp.h" />
   </ItemGroup>
   <ItemGroup>
@@ -195,8 +199,10 @@
     <ClCompile Include="Effects\effectbase.cpp" />
     <ClCompile Include="Effects\lines.cpp" />
     <ClCompile Include="Effects\linetext.cpp" />
+    <ClCompile Include="Effects\objecteffect.cpp" />
     <ClCompile Include="Effects\posteffect.cpp" />
     <ClCompile Include="gametime.cpp" />
+    <ClCompile Include="objectViewer.cpp" />
     <ClCompile Include="sample1.cpp" />
     <ClCompile Include="testDotcross.cpp" />
     <ClCompile Include="testLinetext.cpp" />
@@ -212,6 +218,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="world.cpp" />
+    <ClCompile Include="worldObject.cpp" />
     <ClCompile Include="xapp.cpp" />
   </ItemGroup>
   <ItemGroup>

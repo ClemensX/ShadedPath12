@@ -1,0 +1,109 @@
+struct AnimationClip {
+	std::string name;
+	std::vector<XMFLOAT4X4> invBindMatrices;
+	int numBones;
+	int parents[128];
+};
+
+class Mesh
+{
+public:
+	//vector<Action> *actions;
+	//void meshLoaded(Mesh *mesh);
+	void createVertexAndIndexBuffer();
+	vector<WorldObjectVertex::VertexTextured> vertices;
+	vector<WorldObjectVertex::VertexSkinned> skinnedVertices;
+	vector<DWORD> indexes;
+	unordered_map<string, AnimationClip> clips;
+	long numVertices;
+	long numIndexes;
+	// all objects based on this mesh:
+	//vector<WorldObject> objects;
+	ComPtr<ID3D11Buffer> vertexBuffer;
+	ComPtr<ID3D11Buffer> indexBuffer;
+	//vector<Action> actions;
+	unordered_map<string, Action> actions;
+	void initBoundigBox();
+	void addToBoundingBox(XMFLOAT3 p);
+	void getBoundingBox(BoundingBox &b);
+private:
+	// for calculating bounding box:
+	XMFLOAT3 bboxVertexMin;
+	XMFLOAT3 bboxVertexMax;
+};
+
+class MeshLoader {
+public:
+	// load asset from full path/filename
+	void loadBinaryAsset(wstring filename, Mesh *mesh, float scale = 1.0f);
+};
+
+
+class WorldObject {
+public:
+	WorldObject();
+	virtual ~WorldObject();
+	//XMFLOAT4 pos;
+	XMFLOAT3& pos();
+	XMFLOAT3& rot();
+	void update(); // only relevant for bone objects
+	void draw();
+	Mesh *mesh;
+	TextureID textureID;
+	float alpha;
+	Action *action; // move action
+	Action *boneAction; // action involving bone calcualtions
+	PathDesc* pathDescMove;  // moving object
+	PathDesc* pathDescBone;  // animating object
+							 //std::vector<Mtrl> mtrls;
+							 //std::vector<IDirect3DTexture9*> textures;
+	int visible; // visible in current view frustrum: 0 == no, 1 == intersection, 2 == completely visible
+	void setAction(string name);
+	// return current bounding box by scanning all vertices, used for bone animated objects
+	// if maximise is true bounding box may increase with each call, depending on current animation
+	// (used to get max bounding box for animated objects)
+	void calculateBoundingBox(BoundingBox &box, bool maximise = false);
+	// override the bounding box from mesh data, useful for bone animated objects
+	void forceBoundingBox(BoundingBox box);
+	// get bounding box either from mesh data, or the one overridden by forceBoundingBox()
+	void getBoundingBox(BoundingBox &box);
+	XMFLOAT3 objectStartPos;
+	// 3d sound 
+	//int soundListIndex;  // index into audibleWorldObjects, used to get the 3d sound settings for this object, see Sound.h
+	bool stopped; // a running cue may temporarily stopped
+	bool playing; // true == current cue is actually running
+				  //D3DXVECTOR3 soundPos;
+				  //IXACT3Cue* cue;
+//	SoundDef *soundDef = nullptr;
+	int maxListeningDistance; // disable sound if farther away than this
+							  //int soundBankIndex;  // sound bank to use for this object
+							  //WORD cueIndex; // cue index
+	float scale;
+	bool drawBoundingBox = true;
+private:
+	XMFLOAT3 _pos;
+	XMFLOAT3 _rot;
+	XMFLOAT3 bboxVertexMin = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
+	XMFLOAT3 bboxVertexMax = XMFLOAT3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	bool boundingBoxAlreadySet = false;
+	BoundingBox boundingBox;
+
+};
+
+// WorldObject Store:
+class WorldObjectStore {
+public:
+	// objects
+	// load object definition from .b file, save under given hash name
+	void loadObject(wstring filename, string id, float scale = 1.0f);
+	// add loaded object to scene
+	void addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid = 0);
+	void addObject(WorldObject &w, string id, XMFLOAT3 pos, TextureID tid = 0);
+	// obbject groups: give fast access to specific objects (e.g. all worm NPCs)
+	void createGroup(string groupname);
+	const vector<unique_ptr<WorldObject>> *getGroup(string groupname);
+private:
+	unordered_map<string, vector<unique_ptr<WorldObject>>> groups;
+	unordered_map<string, Mesh> meshes;
+	void WorldObjectStore::addObjectPrivate(WorldObject *w, string id, XMFLOAT3 pos, TextureID tid);
+};

@@ -106,6 +106,18 @@
     <ClInclude Include="Effects\billboard.h">
       <Filter>Effects</Filter>
     </ClInclude>
+    <ClInclude Include="objectViewer.h">
+      <Filter>Apps</Filter>
+    </ClInclude>
+    <ClInclude Include="worldObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="path.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Effects\objecteffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -166,6 +178,15 @@
       <Filter>Apps</Filter>
     </ClCompile>
     <ClCompile Include="Effects\billboard.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="objectViewer.cpp">
+      <Filter>Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="worldObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Effects\objecteffect.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
   </ItemGroup>

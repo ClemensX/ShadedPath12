@@ -1,5 +1,7 @@
 #pragma once
 
+class WorldObjectStore;
+
 namespace Colors {
 	const XMFLOAT4 xm{ 1.0f, 0.0f, 1.0f, 1.0f };
 	const XMFLOAT4 White = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -53,6 +55,7 @@ public:
 	wstring findFile(wstring filename, FileCategory cat);
 	void readFile(wstring filename, vector<byte>& buffer, FileCategory cat);
 	TextureStore textureStore;
+	WorldObjectStore objectStore;
 
 	void registerApp(string name, XAppBase*);
 	XAppBase* getApp(string appName);
