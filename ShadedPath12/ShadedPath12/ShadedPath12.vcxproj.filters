@@ -242,6 +242,12 @@
     <FxCompile Include="Shaders\BillboardVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\ObjectPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ObjectVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Line.hlsli">
@@ -257,6 +263,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\Billboard.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\Object.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
