@@ -21,6 +21,7 @@ private:
 	Linetext textEffect;
 	PostEffect postEffect;
 	Billboard billboardEffect;
+	WorldObjectEffect objectEffect;
 	// other:
 	LONGLONG startTime;
 	int framenumLine, fpsLine;  // indexes into the text array for Linetext effect

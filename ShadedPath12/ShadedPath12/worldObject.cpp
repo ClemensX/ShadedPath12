@@ -198,6 +198,7 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
 }
 
 void Mesh::createVertexAndIndexBuffer() {
+
 /*	// prepare vertex buffer:
 	D3D11_BUFFER_DESC vbd;
 	vbd.Usage = D3D11_USAGE_IMMUTABLE;

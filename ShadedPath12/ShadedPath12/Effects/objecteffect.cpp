@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include "CompiledShaders/ObjectVS.h"
+#include "CompiledShaders/ObjectPS.h"
+
 void WorldObjectEffect::init() {
 	// try to do all expensive operations like shader loading and PSO creation here
 	// Create the pipeline state, which includes compiling and loading shaders.
@@ -7,9 +10,6 @@ void WorldObjectEffect::init() {
 		// Define the vertex input layout.
 		D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
 		{
-			//{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			//{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			//{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64 + 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
@@ -20,11 +20,6 @@ void WorldObjectEffect::init() {
 		psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
 		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		//psoDesc.DepthStencilState.DepthEnable = TRUE;
-		//psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
-		//psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-		//psoDesc.DepthStencilState.StencilEnable = FALSE;
-		//const D3D12_DEPTH_STENCIL_DESC&(ds);
 		psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 		psoDesc.SampleMask = UINT_MAX;
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -33,12 +28,10 @@ void WorldObjectEffect::init() {
 		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 		psoDesc.SampleDesc.Count = 1;
 
-//		psoDesc.VS = { binShader_BillboardVS, sizeof(binShader_BillboardVS) };
-		//psoDesc.GS = { binShader_LinetextGS, sizeof(binShader_LinetextGS) };
-//		psoDesc.PS = { binShader_BillboardPS, sizeof(binShader_BillboardPS) };
-		//xapp().device->CreateRootSignature(0, binShader_LinetextGS, sizeof(binShader_LinetextGS), IID_PPV_ARGS(&rootSignature));
-//		ThrowIfFailed(xapp().device->CreateRootSignature(0, binShader_BillboardVS, sizeof(binShader_BillboardVS), IID_PPV_ARGS(&rootSignature)));
-		//rootSignature.Get()->SetName(L"Linetext_root_signature");
+		psoDesc.VS = { binShader_ObjectVS, sizeof(binShader_ObjectVS) };
+		psoDesc.PS = { binShader_ObjectPS, sizeof(binShader_ObjectPS) };
+		ThrowIfFailed(xapp().device->CreateRootSignature(0, binShader_ObjectVS, sizeof(binShader_ObjectVS), IID_PPV_ARGS(&rootSignature)));
+		rootSignature.Get()->SetName(L"Object_root_signature");
 		psoDesc.pRootSignature = rootSignature.Get();
 		ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
 		pipelineState.Get()->SetName(L"state_objecteffect_init");

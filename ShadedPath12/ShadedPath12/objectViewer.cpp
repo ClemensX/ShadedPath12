@@ -24,6 +24,7 @@ void ObjectViewer::init()
 	linesEffect.init();
 	textEffect.init();
 	billboardEffect.init();
+	objectEffect.init();
 	float aspectRatio = xapp().aspectRatio;
 
 	LineDef myLines[] = {
