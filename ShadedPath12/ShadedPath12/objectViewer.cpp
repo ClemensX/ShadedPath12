@@ -22,9 +22,10 @@ void ObjectViewer::init()
 	postEffect.init();
 	dotcrossEffect.init();
 	linesEffect.init();
+	xapp().world.linesEffect = &linesEffect;
 	textEffect.init();
 	billboardEffect.init();
-	objectEffect.init();
+	objectEffect.init(&xapp().objectStore);
 	float aspectRatio = xapp().aspectRatio;
 
 	LineDef myLines[] = {
@@ -84,20 +85,22 @@ void ObjectViewer::init()
 	//pathObject.alpha = 0.5f;
 	//xapp->objectStore.loadObject(L"shaded2.b", "Shaded");
 	//xapp->objectStore.addObject(pathObject, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GRASSDIRT8);
-
+	TextureInfo *tex = xapp().textureStore.getTexture("default");
 	xapp().objectStore.loadObject(L"house4_anim.b", "House");
-	xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), 0);
+	xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), tex);
+	object.drawBoundingBox = true;
 	// draw lines for mesh:
 	Log(" object created ok, #vertices == " << object.mesh->vertices.size() << endl);
-	vector<LineDef> ol;
-	for (int i = 0; i < object.mesh->vertices.size() - 1; i++) {
-		LineDef l;
-		l.color = XMFLOAT4(0.5f, 0.5f, 0.0f, 1.0f);
-		l.start = object.mesh->vertices[i].Pos;
-		l.end = object.mesh->vertices[i+1].Pos;
-		ol.push_back(l);
-	}
-	linesEffect.add(ol);
+	//vector<LineDef> ol;
+	//for (int i = 0; i < object.mesh->vertices.size() - 1; i++) {
+	//	LineDef l;
+	//	l.color = XMFLOAT4(0.5f, 0.5f, 0.0f, 1.0f);
+	//	l.start = object.mesh->vertices[i].Pos;
+	//	l.end = object.mesh->vertices[i+1].Pos;
+	//	ol.push_back(l);
+	//}
+	//linesEffect.add(ol);
+
 	//pathObject.setAction("Cube");
 	//pathObject.pathDescMove->pathMode = Path_Reverse;
 
@@ -126,6 +129,7 @@ void ObjectViewer::update()
 	textEffect.changeTextLine(fpsLine, fps_str);
 	textEffect.update();
 	billboardEffect.update();
+	object.update();
 }
 
 void ObjectViewer::draw()

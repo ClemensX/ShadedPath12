@@ -1,5 +1,4 @@
 
-typedef int TextureID;
 struct TextureInfo
 {
 	string id;
@@ -8,6 +7,7 @@ struct TextureInfo
 	ComPtr<ID3D12DescriptorHeap> m_srvHeap;
 	bool available; // true if this texture is ready for use in shader code
 };
+typedef TextureInfo* TextureID;
 
 // Texture Store:
 class TextureStore {

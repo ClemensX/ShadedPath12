@@ -17,7 +17,7 @@ void makeline(LineDef &ld, XMFLOAT3 start, XMFLOAT3 end) {
 	ld.end = XMFLOAT3(end.x, end.y, end.z);
 }
 
-void World::drawBox(BoundingBox &box, LinesEffect *linestEffect) {
+void World::drawBox(BoundingBox &box) {
 	XMFLOAT3 corners[8];
 	box.GetCorners(&corners[0]);
 	vector<LineDef> v;
@@ -35,7 +35,7 @@ void World::drawBox(BoundingBox &box, LinesEffect *linestEffect) {
 	makeline(line, corners[1], corners[5]);	v.push_back(line);
 	makeline(line, corners[2], corners[6]);	v.push_back(line);
 	makeline(line, corners[3], corners[7]);	v.push_back(line);
-	linestEffect->addOneTime(v);
+	linesEffect->addOneTime(v);
 }
 
 void World::drawCoordinateSystem(XMFLOAT4 point, string label, Linetext &linetextEffect, Dotcross& dotcrossEffect, float charHeight) {

@@ -42,12 +42,12 @@ void EffectBase::createConstantBuffer(size_t s, wchar_t * name)
 	ThrowIfFailed(cbvResource->Map(0, nullptr, reinterpret_cast<void**>(&cbvGPUDest)));
 }
 
-void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void *data, ID3D12PipelineState *pipelineState, LPCWSTR baseName, 
-		ComPtr<ID3D12Resource> &vertexBuffer,
-		ComPtr<ID3D12Resource> &vertexBufferUpload,
-		ComPtr<ID3D12CommandAllocator> &commandAllocator,
-		ComPtr<ID3D12GraphicsCommandList>  &commandList,
-		D3D12_VERTEX_BUFFER_VIEW &vertexBufferView
+void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void *data, ID3D12PipelineState *pipelineState, LPCWSTR baseName,
+	ComPtr<ID3D12Resource> &vertexBuffer,
+	ComPtr<ID3D12Resource> &vertexBufferUpload,
+	ComPtr<ID3D12CommandAllocator> &commandAllocator,
+	ComPtr<ID3D12GraphicsCommandList>  &commandList,
+	D3D12_VERTEX_BUFFER_VIEW &vertexBufferView
 	)
 {
 	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
@@ -90,6 +90,56 @@ void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSiz
 	vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
 	vertexBufferView.StrideInBytes = (UINT)vertexSize;
 	vertexBufferView.SizeInBytes = vertexBufferSize;
+}
+
+void EffectBase::createAndUploadIndexBuffer(size_t bufferSize, void *data, ID3D12PipelineState *pipelineState, LPCWSTR baseName,
+	ComPtr<ID3D12Resource> &indexBuffer,
+	ComPtr<ID3D12Resource> &indexBufferUpload,
+	ComPtr<ID3D12CommandAllocator> &commandAllocator,
+	ComPtr<ID3D12GraphicsCommandList>  &commandList,
+	D3D12_INDEX_BUFFER_VIEW &indexBufferView
+	)
+{
+	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	UINT indexBufferSize = (UINT)bufferSize;
+	ThrowIfFailed(xapp().device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(indexBufferSize),
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		nullptr,
+		IID_PPV_ARGS(&indexBuffer)));
+	wstring ibName = wstring(L"indexBuffer_") + baseName;
+	indexBuffer.Get()->SetName(ibName.c_str());
+
+	ThrowIfFailed(xapp().device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(indexBufferSize),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&indexBufferUpload)));
+	wstring ibNameUpload = wstring(L"indexBufferUpload_") + baseName;
+	indexBufferUpload.Get()->SetName(ibNameUpload.c_str());
+	//Log(vertexBufferUpload->GetGPUVirtualAddress());
+	// Copy data to the intermediate upload heap and then schedule a copy 
+	// from the upload heap to the vertex buffer.
+	D3D12_SUBRESOURCE_DATA indexData = {};
+	//vertexData.pData = reinterpret_cast<UINT8*>(&(all.at(0)));
+	indexData.pData = reinterpret_cast<UINT8*>(data);
+	indexData.RowPitch = indexBufferSize;
+	indexData.SlicePitch = indexData.RowPitch;
+
+	//PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"lines: update vertex buffer");
+	commandList.Get()->Reset(commandAllocator.Get(), pipelineState);
+	UpdateSubresources<1>(commandList.Get(), indexBuffer.Get(), indexBufferUpload.Get(), 0, 0, 1, &indexData);
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(indexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER));
+	PIXEndEvent(commandList.Get());
+
+	// Initialize the vertex buffer view.
+	indexBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
+	indexBufferView.SizeInBytes = indexBufferSize;
+	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 }
 
 /*

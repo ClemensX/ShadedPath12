@@ -197,32 +197,9 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
 	}
 }
 
-void Mesh::createVertexAndIndexBuffer() {
+void Mesh::createVertexAndIndexBuffer(WorldObjectEffect *worldObjectEffect) {
+	worldObjectEffect->createAndUploadVertexBuffer(this);
 
-/*	// prepare vertex buffer:
-	D3D11_BUFFER_DESC vbd;
-	vbd.Usage = D3D11_USAGE_IMMUTABLE;
-	vbd.ByteWidth = sizeof(WorldObjectEffect::VertexTextured) * numVertices;
-	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vbd.CPUAccessFlags = 0;
-	vbd.MiscFlags = 0;
-	vbd.StructureByteStride = 0;
-	D3D11_SUBRESOURCE_DATA vinitData;
-	vinitData.pSysMem = &vertices[0];	// very important to set address to first element instead of collection: &mesh->vertices is wrong!!
-	ThrowIfFailed(WorldObject::xapp->device->CreateBuffer(&vbd, &vinitData, &vertexBuffer));
-
-	// prepare index buffer:
-	D3D11_BUFFER_DESC ibd;
-	ibd.Usage = D3D11_USAGE_IMMUTABLE;
-	ibd.ByteWidth = sizeof(indexes[0]) * numIndexes;
-	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	ibd.CPUAccessFlags = 0;
-	ibd.MiscFlags = 0;
-	ibd.StructureByteStride = 0;
-	D3D11_SUBRESOURCE_DATA iinitData;
-	iinitData.pSysMem = &indexes[0];	// very important to set address to first element instead of collection: &mesh->vertices is wrong!!
-	ThrowIfFailed(WorldObject::xapp->device->CreateBuffer(&ibd, &iinitData, &indexBuffer));
-*/
 }
 
 void WorldObject::calculateBoundingBox(BoundingBox &box, bool maximise) {
@@ -289,6 +266,24 @@ void WorldObject::getBoundingBox(BoundingBox &box) {
 	else mesh->getBoundingBox(box);
 }
 
+void WorldObject::update() {
+	if (this->pathDescBone) {
+//		xapp().world.path.updateScene(pathDescBone, this, xapp->gametime.getTimeAbs());
+	}
+	if (drawBoundingBox) {
+		//unique_ptr<Lines>& linesEffect = (unique_ptr<Lines>&)Effect::getUniquePtr(Effect::LINES);
+		BoundingBox bbox;
+		//mesh->getBoundingBox(bbox);
+		getBoundingBox(bbox);
+		XMVECTOR r = XMLoadFloat3(&rot());
+		XMVECTOR t = XMLoadFloat3(&pos());
+		//XMVECTOR r2 = XMQuaternionRotationRollPitchYaw(0.0f/*pos().x*/, 0.0f/*pos().y*/, 0.0f/*pos().z*/);//pitch, yaw, roll); // TODO
+		XMVECTOR r2 = XMQuaternionRotationRollPitchYaw(rot().y, rot().x, rot().z);//pitch, yaw, roll); // TODO
+		bbox.Transform(bbox, 1.0f, r2, t);
+		xapp().world.drawBox(bbox);
+	}
+}
+
 XMFLOAT3& WorldObject::pos() {
 	return _pos;
 }
@@ -320,7 +315,7 @@ void WorldObjectStore::loadObject(wstring filename, string id, float scale) {
 	Mesh mesh;
 	meshes[id] = mesh;
 	loader.loadBinaryAsset(binFile, &meshes[id], scale);
-	meshes[id].createVertexAndIndexBuffer();
+	meshes[id].createVertexAndIndexBuffer(this->objectEffect);
 }
 
 void WorldObjectStore::createGroup(string groupname) {
@@ -358,4 +353,8 @@ void WorldObjectStore::addObjectPrivate(WorldObject *w, string id, XMFLOAT3 pos,
 	//w.wireframe = false;
 	w->alpha = 1.0f;
 	w->action = nullptr;
+}
+
+void WorldObjectStore::setWorldObjectEffect(WorldObjectEffect *weff) {
+	this->objectEffect = weff;
 }

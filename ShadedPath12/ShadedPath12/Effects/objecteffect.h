@@ -9,11 +9,13 @@ public:
 		float    alpha;
 	};
 
-	void init();
+	void init(WorldObjectStore *objectStore);
 	void prepare();
 	// update cbuffer and vertex buffer
 	void update();
 	//void draw();
+	// create and upload vertex buffer for a newly loaded mesh
+	void createAndUploadVertexBuffer(Mesh *mesh);
 	void draw(ComPtr<ID3D11Buffer> &vertexBuffer, ComPtr<ID3D11Buffer> indexBuffer, XMFLOAT4X4 wvp, long numIndexes, ID3D11ShaderResourceView **srv, float alpha = 1.0f);
 
 private:
@@ -38,4 +40,5 @@ private:
 	ComPtr<ID3D12Resource> vertexBufferX;
 	ComPtr<ID3D12Resource> vertexBufferUploadX;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
+	WorldObjectStore *objectStore;
 };

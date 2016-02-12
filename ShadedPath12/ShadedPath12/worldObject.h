@@ -1,3 +1,5 @@
+class WorldObjectEffect;
+
 struct AnimationClip {
 	std::string name;
 	std::vector<XMFLOAT4X4> invBindMatrices;
@@ -10,7 +12,7 @@ class Mesh
 public:
 	//vector<Action> *actions;
 	//void meshLoaded(Mesh *mesh);
-	void createVertexAndIndexBuffer();
+	void createVertexAndIndexBuffer(WorldObjectEffect *worldObjectEffect);
 	vector<WorldObjectVertex::VertexTextured> vertices;
 	vector<WorldObjectVertex::VertexSkinned> skinnedVertices;
 	vector<DWORD> indexes;
@@ -19,8 +21,14 @@ public:
 	long numIndexes;
 	// all objects based on this mesh:
 	//vector<WorldObject> objects;
-	ComPtr<ID3D11Buffer> vertexBuffer;
-	ComPtr<ID3D11Buffer> indexBuffer;
+	//ComPtr<ID3D11Buffer> vertexBuffer;
+	//ComPtr<ID3D11Buffer> indexBuffer;
+	ComPtr<ID3D12Resource> vertexBuffer;
+	ComPtr<ID3D12Resource> vertexBufferUpload;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	ComPtr<ID3D12Resource> indexBuffer;
+	ComPtr<ID3D12Resource> indexBufferUpload;
+	D3D12_INDEX_BUFFER_VIEW indexBufferView;
 	//vector<Action> actions;
 	unordered_map<string, Action> actions;
 	void initBoundigBox();
@@ -102,8 +110,10 @@ public:
 	// obbject groups: give fast access to specific objects (e.g. all worm NPCs)
 	void createGroup(string groupname);
 	const vector<unique_ptr<WorldObject>> *getGroup(string groupname);
+	void setWorldObjectEffect(WorldObjectEffect *objectEffect);
 private:
 	unordered_map<string, vector<unique_ptr<WorldObject>>> groups;
 	unordered_map<string, Mesh> meshes;
 	void WorldObjectStore::addObjectPrivate(WorldObject *w, string id, XMFLOAT3 pos, TextureID tid);
+	WorldObjectEffect *objectEffect = nullptr;
 };

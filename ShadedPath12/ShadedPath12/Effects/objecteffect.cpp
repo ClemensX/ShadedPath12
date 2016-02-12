@@ -3,7 +3,9 @@
 #include "CompiledShaders/ObjectVS.h"
 #include "CompiledShaders/ObjectPS.h"
 
-void WorldObjectEffect::init() {
+void WorldObjectEffect::init(WorldObjectStore *oStore) {
+	objectStore = oStore;
+	oStore->setWorldObjectEffect(this);
 	// try to do all expensive operations like shader loading and PSO creation here
 	// Create the pipeline state, which includes compiling and loading shaders.
 	{
@@ -79,4 +81,54 @@ void WorldObjectEffect::init() {
 	if (updateFrameData.fenceEvent == nullptr) {
 		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
 	}
+}
+
+void WorldObjectEffect::createAndUploadVertexBuffer(Mesh * mesh) {
+	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	size_t vertexSize = sizeof(WorldObjectVertex::VertexTextured);
+	size_t bufferSize = vertexSize * mesh->numVertices;
+	void *data = &mesh->vertices[0];
+	EffectBase::createAndUploadVertexBuffer(bufferSize, vertexSize, data,
+		pipelineState.Get(), L"MeshVB",
+		mesh->vertexBuffer,
+		mesh->vertexBufferUpload,
+		commandAllocators[frameIndex],
+		updateCommandList,
+		mesh->vertexBufferView
+		);
+	// upload index
+	bufferSize = sizeof(mesh->indexes[0]) * mesh->indexes.size();
+	data = &mesh->indexes[0];
+	EffectBase::createAndUploadIndexBuffer(bufferSize, data,
+		pipelineState.Get(), L"MeshIB",
+		mesh->indexBuffer,
+		mesh->indexBufferUpload,
+		commandAllocators[frameIndex],
+		updateCommandList,
+		mesh->indexBufferView
+		);
+	/*	// prepare vertex buffer:
+	D3D11_BUFFER_DESC vbd;
+	vbd.Usage = D3D11_USAGE_IMMUTABLE;
+	vbd.ByteWidth = sizeof(WorldObjectEffect::VertexTextured) * numVertices;
+	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vbd.CPUAccessFlags = 0;
+	vbd.MiscFlags = 0;
+	vbd.StructureByteStride = 0;
+	D3D11_SUBRESOURCE_DATA vinitData;
+	vinitData.pSysMem = &vertices[0];	// very important to set address to first element instead of collection: &mesh->vertices is wrong!!
+	ThrowIfFailed(WorldObject::xapp->device->CreateBuffer(&vbd, &vinitData, &vertexBuffer));
+
+	// prepare index buffer:
+	D3D11_BUFFER_DESC ibd;
+	ibd.Usage = D3D11_USAGE_IMMUTABLE;
+	ibd.ByteWidth = sizeof(indexes[0]) * numIndexes;
+	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	ibd.CPUAccessFlags = 0;
+	ibd.MiscFlags = 0;
+	ibd.StructureByteStride = 0;
+	D3D11_SUBRESOURCE_DATA iinitData;
+	iinitData.pSysMem = &indexes[0];	// very important to set address to first element instead of collection: &mesh->vertices is wrong!!
+	ThrowIfFailed(WorldObject::xapp->device->CreateBuffer(&ibd, &iinitData, &indexBuffer));
+	*/
 }

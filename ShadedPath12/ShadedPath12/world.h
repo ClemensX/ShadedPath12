@@ -45,7 +45,7 @@ public:
 	// effect utils
 
 	// draw box (used for bounding box drawing)
-	void drawBox(BoundingBox &box, LinesEffect *linesEffect);
+	void drawBox(BoundingBox &box);
 	// draw coordinate system at world position, each axis will be designated via labels
 	void drawCoordinateSystem(XMFLOAT4 point, string label, Linetext &linetextEffect, Dotcross& dotcrossEffect, float charHeight = 0.01f);
 	// create Grid in x (width) and z (depth) direction, linesmode means create simple long lines, otherwise create vertex/index vectors
@@ -86,6 +86,7 @@ public:
 
 	// randomly generate ine position within the defined world coords
 	XMFLOAT3 getRandomPos();
+	LinesEffect *linesEffect = nullptr;
 private:
 	// world size in absolute units around origin, e.g. x is from -x to x
 	float sizex, sizey, sizez;
