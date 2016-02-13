@@ -87,7 +87,7 @@ public:
 							  //int soundBankIndex;  // sound bank to use for this object
 							  //WORD cueIndex; // cue index
 	float scale;
-	bool drawBoundingBox = true;
+	bool drawBoundingBox;
 private:
 	XMFLOAT3 _pos;
 	XMFLOAT3 _rot;
@@ -111,6 +111,7 @@ public:
 	void createGroup(string groupname);
 	const vector<unique_ptr<WorldObject>> *getGroup(string groupname);
 	void setWorldObjectEffect(WorldObjectEffect *objectEffect);
+	WorldObjectEffect*  getWorldObjectEffect() { return objectEffect; };
 private:
 	unordered_map<string, vector<unique_ptr<WorldObject>>> groups;
 	unordered_map<string, Mesh> meshes;

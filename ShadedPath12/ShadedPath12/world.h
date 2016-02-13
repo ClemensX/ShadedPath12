@@ -79,7 +79,7 @@ public:
 	//void createRandomTexture1DSRV(ComPtr<ID3D11ShaderResourceView> &randomTex);
 
 	// one central Path instance needed:
-	//Path path;
+	Path path;
 	//XApp* getApp() { return xapp; };
 
 	//unique_ptr<WorldObjectStore> objectStore;

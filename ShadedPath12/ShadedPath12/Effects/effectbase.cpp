@@ -131,7 +131,8 @@ void EffectBase::createAndUploadIndexBuffer(size_t bufferSize, void *data, ID3D1
 	indexData.SlicePitch = indexData.RowPitch;
 
 	//PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"lines: update vertex buffer");
-	commandList.Get()->Reset(commandAllocator.Get(), pipelineState);
+	// commanList is still open from call to createAndUploadVertexBuffer - do not reset it here
+	//commandList.Get()->Reset(commandAllocator.Get(), pipelineState);
 	UpdateSubresources<1>(commandList.Get(), indexBuffer.Get(), indexBufferUpload.Get(), 0, 0, 1, &indexData);
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(indexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER));
 	PIXEndEvent(commandList.Get());

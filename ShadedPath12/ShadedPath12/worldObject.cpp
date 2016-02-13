@@ -284,6 +284,80 @@ void WorldObject::update() {
 	}
 }
 
+void WorldObject::draw() {
+	WorldObjectEffect *worldObjectEffect = xapp().objectStore.getWorldObjectEffect();
+	// quaternion
+	XMVECTOR q = XMQuaternionIdentity();
+	//XMVECTOR q = XMVectorSet(rot().x, rot().y, rot().z, 0.0f);
+	XMVECTOR q_origin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	XMMATRIX rotateM = XMMatrixRotationRollPitchYaw(rot().y, rot().x, rot().z);
+	q = XMQuaternionRotationMatrix(rotateM);
+	q = XMQuaternionNormalize(q);
+	// scalar
+	XMVECTOR s = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
+	// translation
+	XMVECTOR t = XMVectorSet(pos().x, pos().y, pos().z, 0.0f);
+	// toWorld matrix:
+	XMMATRIX toWorld = XMMatrixAffineTransformation(s, q_origin, q, t);
+
+	xapp().camera.viewTransform();
+	xapp().camera.projectionTransform();
+	BoundingBox box;
+	getBoundingBox(box);
+	int visible = xapp().camera.calculateVisibility(box, toWorld);  // TODO first move, then calc visibility
+																   //Log("visible == " << visible << endl);
+	if (visible == 0) return;
+	XMMATRIX p = XMLoadFloat4x4(&xapp().camera.projection);
+	XMMATRIX v = XMLoadFloat4x4(&xapp().camera.view);
+	XMMATRIX wvp = toWorld * (v * p);
+	wvp = XMMatrixTranspose(wvp);
+	XMFLOAT4X4 finalWvp;
+	XMStoreFloat4x4(&finalWvp, wvp);
+	//TextureInfo *info = xapp().textureStore.getTexture(this->textureID);
+	TextureInfo *info = this->textureID;
+	if (action) {
+		//move object
+		XMFLOAT3 pos, rot;
+		xapp().world.path.getPos(*this, xapp().gametime.getTimeAbs(), pos, rot);
+		pos.x = objectStartPos.x + pos.x * scale;
+		pos.y = objectStartPos.y + pos.y * scale;
+		pos.z = objectStartPos.z + pos.z * scale;
+		this->pos() = pos;
+		this->rot() = rot;
+		worldObjectEffect->draw(mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, alpha);
+		//centralObject->draw(&path, &worldUtil, &mTerrain, md3dDevice, md3dImmediateContext, *gCamera, getGameTimeAbs());
+	}
+	else {
+		if (mesh->skinnedVertices.size() > 0) {
+			for (int skV = 0; skV < (int)mesh->skinnedVertices.size(); skV++) {
+				//if (skV > mesh->skinnedVertices.size()-60)
+				//path->recalculateBoneAnimation(this->pathDescBone, this, worldUtil, terrain, device, dc, cam, time);
+
+				WorldObjectVertex::VertexSkinned *v = &mesh->skinnedVertices[skV];
+				//XMVECTOR vfinal = Path::skin(v, &mesh->clips["Armature"], &boneAction->curves, pathDescBone->curSegment, 7.0f, pathDescBone->percentage);
+				XMVECTOR vfinal = xapp().world.path.skin(v, pathDescBone);
+				XMFLOAT3 vfinal_flo;
+				XMStoreFloat3(&vfinal_flo, vfinal);
+				mesh->vertices[skV].Pos = vfinal_flo;
+				//if (isCopiedObject && skV < 1000) {
+				//	mesh->vertices[skV].Pos.x = mesh->vertices[skV].Pos.x - 5;
+				//	//mesh->vertices[skV].Pos.y = 0.0f;
+				//	//mesh->vertices[skV].Pos.z = 0.0f;
+				//}
+			}
+			//if (vertexBuffer) ReleaseCOM(vertexBuffer);
+			//if (indexBuffer) ReleaseCOM(indexBuffer);
+			//prepareDxResources(device, dc);
+			mesh->createVertexAndIndexBuffer(worldObjectEffect);
+			worldObjectEffect->draw(mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, alpha);
+		}
+		else {
+			// no skinned vertices
+			worldObjectEffect->draw(mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, alpha);
+		}
+	}
+}
+
 XMFLOAT3& WorldObject::pos() {
 	return _pos;
 }
@@ -295,6 +369,7 @@ XMFLOAT3& WorldObject::rot() {
 WorldObject::WorldObject() {
 	pathDescBone = nullptr;
 	scale = 1.0f;
+	drawBoundingBox = false;
 }
 
 WorldObject::~WorldObject() {

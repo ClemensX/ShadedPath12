@@ -138,6 +138,7 @@ void ObjectViewer::draw()
 	dotcrossEffect.draw();
 	textEffect.draw();
 	billboardEffect.draw();
+	object.draw();
 	postEffect.draw();
 }
 

@@ -67,9 +67,11 @@ void LinesEffect::init()
 }
 
 void LinesEffect::addOneTime(vector<LineDef> &linesToAdd) {
+	//add(linesToAdd);
 	if (linesToAdd.size() == 0 && lines.size() == 0)
 		return;
 	addLines.insert(addLines.end(), linesToAdd.begin(), linesToAdd.end());
+	dirty = true;
 }
 
 void LinesEffect::add(vector<LineDef> &linesToAdd) {
@@ -101,7 +103,7 @@ void LinesEffect::updateTask()
 		dirty = false;
 		vector<Vertex> all;
 		mutex_lines.lock();
-		for (LineDef line : lines) {
+		for (LineDef& line : lines) {
 			Vertex v1, v2;
 			v1.color = line.color;
 			v1.pos = line.start;
@@ -110,7 +112,20 @@ void LinesEffect::updateTask()
 			all.push_back(v1);
 			all.push_back(v2);
 		}
-		size_t vertexBufferSize = sizeof(Vertex) * lines.size() * 2;
+		// just add the one-time lines at this point (may be extra function later?
+		for (LineDef& line : addLines) {
+			Vertex v1, v2;
+			v1.color = line.color;
+			v1.pos = line.start;
+			v2.color = line.color;
+			v2.pos = line.end;
+			all.push_back(v1);
+			all.push_back(v2);
+		}
+		addLines.clear();
+		// one-time lines end
+		numVericesToDraw = (UINT)all.size();
+		size_t vertexBufferSize = sizeof(Vertex) * all.size();//lines.size() * 2;
 		mutex_lines.unlock();
 		UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 		//createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(), L"lines");
@@ -208,8 +223,8 @@ void LinesEffect::drawInternal()
 	preDraw();
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
-	auto numVertices = lines.size() * 2;
-	commandLists[frameIndex]->DrawInstanced((UINT)numVertices, 1, 0, 0);
+	//auto numVertices = lines.size() * 2;
+	commandLists[frameIndex]->DrawInstanced(numVericesToDraw, 1, 0, 0);
 	postDraw();
 }
 

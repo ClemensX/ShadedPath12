@@ -40,5 +40,5 @@ private:
 	mutex mutex_lines;
 	void drawInternal();
 	void updateTask();
-
+	UINT numVericesToDraw = 0;
 };

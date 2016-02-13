@@ -189,6 +189,9 @@
     <ClCompile Include="Effects\objecteffect.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
+    <ClCompile Include="path.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ShadedPath.rc">

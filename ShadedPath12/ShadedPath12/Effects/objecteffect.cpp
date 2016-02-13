@@ -53,18 +53,18 @@ void WorldObjectEffect::init(WorldObjectStore *oStore) {
 	{
 		ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
 		ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocators[n].Get(), pipelineState.Get(), IID_PPV_ARGS(&commandLists[n])));
-		// Command lists are created in the recording state, but there is nothing
-		// to record yet. The main loop expects it to be closed, so close it now.
-		ThrowIfFailed(commandLists[n]->Close());
-		// init fences:
-		//ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frameData[n].fence.GetAddressOf())));
-		ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frameData[n].fence)));
-		frameData[n].fence->SetName(fence_names[n]);
-		frameData[n].fenceValue = 0;
-		frameData[n].fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-		if (frameData[n].fenceEvent == nullptr) {
-			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-		}
+// Command lists are created in the recording state, but there is nothing
+// to record yet. The main loop expects it to be closed, so close it now.
+ThrowIfFailed(commandLists[n]->Close());
+// init fences:
+//ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frameData[n].fence.GetAddressOf())));
+ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frameData[n].fence)));
+frameData[n].fence->SetName(fence_names[n]);
+frameData[n].fenceValue = 0;
+frameData[n].fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+if (frameData[n].fenceEvent == nullptr) {
+	ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+}
 	}
 	// init resources for update thread:
 	ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&updateCommandAllocator)));
@@ -107,6 +107,26 @@ void WorldObjectEffect::createAndUploadVertexBuffer(Mesh * mesh) {
 		updateCommandList,
 		mesh->indexBufferView
 		);
+	// Close the command list and execute it to begin the vertex buffer copy into
+	// the default heap.
+	ThrowIfFailed(updateCommandList->Close());
+	ID3D12CommandList* ppCommandLists[] = { updateCommandList.Get() };
+	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	//Sleep(100);
+	// Wait for the gpu to complete the update.
+	auto &f = updateFrameData;
+	//
+	// Close the command list and execute it to begin the vertex buffer copy into
+	// the default heap.
+	//ThrowIfFailed(commandLists[frameIndex]->Close());
+	//ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
+	//xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	////Sleep(100);
+	//// Wait for the gpu to complete the update.
+	//auto &f = frameData[frameIndex];
+	//
+	createSyncPoint(f, xapp().commandQueue);
+	waitForSyncPoint(f);
 	/*	// prepare vertex buffer:
 	D3D11_BUFFER_DESC vbd;
 	vbd.Usage = D3D11_USAGE_IMMUTABLE;
@@ -131,4 +151,8 @@ void WorldObjectEffect::createAndUploadVertexBuffer(Mesh * mesh) {
 	iinitData.pSysMem = &indexes[0];	// very important to set address to first element instead of collection: &mesh->vertices is wrong!!
 	ThrowIfFailed(WorldObject::xapp->device->CreateBuffer(&ibd, &iinitData, &indexBuffer));
 	*/
+}
+
+void WorldObjectEffect::draw(ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, float alpha) {
+
 }

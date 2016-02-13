@@ -16,7 +16,7 @@ public:
 	//void draw();
 	// create and upload vertex buffer for a newly loaded mesh
 	void createAndUploadVertexBuffer(Mesh *mesh);
-	void draw(ComPtr<ID3D11Buffer> &vertexBuffer, ComPtr<ID3D11Buffer> indexBuffer, XMFLOAT4X4 wvp, long numIndexes, ID3D11ShaderResourceView **srv, float alpha = 1.0f);
+	void draw(ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, float alpha = 1.0f);
 
 private:
 	ConstantBufferFixed cb;
