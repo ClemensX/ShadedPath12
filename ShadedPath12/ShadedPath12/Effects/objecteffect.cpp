@@ -203,11 +203,21 @@ void WorldObjectEffect::preDraw()
 	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
 }
 
+XMMATRIX calcWVP(XMMATRIX &toWorld, XMMATRIX &vp) {
+	vp = XMMatrixTranspose(vp);
+	toWorld = XMMatrixTranspose(toWorld);
+	XMMATRIX wvp = toWorld * vp;
+	wvp = XMMatrixTranspose(wvp);
+	return wvp;
+}
+
 void WorldObjectEffect::draw(DrawInfo &di) {
 	if (!xapp().ovrRendering) {
 		cbv.alpha = di.alpha;
-		cbv.wvp = di.wvp;
-		//XMStoreFloat4x4(&cbv.wvp, xapp().camera.worldViewProjection());
+		XMMATRIX vp = xapp().camera.worldViewProjection();
+		XMMATRIX toWorld = XMLoadFloat4x4(&di.wvp);
+		XMMATRIX wvp = calcWVP(toWorld, vp);
+		XMStoreFloat4x4(&cbv.wvp, wvp);
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 		return drawInternal(di);
 	}
@@ -218,7 +228,9 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		XMMATRIX adjustedEyeMatrix;
 		xapp().vr.adjustEyeMatrix(adjustedEyeMatrix);
 		cbv.alpha = di.alpha;
-		XMStoreFloat4x4(&cbv.wvp, adjustedEyeMatrix);
+		XMMATRIX toWorld = XMLoadFloat4x4(&di.wvp);
+		XMMATRIX wvp = calcWVP(toWorld, adjustedEyeMatrix);
+		XMStoreFloat4x4(&cbv.wvp, wvp);
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 		drawInternal(di);
 		xapp().vr.nextEye();

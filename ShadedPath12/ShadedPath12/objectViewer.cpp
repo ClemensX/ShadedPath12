@@ -108,7 +108,7 @@ void ObjectViewer::init()
 		object.pathDescBone->pathMode = Path_Reverse;
 		object.pathDescBone->speed = 1000.0;
 		object.forceBoundingBox(BoundingBox(XMFLOAT3(3.16211, 3.16214, 7.28022), XMFLOAT3(4.51012, 4.51011, 7.6599)));
-		object.drawBoundingBox = true;
+		//object.drawBoundingBox = true;
 	}
 	if (false) {
 		xapp().objectStore.loadObject(L"shaded2.b", "Shaded");
@@ -117,7 +117,7 @@ void ObjectViewer::init()
 	if (false) {
 		xapp().objectStore.loadObject(L"house4_anim.b", "House");
 		xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
-		object.drawBoundingBox = true;
+		//object.drawBoundingBox = true;
 		object.setAction("Cube");
 		object.pathDescMove->pathMode = Path_Reverse;
 		object.pathDescMove->speed = 5000.0f;

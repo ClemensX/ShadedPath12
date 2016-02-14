@@ -309,7 +309,8 @@ void WorldObject::draw() {
 	if (visible == 0) return;
 	XMMATRIX p = XMLoadFloat4x4(&xapp().camera.projection);
 	XMMATRIX v = XMLoadFloat4x4(&xapp().camera.view);
-	XMMATRIX wvp = toWorld * (v * p);
+//	XMMATRIX wvp = toWorld * (v * p);
+	XMMATRIX wvp = toWorld ;
 	wvp = XMMatrixTranspose(wvp);
 	// TODO adjust finalWVP to left/right eye
 	XMFLOAT4X4 finalWvp;
