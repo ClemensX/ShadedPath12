@@ -24,7 +24,7 @@ void ObjectViewer::init()
 	linesEffect.init();
 	xapp().world.linesEffect = &linesEffect;
 	textEffect.init();
-	billboardEffect.init();
+	//billboardEffect.init();
 	objectEffect.init(&xapp().objectStore);
 	float aspectRatio = xapp().aspectRatio;
 
@@ -68,15 +68,17 @@ void ObjectViewer::init()
 	xapp().world.drawCoordinateSystem(XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), "Origin", textEffect, dotcrossEffect, textSize);
 
 	// textures
-	//xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
+	xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
 	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
+	xapp().textureStore.loadTexture(L"metal1.dds", "metal");
+	xapp().textureStore.loadTexture(L"worm1.dds", "worm");
 
 	// create a billboards:
 	BillboardElement b;
 	b.pos = XMFLOAT3(15.0f, 0.0f, 2.0f);
 	b.normal = XMFLOAT4(0.0f, 0.0f, -1.0f, 1.0f);
 	b.size = XMFLOAT2(2.0f, 1.0f);
-	size_t id1 = billboardEffect.add("default", b);
+	//size_t id1 = billboardEffect.add("default", b);
 
 	// load object
 	//xapp->world.loadObject(L"path.b", "Path");
@@ -85,10 +87,41 @@ void ObjectViewer::init()
 	//pathObject.alpha = 0.5f;
 	//xapp->objectStore.loadObject(L"shaded2.b", "Shaded");
 	//xapp->objectStore.addObject(pathObject, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GRASSDIRT8);
-	TextureInfo *tex = xapp().textureStore.getTexture("default");
-	xapp().objectStore.loadObject(L"house4_anim.b", "House");
-	xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), tex);
-	object.drawBoundingBox = true;
+
+	TextureInfo *GrassTex = xapp().textureStore.getTexture("grass");
+	TextureInfo *HouseTex = xapp().textureStore.getTexture("default");
+	TextureInfo *MetalTex = xapp().textureStore.getTexture("metal");
+	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
+
+	if (true) {
+		xapp().objectStore.loadObject(L"worm5.b", "Worm");
+		xapp().objectStore.addObject(object, "Worm", XMFLOAT3(10.0f, 10.0f, 10.0f), WormTex);
+		object.setAction("Armature");
+		object.pathDescBone->pathMode = Path_Loop;
+		object.pathDescBone->speed = 10000.0;
+		object.forceBoundingBox(BoundingBox(XMFLOAT3(0.0171146, 2.33574, -0.236285), XMFLOAT3(1.29998, 2.3272, 9.97486)));
+	}
+	if (false) {
+		xapp().objectStore.loadObject(L"joint5_anim.b", "Joint");
+		xapp().objectStore.addObject(object, "Joint", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
+		object.setAction("Armature");
+		object.pathDescBone->pathMode = Path_Reverse;
+		object.pathDescBone->speed = 1000.0;
+		object.forceBoundingBox(BoundingBox(XMFLOAT3(3.16211, 3.16214, 7.28022), XMFLOAT3(4.51012, 4.51011, 7.6599)));
+		object.drawBoundingBox = true;
+	}
+	if (false) {
+		xapp().objectStore.loadObject(L"shaded2.b", "Shaded");
+		xapp().objectStore.addObject(object, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GrassTex);
+	}
+	if (false) {
+		xapp().objectStore.loadObject(L"house4_anim.b", "House");
+		xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
+		object.drawBoundingBox = true;
+		object.setAction("Cube");
+		object.pathDescMove->pathMode = Path_Reverse;
+		object.pathDescMove->speed = 5000.0f;
+	}
 	// draw lines for mesh:
 	Log(" object created ok, #vertices == " << object.mesh->vertices.size() << endl);
 	//vector<LineDef> ol;
@@ -128,7 +161,7 @@ void ObjectViewer::update()
 	fps_str.append(sss.str());
 	textEffect.changeTextLine(fpsLine, fps_str);
 	textEffect.update();
-	billboardEffect.update();
+	//billboardEffect.update();
 	object.update();
 }
 
@@ -137,7 +170,7 @@ void ObjectViewer::draw()
 	linesEffect.draw();
 	dotcrossEffect.draw();
 	textEffect.draw();
-	billboardEffect.draw();
+	//billboardEffect.draw();
 	object.draw();
 	postEffect.draw();
 }

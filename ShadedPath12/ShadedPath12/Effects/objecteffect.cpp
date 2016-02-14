@@ -12,9 +12,12 @@ void WorldObjectEffect::init(WorldObjectStore *oStore) {
 		// Define the vertex input layout.
 		D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
 		{
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		//{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		//{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		//{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 		};
 
 		// Describe and create the graphics pipeline state object (PSO).
@@ -53,18 +56,18 @@ void WorldObjectEffect::init(WorldObjectStore *oStore) {
 	{
 		ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
 		ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocators[n].Get(), pipelineState.Get(), IID_PPV_ARGS(&commandLists[n])));
-// Command lists are created in the recording state, but there is nothing
-// to record yet. The main loop expects it to be closed, so close it now.
-ThrowIfFailed(commandLists[n]->Close());
-// init fences:
-//ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frameData[n].fence.GetAddressOf())));
-ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frameData[n].fence)));
-frameData[n].fence->SetName(fence_names[n]);
-frameData[n].fenceValue = 0;
-frameData[n].fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-if (frameData[n].fenceEvent == nullptr) {
-	ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-}
+		// Command lists are created in the recording state, but there is nothing
+		// to record yet. The main loop expects it to be closed, so close it now.
+		ThrowIfFailed(commandLists[n]->Close());
+		// init fences:
+		//ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frameData[n].fence.GetAddressOf())));
+		ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frameData[n].fence)));
+		frameData[n].fence->SetName(fence_names[n]);
+		frameData[n].fenceValue = 0;
+		frameData[n].fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+		if (frameData[n].fenceEvent == nullptr) {
+			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+		}
 	}
 	// init resources for update thread:
 	ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&updateCommandAllocator)));
@@ -153,6 +156,111 @@ void WorldObjectEffect::createAndUploadVertexBuffer(Mesh * mesh) {
 	*/
 }
 
-void WorldObjectEffect::draw(ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, float alpha) {
+void WorldObjectEffect::draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> &indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, float alpha) {
+	DrawInfo di(vertexBuffer, indexBuffer);
+	di.wvp = wvp;
+	di.numIndexes = numIndexes;
+	di.tex = tex;
+	di.alpha = alpha;
+	di.mesh = mesh;
+	draw(di);
+}
 
+void WorldObjectEffect::preDraw()
+{
+	// last frame must have been finished before we run here!!!
+	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	//auto &f = frameData[xapp().lastPresentedFrame];
+	//waitForSyncPoint(f);
+	//auto &f = frameData[frameIndex];
+	//waitForSyncPoint(f);
+	// Command list allocators can only be reset when the associated 
+	// command lists have finished execution on the GPU; apps should use 
+	// fences to determine GPU execution progress.
+	ThrowIfFailed(commandAllocators[frameIndex]->Reset());
+
+	// However, when ExecuteCommandList() is called on a particular command 
+	// list, that command list can then be reset at any time and must be before 
+	// re-recording.
+	ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
+
+	// Set necessary state.
+	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
+	commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
+	commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
+
+	// Set CBV
+	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress());
+
+	// Indicate that the back buffer will be used as a render target.
+	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
+	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+
+	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
+}
+
+void WorldObjectEffect::draw(DrawInfo &di) {
+	if (!xapp().ovrRendering) {
+		cbv.alpha = di.alpha;
+		cbv.wvp = di.wvp;
+		//XMStoreFloat4x4(&cbv.wvp, xapp().camera.worldViewProjection());
+		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+		return drawInternal(di);
+	}
+	// draw VR, iterate over both eyes
+	xapp().vr.prepareDraw();
+	for (int eyeNum = 0; eyeNum < 2; eyeNum++) {
+		// adjust PVW matrix
+		XMMATRIX adjustedEyeMatrix;
+		xapp().vr.adjustEyeMatrix(adjustedEyeMatrix);
+		cbv.alpha = di.alpha;
+		XMStoreFloat4x4(&cbv.wvp, adjustedEyeMatrix);
+		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+		drawInternal(di);
+		xapp().vr.nextEye();
+	}
+	xapp().vr.endDraw();
+}
+
+void WorldObjectEffect::drawInternal(DrawInfo &di)
+{
+	mutex_Object.lock();
+	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	preDraw();
+	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// update buffers for this text line:
+	//XMStoreFloat4x4(&cbv.wvp, wvp);
+	//cbv.rot = lines[0].rot;
+	memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &di.mesh->vertexBufferView);
+	commandLists[frameIndex]->IASetIndexBuffer(&di.mesh->indexBufferView);
+	//auto *tex = xapp().textureStore.getTexture(elvec.first);
+	// Set SRV
+	ID3D12DescriptorHeap* ppHeaps[] = { di.tex->m_srvHeap.Get() };
+	commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	commandLists[frameIndex]->SetGraphicsRootDescriptorTable(1, di.tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+	commandLists[frameIndex]->DrawIndexedInstanced(di.numIndexes, 1, 0, 0, 0);
+	postDraw();
+	mutex_Object.unlock();
+	//Sleep(50);
+}
+
+void WorldObjectEffect::postDraw()
+{
+	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+
+	ThrowIfFailed(commandLists[frameIndex]->Close());
+	// Execute the command list.
+	ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
+	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	// tests
+	auto &f = frameData[frameIndex];
+	// Wait for the gpu to complete the draw.
+	createSyncPoint(f, xapp().commandQueue);
+	waitForSyncPoint(f); // ok, but not optimal
+						 //Sleep(1);
 }

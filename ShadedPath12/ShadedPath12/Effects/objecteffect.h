@@ -8,6 +8,19 @@ public:
 		XMFLOAT4X4 wvp;
 		float    alpha;
 	};
+	// gather all info needed to draw one object here
+	struct DrawInfo {
+		ComPtr<ID3D12Resource> &vertexBuffer;
+		ComPtr<ID3D12Resource> &indexBuffer;
+		XMFLOAT4X4 wvp;
+		long numIndexes;
+		TextureID tex;
+		float alpha;
+		Mesh* mesh;
+		DrawInfo(ComPtr<ID3D12Resource> &vBuffer, ComPtr<ID3D12Resource> &iBuffer)
+			: vertexBuffer(vBuffer), indexBuffer(iBuffer)
+		{};
+	};
 
 	void init(WorldObjectStore *objectStore);
 	void prepare();
@@ -16,7 +29,8 @@ public:
 	//void draw();
 	// create and upload vertex buffer for a newly loaded mesh
 	void createAndUploadVertexBuffer(Mesh *mesh);
-	void draw(ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, float alpha = 1.0f);
+	void draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> &indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, float alpha = 1.0f);
+	void draw(DrawInfo &di);
 
 private:
 	ConstantBufferFixed cb;
@@ -29,8 +43,8 @@ private:
 	void preDraw();
 	void postDraw();
 	CBV cbv;
-	mutex mutex_Billboard;
-	void drawInternal();
+	mutex mutex_Object;
+	void drawInternal(DrawInfo &di);
 	void updateTask();
 	atomic<bool> updateRunning = false;
 	future<void> objecteffectFuture;

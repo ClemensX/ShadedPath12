@@ -268,7 +268,7 @@ void WorldObject::getBoundingBox(BoundingBox &box) {
 
 void WorldObject::update() {
 	if (this->pathDescBone) {
-//		xapp().world.path.updateScene(pathDescBone, this, xapp->gametime.getTimeAbs());
+		xapp().world.path.updateScene(pathDescBone, this, xapp().gametime.getTimeAbs());
 	}
 	if (drawBoundingBox) {
 		//unique_ptr<Lines>& linesEffect = (unique_ptr<Lines>&)Effect::getUniquePtr(Effect::LINES);
@@ -311,6 +311,7 @@ void WorldObject::draw() {
 	XMMATRIX v = XMLoadFloat4x4(&xapp().camera.view);
 	XMMATRIX wvp = toWorld * (v * p);
 	wvp = XMMatrixTranspose(wvp);
+	// TODO adjust finalWVP to left/right eye
 	XMFLOAT4X4 finalWvp;
 	XMStoreFloat4x4(&finalWvp, wvp);
 	//TextureInfo *info = xapp().textureStore.getTexture(this->textureID);
@@ -324,7 +325,7 @@ void WorldObject::draw() {
 		pos.z = objectStartPos.z + pos.z * scale;
 		this->pos() = pos;
 		this->rot() = rot;
-		worldObjectEffect->draw(mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, alpha);
+		worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, alpha);
 		//centralObject->draw(&path, &worldUtil, &mTerrain, md3dDevice, md3dImmediateContext, *gCamera, getGameTimeAbs());
 	}
 	else {
@@ -349,13 +350,53 @@ void WorldObject::draw() {
 			//if (indexBuffer) ReleaseCOM(indexBuffer);
 			//prepareDxResources(device, dc);
 			mesh->createVertexAndIndexBuffer(worldObjectEffect);
-			worldObjectEffect->draw(mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, alpha);
+			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, alpha);
 		}
 		else {
 			// no skinned vertices
-			worldObjectEffect->draw(mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, alpha);
+			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, alpha);
 		}
 	}
+}
+
+void WorldObject::setAction(string name) {
+	Log(" action == " << action << endl);
+	Action *action = &mesh->actions[name];
+	Log(" action == " << action << endl);
+	assert(action->name.compare(name) == 0); // assert that action was found
+	Log(" action...isbone == " << action->curves[0].bezTriples[0].isBoneAnimation << endl);
+	Log(" action..curves.size == " << action->curves.size() << endl);
+	PathDesc* d;
+	if (action->curves[0].bezTriples[0].isBoneAnimation) {
+		this->boneAction = action;
+		this->pathDescBone = new PathDesc();
+		d = this->pathDescBone;
+		d->isBoneAnimation = true;
+		d->clip = &mesh->clips[name];
+		d->lastCurves = 0;
+		d->lastPercentage = -1.0f;
+		d->lastSegment = -1;
+		assert(d->clip != 0);
+	}
+	else {
+		this->action = action;
+		this->pathDescMove = new PathDesc();
+		d = this->pathDescMove;
+		d->isBoneAnimation = false;
+	}
+	d->speed = 1.0f;
+	d->numSegments = action->curves[0].bezTriples.size();
+	d->numSegments--;
+	d->curSegment = 0;
+	d->starttime = 0L;
+	//d->starttime_f = 0.0f;
+	d->currentPos = XMFLOAT3(0.0, 0.0f, 0.0f);
+	d->fps = 25.0f; // blender default
+	d->segments = NULL;
+	d->pathMode = Path_Reverse;
+	d->currentReverseRun = false;
+	Log(" this->action == " << this->action << endl);
+	Log(" this->boneAction == " << this->boneAction << endl);
 }
 
 XMFLOAT3& WorldObject::pos() {
