@@ -124,6 +124,7 @@ inline void ErrorExt(wstring msg, const char* file, DWORD line)
 #include "texture.h"
 #include "gametime.h"
 #include "util.h"
+#include "lights.h"
 #include "animation.h"
 #include "path.h"
 #include "world.h"

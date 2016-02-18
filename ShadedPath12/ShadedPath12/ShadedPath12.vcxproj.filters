@@ -118,6 +118,9 @@
     <ClInclude Include="Effects\objecteffect.h">
       <Filter>Effects</Filter>
     </ClInclude>
+    <ClInclude Include="lights.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -190,6 +193,9 @@
       <Filter>Effects</Filter>
     </ClCompile>
     <ClCompile Include="path.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lights.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -269,6 +275,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\Object.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\lights_basic.hlsi">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\lights.hlsi">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

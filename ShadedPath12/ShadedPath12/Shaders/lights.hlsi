@@ -1,0 +1,5 @@
+#include "lights_basic.hlsi"
+
+ConstantBuffer<CBVLights> cbvLights: register(b1);
+
+

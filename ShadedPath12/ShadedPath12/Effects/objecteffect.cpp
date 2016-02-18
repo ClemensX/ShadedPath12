@@ -189,8 +189,9 @@ void WorldObjectEffect::preDraw()
 	commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
 	commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
 
-	// Set CBV
+	// Set CBVs
 	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress());
+	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
 
 	// Indicate that the back buffer will be used as a render target.
 	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
@@ -254,7 +255,7 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 	// Set SRV
 	ID3D12DescriptorHeap* ppHeaps[] = { di.tex->m_srvHeap.Get() };
 	commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-	commandLists[frameIndex]->SetGraphicsRootDescriptorTable(1, di.tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+	commandLists[frameIndex]->SetGraphicsRootDescriptorTable(2, di.tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
 	commandLists[frameIndex]->DrawIndexedInstanced(di.numIndexes, 1, 0, 0, 0);
 	postDraw();
 	mutex_Object.unlock();

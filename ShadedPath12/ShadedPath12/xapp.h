@@ -54,8 +54,6 @@ public:
 	enum FileCategory { FX, TEXTURE, MESH, SOUND };
 	wstring findFile(wstring filename, FileCategory cat);
 	void readFile(wstring filename, vector<byte>& buffer, FileCategory cat);
-	TextureStore textureStore;
-	WorldObjectStore objectStore;
 
 	void registerApp(string name, XAppBase*);
 	XAppBase* getApp(string appName);
@@ -135,6 +133,9 @@ public:
 	bool anyKeyDown = false;
 
 	// Other framework instances:
+	TextureStore textureStore;
+	WorldObjectStore objectStore;
+	Lights lights;
 	World world;
 	Camera camera;
 	GameTime gametime;

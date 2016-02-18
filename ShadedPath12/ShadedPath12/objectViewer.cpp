@@ -92,8 +92,8 @@ void ObjectViewer::init()
 	TextureInfo *HouseTex = xapp().textureStore.getTexture("default");
 	TextureInfo *MetalTex = xapp().textureStore.getTexture("metal");
 	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
-
-	if (true) {
+	xapp().lights.init();
+	if (false) {
 		xapp().objectStore.loadObject(L"worm5.b", "Worm");
 		xapp().objectStore.addObject(object, "Worm", XMFLOAT3(10.0f, 10.0f, 10.0f), WormTex);
 		object.setAction("Armature");
@@ -110,7 +110,7 @@ void ObjectViewer::init()
 		object.forceBoundingBox(BoundingBox(XMFLOAT3(3.16211, 3.16214, 7.28022), XMFLOAT3(4.51012, 4.51011, 7.6599)));
 		//object.drawBoundingBox = true;
 	}
-	if (false) {
+	if (true) {
 		xapp().objectStore.loadObject(L"shaded2.b", "Shaded");
 		xapp().objectStore.addObject(object, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GrassTex);
 	}
@@ -146,6 +146,7 @@ void ObjectViewer::update()
 	static bool done = false;
 	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
 	}
+	xapp().lights.update();
 	linesEffect.update();
 	dotcrossEffect.update();
 	// update info text:

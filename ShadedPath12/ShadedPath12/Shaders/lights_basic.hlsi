@@ -1,0 +1,42 @@
+
+
+#define MAX_AMBIENT 1
+#define MAX_DIRECTIONAL 3
+#define MAX_POINT 10
+#define MAX_SPOT 10
+
+struct AmbientLight {
+	float4 level;
+	float4 pos;
+	bool used;
+};
+
+struct DirectionalLight {
+	float4 level;
+	float4 pos;
+	bool used;
+};
+
+struct PointLight {
+	float4 level;
+	float4 pos;
+	bool used;
+};
+
+struct SpotLight {
+	float4 level;
+	float4 pos;
+	bool used;
+};
+
+struct Material {
+    float4 ambient;
+};
+
+struct CBVLights {
+	Material material;
+    AmbientLight ambient[MAX_AMBIENT];
+	DirectionalLight directional[MAX_DIRECTIONAL];
+	PointLight pointXX[MAX_POINT];
+	SpotLight spot[MAX_SPOT];
+};

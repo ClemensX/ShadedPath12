@@ -174,6 +174,7 @@
     <ClInclude Include="Effects\posteffect.h" />
     <ClInclude Include="forward_structures.h" />
     <ClInclude Include="gametime.h" />
+    <ClInclude Include="lights.h" />
     <ClInclude Include="objectViewer.h" />
     <ClInclude Include="path.h" />
     <ClInclude Include="Resource.h" />
@@ -202,6 +203,7 @@
     <ClCompile Include="Effects\objecteffect.cpp" />
     <ClCompile Include="Effects\posteffect.cpp" />
     <ClCompile Include="gametime.cpp" />
+    <ClCompile Include="lights.cpp" />
     <ClCompile Include="objectViewer.cpp" />
     <ClCompile Include="path.cpp" />
     <ClCompile Include="sample1.cpp" />
@@ -320,6 +322,8 @@
   <ItemGroup>
     <None Include="Shaders\Billboard.hlsli" />
     <None Include="Shaders\Dotcross.hlsli" />
+    <None Include="Shaders\lights.hlsi" />
+    <None Include="Shaders\lights_basic.hlsi" />
     <None Include="Shaders\Line.hlsli" />
     <None Include="Shaders\Linetext.hlsli" />
     <None Include="Shaders\Object.hlsli" />
