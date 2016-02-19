@@ -284,6 +284,12 @@ void WorldObject::update() {
 	}
 }
 
+float getVLen(XMFLOAT3 &p0, XMFLOAT3 &p1) {
+	XMVECTOR pv0 = XMLoadFloat3(&p0);
+	XMVECTOR pv1 = XMLoadFloat3(&p1);
+	return XMVectorGetX(XMVector3Length(pv1-pv0));
+}
+
 void WorldObject::draw() {
 	WorldObjectEffect *worldObjectEffect = xapp().objectStore.getWorldObjectEffect();
 	// quaternion
@@ -310,7 +316,7 @@ void WorldObject::draw() {
 	XMMATRIX p = XMLoadFloat4x4(&xapp().camera.projection);
 	XMMATRIX v = XMLoadFloat4x4(&xapp().camera.view);
 //	XMMATRIX wvp = toWorld * (v * p);
-	XMMATRIX wvp = toWorld ;
+	XMMATRIX wvp = toWorld;
 	wvp = XMMatrixTranspose(wvp);
 	// TODO adjust finalWVP to left/right eye
 	XMFLOAT4X4 finalWvp;
@@ -324,6 +330,12 @@ void WorldObject::draw() {
 		pos.x = objectStartPos.x + pos.x * scale;
 		pos.y = objectStartPos.y + pos.y * scale;
 		pos.z = objectStartPos.z + pos.z * scale;
+		float diff = getVLen(this->pos(), pos);
+		double t = xapp().gametime.getTimeAbs();
+		//Log(" diff " << setprecision(9) << diff << " " << t << endl);
+		if (diff < 0.00001f) {
+			//Log(" diff " << diff << endl);
+		}
 		this->pos() = pos;
 		this->rot() = rot;
 		worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, alpha);
@@ -386,7 +398,7 @@ void WorldObject::setAction(string name) {
 		d->isBoneAnimation = false;
 	}
 	d->speed = 1.0f;
-	d->numSegments = action->curves[0].bezTriples.size();
+	d->numSegments = (int)action->curves[0].bezTriples.size();
 	d->numSegments--;
 	d->curSegment = 0;
 	d->starttime = 0L;

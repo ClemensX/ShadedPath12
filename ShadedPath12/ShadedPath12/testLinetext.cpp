@@ -28,7 +28,7 @@ void TestLinetext::init()
 	startTime = gameTime.getRealTime();
 
 	float textSize = 0.5f;//1.0f;
-	float lineHeight = 2.0 * textSize;
+	float lineHeight = 2.0f * textSize;
 	xapp().camera.nearZ = 0.2f;
 	xapp().camera.farZ = 2000.0f;
 	//xapp->camera.pos.z = -3.0f;

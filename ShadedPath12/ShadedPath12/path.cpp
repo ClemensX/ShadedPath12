@@ -93,7 +93,7 @@ void Path::moveNpc(WorldObject *wo, LONGLONG now, LONGLONG ticks_per_second, Ter
 		if (passed > pd->num_ticks) {
 			// turn completed
 			if (pd->yawTargetAngle < 0) {
-				wo->rot().x = XM_PI * 2.0 + pd->yawTargetAngle;
+				wo->rot().x = XM_PI * 2.0f + pd->yawTargetAngle;
 			} else {
 				wo->rot().x = pd->yawTargetAngle;
 			}
@@ -107,7 +107,7 @@ void Path::moveNpc(WorldObject *wo, LONGLONG now, LONGLONG ticks_per_second, Ter
 			float percentage = ((float) passed) / ((float)pd->num_ticks);
 			float cur = pd->yawSourceAngle + ((pd->yawTargetAngle - pd->yawSourceAngle) * percentage);
 			if (cur < 0) {
-				cur = XM_PI * 2.0 + cur;
+				cur = XM_PI * 2.0f + cur;
 			}
 			wo->rot().x = cur;
 			//std::ostringstream oss;
@@ -254,7 +254,7 @@ void fillRotVector(WorldObject &o, UINT n, XMFLOAT3& vec) {
 	vec.z = bz.cp[1];
 }
 
-int findSegment(WorldObject &o, PathDesc *pd, float now) {
+int findSegment(WorldObject &o, PathDesc *pd, double now) {
 	// should really be using binary search in the already sorted array...
 	for ( int i = 0; i < pd->numSegments; i++) {
 		if (pd->segments[i].cumulated_length >= now) return i;
@@ -265,9 +265,9 @@ int findSegment(WorldObject &o, PathDesc *pd, float now) {
 
 void initSegments(WorldObject &o, PathDesc *pd) {
 	if (pd->isBoneAnimation) {
-		pd->numSegments = o.boneAction->curves[0].bezTriples.size() - 1;  // #segments is #keyframes  - 1
+		pd->numSegments = (int)o.boneAction->curves[0].bezTriples.size() - 1;  // #segments is #keyframes  - 1
 	} else {
-		pd->numSegments = o.action->curves[0].bezTriples.size() - 1;  // #segments is #keyframes  - 1
+		pd->numSegments = (int)o.action->curves[0].bezTriples.size() - 1;  // #segments is #keyframes  - 1
 	}
 	pd->segments = new SegmentInfo[pd->numSegments];
 	float cumulated = 0.0f;
@@ -281,7 +281,7 @@ void initSegments(WorldObject &o, PathDesc *pd) {
 	}
 }
 
-void Path::updateTime(WorldObject *o, float nowf) {
+void Path::updateTime(WorldObject *o, double nowf) {
 	PathDesc *pd = o->pathDescBone;
 	if (pd->segments == NULL) {
 		initSegments(*o, pd);
@@ -290,7 +290,7 @@ void Path::updateTime(WorldObject *o, float nowf) {
 	//nowf = 0;
 	pd->isLastPos = false; // may be reset later
 
-	float backnowf = nowf;
+	double backnowf = nowf;
 	// adjust time by subtracting start time of this action:
 	nowf = nowf - pd->starttime;
 	// find current segment:
@@ -356,13 +356,14 @@ void Path::updateTime(WorldObject *o, float nowf) {
 	}
 }
 
-void Path::getPos(WorldObject &o, float nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
+void Path::getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
+	//Log(" time " << setprecision(12) << nowf << endl);
 	PathDesc *pd = o.pathDescMove;
 	if (pd->segments == NULL) {
 		initSegments(o, pd);
 	}
 
-	float backnowf = nowf;
+	double backnowf = nowf;
 	// adjust time by subtracting start time of this action:
 	nowf = nowf - pd->starttime;
 	// find current segment:
@@ -427,10 +428,12 @@ void Path::getPos(WorldObject &o, float nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
 	if (len == 0.0f) {
 		pos = p0;	// no movement
 	} else {
-		float passed_segment = nowf - pd->segments[pd->curSegment].cumulated_start;
-		float length_segment = pd->segments[pd->curSegment].length;
-		XMVECTOR scale = XMVectorScale(segment, passed_segment / length_segment);
+		double passed_segment = nowf - pd->segments[pd->curSegment].cumulated_start;
+		double length_segment = pd->segments[pd->curSegment].length;
+		XMVECTOR scale = XMVectorScale(segment, (float)(passed_segment / length_segment));
 		scale = XMLoadFloat3(&p0) + scale;
+		float len = XMVectorGetX(XMVector3Length(scale));
+		//Log("scale " << len << endl);
 		XMStoreFloat3(&pos, scale);
 	}
 
@@ -445,9 +448,9 @@ void Path::getPos(WorldObject &o, float nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
 	if (lenRot == 0.0f) {
 		rot = r0;	// no rotation
 	} else {
-		float passed_segment = nowf - pd->segments[pd->curSegment].cumulated_start;
-		float length_segment = pd->segments[pd->curSegment].length;
-		XMVECTOR scale = XMVectorScale(segmentRot, passed_segment / length_segment);
+		double passed_segment = nowf - pd->segments[pd->curSegment].cumulated_start;
+		double length_segment = pd->segments[pd->curSegment].length;
+		XMVECTOR scale = XMVectorScale(segmentRot, (float)(passed_segment / length_segment));
 		scale = XMLoadFloat3(&r0) + scale;
 		XMStoreFloat3(&rot, scale);
 	}
@@ -692,7 +695,7 @@ void Path::calculateInterpolationChain(const AnimationClip *clip, PathDesc *pd)
 	}
 }
 
-void::Path::updateScene(PathDesc *pathDesc, WorldObject *wo, float time)
+void::Path::updateScene(PathDesc *pathDesc, WorldObject *wo, double time)
 {
 	// currently only animation clips are updated here, path moving should be too...
 	if (wo->boneAction == 0) {
@@ -705,10 +708,10 @@ void::Path::updateScene(PathDesc *pathDesc, WorldObject *wo, float time)
 	}
 }
 
-void Path::recalculateBoneAnimation(PathDesc *pathDesc, WorldObject *wo, float percentage) 
+void Path::recalculateBoneAnimation(PathDesc *pathDesc, WorldObject *wo, double percentage) 
 {
 	XMVECTOR zero = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
-	int numBones = pathDesc->clip->invBindMatrices.size();
+	int numBones = (int)pathDesc->clip->invBindMatrices.size();
 	//int numKeyframes = curves->at(0).bezTriples.size();
 	//assert (numBones == 2 && numKeyframes == 3);
 	//assert (numBones == curves->size());
@@ -736,9 +739,9 @@ void Path::recalculateBoneAnimation(PathDesc *pathDesc, WorldObject *wo, float p
 			assert(success);
 			// interpolate
 			XMVECTOR s, r, t;
-			s = XMVectorLerp(s0, s1, percentage);
-			r = XMQuaternionSlerp(r0, r1, percentage);
-			t = XMVectorLerp(t0, t1, percentage);
+			s = XMVectorLerp(s0, s1, (float)percentage);
+			r = XMQuaternionSlerp(r0, r1, (float)percentage);
+			t = XMVectorLerp(t0, t1, (float)percentage);
 			// reassemble transformation matrix
 			XMMATRIX xmm = XMMatrixAffineTransformation(s, zero, r, t);
 			//pathDesc->interpolationMatrices[i]._11 = xmm._11;

@@ -20,14 +20,15 @@ public:
 	// advances time, should be called once for every frame
 	void advanceTime();
 
-	// returns time of day as float in range 0..24
-	float getTimeOfDay();
+	// returns time of day as double in range 0..24
+	double getTimeOfDay();
 
 	// get number of hours (and fractions) since game timer creation
-	float getTimeAbs();
+	// NEVER user time values as double: precision is not enough and you will get same time value for actually different times
+	double getTimeAbs();
 
 	// get delta in seconds since last time
-	float getDeltaTime();
+	double getDeltaTime();
 
 	// get real time
 	LONGLONG getRealTime();
@@ -36,7 +37,7 @@ public:
 	LONGLONG getTicksPerSec();
 
 	// get duration in seconds
-	float getSecondsBetween(LONGLONG &past, LONGLONG &present);
+	double getSecondsBetween(LONGLONG &past, LONGLONG &present);
 
 	// set how much faster a game day passes, 1 == real time, 24*60 is a one minute day
 	// init needs be called before any other time method

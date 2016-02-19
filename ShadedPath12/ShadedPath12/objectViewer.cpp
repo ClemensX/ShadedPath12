@@ -99,7 +99,7 @@ void ObjectViewer::init()
 		object.setAction("Armature");
 		object.pathDescBone->pathMode = Path_Loop;
 		object.pathDescBone->speed = 10000.0;
-		object.forceBoundingBox(BoundingBox(XMFLOAT3(0.0171146, 2.33574, -0.236285), XMFLOAT3(1.29998, 2.3272, 9.97486)));
+		object.forceBoundingBox(BoundingBox(XMFLOAT3(0.0171146f, 2.33574f, -0.236285f), XMFLOAT3(1.29998f, 2.3272f, 9.97486f)));
 	}
 	if (false) {
 		xapp().objectStore.loadObject(L"joint5_anim.b", "Joint");
@@ -107,7 +107,7 @@ void ObjectViewer::init()
 		object.setAction("Armature");
 		object.pathDescBone->pathMode = Path_Reverse;
 		object.pathDescBone->speed = 1000.0;
-		object.forceBoundingBox(BoundingBox(XMFLOAT3(3.16211, 3.16214, 7.28022), XMFLOAT3(4.51012, 4.51011, 7.6599)));
+		object.forceBoundingBox(BoundingBox(XMFLOAT3(3.16211f, 3.16214f, 7.28022f), XMFLOAT3(4.51012f, 4.51011f, 7.6599f)));
 		//object.drawBoundingBox = true;
 	}
 	if (false) {
@@ -120,7 +120,7 @@ void ObjectViewer::init()
 		//object.drawBoundingBox = true;
 		object.setAction("Cube");
 		object.pathDescMove->pathMode = Path_Reverse;
-		object.pathDescMove->speed = 50.0f;
+		object.pathDescMove->speed = 5000.0f;
 	}
 	// draw lines for mesh:
 	Log(" object created ok, #vertices == " << object.mesh->vertices.size() << endl);
@@ -164,7 +164,7 @@ void ObjectViewer::update()
 	textEffect.update();
 	//billboardEffect.update();
 	object.update();
-	Log("obj pos " << object.pos().x << endl);
+	//Log("obj pos " << object.pos().x << endl);
 }
 
 void ObjectViewer::draw()

@@ -229,7 +229,7 @@ void Billboard::drawInternal()
 		ID3D12DescriptorHeap* ppHeaps[] = { tex->m_srvHeap.Get() };
 		commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 		commandLists[frameIndex]->SetGraphicsRootDescriptorTable(1, tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
-		UINT count = elvec.second.size() * 6;
+		UINT count = (UINT)elvec.second.size() * 6;
 		if (count > 0) commandLists[frameIndex]->DrawInstanced(count, 1, cur_vertex_index, 0);
 		cur_vertex_index += count;
 	}

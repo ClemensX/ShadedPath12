@@ -13,8 +13,8 @@ public:
 	void setWorld(World& w);
 	float getSpeed();
 	void setSpeed(float speed);
-	void walk(float dt);
-	void strafe(float dt);
+	void walk(double dt);
+	void strafe(double dt);
 
 	XMFLOAT4 pos;  // defaults to (0,0,-2,0)
 	XMFLOAT4 look; // defaults to origin

@@ -107,19 +107,19 @@ float Camera::getSpeed() {
 	return speed;
 }
 
-void Camera::walk(float dt) {
+void Camera::walk(double dt) {
 	// new position = position + dt*look
 	dt *= speed;
-	XMVECTOR s = XMVectorReplicate(dt);
+	XMVECTOR s = XMVectorReplicate((float)dt);
 	XMVECTOR l = XMLoadFloat4(&look);
 	XMVECTOR p = XMLoadFloat4(&pos);
 	XMStoreFloat4(&pos, XMVectorMultiplyAdd(s, l, p));
 }
 
-void Camera::strafe(float dt) {
+void Camera::strafe(double dt) {
 	// new position = position + dt*right
 	dt *= speed;
-	XMVECTOR s = XMVectorReplicate(dt);
+	XMVECTOR s = XMVectorReplicate((float)dt);
 	XMVECTOR r = XMLoadFloat4(&right);
 	XMVECTOR p = XMLoadFloat4(&pos);
 	XMStoreFloat4(&pos, XMVectorMultiplyAdd(s, r, p));

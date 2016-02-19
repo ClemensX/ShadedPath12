@@ -45,12 +45,12 @@ struct PathDesc {
 	bool currentReverseRun;
 	bool isLastPos;
 	bool isBoneAnimation;
-	float now;
-	float percentage;
+	double now;
+	double percentage;
 	// bone animation specific fields
 	const AnimationClip *clip;
 	const std::vector<Curve> *lastCurves;
-	float lastPercentage;
+	double lastPercentage;
 	int lastSegment;
 	AnimationState animState;
 	float yawSourceAngle; // store start angle during turns
@@ -73,11 +73,11 @@ public:
 	Path(void);
 	~Path(void);
 	XMFLOAT3& getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second);
-	void getPos(WorldObject &o, float nowf, XMFLOAT3 &pos, XMFLOAT3 &rot);
-	void updateTime(WorldObject *o, float nowf);
-	void recalculateBoneAnimation(PathDesc *pathDesc, WorldObject *wo, float time);
+	void getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot);
+	void updateTime(WorldObject *o, double nowf);
+	void recalculateBoneAnimation(PathDesc *pathDesc, WorldObject *wo, double time);
 	XMVECTOR skin(const WorldObjectVertex::VertexSkinned *v, PathDesc *pd);
-	void updateScene(PathDesc *pathDesc, WorldObject *wo, float time);
+	void updateScene(PathDesc *pathDesc, WorldObject *wo, double time);
 	void addRandomNPC(WorldObject *wo, char *name);
 	PathDesc *createNpcPath(char *name);
 	void moveNpc(WorldObject *wo, LONGLONG now, LONGLONG ticks_per_second, Terrain *terrain);

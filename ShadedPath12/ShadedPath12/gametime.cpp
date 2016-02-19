@@ -12,8 +12,11 @@ GameTime::~GameTime()
 
 
 // advances time, should be called once for every frame
+// NEVER user time values as float: precision is not enough and you will get same time value for actually different times
 void GameTime::advanceTime()
 {
+	static double lastTimeAbsD = 0;
+	//static float lastTimeAbsF = 0;
 	LONGLONG last_backup = last;
 	last = now;
 	QueryPerformanceCounter(&qwTime);
@@ -28,26 +31,33 @@ void GameTime::advanceTime()
 	if (timeDelta < 0)
 		timeDelta = 0.0f;
 	//Log("time day abs delta " << timeOfDay << " " << timeAbs << " " << timeDelta << "\n");
+	//Log(" time dbl " << setprecision(20) << timeAbs << endl);
+	//float tf = (float)timeAbs;
+	assert(lastTimeAbsD != timeAbs);
+	lastTimeAbsD = timeAbs;
+	//assert(lastTimeAbsF != ((float)timeAbs));
+	//lastTimeAbsF = (float)timeAbs;
+	//Log(" time f " << setprecision(20) << tf << endl);
 }
 
 
-// returns time of day as float in range 0..24
-float GameTime::getTimeOfDay()
+// returns time of day as double in range 0..24
+double GameTime::getTimeOfDay()
 {
-	return (float)timeOfDay;
+	return (double)timeOfDay;
 }
 
 
 // get number of hours (and fractions) since game timer creation
-float GameTime::getTimeAbs()
+double GameTime::getTimeAbs()
 {
-	return (float)timeAbs;
+	return timeAbs;
 }
 
 // get number of seconds since last advanceTime()
-float GameTime::getDeltaTime()
+double GameTime::getDeltaTime()
 {
-	return (float)timeDelta;
+	return timeDelta;
 }
 
 LONGLONG GameTime::getRealTime()
@@ -61,11 +71,11 @@ LONGLONG GameTime::getTicksPerSec()
 }
 
 // get duration in seconds
-float GameTime::getSecondsBetween(LONGLONG &past, LONGLONG &present)
+double GameTime::getSecondsBetween(LONGLONG &past, LONGLONG &present)
 {
 	double t1 = ((double)past) / ((double)ticks_per_sec);
 	double t2 = ((double)present) / ((double)ticks_per_sec);
-	float seconds = (float)(t2 - t1);
+	double seconds = t2 - t1;
 	return abs(seconds);
 }
 

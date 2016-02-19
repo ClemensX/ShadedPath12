@@ -44,11 +44,11 @@ void XApp::update() {
 	GetKeyboardState(key_state);
 	LONGLONG old = gametime.getRealTime();
 	gametime.advanceTime();
-	float dt = gametime.getDeltaTime();
+	double dt = gametime.getDeltaTime();
 	if ((framenum % 30) == 0) {
 		// calculate fps every 30 frames
 		LONGLONG now = gametime.getRealTime();
-		float seconds = gametime.getSecondsBetween(old, now);
+		double seconds = gametime.getSecondsBetween(old, now);
 		fps = (int)(1 / seconds);
 	}
 	for (BYTE b = 1; b < 255; b++) {
