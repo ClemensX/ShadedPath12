@@ -93,7 +93,7 @@ void ObjectViewer::init()
 	TextureInfo *MetalTex = xapp().textureStore.getTexture("metal");
 	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	xapp().lights.init();
-	if (false) {
+	if (true) {
 		xapp().objectStore.loadObject(L"worm5.b", "Worm");
 		xapp().objectStore.addObject(object, "Worm", XMFLOAT3(10.0f, 10.0f, 10.0f), WormTex);
 		object.setAction("Armature");
@@ -114,7 +114,7 @@ void ObjectViewer::init()
 		xapp().objectStore.loadObject(L"shaded2.b", "Shaded");
 		xapp().objectStore.addObject(object, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GrassTex);
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"house4_anim.b", "House");
 		xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
 		//object.drawBoundingBox = true;

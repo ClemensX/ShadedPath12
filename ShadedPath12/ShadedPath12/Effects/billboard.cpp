@@ -259,21 +259,6 @@ vector<Billboard::Vertex>& Billboard::recreateVertexBufferContent()
 {
 	static vector<Vertex> vertices;
 	if (vertices.size() > 0) return vertices;
-	Vertex all[] = {
-		// 1st triangle
-		{ XMFLOAT4(-1, -1, 0, 1), XMFLOAT4(), XMFLOAT2(0, 1) },
-		{ XMFLOAT4(-1, 1, 0, 1),  XMFLOAT4(), XMFLOAT2(0, 0) },
-		{ XMFLOAT4(1, -1, 0, 1),  XMFLOAT4(), XMFLOAT2(1, 1) },
-		// 2nd triangle
-		{ XMFLOAT4(1, -1, 0, 1),  XMFLOAT4(), XMFLOAT2(1, 1) },
-		{ XMFLOAT4(-1, 1, 0, 1),  XMFLOAT4(), XMFLOAT2(0, 0) },
-		{ XMFLOAT4(1,  1, 0, 1),  XMFLOAT4(), XMFLOAT2(1, 0) }
-	};
-	//for (int i = 0; i < _countof(all); i++) {
-	//	vertices.push_back(all[i]);
-	//}
-	//return vertices;
-	// iterate over billboard types
 	Vertex cur_billboard[6];
 	for (auto& elvec : billboards) {
 		//Log(elvec.first.c_str() << endl);
@@ -333,6 +318,21 @@ void Billboard::createBillbordVertexData(Vertex *cur_billboard, BillboardElement
 		c[i].pos.y += bb.pos.y;
 		c[i].pos.z += bb.pos.z;
 	}
+	c[0].normal.x = -1;
+	c[1].normal.x = -1;
+	c[2].normal.x = 1;
+	c[3].normal.x = 1;
+	c[4].normal.x = -1;
+	c[5].normal.x = 1;
+	// layout of vertex input: 
+	// pos.x		P.x
+	// pos.y		P.y
+	// pos.z		P.z
+	// pos.w
+	// normal.x		factor.x
+	// normal.y		factor.y
+	// normal.z		w/2
+	// normal.w		h/2
 }
 
 BillboardElement & Billboard::get(string texture_id, int order_num) {

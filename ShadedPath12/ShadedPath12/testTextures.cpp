@@ -93,10 +93,16 @@ void TestTextures::init()
 	//size_t id1 = billboardEffect.add("default", b);
 	b.pos = XMFLOAT3(-1.0f, 1.5f, 1.0f);
 	b.size = XMFLOAT2(36.29f, 24.192f);
+	b.size = XMFLOAT2(3.629f, 2.4192f);
 	size_t id2 = billboardEffect.add("vac00", b);
 	//BillboardElement &ref = billboardEffect.get("default", id1);
 	//ref.pos.z -= 0.1f;
 	//ref = billboardEffect.get("default", id1);
+	
+//	unsigned long total_billboards = 4000000;
+	unsigned long total_billboards = 50000;
+//	unsigned long total_billboards = 5;
+	unsigned long billboards_per_texture = total_billboards / 12;
 
 	// create randomly positioned billboards for each vacXX texture we have:
 	for (int tex_number = 0; tex_number < 12; tex_number++) {
@@ -108,7 +114,7 @@ void TestTextures::init()
 			texName = string("vac").append(to_string(tex_number));
 		//Log(elvec.first.c_str() << endl);
 		auto *tex = xapp().textureStore.getTexture(texName);
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < billboards_per_texture; i++) {
 			XMFLOAT3 rnd = xapp().world.getRandomPos();
 			b.pos.x = rnd.x;
 			b.pos.y = rnd.y;
