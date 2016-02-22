@@ -16,6 +16,7 @@ SamplerState s : register(s0);
 
 struct BillboardConstantBuffer {
 	float4x4 wvp;
+	float3   cam; //camera world position
 };
 ConstantBuffer<BillboardConstantBuffer> cbv: register(b0);
 

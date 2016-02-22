@@ -23,6 +23,7 @@ public:
 	};
 	struct CBV {
 		XMFLOAT4X4 wvp;
+		XMFLOAT3 cam;  // camera world position
 	};
 
 	void init();

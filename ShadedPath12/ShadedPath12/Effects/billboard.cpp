@@ -191,6 +191,9 @@ void Billboard::draw()
 {
 	if (!xapp().ovrRendering) {
 		XMStoreFloat4x4(&cbv.wvp, xapp().camera.worldViewProjection());
+		cbv.cam.x = xapp().camera.pos.x;
+		cbv.cam.y = xapp().camera.pos.y;
+		cbv.cam.z = xapp().camera.pos.z;
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 		return drawInternal();
 	}
@@ -202,6 +205,9 @@ void Billboard::draw()
 		xapp().vr.adjustEyeMatrix(adjustedEyeMatrix);
 		XMStoreFloat4x4(&cbv.wvp, adjustedEyeMatrix);
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+		cbv.cam.x = xapp().camera.pos.x;
+		cbv.cam.y = xapp().camera.pos.y;
+		cbv.cam.z = xapp().camera.pos.z;
 		drawInternal();
 		xapp().vr.nextEye();
 	}
@@ -318,12 +324,6 @@ void Billboard::createBillbordVertexData(Vertex *cur_billboard, BillboardElement
 		c[i].pos.y += bb.pos.y;
 		c[i].pos.z += bb.pos.z;
 	}
-	c[0].normal.x = -1;
-	c[1].normal.x = -1;
-	c[2].normal.x = 1;
-	c[3].normal.x = 1;
-	c[4].normal.x = -1;
-	c[5].normal.x = 1;
 	// layout of vertex input: 
 	// pos.x		P.x
 	// pos.y		P.y
@@ -333,6 +333,26 @@ void Billboard::createBillbordVertexData(Vertex *cur_billboard, BillboardElement
 	// normal.y		factor.y
 	// normal.z		w/2
 	// normal.w		h/2
+	XMFLOAT4 cam = xapp().camera.pos;
+	for (int i = 0; i < 6; i++) {
+		c[i].pos.y = bb.pos.y;
+		c[i].pos.z = bb.pos.z;
+		c[i].normal.z = deltaw;
+		c[i].normal.w = deltah;
+	}
+	c[0].normal.x = -1;
+	c[0].normal.y = -1;
+	c[1].normal.x = -1;
+	c[1].normal.y = 1;
+	c[2].normal.x = 1;
+	c[2].normal.y = -1;
+
+	c[3].normal.x = 1;
+	c[3].normal.y = -1;
+	c[4].normal.x = -1;
+	c[4].normal.y = 1;
+	c[5].normal.x = 1;
+	c[5].normal.y = 1;
 }
 
 BillboardElement & Billboard::get(string texture_id, int order_num) {
