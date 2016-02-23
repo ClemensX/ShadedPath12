@@ -333,7 +333,7 @@ void Billboard::createBillbordVertexData(Vertex *cur_billboard, BillboardElement
 	// normal.y		factor.y
 	// normal.z		w/2
 	// normal.w		h/2
-	XMFLOAT4 cam = xapp().camera.pos;
+/*	XMFLOAT4 cam = xapp().camera.pos;
 	for (int i = 0; i < 6; i++) {
 		c[i].pos.y = bb.pos.y;
 		c[i].pos.z = bb.pos.z;
@@ -353,6 +353,7 @@ void Billboard::createBillbordVertexData(Vertex *cur_billboard, BillboardElement
 	c[4].normal.y = 1;
 	c[5].normal.x = 1;
 	c[5].normal.y = 1;
+	*/
 }
 
 BillboardElement & Billboard::get(string texture_id, int order_num) {

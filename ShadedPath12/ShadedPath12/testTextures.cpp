@@ -100,8 +100,8 @@ void TestTextures::init()
 	//ref = billboardEffect.get("default", id1);
 	
 //	unsigned long total_billboards = 4000000;
-//	unsigned long total_billboards = 50000;
-	unsigned long total_billboards = 5;
+	unsigned long total_billboards = 50000;
+//	unsigned long total_billboards = 5;
 	unsigned long billboards_per_texture = total_billboards / 12;
 
 	// create randomly positioned billboards for each vacXX texture we have:
