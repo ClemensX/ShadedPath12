@@ -122,7 +122,17 @@ void TestTextures::init()
 			billboardEffect.add(texName, b);
 		}
 	}
-
+	// tests
+	//{
+	//	XMFLOAT3 a = XMFLOAT3(1, 0, 0);
+	//	XMFLOAT3 b = XMFLOAT3(0, 1, 0);
+	//	XMVECTOR av = XMLoadFloat3(&a);
+	//	XMVECTOR bv = XMLoadFloat3(&b);
+	//	XMVECTOR crossv = XMVector3Cross(av, bv);
+	//	XMFLOAT3 cross;
+	//	XMStoreFloat3(&cross, crossv);
+	//	Log("cross " << cross.x);
+	//}
 }
 
 void TestTextures::update()

@@ -12,13 +12,13 @@ PSInput main( VSInput input )
 
 	float3 look = normalize(cbv.cam - pos);
 	float3 up = float3(0, 1, 0);
-	float3 right = normalize(cross(up, look));
-	float3 up2 = normalize(cross(look, right));
+	float3 right = normalize(cross(look, up));
+	float3 up2 = normalize(cross(right, look));
 
 	//right = float3(1, 0, 0);
-	up2 = float3(0, 1, 0);
+	//up2 = float3(0, 1, 0);
 	float3 pos2 = pos + factorx * right + factory * up2;
-	//input.position.xyz = pos2;
+	input.position.xyz = pos2;
 
 	//result.position.w = 1.0;
 	//input.position.y -= 4.0;
