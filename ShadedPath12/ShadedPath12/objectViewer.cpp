@@ -57,7 +57,8 @@ void ObjectViewer::init()
 
 	textEffect.setSize(textSize);
 	dotcrossEffect.setLineLength(6.0f * textSize);
-	textEffect.addTextLine(XMFLOAT4(-5.0f, 5 * lineHeight, 0.0f, 0.0f), xapp().buildInfo, Linetext::XY);
+	textEffect.addTextLine(XMFLOAT4(-5.0f, 6 * lineHeight, 0.0f, 0.0f), xapp().buildInfo, Linetext::XY);
+	textEffect.addTextLine(XMFLOAT4(-5.0f, 5 * lineHeight, 0.0f, 0.0f), "F1-F2 to change abient light level", Linetext::XY);
 	fpsLine = textEffect.addTextLine(XMFLOAT4(-5.0f, 4 * lineHeight, 0.0f, 0.0f), "FPS", Linetext::XY);
 	framenumLine = textEffect.addTextLine(XMFLOAT4(-5.0f, 3 * lineHeight, 0.0f, 0.0f), "0123456789", Linetext::XY);
 
@@ -140,9 +141,9 @@ void ObjectViewer::init()
 	//pathObject.pathDescMove->pathMode = Path_Reverse;
 
 	CBVLights *lights = &xapp().lights.lights;
-	lights->ambient[0].ambient = XMFLOAT4(0.8, 0.8, 0.8, 1);
+	lights->ambient[0].ambient = XMFLOAT4(0.3, 0.3, 0.3, 1);
 	assert(0 < MAX_AMBIENT);
-
+	globalAmbientLightLevel = 1.0f;
 }
 
 void ObjectViewer::update()
@@ -152,6 +153,15 @@ void ObjectViewer::update()
 	static bool done = false;
 	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
 	}
+	if (xapp().keyDown(VK_F1)) {
+		globalAmbientLightLevel -= 0.01;
+	}
+	if (xapp().keyDown(VK_F2)) {
+		globalAmbientLightLevel += 0.01;
+	}
+	if (globalAmbientLightLevel < 0.0f) globalAmbientLightLevel = 0.0f;
+	if (globalAmbientLightLevel > 1.0f) globalAmbientLightLevel = 1.0f;
+
 	xapp().lights.update();
 	linesEffect.update();
 	dotcrossEffect.update();
@@ -169,6 +179,10 @@ void ObjectViewer::update()
 	textEffect.changeTextLine(fpsLine, fps_str);
 	textEffect.update();
 	//billboardEffect.update();
+
+	CBVLights *lights = &xapp().lights.lights;
+	float f = globalAmbientLightLevel;
+	lights->ambient[0].ambient = XMFLOAT4(f,f,f,1);
 	object.update();
 	//Log("obj pos " << object.pos().x << endl);
 }
