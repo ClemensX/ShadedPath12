@@ -3,3 +3,25 @@
 ConstantBuffer<CBVLights> cbvLights: register(b1);
 
 
+// ambient color is maximum of all ambient color values * material.ambient
+float4 calcAmbient() {
+	float4 ambient = float4(0,0,0,1);
+	[unroll] for (int i = 0; i < MAX_AMBIENT; i++) {
+		ambient.x = max(ambient.x, cbvLights.ambient[i].ambient.x);
+		ambient.y = max(ambient.x, cbvLights.ambient[i].ambient.y);
+		ambient.z = max(ambient.x, cbvLights.ambient[i].ambient.z);
+	}
+	return ambient * cbvLights.material.ambient;
+	//float4 ambient = calcAmbient();
+	//return col;
+	//return float4(1, 1, 1, 1);
+}
+
+float4 applyLighting(float4 col) {
+	float4 ambient = calcAmbient();
+	col = col * ambient;
+	return col;
+	//return saturate(col);
+	//return float4(1, 1, 1, 0);
+}
+

@@ -9,6 +9,7 @@ float4 main(PSInput input) : SV_TARGET
 	//thisTexCoord = float2(1, 1);
 	float4 texColor;
 	texColor = screenTex.Sample(s, thisTexCoord);
+	texColor = applyLighting(texColor);
 	//texColor = saturate(texColor);
 	//texColor.r = texColor.r + 1;
 	//texColor.g = texColor.g + 1;

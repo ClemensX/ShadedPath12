@@ -6,7 +6,7 @@
 #define MAX_SPOT 10
 
 struct AmbientLight {
-	float4 level;
+	float4 ambient;
 	float4 pos;
 	bool used;
 };

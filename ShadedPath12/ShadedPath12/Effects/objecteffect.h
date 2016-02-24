@@ -15,6 +15,7 @@ public:
 		XMFLOAT4X4 wvp;
 		long numIndexes;
 		TextureID tex;
+		Material *material;
 		float alpha;
 		Mesh* mesh;
 		DrawInfo(ComPtr<ID3D12Resource> &vBuffer, ComPtr<ID3D12Resource> &iBuffer)
@@ -29,7 +30,7 @@ public:
 	//void draw();
 	// create and upload vertex buffer for a newly loaded mesh
 	void createAndUploadVertexBuffer(Mesh *mesh);
-	void draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> &indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, float alpha = 1.0f);
+	void draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> &indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, Material &material, float alpha = 1.0f);
 	void draw(DrawInfo &di);
 
 private:

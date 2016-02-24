@@ -26,11 +26,5 @@ void Lights::init() {
 }
 
 void Lights::update() {
-	CBVLights lights;
-	UINT size = (UINT) sizeof(lights);
-	//size = 4200000000; // 4.2 GB
-	lights.material.ambient = XMFLOAT4(1, 1, 1, 1);
-	lights.ambient[0].level = XMFLOAT4(0, 0, 1, 1);
-	lights.ambient[1].level = XMFLOAT4(0, 1, 0, 1);
 	memcpy(cbvGPUDest, &lights, sizeof(lights));
 }

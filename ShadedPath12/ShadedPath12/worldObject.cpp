@@ -338,7 +338,7 @@ void WorldObject::draw() {
 		}
 		this->pos() = pos;
 		this->rot() = rot;
-		worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, alpha);
+		worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, material, alpha);
 		//centralObject->draw(&path, &worldUtil, &mTerrain, md3dDevice, md3dImmediateContext, *gCamera, getGameTimeAbs());
 	}
 	else {
@@ -363,11 +363,11 @@ void WorldObject::draw() {
 			//if (indexBuffer) ReleaseCOM(indexBuffer);
 			//prepareDxResources(device, dc);
 			mesh->createVertexAndIndexBuffer(worldObjectEffect);
-			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, alpha);
+			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, material, alpha);
 		}
 		else {
 			// no skinned vertices
-			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, alpha);
+			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, material, alpha);
 		}
 	}
 }

@@ -88,6 +88,7 @@ public:
 							  //WORD cueIndex; // cue index
 	float scale;
 	bool drawBoundingBox;
+	Material material;
 private:
 	XMFLOAT3 _pos;
 	XMFLOAT3 _rot;
@@ -95,7 +96,6 @@ private:
 	XMFLOAT3 bboxVertexMax = XMFLOAT3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 	bool boundingBoxAlreadySet = false;
 	BoundingBox boundingBox;
-
 };
 
 // WorldObject Store:

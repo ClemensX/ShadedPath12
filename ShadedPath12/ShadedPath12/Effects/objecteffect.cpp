@@ -21,10 +21,17 @@ void WorldObjectEffect::init(WorldObjectStore *oStore) {
 		};
 
 		// Describe and create the graphics pipeline state object (PSO).
+		CD3DX12_BLEND_DESC blendDesc(D3D12_DEFAULT);
+		blendDesc.RenderTarget[0].BlendEnable = TRUE;
+		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;//D3D12_BLEND_ONE;
+		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
+		blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 		psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
 		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+		psoDesc.BlendState = blendDesc;
 		psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 		psoDesc.SampleMask = UINT_MAX;
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -156,13 +163,14 @@ void WorldObjectEffect::createAndUploadVertexBuffer(Mesh * mesh) {
 	*/
 }
 
-void WorldObjectEffect::draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> &indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, float alpha) {
+void WorldObjectEffect::draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> &indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, Material &material, float alpha) {
 	DrawInfo di(vertexBuffer, indexBuffer);
 	di.wvp = wvp;
 	di.numIndexes = numIndexes;
 	di.tex = tex;
 	di.alpha = alpha;
 	di.mesh = mesh;
+	di.material = &material;
 	draw(di);
 }
 
@@ -213,6 +221,8 @@ XMMATRIX calcWVP(XMMATRIX &toWorld, XMMATRIX &vp) {
 }
 
 void WorldObjectEffect::draw(DrawInfo &di) {
+	xapp().lights.lights.material = *di.material;
+	xapp().lights.update();
 	if (!xapp().ovrRendering) {
 		cbv.alpha = di.alpha;
 		XMMATRIX vp = xapp().camera.worldViewProjection();
@@ -232,6 +242,7 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		XMMATRIX toWorld = XMLoadFloat4x4(&di.wvp);
 		XMMATRIX wvp = calcWVP(toWorld, adjustedEyeMatrix);
 		XMStoreFloat4x4(&cbv.wvp, wvp);
+		cbv.alpha = di.alpha;
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 		drawInternal(di);
 		xapp().vr.nextEye();
