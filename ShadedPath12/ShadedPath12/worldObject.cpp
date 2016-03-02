@@ -88,6 +88,11 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
 	float *tex = new float[numTex];
 	bfile.read((char*)tex, 4 * numTex);
 
+	// normals:
+	int numNormals = numVerts;
+	float *norm = new float[numNormals];
+	bfile.read((char*)norm, 4 * numNormals);
+
 	// bones and their weights:
 	int *bones = 0;
 	float *bone_weights = 0;
@@ -155,6 +160,9 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
 		vertex.Pos.y = verts[i * 3 + 1] * scale;
 		vertex.Pos.z = verts[i * 3 + 2] * scale;
 		mesh->addToBoundingBox(vertex.Pos);
+		vertex.Normal.x = norm[i * 3];
+		vertex.Normal.y = norm[i * 3 + 1];
+		vertex.Normal.z = norm[i * 3 + 2];
 		vertex.Tex.x = tex[i * 2];
 		vertex.Tex.y = tex[i * 2 + 1];
 		mesh->vertices.push_back(vertex);
@@ -170,6 +178,9 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
 			mesh->addToBoundingBox(vertex.Pos);
 			vertex.Tex.x = tex[i * 2];
 			vertex.Tex.y = tex[i * 2 + 1];
+			vertex.Normal.x = norm[i * 3];
+			vertex.Normal.y = norm[i * 3 + 1];
+			vertex.Normal.z = norm[i * 3 + 2];
 			vertex.Weights.x = bone_weights[i * 4];
 			vertex.Weights.y = bone_weights[i * 4 + 1];
 			vertex.Weights.z = bone_weights[i * 4 + 2];
@@ -190,6 +201,7 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
 	delete verts;
 	delete ints;
 	delete tex;
+	delete norm;
 	if (mode == 1) {
 		delete bones;
 		delete bone_weights;
