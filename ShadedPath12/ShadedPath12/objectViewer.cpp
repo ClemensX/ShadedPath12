@@ -95,13 +95,14 @@ void ObjectViewer::init()
 	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
-	if (false) {
+	if (true) {
 		xapp().objectStore.loadObject(L"worm5.b", "Worm");
 		xapp().objectStore.addObject(object, "Worm", XMFLOAT3(10.0f, 10.0f, 10.0f), WormTex);
 		object.setAction("Armature");
 		object.pathDescBone->pathMode = Path_Loop;
 		object.pathDescBone->speed = 10000.0;
 		object.forceBoundingBox(BoundingBox(XMFLOAT3(0.0171146f, 2.33574f, -0.236285f), XMFLOAT3(1.29998f, 2.3272f, 9.97486f)));
+		object.drawNormals = true;
 	}
 	if (false) {
 		xapp().objectStore.loadObject(L"joint5_anim.b", "Joint");
@@ -115,16 +116,18 @@ void ObjectViewer::init()
 	if (false) {
 		xapp().objectStore.loadObject(L"shaded2.b", "Shaded");
 		xapp().objectStore.addObject(object, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GrassTex);
-		//object.alpha = 0.7f;
+		object.drawNormals = true;
 		object.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"house4_anim.b", "House");
 		xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
 		//object.drawBoundingBox = true;
+		object.drawNormals = true;
 		object.setAction("Cube");
 		object.pathDescMove->pathMode = Path_Reverse;
 		object.pathDescMove->speed = 5000.0f;
+		object.pathDescMove->speed = 1000.0f;
 	}
 	// draw lines for mesh:
 	Log(" object created ok, #vertices == " << object.mesh->vertices.size() << endl);

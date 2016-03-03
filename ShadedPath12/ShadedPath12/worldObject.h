@@ -88,6 +88,7 @@ public:
 							  //WORD cueIndex; // cue index
 	float scale;
 	bool drawBoundingBox;
+	bool drawNormals;
 	Material material;
 private:
 	XMFLOAT3 _pos;

@@ -294,6 +294,37 @@ void WorldObject::update() {
 		bbox.Transform(bbox, 1.0f, r2, t);
 		xapp().world.drawBox(bbox);
 	}
+	if (drawNormals) {
+		//unique_ptr<Lines>& linesEffect = (unique_ptr<Lines>&)Effect::getUniquePtr(Effect::LINES);
+		XMVECTOR r2 = XMQuaternionRotationRollPitchYaw(rot().y, rot().x, rot().z);
+		// rotate all normals then draw them for each vertex
+		vector<LineDef> lines;
+		for (auto &v : mesh->vertices) {
+			// rotate normal
+			XMVECTOR rotNorm = XMLoadFloat3(&v.Normal);
+			rotNorm = XMVector3Rotate(rotNorm, r2);
+			//XMFLOAT3 n;
+			//XMStoreFloat3(&n, rotNorm);
+			// rotate vertex
+			XMVECTOR rotV = XMLoadFloat3(&v.Pos);
+			rotV = XMVector3Rotate(rotV, r2);
+			// translate vertex:
+			XMVECTOR t = XMLoadFloat3(&pos());
+			rotV = rotV + t;
+			XMFLOAT3 vt;
+			XMStoreFloat3(&vt, rotV);
+			XMFLOAT3 vtEnd;
+			XMStoreFloat3(&vtEnd, rotV + rotNorm);
+
+			LineDef line;
+			line.color = Colors::Silver;
+			line.start = vt;
+			line.end = vtEnd;
+			lines.push_back(line);
+		}
+		xapp().world.linesEffect->addOneTime(lines);
+
+	}
 }
 
 float getVLen(XMFLOAT3 &p0, XMFLOAT3 &p1) {
@@ -436,6 +467,7 @@ WorldObject::WorldObject() {
 	pathDescBone = nullptr;
 	scale = 1.0f;
 	drawBoundingBox = false;
+	drawNormals = false;
 }
 
 WorldObject::~WorldObject() {
