@@ -6,13 +6,14 @@ public:
 	};
 	struct CBV {
 		XMFLOAT4X4 wvp;
+		XMFLOAT4X4 world;  // needed for normal calculations
 		float    alpha;
 	};
 	// gather all info needed to draw one object here
 	struct DrawInfo {
 		ComPtr<ID3D12Resource> &vertexBuffer;
 		ComPtr<ID3D12Resource> &indexBuffer;
-		XMFLOAT4X4 wvp;
+		XMFLOAT4X4 world;  // world matrix
 		long numIndexes;
 		TextureID tex;
 		Material *material;

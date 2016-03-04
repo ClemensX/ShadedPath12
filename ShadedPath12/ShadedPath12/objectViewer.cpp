@@ -95,7 +95,7 @@ void ObjectViewer::init()
 	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"worm5.b", "Worm");
 		xapp().objectStore.addObject(object, "Worm", XMFLOAT3(10.0f, 10.0f, 10.0f), WormTex);
 		object.setAction("Armature");
@@ -104,13 +104,16 @@ void ObjectViewer::init()
 		object.forceBoundingBox(BoundingBox(XMFLOAT3(0.0171146f, 2.33574f, -0.236285f), XMFLOAT3(1.29998f, 2.3272f, 9.97486f)));
 		object.drawNormals = true;
 	}
-	if (false) {
+	if (true) {
 		xapp().objectStore.loadObject(L"joint5_anim.b", "Joint");
 		xapp().objectStore.addObject(object, "Joint", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
 		object.setAction("Armature");
 		object.pathDescBone->pathMode = Path_Reverse;
 		object.pathDescBone->speed = 1000.0;
 		object.forceBoundingBox(BoundingBox(XMFLOAT3(3.16211f, 3.16214f, 7.28022f), XMFLOAT3(4.51012f, 4.51011f, 7.6599f)));
+		object.material.specExp = 1.0f;       // no spec color
+		object.material.specIntensity = 0.0f; // no spec color
+		//object.drawNormals = true;
 		//object.drawBoundingBox = true;
 	}
 	if (false) {
@@ -118,6 +121,8 @@ void ObjectViewer::init()
 		xapp().objectStore.addObject(object, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GrassTex);
 		object.drawNormals = true;
 		object.material.ambient = XMFLOAT4(1, 1, 1, 1);
+		object.material.specExp = 1.0f;       // no spec color
+		object.material.specIntensity = 0.0f; // no spec color
 	}
 	if (false) {
 		xapp().objectStore.loadObject(L"house4_anim.b", "House");

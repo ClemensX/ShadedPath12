@@ -359,12 +359,10 @@ void WorldObject::draw() {
 	XMMATRIX p = XMLoadFloat4x4(&xapp().camera.projection);
 	XMMATRIX v = XMLoadFloat4x4(&xapp().camera.view);
 //	XMMATRIX wvp = toWorld * (v * p);
-	XMMATRIX wvp = toWorld;
-	wvp = XMMatrixTranspose(wvp);
-	// TODO adjust finalWVP to left/right eye
-	XMFLOAT4X4 finalWvp;
-	XMStoreFloat4x4(&finalWvp, wvp);
-	//TextureInfo *info = xapp().textureStore.getTexture(this->textureID);
+	XMMATRIX toWorldT = XMMatrixTranspose(toWorld);
+
+	XMFLOAT4X4 finalWorld;
+	XMStoreFloat4x4(&finalWorld, toWorldT);
 	TextureInfo *info = this->textureID;
 	if (action) {
 		//move object
@@ -381,7 +379,7 @@ void WorldObject::draw() {
 		}
 		this->pos() = pos;
 		this->rot() = rot;
-		worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, material, alpha);
+		worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, alpha);
 		//centralObject->draw(&path, &worldUtil, &mTerrain, md3dDevice, md3dImmediateContext, *gCamera, getGameTimeAbs());
 	}
 	else {
@@ -406,11 +404,11 @@ void WorldObject::draw() {
 			//if (indexBuffer) ReleaseCOM(indexBuffer);
 			//prepareDxResources(device, dc);
 			mesh->createVertexAndIndexBuffer(worldObjectEffect);
-			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, material, alpha);
+			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, alpha);
 		}
 		else {
 			// no skinned vertices
-			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWvp, mesh->numIndexes, info, material, alpha);
+			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, alpha);
 		}
 	}
 }

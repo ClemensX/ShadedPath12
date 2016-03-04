@@ -2,12 +2,17 @@
 
 [RootSignature(ObjectRS)]
 
+float3 calcDirectional(float3 pos, float3 normal, Material material)
+{
+	return pos;
+}
+
 float4 main(PSInput input) : SV_TARGET
 {
 	//float s = something[0].x;
 	float2 thisTexCoord = input.Tex;
 	//thisTexCoord = float2(1, 1);
-	float4 texColor;
+	float3 texColor;
 	texColor = screenTex.Sample(s, thisTexCoord);
 	texColor = applyLighting(texColor);
 	//texColor = saturate(texColor);
@@ -20,7 +25,9 @@ float4 main(PSInput input) : SV_TARGET
 	//texColor = float4(0, 0, 100, 1);
 	//return saturate(2.0f * texColor);
 	//return texColor * texColor;  // gamma correction of 2.0
-	texColor.a = cbv.alpha;// +something[0].x;
-	return texColor;
+	float4 alphaColor;
+	alphaColor.rgb = texColor;
+	alphaColor.a = cbv.alpha;// +something[0].x;
+	return alphaColor;
 }
 

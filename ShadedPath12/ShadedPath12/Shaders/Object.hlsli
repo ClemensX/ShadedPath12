@@ -17,6 +17,7 @@ SamplerState s : register(s0);
 
 struct ObjectConstantBuffer {
 	float4x4 wvp;
+	float4x4 world;
 	float    alpha;
 };
 
@@ -33,6 +34,7 @@ struct PSInput
 {
 	float4 Pos   : SV_POSITION;
 	float2 Tex   : TEXCOORD;
+	float3 Normal: NORMAL;
 };
 
 #include "lights.hlsi"

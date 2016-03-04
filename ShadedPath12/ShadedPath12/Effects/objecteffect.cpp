@@ -52,6 +52,7 @@ void WorldObjectEffect::init(WorldObjectStore *oStore) {
 		// set cbv data:
 		XMMATRIX ident = XMMatrixIdentity();
 		XMStoreFloat4x4(&cbv.wvp, ident);
+		cbv.world = cbv.wvp;
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 	}
 
@@ -163,9 +164,9 @@ void WorldObjectEffect::createAndUploadVertexBuffer(Mesh * mesh) {
 	*/
 }
 
-void WorldObjectEffect::draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> &indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, Material &material, float alpha) {
+void WorldObjectEffect::draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> &indexBuffer, XMFLOAT4X4 world, long numIndexes, TextureID tex, Material &material, float alpha) {
 	DrawInfo di(vertexBuffer, indexBuffer);
-	di.wvp = wvp;
+	di.world = world;
 	di.numIndexes = numIndexes;
 	di.tex = tex;
 	di.alpha = alpha;
@@ -212,25 +213,32 @@ void WorldObjectEffect::preDraw()
 	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
 }
 
+/*
+ * Calculate WVP matrix from projection and world matrix
+ */
 XMMATRIX calcWVP(XMMATRIX &toWorld, XMMATRIX &vp) {
-	vp = XMMatrixTranspose(vp);
-	toWorld = XMMatrixTranspose(toWorld);
-	XMMATRIX wvp = toWorld * vp;
-	wvp = XMMatrixTranspose(wvp);
-	return wvp;
+	// optimization of commented code via transpose rule: (A*B)T = BT * AT
+	//vp = XMMatrixTranspose(vp);
+	//toWorld = XMMatrixTranspose(toWorld);
+	//XMMATRIX wvp = toWorld * vp;
+	//wvp = XMMatrixTranspose(wvp);
+	//return wvp;
+	return vp * toWorld;
 }
 
 void WorldObjectEffect::draw(DrawInfo &di) {
 	xapp().lights.lights.material = *di.material;
 	xapp().lights.update();
 	if (!xapp().ovrRendering) {
-		cbv.alpha = di.alpha;
 		XMMATRIX vp = xapp().camera.worldViewProjection();
-		XMMATRIX toWorld = XMLoadFloat4x4(&di.wvp);
+		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
 		XMMATRIX wvp = calcWVP(toWorld, vp);
 		XMStoreFloat4x4(&cbv.wvp, wvp);
+		cbv.world = di.world;
+		cbv.alpha = di.alpha;
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
-		return drawInternal(di);
+		drawInternal(di);
+		return;
 	}
 	// draw VR, iterate over both eyes
 	xapp().vr.prepareDraw();
@@ -238,10 +246,10 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		// adjust PVW matrix
 		XMMATRIX adjustedEyeMatrix;
 		xapp().vr.adjustEyeMatrix(adjustedEyeMatrix);
-		cbv.alpha = di.alpha;
-		XMMATRIX toWorld = XMLoadFloat4x4(&di.wvp);
+		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
 		XMMATRIX wvp = calcWVP(toWorld, adjustedEyeMatrix);
 		XMStoreFloat4x4(&cbv.wvp, wvp);
+		cbv.world = di.world;
 		cbv.alpha = di.alpha;
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 		drawInternal(di);
@@ -259,7 +267,7 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 	// update buffers for this text line:
 	//XMStoreFloat4x4(&cbv.wvp, wvp);
 	//cbv.rot = lines[0].rot;
-	memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+	//memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &di.mesh->vertexBufferView);
 	commandLists[frameIndex]->IASetIndexBuffer(&di.mesh->indexBufferView);
 	//auto *tex = xapp().textureStore.getTexture(elvec.first);

@@ -30,7 +30,11 @@ struct SpotLight {
 };
 
 struct Material {
-    float4 ambient;
+    float4 ambient;       // only .rgb used
+	float  specExp;       // 1 for no specular color
+	float  specIntensity; // 0 for no specular color
+	float fill1;
+	float fill2;
 };
 
 struct CBVLights {
