@@ -113,7 +113,7 @@ void ObjectViewer::init()
 		object.forceBoundingBox(BoundingBox(XMFLOAT3(3.16211f, 3.16214f, 7.28022f), XMFLOAT3(4.51012f, 4.51011f, 7.6599f)));
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
-		//object.drawNormals = true;
+		object.drawNormals = true;
 		//object.drawBoundingBox = true;
 	}
 	if (false) {

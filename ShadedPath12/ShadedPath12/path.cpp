@@ -565,10 +565,20 @@ XMVECTOR Path::skin(const XMVECTOR v, const XMMATRIX &ibm, int boneIndex, const 
 	return skin(v, ibm, vm, jw, scale);
 }
 */
+
+// assuming we have a transformation matrix without scale we can just use uppel left 3x3 as rotation matrix
+XMVECTOR rotate(XMMATRIX m, XMVECTOR v) {
+	XMVECTOR rotation_quaternion = XMQuaternionRotationMatrix(m);
+	rotation_quaternion = XMQuaternionNormalize(rotation_quaternion);
+	// rotate v
+	return XMVector3Rotate(v, rotation_quaternion);
+}
+
 //XMVECTOR Path::skin(const Vertex::Skinned *v, const std::vector<XMFLOAT4X4> *ibms, const std::vector<Curve> *curves, int segment, float scale, float percentage)
-XMVECTOR Path::skin(const WorldObjectVertex::VertexSkinned *v, PathDesc *pd)
+void  Path::skin(XMVECTOR &pos, XMVECTOR &norm, const WorldObjectVertex::VertexSkinned *v, PathDesc *pd)
 {
 	XMVECTOR vskin = XMVectorZero();
+	XMVECTOR normskin = XMVectorZero();
 	for (int i = 0; i < 4; i++) {
 		BYTE boneIndex = v->BoneIndices[i];
 		float weight;
@@ -582,13 +592,22 @@ XMVECTOR Path::skin(const WorldObjectVertex::VertexSkinned *v, PathDesc *pd)
 		XMMATRIX ibm = XMLoadFloat4x4(&pd->clip->invBindMatrices[boneIndex]);
 		ibm = XMMatrixTranspose(ibm);
 		XMVECTOR r = XMLoadFloat3(&v->Pos);
+		XMVECTOR n = XMLoadFloat3(&v->Normal);
 		r = XMVector3Transform(r, ibm);
+		n = rotate(ibm, n);
 		//XMMATRIX m(XMLoadFloat4x4(&pd->interpolationMatricesChained[boneIndex]));
-		r = XMVector3Transform(r, getInterpolationMatrixChained(boneIndex, pd));
+		XMMATRIX imc = getInterpolationMatrixChained(boneIndex, pd);
+		r = XMVector3Transform(r, imc);
+		n = rotate(imc, n);
 		r = r * weight;
+		n = n * weight;
 		vskin += r;
+		normskin += n;
 	}
-	return vskin;
+	pos = vskin;
+	norm = XMVector3Normalize(normskin); //XMLoadFloat3(&v->Normal);
+	//float len = XMVectorGetX(XMVector3Length(norm));
+	//Log("normal length = " << len << endl);
 }
 
 /*

@@ -390,19 +390,16 @@ void WorldObject::draw() {
 
 				WorldObjectVertex::VertexSkinned *v = &mesh->skinnedVertices[skV];
 				//XMVECTOR vfinal = Path::skin(v, &mesh->clips["Armature"], &boneAction->curves, pathDescBone->curSegment, 7.0f, pathDescBone->percentage);
-				XMVECTOR vfinal = xapp().world.path.skin(v, pathDescBone);
+				XMVECTOR vfinal, normfinal;
+				xapp().world.path.skin(vfinal, normfinal, v, pathDescBone);
+				// TODO handle cpu calculated normals after animation/skinning here
 				XMFLOAT3 vfinal_flo;
 				XMStoreFloat3(&vfinal_flo, vfinal);
 				mesh->vertices[skV].Pos = vfinal_flo;
-				//if (isCopiedObject && skV < 1000) {
-				//	mesh->vertices[skV].Pos.x = mesh->vertices[skV].Pos.x - 5;
-				//	//mesh->vertices[skV].Pos.y = 0.0f;
-				//	//mesh->vertices[skV].Pos.z = 0.0f;
-				//}
+				XMFLOAT3 normfinal_flo;
+				XMStoreFloat3(&normfinal_flo, normfinal);
+				mesh->vertices[skV].Normal = normfinal_flo;
 			}
-			//if (vertexBuffer) ReleaseCOM(vertexBuffer);
-			//if (indexBuffer) ReleaseCOM(indexBuffer);
-			//prepareDxResources(device, dc);
 			mesh->createVertexAndIndexBuffer(worldObjectEffect);
 			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, alpha);
 		}

@@ -76,7 +76,7 @@ public:
 	void getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot);
 	void updateTime(WorldObject *o, double nowf);
 	void recalculateBoneAnimation(PathDesc *pathDesc, WorldObject *wo, double time);
-	XMVECTOR skin(const WorldObjectVertex::VertexSkinned *v, PathDesc *pd);
+	void skin(XMVECTOR &pos, XMVECTOR &norm, const WorldObjectVertex::VertexSkinned *v, PathDesc *pd);
 	void updateScene(PathDesc *pathDesc, WorldObject *wo, double time);
 	void addRandomNPC(WorldObject *wo, char *name);
 	PathDesc *createNpcPath(char *name);
