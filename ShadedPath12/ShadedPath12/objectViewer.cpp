@@ -95,16 +95,25 @@ void ObjectViewer::init()
 	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
-	if (false) {
+	if (true) {
+		/*
+		Try object smooting in blender:
+		The smooth button does it for you.
+		(Left side) Object Tools -> Smooth (under Shading),
+		Then when you go File -> Export -> Wavefront (.obj),
+		make sure you click on the Include Normals checkbox.
+		*/
 		xapp().objectStore.loadObject(L"worm5.b", "Worm");
 		xapp().objectStore.addObject(object, "Worm", XMFLOAT3(10.0f, 10.0f, 10.0f), WormTex);
 		object.setAction("Armature");
 		object.pathDescBone->pathMode = Path_Loop;
 		object.pathDescBone->speed = 10000.0;
 		object.forceBoundingBox(BoundingBox(XMFLOAT3(0.0171146f, 2.33574f, -0.236285f), XMFLOAT3(1.29998f, 2.3272f, 9.97486f)));
-		object.drawNormals = true;
+		object.material.specExp = 100.0f;       // no spec color 1 0 nothing
+		object.material.specIntensity = 10.0f; // no spec color
+		//object.drawNormals = true;
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"joint5_anim.b", "Joint");
 		xapp().objectStore.addObject(object, "Joint", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
 		object.setAction("Armature");
@@ -121,8 +130,8 @@ void ObjectViewer::init()
 		xapp().objectStore.addObject(object, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GrassTex);
 		object.drawNormals = true;
 		object.material.ambient = XMFLOAT4(1, 1, 1, 1);
-		object.material.specExp = 1.0f;       // no spec color
-		object.material.specIntensity = 0.0f; // no spec color
+		object.material.specExp = 200.0f;       // no spec color 1 0 nothing
+		object.material.specIntensity = 1000.0f; // no spec color
 	}
 	if (false) {
 		xapp().objectStore.loadObject(L"house4_anim.b", "House");
@@ -150,9 +159,16 @@ void ObjectViewer::init()
 	//pathObject.pathDescMove->pathMode = Path_Reverse;
 
 	CBVLights *lights = &xapp().lights.lights;
-	lights->ambient[0].ambient = XMFLOAT4(0.3, 0.3, 0.3, 1);
+
+	// ambient light
+	//lights->ambient[0].ambient = XMFLOAT4(0.3, 0.3, 0.3, 1); overwritten in update()
 	assert(0 < MAX_AMBIENT);
-	globalAmbientLightLevel = 1.0f;
+	globalAmbientLightLevel = 0.3f;
+
+	// directional light:
+	lights->directionalLights[0].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	//lights->directionalLights[0].color = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	lights->directionalLights[0].pos = XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f);
 }
 
 void ObjectViewer::update()
@@ -163,10 +179,10 @@ void ObjectViewer::update()
 	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
 	}
 	if (xapp().keyDown(VK_F1)) {
-		globalAmbientLightLevel -= 0.01;
+		globalAmbientLightLevel -= 0.01f;
 	}
 	if (xapp().keyDown(VK_F2)) {
-		globalAmbientLightLevel += 0.01;
+		globalAmbientLightLevel += 0.01f;
 	}
 	if (globalAmbientLightLevel < 0.0f) globalAmbientLightLevel = 0.0f;
 	if (globalAmbientLightLevel > 1.0f) globalAmbientLightLevel = 1.0f;
@@ -191,7 +207,7 @@ void ObjectViewer::update()
 
 	CBVLights *lights = &xapp().lights.lights;
 	float f = globalAmbientLightLevel;
-	lights->ambient[0].ambient = XMFLOAT4(f,f,f,1);
+	lights->ambientLights[0].ambient = XMFLOAT4(f,f,f,1);
 	object.update();
 	//Log("obj pos " << object.pos().x << endl);
 }

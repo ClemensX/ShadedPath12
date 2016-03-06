@@ -7,6 +7,7 @@ public:
 	struct CBV {
 		XMFLOAT4X4 wvp;
 		XMFLOAT4X4 world;  // needed for normal calculations
+		XMFLOAT3   cameraPos;
 		float    alpha;
 	};
 	// gather all info needed to draw one object here

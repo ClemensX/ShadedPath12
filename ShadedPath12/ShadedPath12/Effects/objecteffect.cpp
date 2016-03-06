@@ -235,6 +235,9 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		XMMATRIX wvp = calcWVP(toWorld, vp);
 		XMStoreFloat4x4(&cbv.wvp, wvp);
 		cbv.world = di.world;
+		cbv.cameraPos.x = xapp().camera.pos.x;
+		cbv.cameraPos.y = xapp().camera.pos.y;
+		cbv.cameraPos.z = xapp().camera.pos.z;
 		cbv.alpha = di.alpha;
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 		drawInternal(di);
@@ -250,6 +253,9 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		XMMATRIX wvp = calcWVP(toWorld, adjustedEyeMatrix);
 		XMStoreFloat4x4(&cbv.wvp, wvp);
 		cbv.world = di.world;
+		cbv.cameraPos.x = xapp().camera.pos.x;
+		cbv.cameraPos.y = xapp().camera.pos.y;
+		cbv.cameraPos.z = xapp().camera.pos.z;
 		cbv.alpha = di.alpha;
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 		drawInternal(di);

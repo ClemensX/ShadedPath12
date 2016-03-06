@@ -8,25 +8,25 @@
 struct AmbientLight {
 	float4 ambient;
 	float4 pos;
-	bool used;
+	float4 used_fill;
 };
 
 struct DirectionalLight {
-	float4 level;
+	float4 color;
 	float4 pos;
-	bool used;
+	float4 used_fill;
 };
 
 struct PointLight {
 	float4 level;
 	float4 pos;
-	bool used;
+	float4 used_fill;
 };
 
 struct SpotLight {
 	float4 level;
 	float4 pos;
-	bool used;
+	float4 used_fill;
 };
 
 struct Material {
@@ -37,10 +37,11 @@ struct Material {
 	float fill2;
 };
 
+// Changes here NEED to be reflected in lights.hlsi !!!
 struct CBVLights {
 	Material material;
-    AmbientLight ambient[MAX_AMBIENT];
-	DirectionalLight directional[MAX_DIRECTIONAL];
-	PointLight pointXX[MAX_POINT];
-	SpotLight spot[MAX_SPOT];
+    AmbientLight ambientLights[MAX_AMBIENT];
+	DirectionalLight directionalLights[MAX_DIRECTIONAL];
+	PointLight pointLights[MAX_POINT];
+	SpotLight spotLights[MAX_SPOT];
 };

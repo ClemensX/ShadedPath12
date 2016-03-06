@@ -18,6 +18,7 @@ SamplerState s : register(s0);
 struct ObjectConstantBuffer {
 	float4x4 wvp;
 	float4x4 world;
+	float3   cameraPos;
 	float    alpha;
 };
 

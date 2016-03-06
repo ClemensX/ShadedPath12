@@ -1,17 +1,23 @@
 #include "lights_basic.hlsi"
 
-ConstantBuffer<CBVLights> cbvLights: register(b1);
-
+//ConstantBuffer<CBVLights> cbvLights: register(b1);
+cbuffer cbFixedLights : register(b1) {
+	Material material;
+    AmbientLight ambientLights[MAX_AMBIENT];
+	DirectionalLight directionalLights[MAX_DIRECTIONAL];
+	PointLight pointLights[MAX_POINT];
+	SpotLight spotLights[MAX_SPOT];
+};
 
 // ambient color is maximum of all ambient color values * material.ambient
 float3 calcAmbient() {
-	float3 ambient = float3(0,0,0);
+	float3 amb = float3(0,0,0);
 	[unroll] for (int i = 0; i < MAX_AMBIENT; i++) {
-		ambient.x = max(ambient.x, cbvLights.ambient[i].ambient.x);
-		ambient.y = max(ambient.x, cbvLights.ambient[i].ambient.y);
-		ambient.z = max(ambient.x, cbvLights.ambient[i].ambient.z);
+		amb.x = max(amb.x, ambientLights[i].ambient.x);
+		amb.y = max(amb.x, ambientLights[i].ambient.y);
+		amb.z = max(amb.x, ambientLights[i].ambient.z);
 	}
-	return ambient * cbvLights.material.ambient;
+	return amb * material.ambient.rgb;
 }
 
 float3 applyLighting(float3 col) {
@@ -22,3 +28,16 @@ float3 applyLighting(float3 col) {
 	//return float4(1, 1, 1, 0);
 }
 
+/*
+// ambient color is maximum of all ambient color values * material.ambient
+float3 calcAmbient() {
+	float3 ambient = float3(0,0,0);
+	[unroll] for (int i = 0; i < MAX_AMBIENT; i++) {
+		ambient.x = max(ambient.x, cbvLights.ambient[i].ambient.x);
+		ambient.y = max(ambient.x, cbvLights.ambient[i].ambient.y);
+		ambient.z = max(ambient.x, cbvLights.ambient[i].ambient.z);
+	}
+//	return ambient * cbvLights.material.ambient.rgb;
+	return float3(1,1,1);
+}
+*/
