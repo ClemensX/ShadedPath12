@@ -1,9 +1,13 @@
 
 #define float4 XMFLOAT4
+#define float3 XMFLOAT4
+#define float2 XMFLOAT2
 
 #include "Shaders\lights_basic.hlsi"
 
-#undef XMFLOAT4
+#undef float4
+#undef float3
+#undef float2
 
 class Lights {
 public:

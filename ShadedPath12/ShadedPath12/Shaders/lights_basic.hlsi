@@ -18,9 +18,11 @@ struct DirectionalLight {
 };
 
 struct PointLight {
-	float4 level;
+	float4 color;
 	float4 pos;
-	float4 used_fill;
+	float  range_reciprocal; // 1/range, range is max effective distance to light source
+	float  used;
+	float2 used_fill;
 };
 
 struct SpotLight {

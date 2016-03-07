@@ -43,12 +43,42 @@ float3 calcDirectional(float3 pos, float3 normal, Material material, int index, 
 	return finalColor;
 }
 
+float3 calcPoint(float3 pos, float3 normal, Material material, int index, float3 camera)
+{
+	//if (true) return float3(0, 0, 0);
+	float b = pointLights[index].used;
+	if (b < 1.0) {
+		return float3(0.0f, 0.0f, 0.0f);
+	}
+	float3 dirToLight = directionalLights[index].pos.xyz;// - pos;
+	dirToLight = normalize(dirToLight);
+	// Phong diffuse:
+	float NDotL = dot(dirToLight, normal);
+	float3 finalColor = directionalLights[index].color.rgb * saturate(NDotL);
+
+	// Blinn specular:
+	float3 toEye = camera - pos;
+	toEye = normalize(toEye);
+	float3 halfWay = normalize(toEye + dirToLight);
+	float NDotH = saturate(dot(halfWay, normal));
+	finalColor += directionalLights[index].color.rgb * pow(NDotH, material.specExp) * material.specIntensity;
+
+	return finalColor;
+}
+
 float3 applyLighting(float3 col, float3 pos, float3 normal, float3 camera) {
 	float3 ambient = calcAmbient();
+
 	float3 directional = float3(0,0,0);
 	[unroll] for (int i = 0; i < MAX_DIRECTIONAL; i++) {
 		directional += calcDirectional(pos, normal, material, i, camera);
 	}
+
+	float3 pointx = float3(0,0,0);
+	[unroll] for (int j = 0; j < MAX_POINT; j++) {
+		pointx += calcPoint(pos, normal, material, j, camera);
+	}
+
 	col = col * (ambient + directional);
 	return saturate(col);
 }

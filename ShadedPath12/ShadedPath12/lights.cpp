@@ -26,6 +26,9 @@ void Lights::init() {
 	for (int i = 0; i < MAX_DIRECTIONAL; i++) {
 		lights.directionalLights[i].used_fill.x = 0.0f;
 	}
+	for (int i = 0; i < MAX_POINT; i++) {
+		lights.pointLights[i].used = 0.0f;
+	}
 }
 
 void Lights::update() {
