@@ -14,8 +14,8 @@ float3 calcAmbient() {
 	float3 amb = float3(0,0,0);
 	[unroll] for (int i = 0; i < MAX_AMBIENT; i++) {
 		amb.x = max(amb.x, ambientLights[i].ambient.x);
-		amb.y = max(amb.x, ambientLights[i].ambient.y);
-		amb.z = max(amb.x, ambientLights[i].ambient.z);
+		amb.y = max(amb.y, ambientLights[i].ambient.y);
+		amb.z = max(amb.z, ambientLights[i].ambient.z);
 	}
 	return amb * material.ambient.rgb;
 }

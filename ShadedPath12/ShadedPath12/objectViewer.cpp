@@ -95,13 +95,16 @@ void ObjectViewer::init()
 	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
-	if (true) {
+	if (false) {
 		/*
-		Try object smooting in blender:
-		The smooth button does it for you.
-		(Left side) Object Tools -> Smooth (under Shading),
-		Then when you go File -> Export -> Wavefront (.obj),
-		make sure you click on the Include Normals checkbox.
+		Remember to smooth normals for organic meshes like this worm,
+		otherwise you will see checkered display when lighting is on.
+		This is due to sharp normal changes for adjacent triangles
+
+		Normal smooting in blender 2.7:
+		Properties Window -> Modifiers -> Add Modifier -> Normal Edit
+		You have to enable Auto Smooth for Normals in Properties -> Data
+		Apply the modifier.
 		*/
 		xapp().objectStore.loadObject(L"worm5.b", "Worm");
 		xapp().objectStore.addObject(object, "Worm", XMFLOAT3(10.0f, 10.0f, 10.0f), WormTex);
@@ -113,7 +116,7 @@ void ObjectViewer::init()
 		object.material.specIntensity = 10.0f; // no spec color
 		//object.drawNormals = true;
 	}
-	if (false) {
+	if (true) {
 		xapp().objectStore.loadObject(L"joint5_anim.b", "Joint");
 		xapp().objectStore.addObject(object, "Joint", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
 		object.setAction("Armature");
@@ -165,10 +168,15 @@ void ObjectViewer::init()
 	assert(0 < MAX_AMBIENT);
 	globalAmbientLightLevel = 0.3f;
 
-	// directional light:
+	// directional lights:
 	lights->directionalLights[0].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	//lights->directionalLights[0].color = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	lights->directionalLights[0].pos = XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f);
+	lights->directionalLights[0].used_fill.x = 1.0f;
+
+	lights->directionalLights[1].color = XMFLOAT4(1.0f, 0.9f, 0.9f, 1.0f);
+	lights->directionalLights[1].pos = XMFLOAT4(0.0f, 0.5f, 1.0f, 1.0f);
+	lights->directionalLights[1].used_fill.x = 1.0f;
 }
 
 void ObjectViewer::update()

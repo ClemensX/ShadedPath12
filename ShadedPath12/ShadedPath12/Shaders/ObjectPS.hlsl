@@ -4,6 +4,11 @@
 
 float3 calcDirectional(float3 pos, float3 normal, Material material, int index, float3 camera)
 {
+	//if (true) return float3(0, 0, 0);
+	float b = directionalLights[index].used_fill.x;
+	if (b < 1.0) {
+		return float3(0.0f, 0.0f, 0.0f);
+	}
 	float3 dirToLight = directionalLights[index].pos.xyz;// - pos;
 	dirToLight = normalize(dirToLight);
 	// Phong diffuse:
@@ -36,8 +41,11 @@ float4 main(PSInput input) : SV_TARGET
 	float3 finalColor;
 	finalColor = applyLighting(texColor);
 
-	float3 directionalColor = calcDirectional(input.Pos.xyz, input.Normal, material, 0, cbv.cameraPos);
-	finalColor += directionalColor * texColor;
+
+	[unroll] for (int i = 0; i < MAX_DIRECTIONAL; i++) {
+		float3 directionalColor = calcDirectional(input.Pos.xyz, input.Normal, material, i, cbv.cameraPos);
+		finalColor += directionalColor * texColor;
+	}
 	finalColor = saturate(finalColor);
 	//texColor.r = texColor.r + 1;
 	//texColor.g = texColor.g + 1;

@@ -23,6 +23,9 @@ void Lights::createConstantBuffer(size_t s, wchar_t * name)
 void Lights::init() {
 	UINT size = (UINT) sizeof(lights);
 	createConstantBuffer(size, L"Lights_cbv_resource");
+	for (int i = 0; i < MAX_DIRECTIONAL; i++) {
+		lights.directionalLights[i].used_fill.x = 0.0f;
+	}
 }
 
 void Lights::update() {
