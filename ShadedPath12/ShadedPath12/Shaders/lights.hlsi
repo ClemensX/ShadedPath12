@@ -20,24 +20,35 @@ float3 calcAmbient() {
 	return amb * material.ambient.rgb;
 }
 
-float3 applyLighting(float3 col) {
-	float3 ambient = calcAmbient();
-	col = col * ambient;
-	return col;
-	//return saturate(col);
-	//return float4(1, 1, 1, 0);
+float3 calcDirectional(float3 pos, float3 normal, Material material, int index, float3 camera)
+{
+	//if (true) return float3(0, 0, 0);
+	float b = directionalLights[index].used_fill.x;
+	if (b < 1.0) {
+		return float3(0.0f, 0.0f, 0.0f);
+	}
+	float3 dirToLight = directionalLights[index].pos.xyz;// - pos;
+	dirToLight = normalize(dirToLight);
+	// Phong diffuse:
+	float NDotL = dot(dirToLight, normal);
+	float3 finalColor = directionalLights[index].color.rgb * saturate(NDotL);
+
+	// Blinn specular:
+	float3 toEye = camera - pos;
+	toEye = normalize(toEye);
+	float3 halfWay = normalize(toEye + dirToLight);
+	float NDotH = saturate(dot(halfWay, normal));
+	finalColor += directionalLights[index].color.rgb * pow(NDotH, material.specExp) * material.specIntensity;
+
+	return finalColor;
 }
 
-/*
-// ambient color is maximum of all ambient color values * material.ambient
-float3 calcAmbient() {
-	float3 ambient = float3(0,0,0);
-	[unroll] for (int i = 0; i < MAX_AMBIENT; i++) {
-		ambient.x = max(ambient.x, cbvLights.ambient[i].ambient.x);
-		ambient.y = max(ambient.x, cbvLights.ambient[i].ambient.y);
-		ambient.z = max(ambient.x, cbvLights.ambient[i].ambient.z);
+float3 applyLighting(float3 col, float3 pos, float3 normal, float3 camera) {
+	float3 ambient = calcAmbient();
+	float3 directional = float3(0,0,0);
+	[unroll] for (int i = 0; i < MAX_DIRECTIONAL; i++) {
+		directional += calcDirectional(pos, normal, material, i, camera);
 	}
-//	return ambient * cbvLights.material.ambient.rgb;
-	return float3(1,1,1);
+	col = col * (ambient + directional);
+	return saturate(col);
 }
-*/

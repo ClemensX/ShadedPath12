@@ -95,7 +95,7 @@ void ObjectViewer::init()
 	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
-	if (false) {
+	if (true) {
 		/*
 		Remember to smooth normals for organic meshes like this worm,
 		otherwise you will see checkered display when lighting is on.
@@ -116,7 +116,7 @@ void ObjectViewer::init()
 		object.material.specIntensity = 10.0f; // no spec color
 		//object.drawNormals = true;
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"joint5_anim.b", "Joint");
 		xapp().objectStore.addObject(object, "Joint", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
 		object.setAction("Armature");
@@ -148,18 +148,6 @@ void ObjectViewer::init()
 	}
 	// draw lines for mesh:
 	Log(" object created ok, #vertices == " << object.mesh->vertices.size() << endl);
-	//vector<LineDef> ol;
-	//for (int i = 0; i < object.mesh->vertices.size() - 1; i++) {
-	//	LineDef l;
-	//	l.color = XMFLOAT4(0.5f, 0.5f, 0.0f, 1.0f);
-	//	l.start = object.mesh->vertices[i].Pos;
-	//	l.end = object.mesh->vertices[i+1].Pos;
-	//	ol.push_back(l);
-	//}
-	//linesEffect.add(ol);
-
-	//pathObject.setAction("Cube");
-	//pathObject.pathDescMove->pathMode = Path_Reverse;
 
 	CBVLights *lights = &xapp().lights.lights;
 
@@ -174,7 +162,7 @@ void ObjectViewer::init()
 	lights->directionalLights[0].pos = XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f);
 	lights->directionalLights[0].used_fill.x = 1.0f;
 
-	lights->directionalLights[1].color = XMFLOAT4(1.0f, 0.9f, 0.9f, 1.0f);
+	lights->directionalLights[1].color = XMFLOAT4(1.0f, 0.8f, 0.8f, 1.0f);
 	lights->directionalLights[1].pos = XMFLOAT4(0.0f, 0.5f, 1.0f, 1.0f);
 	lights->directionalLights[1].used_fill.x = 1.0f;
 }
