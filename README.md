@@ -8,6 +8,7 @@ Target Platform is Windows 10 (64 bit only).
 Some tools are Java based and use eclipse 4. This is mostly done for tools used in asset handling.
 
 # Versions
+* 0.0.5 - animation and collada import
 * 0.0.3 - added DDS texture support
 * 0.0.2 - added more examples and shaders: draw crosses and 3D text
 * 0.0.1 - line rendering for Oculus Rift
@@ -33,10 +34,20 @@ Running Sample1 now should give you lots of lines to see inside the rift.
 * **-disableDX11Debug** Used on systems that don't have DX11 Debug enabled. (Rarely used.)
 
 # Sample Apps
-* **TestTextures** Load 12 texture files and display each at 100 different world positions
+* **TestTextures** Load 12 texture files and display each at 83.000 different world positions (a total of 1 Million billboards)
 * **TestDotcross** Draw an increasing number of crosses. Single Thread Example that will show system degredation for generating and transmitting large amounts of objects to the GPU
 * **TestLinetext** Optimized Multi Thread example of a geometry shader for drawing 3D text. Displays FPS, some engine info and 1000 lines of text. Should render with more than 300 FPS on any system supporting the Oculus Rift (in window mode)
 * **Sample1** Draw a lot of lines to mark the floor and ceiling of the world, some lines of text and a coordinate system at the origin point.
+
+# Features for 0.0.5
+* Changed billboard shader so that they face camera at each pint in time, display 1.000.000 billboards
+* Animation: objects can be animated: Move object according to keyframe animation and/or render object with bone animation. Bone Animation is purely CPU bound, that means that for each frame all vertices need to be recomputed by the CPU and transferred to the GPU.
+* Lighting: ambient and directional lighting is in, see ObjectViewer for usage, use F1-F2 to change ambient lighting level when ObjectViewer runs
+* added another sample app: ObjectViewer. Used to display one of these objects:
+* **shaded2.b** big 3D text, stationary
+* **house4_anim.b** very simple house that moves along a predefined path
+* **joint5_anim.b** simple bone animated object, basically a bar with one joint in the middle
+* **worm5.b** animated worm, a more complex mesh and bone structure (8 bones, more than 10.000 vertices)
 
 # Features for 0.0.3
 Added a texture shader to load DDS files and push them to GPU. This shader uses the DX12 DDSTextureLoader from Microsofts MiniEngine. DDSTextureLoader was
