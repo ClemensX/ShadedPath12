@@ -34,13 +34,15 @@ Running Sample1 now should give you lots of lines to see inside the rift.
 * **-disableDX11Debug** Used on systems that don't have DX11 Debug enabled. (Rarely used.)
 
 # Sample Apps
+* **ObjectViewer** Display one of the predefined objects with animation and lighting
 * **TestTextures** Load 12 texture files and display each at 83.000 different world positions (a total of 1 Million billboards)
 * **TestDotcross** Draw an increasing number of crosses. Single Thread Example that will show system degredation for generating and transmitting large amounts of objects to the GPU
 * **TestLinetext** Optimized Multi Thread example of a geometry shader for drawing 3D text. Displays FPS, some engine info and 1000 lines of text. Should render with more than 300 FPS on any system supporting the Oculus Rift (in window mode)
 * **Sample1** Draw a lot of lines to mark the floor and ceiling of the world, some lines of text and a coordinate system at the origin point.
 
 # Features for 0.0.5
-* Changed billboard shader so that they face camera at each pint in time, display 1.000.000 billboards
+* Mesh creation: See section below
+* Changed billboard shader so that they face camera at each point in time, display 1.000.000 billboards
 * Animation: objects can be animated: Move object according to keyframe animation and/or render object with bone animation. Bone Animation is purely CPU bound, that means that for each frame all vertices need to be recomputed by the CPU and transferred to the GPU.
 * Lighting: ambient and directional lighting is in, see ObjectViewer for usage, use F1-F2 to change ambient lighting level when ObjectViewer runs
 * added another sample app: ObjectViewer. Used to display one of these objects:
@@ -72,3 +74,11 @@ More will definitely come.
 * Post Effect Shader: Copy rendered frame to texture - Rift support is built on top of this feature
 * Use Threads to update GPU data. See LinesEffect::update()
 * Synchronize GPU and CPU via Fences
+
+# Mesh creation
+Starting with version 0.0.5 the Java based Collada importer is provided. Meshes are created like this:
+
+* Use blender 2.7 and export as collada.
+* After installing JDK 8 compile the Java class 'ColladaImport' from folder tools\collada like so:
+* javac -d bin src\de\fehrprice\collada\ColladaImport.java
+* Use the provided **make.bat** to import all example collada files to custom .b and place the binary files in the data folder. Here they should be found at runtime
