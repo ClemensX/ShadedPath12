@@ -1,0 +1,1639 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 2.67.0 r57141</authoring_tool>
+    </contributor>
+    <created>2013-06-28T13:07:35</created>
+    <modified>2013-06-28T13:07:35</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_cameras>
+    <camera id="Camera-camera" name="Camera">
+      <optics>
+        <technique_common>
+          <perspective>
+            <xfov sid="xfov">49.13434</xfov>
+            <aspect_ratio>1.777778</aspect_ratio>
+            <znear sid="znear">0.1</znear>
+            <zfar sid="zfar">100</zfar>
+          </perspective>
+        </technique_common>
+      </optics>
+    </camera>
+  </library_cameras>
+  <library_lights>
+    <light id="Lamp-light" name="Spot">
+      <technique_common>
+        <point>
+          <color sid="color">1 1 1</color>
+          <constant_attenuation>1</constant_attenuation>
+          <linear_attenuation>0</linear_attenuation>
+          <quadratic_attenuation>0.00111109</quadratic_attenuation>
+        </point>
+      </technique_common>
+      <extra>
+        <technique profile="blender">
+          <adapt_thresh>0.000999987</adapt_thresh>
+          <area_shape>0</area_shape>
+          <area_size>1</area_size>
+          <area_sizey>1</area_sizey>
+          <area_sizez>1</area_sizez>
+          <atm_distance_factor>1</atm_distance_factor>
+          <atm_extinction_factor>1</atm_extinction_factor>
+          <atm_turbidity>2</atm_turbidity>
+          <att1>0</att1>
+          <att2>1</att2>
+          <backscattered_light>1</backscattered_light>
+          <bias>1</bias>
+          <blue>1</blue>
+          <buffers>1</buffers>
+          <bufflag>0</bufflag>
+          <bufsize>2880</bufsize>
+          <buftype>0</buftype>
+          <clipend>30.002</clipend>
+          <clipsta>1.000799</clipsta>
+          <compressthresh>0.04999995</compressthresh>
+          <dist sid="blender_dist">29.99998</dist>
+          <energy sid="blender_energy">1</energy>
+          <falloff_type>2</falloff_type>
+          <filtertype>0</filtertype>
+          <flag>0</flag>
+          <gamma sid="blender_gamma">1</gamma>
+          <green>1</green>
+          <halo_intensity sid="blnder_halo_intensity">1</halo_intensity>
+          <horizon_brightness>1</horizon_brightness>
+          <mode>8192</mode>
+          <ray_samp>1</ray_samp>
+          <ray_samp_method>1</ray_samp_method>
+          <ray_samp_type>0</ray_samp_type>
+          <ray_sampy>1</ray_sampy>
+          <ray_sampz>1</ray_sampz>
+          <red>1</red>
+          <samp>3</samp>
+          <shadhalostep>0</shadhalostep>
+          <shadow_b sid="blender_shadow_b">0</shadow_b>
+          <shadow_g sid="blender_shadow_g">0</shadow_g>
+          <shadow_r sid="blender_shadow_r">0</shadow_r>
+          <shadspotsize>45</shadspotsize>
+          <sky_colorspace>0</sky_colorspace>
+          <sky_exposure>1</sky_exposure>
+          <skyblendfac>1</skyblendfac>
+          <skyblendtype>1</skyblendtype>
+          <soft>3</soft>
+          <spotblend>0.15</spotblend>
+          <spotsize>75</spotsize>
+          <spread>1</spread>
+          <sun_brightness>1</sun_brightness>
+          <sun_effect_type>0</sun_effect_type>
+          <sun_intensity>1</sun_intensity>
+          <sun_size>1</sun_size>
+          <type>0</type>
+        </technique>
+      </extra>
+    </light>
+  </library_lights>
+  <library_images/>
+  <library_effects>
+    <effect id="Material-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color sid="diffuse">0.4830619 0.4830619 0.4830619 1</color>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.5 0.5 0.5 1</color>
+            </specular>
+            <shininess>
+              <float sid="shininess">50</float>
+            </shininess>
+            <index_of_refraction>
+              <float sid="index_of_refraction">1</float>
+            </index_of_refraction>
+          </phong>
+        </technique>
+        <extra>
+          <technique profile="GOOGLEEARTH">
+            <double_sided>1</double_sided>
+          </technique>
+        </extra>
+      </profile_COMMON>
+      <extra><technique profile="MAX3D"><double_sided>1</double_sided></technique></extra>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="Material-material" name="Material">
+      <instance_effect url="#Material-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="Cube-mesh" name="Cube">
+      <mesh>
+        <source id="Cube-mesh-positions">
+          <float_array id="Cube-mesh-positions-array" count="42">-2 -2.722894 -1.991841 -2.000001 -2.711957 2.008143 -1.999999 1.277091 -2.002779 -2 1.288028 1.997207 -2.666374 1.252557 2.66368 -2.666372 1.237975 -2.669048 -2.666373 4.157761 -0.01064825 4.220288 -2.711957 2.008145 4.886663 1.237975 -2.669045 4.886662 4.157761 -0.01064598 4.886661 1.252556 2.663681 4.220288 1.288028 1.997208 4.22029 1.27709 -2.002777 4.220289 -2.722895 -1.991841</float_array>
+          <technique_common>
+            <accessor source="#Cube-mesh-positions-array" count="14" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube-mesh-normals">
+          <float_array id="Cube-mesh-normals-array" count="72">-1 1.62742e-7 -3.58113e-7 -1 2.97207e-7 -2.98837e-7 1 -3.55997e-7 5.97022e-7 1 0 4.47306e-7 0.05587744 -0.9984339 0.002730071 -0.05587768 -0.998434 0.002730011 0 -0.9999963 0.002734303 -1.91645e-7 0.002734184 0.9999962 0 -0.002734482 -0.9999963 0 -0.9982811 0.05860745 0 -0.9985867 -0.05314719 2.60593e-7 0.6732341 -0.7394295 0 0.6772677 0.7357367 -1 2.3744e-7 -3.58278e-7 1 0 2.38418e-7 0.0558775 -0.998434 0.002730071 -0.0558778 -0.9984339 0.002730011 0 -0.9999963 0.002734422 -1.9154e-7 0.002734184 0.9999963 3.83186e-7 -0.002733945 -0.9999963 0 -0.9982811 0.05860757 0 -0.9985867 -0.05314731 3.35307e-7 0.673234 -0.7394295 -1.74244e-7 0.6772677 0.7357368</float_array>
+          <technique_common>
+            <accessor source="#Cube-mesh-normals-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube-mesh-map-0">
+          <float_array id="Cube-mesh-map-0-array" count="144">0.402002 0.998999 0.598999 0.802002 0.598999 0.998999 0.798999 0.801001 0.601001 0.801001 0.798999 0.998999 0.798999 0.601001 0.601001 0.601001 0.601001 0.798999 0.401001 0.997998 0.597998 0.801001 0.401001 0.801001 0.598999 0.398999 0.598999 0.201001 0.201001 0.201001 0.398999 0.401001 0.201001 0.401001 0.398999 0.798999 0.401001 0.198999 0.798999 0.198999 0.401001 0.001001 0.598999 0.798999 0.598999 0.401001 0.401001 0.798999 0.398999 0.198999 0.398999 0.001001 0.001001 0.198999 0.198999 0.601001 0.001001 0.601001 0.198999 0.998999 0.601001 0.598999 0.998999 0.598999 0.601001 0.401001 0.198999 0.201001 0.001001 0.201001 0.001001 0.598999 0.601001 0.398999 0.998999 0.398999 0.601001 0.201001 0.601001 0.801001 0.601001 0.998999 0.798999 0.998999 0.798999 0.798999 0.798999 0.601001 0.601001 0.798999 0.201001 0.398999 0.598999 0.398999 0.201001 0.201001 0.201001 0.401001 0.201001 0.798999 0.398999 0.798999 0.798999 0.198999 0.798999 0.001001 0.401001 0.001001 0.598999 0.401001 0.401001 0.401001 0.401001 0.798999 0.398999 0.001001 0.001001 0.001001 0.001001 0.198999 0.001001 0.601001 0.001001 0.998999 0.198999 0.998999 0.998999 0.598999 0.998999 0.401001 0.601001 0.401001 0.198999 0.598999 0.198999 0.201001 0.001001 0.598999 0.998999 0.398999 0.998999 0.201001 0.601001 0.201001</float_array>
+          <technique_common>
+            <accessor source="#Cube-mesh-map-0-array" count="72" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube-mesh-colors">
+          <float_array id="Cube-mesh-colors-array" count="216">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#Cube-mesh-colors-array" count="72" stride="3">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Cube-mesh-vertices">
+          <input semantic="POSITION" source="#Cube-mesh-positions"/>
+        </vertices>
+        <polylist material="Material-material" count="24">
+          <input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube-mesh-map-0" offset="2" set="0"/>
+          <input semantic="COLOR" source="#Cube-mesh-colors" offset="3"/>
+          <vcount>3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 </vcount>
+          <p>5 0 0 0 4 0 1 1 6 0 2 2 0 1 3 3 1 1 4 4 2 1 5 5 13 2 6 6 12 2 7 7 11 2 8 8 10 3 9 9 8 3 10 10 9 3 11 11 3 4 12 12 4 4 13 13 5 4 14 14 10 5 15 15 11 5 16 16 8 5 17 17 0 6 18 18 13 6 19 19 1 6 20 20 1 7 21 21 7 7 22 22 3 7 23 23 0 8 24 24 2 8 25 25 13 8 26 26 2 9 27 27 5 9 28 28 12 9 29 29 3 10 30 30 11 10 31 31 4 10 32 32 5 11 33 33 6 11 34 34 9 11 35 35 4 12 36 36 10 12 37 37 6 12 38 38 1 13 39 39 3 13 40 40 2 13 41 41 7 14 42 42 13 14 43 43 11 14 44 44 2 15 45 45 3 15 46 46 5 15 47 47 11 16 48 48 12 16 49 49 8 16 50 50 13 17 51 51 7 17 52 52 1 17 53 53 7 18 54 54 11 18 55 55 3 18 56 56 2 19 57 57 12 19 58 58 13 19 59 59 5 20 60 60 8 20 61 61 12 20 62 62 11 21 63 63 10 21 64 64 4 21 65 65 8 22 66 66 5 22 67 67 9 22 68 68 10 23 69 69 9 23 70 70 6 23 71 71</p>
+        </polylist>
+      </mesh>
+      <extra><technique profile="MAYA"><double_sided>1</double_sided></technique></extra>
+    </geometry>
+  </library_geometries>
+  <library_animations>
+    <animation id="Camera_location_X">
+      <source id="Camera_location_X-input">
+        <float_array id="Camera_location_X-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Camera_location_X-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_location_X-output">
+        <float_array id="Camera_location_X-output-array" count="4">7.481132 7.481132 7.481132 -1.554959</float_array>
+        <technique_common>
+          <accessor source="#Camera_location_X-output-array" count="4" stride="1">
+            <param name="X" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_location_X-interpolation">
+        <Name_array id="Camera_location_X-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Camera_location_X-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_location_X-intangent">
+        <float_array id="Camera_location_X-intangent-array" count="8">-0.6090192 7.481132 1.057648 7.481132 2.471697 7.481132 4.493188 -1.554959</float_array>
+        <technique_common>
+          <accessor source="#Camera_location_X-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_location_X-outtangent">
+        <float_array id="Camera_location_X-outtangent-array" count="8">0.6923525 7.481132 2.196348 7.481132 3.931607 7.481132 6.423479 -1.554959</float_array>
+        <technique_common>
+          <accessor source="#Camera_location_X-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Camera_location_X-sampler">
+        <input semantic="INPUT" source="#Camera_location_X-input"/>
+        <input semantic="OUTPUT" source="#Camera_location_X-output"/>
+        <input semantic="INTERPOLATION" source="#Camera_location_X-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Camera_location_X-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Camera_location_X-outtangent"/>
+      </sampler>
+      <channel source="#Camera_location_X-sampler" target="Camera/location.X"/>
+    </animation>
+    <animation id="Camera_location_Y">
+      <source id="Camera_location_Y-input">
+        <float_array id="Camera_location_Y-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Camera_location_Y-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_location_Y-output">
+        <float_array id="Camera_location_Y-output-array" count="4">-6.50764 -6.50764 -5.170894 -17.26533</float_array>
+        <technique_common>
+          <accessor source="#Camera_location_Y-output-array" count="4" stride="1">
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_location_Y-interpolation">
+        <Name_array id="Camera_location_Y-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Camera_location_Y-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_location_Y-intangent">
+        <float_array id="Camera_location_Y-intangent-array" count="8">-0.6090192 -6.50764 1.057809 -6.50764 2.471816 -5.170894 4.501549 -17.26533</float_array>
+        <technique_common>
+          <accessor source="#Camera_location_Y-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_location_Y-outtangent">
+        <float_array id="Camera_location_Y-outtangent-array" count="8">0.6923525 -6.50764 2.196227 -6.50764 3.931368 -5.170894 6.415118 -17.26533</float_array>
+        <technique_common>
+          <accessor source="#Camera_location_Y-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Camera_location_Y-sampler">
+        <input semantic="INPUT" source="#Camera_location_Y-input"/>
+        <input semantic="OUTPUT" source="#Camera_location_Y-output"/>
+        <input semantic="INTERPOLATION" source="#Camera_location_Y-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Camera_location_Y-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Camera_location_Y-outtangent"/>
+      </sampler>
+      <channel source="#Camera_location_Y-sampler" target="Camera/location.Y"/>
+    </animation>
+    <animation id="Camera_location_Z">
+      <source id="Camera_location_Z-input">
+        <float_array id="Camera_location_Z-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Camera_location_Z-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_location_Z-output">
+        <float_array id="Camera_location_Z-output-array" count="4">5.343665 5.343665 6.69046 3.423458</float_array>
+        <technique_common>
+          <accessor source="#Camera_location_Z-output-array" count="4" stride="1">
+            <param name="Z" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_location_Z-interpolation">
+        <Name_array id="Camera_location_Z-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Camera_location_Z-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_location_Z-intangent">
+        <float_array id="Camera_location_Z-intangent-array" count="8">-0.6090192 5.343665 1.057811 5.343665 2.470324 6.69046 4.483748 3.423458</float_array>
+        <technique_common>
+          <accessor source="#Camera_location_Z-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_location_Z-outtangent">
+        <float_array id="Camera_location_Z-outtangent-array" count="8">0.6923525 5.343665 2.196225 5.343665 3.934351 6.69046 6.432919 3.423458</float_array>
+        <technique_common>
+          <accessor source="#Camera_location_Z-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Camera_location_Z-sampler">
+        <input semantic="INPUT" source="#Camera_location_Z-input"/>
+        <input semantic="OUTPUT" source="#Camera_location_Z-output"/>
+        <input semantic="INTERPOLATION" source="#Camera_location_Z-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Camera_location_Z-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Camera_location_Z-outtangent"/>
+      </sampler>
+      <channel source="#Camera_location_Z-sampler" target="Camera/location.Z"/>
+    </animation>
+    <animation id="Camera_rotation_euler_X">
+      <source id="Camera_rotation_euler_X-input">
+        <float_array id="Camera_rotation_euler_X-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_X-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_rotation_euler_X-output">
+        <float_array id="Camera_rotation_euler_X-output-array" count="4">63.55929 63.55929 46.06299 -82.2158</float_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_X-output-array" count="4" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_rotation_euler_X-interpolation">
+        <Name_array id="Camera_rotation_euler_X-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_X-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_rotation_euler_X-intangent">
+        <float_array id="Camera_rotation_euler_X-intangent-array" count="8">-0.6090192 63.55929 1.057656 63.55929 2.470456 61.99426 4.482983 -82.2158</float_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_X-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_rotation_euler_X-outtangent">
+        <float_array id="Camera_rotation_euler_X-outtangent-array" count="8">0.6923525 63.55929 2.196341 63.55929 3.934087 14.20047 6.433683 -82.2158</float_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_X-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Camera_rotation_euler_X-sampler">
+        <input semantic="INPUT" source="#Camera_rotation_euler_X-input"/>
+        <input semantic="OUTPUT" source="#Camera_rotation_euler_X-output"/>
+        <input semantic="INTERPOLATION" source="#Camera_rotation_euler_X-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Camera_rotation_euler_X-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Camera_rotation_euler_X-outtangent"/>
+      </sampler>
+      <channel source="#Camera_rotation_euler_X-sampler" target="Camera/rotationX.ANGLE"/>
+    </animation>
+    <animation id="Camera_rotation_euler_Y">
+      <source id="Camera_rotation_euler_Y-input">
+        <float_array id="Camera_rotation_euler_Y-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_Y-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_rotation_euler_Y-output">
+        <float_array id="Camera_rotation_euler_Y-output-array" count="4">0.619768 0.619768 18.22576 -46.84813</float_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_Y-output-array" count="4" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_rotation_euler_Y-interpolation">
+        <Name_array id="Camera_rotation_euler_Y-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_Y-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_rotation_euler_Y-intangent">
+        <float_array id="Camera_rotation_euler_Y-intangent-array" count="8">-0.6090192 0.619768 1.057656 0.619768 2.470324 18.22576 4.48248 -46.84813</float_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_Y-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_rotation_euler_Y-outtangent">
+        <float_array id="Camera_rotation_euler_Y-outtangent-array" count="8">0.6923525 0.619768 2.196341 0.619768 3.934353 18.22576 6.434187 -46.84813</float_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_Y-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Camera_rotation_euler_Y-sampler">
+        <input semantic="INPUT" source="#Camera_rotation_euler_Y-input"/>
+        <input semantic="OUTPUT" source="#Camera_rotation_euler_Y-output"/>
+        <input semantic="INTERPOLATION" source="#Camera_rotation_euler_Y-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Camera_rotation_euler_Y-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Camera_rotation_euler_Y-outtangent"/>
+      </sampler>
+      <channel source="#Camera_rotation_euler_Y-sampler" target="Camera/rotationY.ANGLE"/>
+    </animation>
+    <animation id="Camera_rotation_euler_Z">
+      <source id="Camera_rotation_euler_Z-input">
+        <float_array id="Camera_rotation_euler_Z-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_Z-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_rotation_euler_Z-output">
+        <float_array id="Camera_rotation_euler_Z-output-array" count="4">46.69194 46.69194 43.77124 106.1105</float_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_Z-output-array" count="4" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_rotation_euler_Z-interpolation">
+        <Name_array id="Camera_rotation_euler_Z-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_Z-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_rotation_euler_Z-intangent">
+        <float_array id="Camera_rotation_euler_Z-intangent-array" count="8">-0.6090192 46.69194 1.057648 46.69194 2.470335 43.77124 4.482465 106.1105</float_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_Z-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_rotation_euler_Z-outtangent">
+        <float_array id="Camera_rotation_euler_Z-outtangent-array" count="8">0.6923525 46.69194 2.196347 46.69194 3.934329 43.77124 6.434202 106.1105</float_array>
+        <technique_common>
+          <accessor source="#Camera_rotation_euler_Z-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Camera_rotation_euler_Z-sampler">
+        <input semantic="INPUT" source="#Camera_rotation_euler_Z-input"/>
+        <input semantic="OUTPUT" source="#Camera_rotation_euler_Z-output"/>
+        <input semantic="INTERPOLATION" source="#Camera_rotation_euler_Z-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Camera_rotation_euler_Z-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Camera_rotation_euler_Z-outtangent"/>
+      </sampler>
+      <channel source="#Camera_rotation_euler_Z-sampler" target="Camera/rotationZ.ANGLE"/>
+    </animation>
+    <animation id="Camera_scale_X">
+      <source id="Camera_scale_X-input">
+        <float_array id="Camera_scale_X-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_X-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_X-output">
+        <float_array id="Camera_scale_X-output-array" count="4">1 1 1 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_X-output-array" count="4" stride="1">
+            <param name="X" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_X-interpolation">
+        <Name_array id="Camera_scale_X-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Camera_scale_X-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_X-intangent">
+        <float_array id="Camera_scale_X-intangent-array" count="8">-0.6090192 1 1.057648 1 2.470319 1 4.482305 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_X-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_X-outtangent">
+        <float_array id="Camera_scale_X-outtangent-array" count="8">0.6923525 1 2.196348 1 3.934362 1 6.434362 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_X-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Camera_scale_X-sampler">
+        <input semantic="INPUT" source="#Camera_scale_X-input"/>
+        <input semantic="OUTPUT" source="#Camera_scale_X-output"/>
+        <input semantic="INTERPOLATION" source="#Camera_scale_X-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Camera_scale_X-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Camera_scale_X-outtangent"/>
+      </sampler>
+      <channel source="#Camera_scale_X-sampler" target="Camera/scale.X"/>
+    </animation>
+    <animation id="Camera_scale_Y">
+      <source id="Camera_scale_Y-input">
+        <float_array id="Camera_scale_Y-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Y-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Y-output">
+        <float_array id="Camera_scale_Y-output-array" count="4">1 1 1 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Y-output-array" count="4" stride="1">
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Y-interpolation">
+        <Name_array id="Camera_scale_Y-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Y-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Y-intangent">
+        <float_array id="Camera_scale_Y-intangent-array" count="8">-0.6090192 1 1.057648 1 2.470319 1 4.482305 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Y-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Y-outtangent">
+        <float_array id="Camera_scale_Y-outtangent-array" count="8">0.6923525 1 2.196348 1 3.934362 1 6.434362 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Y-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Camera_scale_Y-sampler">
+        <input semantic="INPUT" source="#Camera_scale_Y-input"/>
+        <input semantic="OUTPUT" source="#Camera_scale_Y-output"/>
+        <input semantic="INTERPOLATION" source="#Camera_scale_Y-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Camera_scale_Y-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Camera_scale_Y-outtangent"/>
+      </sampler>
+      <channel source="#Camera_scale_Y-sampler" target="Camera/scale.Y"/>
+    </animation>
+    <animation id="Camera_scale_Z">
+      <source id="Camera_scale_Z-input">
+        <float_array id="Camera_scale_Z-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Z-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Z-output">
+        <float_array id="Camera_scale_Z-output-array" count="4">1 1 1 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Z-output-array" count="4" stride="1">
+            <param name="Z" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Z-interpolation">
+        <Name_array id="Camera_scale_Z-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Z-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Z-intangent">
+        <float_array id="Camera_scale_Z-intangent-array" count="8">-0.6090192 1 1.057648 1 2.470319 1 4.482305 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Z-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Camera_scale_Z-outtangent">
+        <float_array id="Camera_scale_Z-outtangent-array" count="8">0.6923525 1 2.196348 1 3.934362 1 6.434362 1</float_array>
+        <technique_common>
+          <accessor source="#Camera_scale_Z-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Camera_scale_Z-sampler">
+        <input semantic="INPUT" source="#Camera_scale_Z-input"/>
+        <input semantic="OUTPUT" source="#Camera_scale_Z-output"/>
+        <input semantic="INTERPOLATION" source="#Camera_scale_Z-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Camera_scale_Z-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Camera_scale_Z-outtangent"/>
+      </sampler>
+      <channel source="#Camera_scale_Z-sampler" target="Camera/scale.Z"/>
+    </animation>
+    <animation id="Lamp_location_X">
+      <source id="Lamp_location_X-input">
+        <float_array id="Lamp_location_X-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Lamp_location_X-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_location_X-output">
+        <float_array id="Lamp_location_X-output-array" count="4">4.076245 4.076245 4.076245 2.624407</float_array>
+        <technique_common>
+          <accessor source="#Lamp_location_X-output-array" count="4" stride="1">
+            <param name="X" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_location_X-interpolation">
+        <Name_array id="Lamp_location_X-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Lamp_location_X-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_location_X-intangent">
+        <float_array id="Lamp_location_X-intangent-array" count="8">-0.6090192 4.076245 1.057648 4.076245 2.470355 4.076245 4.48259 2.624407</float_array>
+        <technique_common>
+          <accessor source="#Lamp_location_X-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_location_X-outtangent">
+        <float_array id="Lamp_location_X-outtangent-array" count="8">0.6923525 4.076245 2.196348 4.076245 3.934291 4.076245 6.434076 2.624407</float_array>
+        <technique_common>
+          <accessor source="#Lamp_location_X-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Lamp_location_X-sampler">
+        <input semantic="INPUT" source="#Lamp_location_X-input"/>
+        <input semantic="OUTPUT" source="#Lamp_location_X-output"/>
+        <input semantic="INTERPOLATION" source="#Lamp_location_X-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Lamp_location_X-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Lamp_location_X-outtangent"/>
+      </sampler>
+      <channel source="#Lamp_location_X-sampler" target="Lamp/location.X"/>
+    </animation>
+    <animation id="Lamp_location_Y">
+      <source id="Lamp_location_Y-input">
+        <float_array id="Lamp_location_Y-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Lamp_location_Y-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_location_Y-output">
+        <float_array id="Lamp_location_Y-output-array" count="4">1.005454 1.005454 1.893373 -10.20106</float_array>
+        <technique_common>
+          <accessor source="#Lamp_location_Y-output-array" count="4" stride="1">
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_location_Y-interpolation">
+        <Name_array id="Lamp_location_Y-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Lamp_location_Y-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_location_Y-intangent">
+        <float_array id="Lamp_location_Y-intangent-array" count="8">-0.6090192 1.005454 1.057719 1.005454 2.472113 1.893373 4.501549 -10.20106</float_array>
+        <technique_common>
+          <accessor source="#Lamp_location_Y-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_location_Y-outtangent">
+        <float_array id="Lamp_location_Y-outtangent-array" count="8">0.6923525 1.005454 2.196294 1.005454 3.930773 1.893373 6.415118 -10.20106</float_array>
+        <technique_common>
+          <accessor source="#Lamp_location_Y-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Lamp_location_Y-sampler">
+        <input semantic="INPUT" source="#Lamp_location_Y-input"/>
+        <input semantic="OUTPUT" source="#Lamp_location_Y-output"/>
+        <input semantic="INTERPOLATION" source="#Lamp_location_Y-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Lamp_location_Y-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Lamp_location_Y-outtangent"/>
+      </sampler>
+      <channel source="#Lamp_location_Y-sampler" target="Lamp/location.Y"/>
+    </animation>
+    <animation id="Lamp_location_Z">
+      <source id="Lamp_location_Z-input">
+        <float_array id="Lamp_location_Z-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Lamp_location_Z-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_location_Z-output">
+        <float_array id="Lamp_location_Z-output-array" count="4">5.903862 5.903862 4.071964 2.432161</float_array>
+        <technique_common>
+          <accessor source="#Lamp_location_Z-output-array" count="4" stride="1">
+            <param name="Z" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_location_Z-interpolation">
+        <Name_array id="Lamp_location_Z-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Lamp_location_Z-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_location_Z-intangent">
+        <float_array id="Lamp_location_Z-intangent-array" count="8">-0.6090192 5.903862 1.05795 5.903862 2.470795 4.589106 4.482669 2.432161</float_array>
+        <technique_common>
+          <accessor source="#Lamp_location_Z-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_location_Z-outtangent">
+        <float_array id="Lamp_location_Z-outtangent-array" count="8">0.6923525 5.903862 2.19612 5.903862 3.93341 3.03768 6.433998 2.432161</float_array>
+        <technique_common>
+          <accessor source="#Lamp_location_Z-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Lamp_location_Z-sampler">
+        <input semantic="INPUT" source="#Lamp_location_Z-input"/>
+        <input semantic="OUTPUT" source="#Lamp_location_Z-output"/>
+        <input semantic="INTERPOLATION" source="#Lamp_location_Z-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Lamp_location_Z-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Lamp_location_Z-outtangent"/>
+      </sampler>
+      <channel source="#Lamp_location_Z-sampler" target="Lamp/location.Z"/>
+    </animation>
+    <animation id="Lamp_rotation_euler_X">
+      <source id="Lamp_rotation_euler_X-input">
+        <float_array id="Lamp_rotation_euler_X-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_X-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_rotation_euler_X-output">
+        <float_array id="Lamp_rotation_euler_X-output-array" count="4">37.26105 37.26105 45.05662 -87.63031</float_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_X-output-array" count="4" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_rotation_euler_X-interpolation">
+        <Name_array id="Lamp_rotation_euler_X-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_X-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_rotation_euler_X-intangent">
+        <float_array id="Lamp_rotation_euler_X-intangent-array" count="8">-0.6090192 37.26105 1.057649 37.26105 2.47039 45.05662 4.483031 -87.63031</float_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_X-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_rotation_euler_X-outtangent">
+        <float_array id="Lamp_rotation_euler_X-outtangent-array" count="8">0.6923525 37.26105 2.196346 37.26105 3.934221 45.05662 6.433636 -87.63031</float_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_X-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Lamp_rotation_euler_X-sampler">
+        <input semantic="INPUT" source="#Lamp_rotation_euler_X-input"/>
+        <input semantic="OUTPUT" source="#Lamp_rotation_euler_X-output"/>
+        <input semantic="INTERPOLATION" source="#Lamp_rotation_euler_X-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Lamp_rotation_euler_X-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Lamp_rotation_euler_X-outtangent"/>
+      </sampler>
+      <channel source="#Lamp_rotation_euler_X-sampler" target="Lamp/rotationX.ANGLE"/>
+    </animation>
+    <animation id="Lamp_rotation_euler_Y">
+      <source id="Lamp_rotation_euler_Y-input">
+        <float_array id="Lamp_rotation_euler_Y-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_Y-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_rotation_euler_Y-output">
+        <float_array id="Lamp_rotation_euler_Y-output-array" count="4">3.163707 3.163707 26.60481 -3.248501</float_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_Y-output-array" count="4" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_rotation_euler_Y-interpolation">
+        <Name_array id="Lamp_rotation_euler_Y-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_Y-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_rotation_euler_Y-intangent">
+        <float_array id="Lamp_rotation_euler_Y-intangent-array" count="8">-0.6090192 3.163707 1.057663 3.163707 2.47032 26.60481 4.482341 -3.248501</float_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_Y-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_rotation_euler_Y-outtangent">
+        <float_array id="Lamp_rotation_euler_Y-outtangent-array" count="8">0.6923525 3.163707 2.196336 3.163707 3.934359 26.60481 6.434326 -3.248501</float_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_Y-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Lamp_rotation_euler_Y-sampler">
+        <input semantic="INPUT" source="#Lamp_rotation_euler_Y-input"/>
+        <input semantic="OUTPUT" source="#Lamp_rotation_euler_Y-output"/>
+        <input semantic="INTERPOLATION" source="#Lamp_rotation_euler_Y-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Lamp_rotation_euler_Y-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Lamp_rotation_euler_Y-outtangent"/>
+      </sampler>
+      <channel source="#Lamp_rotation_euler_Y-sampler" target="Lamp/rotationY.ANGLE"/>
+    </animation>
+    <animation id="Lamp_rotation_euler_Z">
+      <source id="Lamp_rotation_euler_Z-input">
+        <float_array id="Lamp_rotation_euler_Z-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_Z-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_rotation_euler_Z-output">
+        <float_array id="Lamp_rotation_euler_Z-output-array" count="4">106.9363 106.9363 108.9843 57.87007</float_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_Z-output-array" count="4" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_rotation_euler_Z-interpolation">
+        <Name_array id="Lamp_rotation_euler_Z-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_Z-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_rotation_euler_Z-intangent">
+        <float_array id="Lamp_rotation_euler_Z-intangent-array" count="8">-0.6090192 106.9363 1.057648 106.9363 2.47033 108.9843 4.482412 57.87007</float_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_Z-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_rotation_euler_Z-outtangent">
+        <float_array id="Lamp_rotation_euler_Z-outtangent-array" count="8">0.6923525 106.9363 2.196348 106.9363 3.934339 108.9843 6.434254 57.87007</float_array>
+        <technique_common>
+          <accessor source="#Lamp_rotation_euler_Z-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Lamp_rotation_euler_Z-sampler">
+        <input semantic="INPUT" source="#Lamp_rotation_euler_Z-input"/>
+        <input semantic="OUTPUT" source="#Lamp_rotation_euler_Z-output"/>
+        <input semantic="INTERPOLATION" source="#Lamp_rotation_euler_Z-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Lamp_rotation_euler_Z-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Lamp_rotation_euler_Z-outtangent"/>
+      </sampler>
+      <channel source="#Lamp_rotation_euler_Z-sampler" target="Lamp/rotationZ.ANGLE"/>
+    </animation>
+    <animation id="Lamp_scale_X">
+      <source id="Lamp_scale_X-input">
+        <float_array id="Lamp_scale_X-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_X-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_scale_X-output">
+        <float_array id="Lamp_scale_X-output-array" count="4">1 1 1 1</float_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_X-output-array" count="4" stride="1">
+            <param name="X" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_scale_X-interpolation">
+        <Name_array id="Lamp_scale_X-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_X-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_scale_X-intangent">
+        <float_array id="Lamp_scale_X-intangent-array" count="8">-0.6090192 1 1.057648 1 2.470319 1 4.482305 1</float_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_X-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_scale_X-outtangent">
+        <float_array id="Lamp_scale_X-outtangent-array" count="8">0.6923525 1 2.196348 1 3.934362 1 6.434362 1</float_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_X-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Lamp_scale_X-sampler">
+        <input semantic="INPUT" source="#Lamp_scale_X-input"/>
+        <input semantic="OUTPUT" source="#Lamp_scale_X-output"/>
+        <input semantic="INTERPOLATION" source="#Lamp_scale_X-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Lamp_scale_X-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Lamp_scale_X-outtangent"/>
+      </sampler>
+      <channel source="#Lamp_scale_X-sampler" target="Lamp/scale.X"/>
+    </animation>
+    <animation id="Lamp_scale_Y">
+      <source id="Lamp_scale_Y-input">
+        <float_array id="Lamp_scale_Y-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_Y-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_scale_Y-output">
+        <float_array id="Lamp_scale_Y-output-array" count="4">1 1 1 1</float_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_Y-output-array" count="4" stride="1">
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_scale_Y-interpolation">
+        <Name_array id="Lamp_scale_Y-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_Y-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_scale_Y-intangent">
+        <float_array id="Lamp_scale_Y-intangent-array" count="8">-0.6090192 1 1.057648 1 2.470319 1 4.482305 1</float_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_Y-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_scale_Y-outtangent">
+        <float_array id="Lamp_scale_Y-outtangent-array" count="8">0.6923525 1 2.196348 1 3.934362 1 6.434362 1</float_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_Y-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Lamp_scale_Y-sampler">
+        <input semantic="INPUT" source="#Lamp_scale_Y-input"/>
+        <input semantic="OUTPUT" source="#Lamp_scale_Y-output"/>
+        <input semantic="INTERPOLATION" source="#Lamp_scale_Y-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Lamp_scale_Y-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Lamp_scale_Y-outtangent"/>
+      </sampler>
+      <channel source="#Lamp_scale_Y-sampler" target="Lamp/scale.Y"/>
+    </animation>
+    <animation id="Lamp_scale_Z">
+      <source id="Lamp_scale_Z-input">
+        <float_array id="Lamp_scale_Z-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_Z-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_scale_Z-output">
+        <float_array id="Lamp_scale_Z-output-array" count="4">1 1 1 1</float_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_Z-output-array" count="4" stride="1">
+            <param name="Z" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_scale_Z-interpolation">
+        <Name_array id="Lamp_scale_Z-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_Z-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_scale_Z-intangent">
+        <float_array id="Lamp_scale_Z-intangent-array" count="8">-0.6090192 1 1.057648 1 2.470319 1 4.482305 1</float_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_Z-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Lamp_scale_Z-outtangent">
+        <float_array id="Lamp_scale_Z-outtangent-array" count="8">0.6923525 1 2.196348 1 3.934362 1 6.434362 1</float_array>
+        <technique_common>
+          <accessor source="#Lamp_scale_Z-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Lamp_scale_Z-sampler">
+        <input semantic="INPUT" source="#Lamp_scale_Z-input"/>
+        <input semantic="OUTPUT" source="#Lamp_scale_Z-output"/>
+        <input semantic="INTERPOLATION" source="#Lamp_scale_Z-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Lamp_scale_Z-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Lamp_scale_Z-outtangent"/>
+      </sampler>
+      <channel source="#Lamp_scale_Z-sampler" target="Lamp/scale.Z"/>
+    </animation>
+    <animation id="Cube_location_X">
+      <source id="Cube_location_X-input">
+        <float_array id="Cube_location_X-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Cube_location_X-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_location_X-output">
+        <float_array id="Cube_location_X-output-array" count="4">0 0 0 9.036091</float_array>
+        <technique_common>
+          <accessor source="#Cube_location_X-output-array" count="4" stride="1">
+            <param name="X" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_location_X-interpolation">
+        <Name_array id="Cube_location_X-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Cube_location_X-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_location_X-intangent">
+        <float_array id="Cube_location_X-intangent-array" count="8">-0.6090192 0 1.057648 0 2.471697 0 4.493188 9.036091</float_array>
+        <technique_common>
+          <accessor source="#Cube_location_X-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_location_X-outtangent">
+        <float_array id="Cube_location_X-outtangent-array" count="8">0.6923525 0 2.196348 0 3.931607 0 6.423479 9.036091</float_array>
+        <technique_common>
+          <accessor source="#Cube_location_X-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Cube_location_X-sampler">
+        <input semantic="INPUT" source="#Cube_location_X-input"/>
+        <input semantic="OUTPUT" source="#Cube_location_X-output"/>
+        <input semantic="INTERPOLATION" source="#Cube_location_X-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Cube_location_X-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Cube_location_X-outtangent"/>
+      </sampler>
+      <channel source="#Cube_location_X-sampler" target="Cube/location.X"/>
+    </animation>
+    <animation id="Cube_location_Y">
+      <source id="Cube_location_Y-input">
+        <float_array id="Cube_location_Y-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Cube_location_Y-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_location_Y-output">
+        <float_array id="Cube_location_Y-output-array" count="4">0 0 -1.47869 -13.57313</float_array>
+        <technique_common>
+          <accessor source="#Cube_location_Y-output-array" count="4" stride="1">
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_location_Y-interpolation">
+        <Name_array id="Cube_location_Y-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Cube_location_Y-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_location_Y-intangent">
+        <float_array id="Cube_location_Y-intangent-array" count="8">-0.6090192 0 1.057845 0 2.474113 -0.02101099 4.501549 -13.57313</float_array>
+        <technique_common>
+          <accessor source="#Cube_location_Y-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_location_Y-outtangent">
+        <float_array id="Cube_location_Y-outtangent-array" count="8">0.6923525 0 2.1962 0 3.926774 -4.394047 6.415118 -13.57313</float_array>
+        <technique_common>
+          <accessor source="#Cube_location_Y-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Cube_location_Y-sampler">
+        <input semantic="INPUT" source="#Cube_location_Y-input"/>
+        <input semantic="OUTPUT" source="#Cube_location_Y-output"/>
+        <input semantic="INTERPOLATION" source="#Cube_location_Y-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Cube_location_Y-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Cube_location_Y-outtangent"/>
+      </sampler>
+      <channel source="#Cube_location_Y-sampler" target="Cube/location.Y"/>
+    </animation>
+    <animation id="Cube_location_Z">
+      <source id="Cube_location_Z-input">
+        <float_array id="Cube_location_Z-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Cube_location_Z-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_location_Z-output">
+        <float_array id="Cube_location_Z-output-array" count="4">0 0 -0.8773508 2.389651</float_array>
+        <technique_common>
+          <accessor source="#Cube_location_Z-output-array" count="4" stride="1">
+            <param name="Z" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_location_Z-interpolation">
+        <Name_array id="Cube_location_Z-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Cube_location_Z-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_location_Z-intangent">
+        <float_array id="Cube_location_Z-intangent-array" count="8">-0.6090192 0 1.057717 0 2.470358 -0.8773508 4.483748 2.389651</float_array>
+        <technique_common>
+          <accessor source="#Cube_location_Z-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_location_Z-outtangent">
+        <float_array id="Cube_location_Z-outtangent-array" count="8">0.6923525 0 2.196295 0 3.934284 -0.8773508 6.432919 2.389651</float_array>
+        <technique_common>
+          <accessor source="#Cube_location_Z-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Cube_location_Z-sampler">
+        <input semantic="INPUT" source="#Cube_location_Z-input"/>
+        <input semantic="OUTPUT" source="#Cube_location_Z-output"/>
+        <input semantic="INTERPOLATION" source="#Cube_location_Z-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Cube_location_Z-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Cube_location_Z-outtangent"/>
+      </sampler>
+      <channel source="#Cube_location_Z-sampler" target="Cube/location.Z"/>
+    </animation>
+    <animation id="Cube_rotation_euler_X">
+      <source id="Cube_rotation_euler_X-input">
+        <float_array id="Cube_rotation_euler_X-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_X-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_rotation_euler_X-output">
+        <float_array id="Cube_rotation_euler_X-output-array" count="4">0 0 -24.60236 -24.60236</float_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_X-output-array" count="4" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_rotation_euler_X-interpolation">
+        <Name_array id="Cube_rotation_euler_X-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_X-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_rotation_euler_X-intangent">
+        <float_array id="Cube_rotation_euler_X-intangent-array" count="8">-0.6090192 0 1.057664 0 2.470331 -24.60236 4.482305 -24.60236</float_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_X-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_rotation_euler_X-outtangent">
+        <float_array id="Cube_rotation_euler_X-outtangent-array" count="8">0.6923525 0 2.196335 0 3.934337 -24.60236 6.434362 -24.60236</float_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_X-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Cube_rotation_euler_X-sampler">
+        <input semantic="INPUT" source="#Cube_rotation_euler_X-input"/>
+        <input semantic="OUTPUT" source="#Cube_rotation_euler_X-output"/>
+        <input semantic="INTERPOLATION" source="#Cube_rotation_euler_X-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Cube_rotation_euler_X-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Cube_rotation_euler_X-outtangent"/>
+      </sampler>
+      <channel source="#Cube_rotation_euler_X-sampler" target="Cube/rotationX.ANGLE"/>
+    </animation>
+    <animation id="Cube_rotation_euler_Y">
+      <source id="Cube_rotation_euler_Y-input">
+        <float_array id="Cube_rotation_euler_Y-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_Y-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_rotation_euler_Y-output">
+        <float_array id="Cube_rotation_euler_Y-output-array" count="4">0 0 0 -129.0949</float_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_Y-output-array" count="4" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_rotation_euler_Y-interpolation">
+        <Name_array id="Cube_rotation_euler_Y-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_Y-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_rotation_euler_Y-intangent">
+        <float_array id="Cube_rotation_euler_Y-intangent-array" count="8">-0.6090192 0 1.057648 0 2.470405 0 4.482992 -129.0949</float_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_Y-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_rotation_euler_Y-outtangent">
+        <float_array id="Cube_rotation_euler_Y-outtangent-array" count="8">0.6923525 0 2.196348 0 3.93419 0 6.433674 -129.0949</float_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_Y-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Cube_rotation_euler_Y-sampler">
+        <input semantic="INPUT" source="#Cube_rotation_euler_Y-input"/>
+        <input semantic="OUTPUT" source="#Cube_rotation_euler_Y-output"/>
+        <input semantic="INTERPOLATION" source="#Cube_rotation_euler_Y-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Cube_rotation_euler_Y-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Cube_rotation_euler_Y-outtangent"/>
+      </sampler>
+      <channel source="#Cube_rotation_euler_Y-sampler" target="Cube/rotationY.ANGLE"/>
+    </animation>
+    <animation id="Cube_rotation_euler_Z">
+      <source id="Cube_rotation_euler_Z-input">
+        <float_array id="Cube_rotation_euler_Z-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_Z-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_rotation_euler_Z-output">
+        <float_array id="Cube_rotation_euler_Z-output-array" count="4">0 0 0 0</float_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_Z-output-array" count="4" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_rotation_euler_Z-interpolation">
+        <Name_array id="Cube_rotation_euler_Z-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_Z-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_rotation_euler_Z-intangent">
+        <float_array id="Cube_rotation_euler_Z-intangent-array" count="8">-0.6090192 0 1.057648 0 2.470319 0 4.482305 0</float_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_Z-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_rotation_euler_Z-outtangent">
+        <float_array id="Cube_rotation_euler_Z-outtangent-array" count="8">0.6923525 0 2.196348 0 3.934362 0 6.434362 0</float_array>
+        <technique_common>
+          <accessor source="#Cube_rotation_euler_Z-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Cube_rotation_euler_Z-sampler">
+        <input semantic="INPUT" source="#Cube_rotation_euler_Z-input"/>
+        <input semantic="OUTPUT" source="#Cube_rotation_euler_Z-output"/>
+        <input semantic="INTERPOLATION" source="#Cube_rotation_euler_Z-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Cube_rotation_euler_Z-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Cube_rotation_euler_Z-outtangent"/>
+      </sampler>
+      <channel source="#Cube_rotation_euler_Z-sampler" target="Cube/rotationZ.ANGLE"/>
+    </animation>
+    <animation id="Cube_scale_X">
+      <source id="Cube_scale_X-input">
+        <float_array id="Cube_scale_X-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Cube_scale_X-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_scale_X-output">
+        <float_array id="Cube_scale_X-output-array" count="4">1 1 1 1</float_array>
+        <technique_common>
+          <accessor source="#Cube_scale_X-output-array" count="4" stride="1">
+            <param name="X" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_scale_X-interpolation">
+        <Name_array id="Cube_scale_X-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Cube_scale_X-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_scale_X-intangent">
+        <float_array id="Cube_scale_X-intangent-array" count="8">-0.6090192 1 1.057648 1 2.470319 1 4.482305 1</float_array>
+        <technique_common>
+          <accessor source="#Cube_scale_X-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_scale_X-outtangent">
+        <float_array id="Cube_scale_X-outtangent-array" count="8">0.6923525 1 2.196348 1 3.934362 1 6.434362 1</float_array>
+        <technique_common>
+          <accessor source="#Cube_scale_X-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Cube_scale_X-sampler">
+        <input semantic="INPUT" source="#Cube_scale_X-input"/>
+        <input semantic="OUTPUT" source="#Cube_scale_X-output"/>
+        <input semantic="INTERPOLATION" source="#Cube_scale_X-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Cube_scale_X-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Cube_scale_X-outtangent"/>
+      </sampler>
+      <channel source="#Cube_scale_X-sampler" target="Cube/scale.X"/>
+    </animation>
+    <animation id="Cube_scale_Y">
+      <source id="Cube_scale_Y-input">
+        <float_array id="Cube_scale_Y-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Cube_scale_Y-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_scale_Y-output">
+        <float_array id="Cube_scale_Y-output-array" count="4">1 1 1 1</float_array>
+        <technique_common>
+          <accessor source="#Cube_scale_Y-output-array" count="4" stride="1">
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_scale_Y-interpolation">
+        <Name_array id="Cube_scale_Y-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Cube_scale_Y-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_scale_Y-intangent">
+        <float_array id="Cube_scale_Y-intangent-array" count="8">-0.6090192 1 1.057648 1 2.470319 1 4.482305 1</float_array>
+        <technique_common>
+          <accessor source="#Cube_scale_Y-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_scale_Y-outtangent">
+        <float_array id="Cube_scale_Y-outtangent-array" count="8">0.6923525 1 2.196348 1 3.934362 1 6.434362 1</float_array>
+        <technique_common>
+          <accessor source="#Cube_scale_Y-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Cube_scale_Y-sampler">
+        <input semantic="INPUT" source="#Cube_scale_Y-input"/>
+        <input semantic="OUTPUT" source="#Cube_scale_Y-output"/>
+        <input semantic="INTERPOLATION" source="#Cube_scale_Y-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Cube_scale_Y-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Cube_scale_Y-outtangent"/>
+      </sampler>
+      <channel source="#Cube_scale_Y-sampler" target="Cube/scale.Y"/>
+    </animation>
+    <animation id="Cube_scale_Z">
+      <source id="Cube_scale_Z-input">
+        <float_array id="Cube_scale_Z-input-array" count="4">0.04166662 1.708333 2.958333 5.458333</float_array>
+        <technique_common>
+          <accessor source="#Cube_scale_Z-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_scale_Z-output">
+        <float_array id="Cube_scale_Z-output-array" count="4">1 1 1 1</float_array>
+        <technique_common>
+          <accessor source="#Cube_scale_Z-output-array" count="4" stride="1">
+            <param name="Z" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_scale_Z-interpolation">
+        <Name_array id="Cube_scale_Z-interpolation-array" count="4">BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#Cube_scale_Z-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_scale_Z-intangent">
+        <float_array id="Cube_scale_Z-intangent-array" count="8">-0.6090192 1 1.057648 1 2.470319 1 4.482305 1</float_array>
+        <technique_common>
+          <accessor source="#Cube_scale_Z-intangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Cube_scale_Z-outtangent">
+        <float_array id="Cube_scale_Z-outtangent-array" count="8">0.6923525 1 2.196348 1 3.934362 1 6.434362 1</float_array>
+        <technique_common>
+          <accessor source="#Cube_scale_Z-outtangent-array" count="4" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Cube_scale_Z-sampler">
+        <input semantic="INPUT" source="#Cube_scale_Z-input"/>
+        <input semantic="OUTPUT" source="#Cube_scale_Z-output"/>
+        <input semantic="INTERPOLATION" source="#Cube_scale_Z-interpolation"/>
+        <input semantic="IN_TANGENT" source="#Cube_scale_Z-intangent"/>
+        <input semantic="OUT_TANGENT" source="#Cube_scale_Z-outtangent"/>
+      </sampler>
+      <channel source="#Cube_scale_Z-sampler" target="Cube/scale.Z"/>
+    </animation>
+  </library_animations>
+  <library_controllers/>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="Camera" name="Camera" type="NODE">
+        <translate sid="location">7.481132 -6.50764 5.343665</translate>
+        <rotate sid="rotationZ">0 0 1 46.69194</rotate>
+        <rotate sid="rotationY">0 1 0 0.619768</rotate>
+        <rotate sid="rotationX">1 0 0 63.5593</rotate>
+        <scale sid="scale">1 0.9999999 1</scale>
+        <instance_camera url="#Camera-camera"/>
+      </node>
+      <node id="Lamp" name="Lamp" type="NODE">
+        <translate sid="location">4.076245 1.005454 5.903862</translate>
+        <rotate sid="rotationZ">0 0 1 106.9363</rotate>
+        <rotate sid="rotationY">0 1 0 3.163707</rotate>
+        <rotate sid="rotationX">1 0 0 37.26105</rotate>
+        <scale sid="scale">1 1 0.9999999</scale>
+        <instance_light url="#Lamp-light"/>
+      </node>
+      <node id="Cube" name="Cube" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_geometry url="#Cube-mesh">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material-material" target="#Material-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>

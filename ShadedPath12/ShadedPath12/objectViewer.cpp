@@ -95,7 +95,7 @@ void ObjectViewer::init()
 	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
-	if (true) {
+	if (false) {
 		/*
 		Remember to smooth normals for organic meshes like this worm,
 		otherwise you will see checkered display when lighting is on.
@@ -131,12 +131,12 @@ void ObjectViewer::init()
 	if (false) {
 		xapp().objectStore.loadObject(L"shaded2.b", "Shaded");
 		xapp().objectStore.addObject(object, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GrassTex);
-		object.drawNormals = true;
+		//object.drawNormals = true;
 		object.material.ambient = XMFLOAT4(1, 1, 1, 1);
 		object.material.specExp = 200.0f;       // no spec color 1 0 nothing
 		object.material.specIntensity = 1000.0f; // no spec color
 	}
-	if (false) {
+	if (true) {
 		xapp().objectStore.loadObject(L"house4_anim.b", "House");
 		xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
 		//object.drawBoundingBox = true;
@@ -144,7 +144,9 @@ void ObjectViewer::init()
 		object.setAction("Cube");
 		object.pathDescMove->pathMode = Path_Reverse;
 		object.pathDescMove->speed = 5000.0f;
-		object.pathDescMove->speed = 1000.0f;
+		//object.pathDescMove->speed = 1000.0f;
+		object.material.specExp = 1.0f;       // no spec color
+		object.material.specIntensity = 0.0f; // no spec color
 	}
 	// draw lines for mesh:
 	Log(" object created ok, #vertices == " << object.mesh->vertices.size() << endl);
