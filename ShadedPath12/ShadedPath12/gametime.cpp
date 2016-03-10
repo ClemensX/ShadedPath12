@@ -48,10 +48,16 @@ double GameTime::getTimeOfDay()
 }
 
 
-// get number of hours (and fractions) since game timer creation
+// get absolute number of hours (and fractions)
 double GameTime::getTimeAbs()
 {
 	return timeAbs;
+}
+
+// get absolute number of seconds (and fractions)
+double GameTime::getTimeAbsSeconds()
+{
+	return timeAbs * 3600.0;
 }
 
 // get number of seconds since last advanceTime()

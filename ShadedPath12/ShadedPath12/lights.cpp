@@ -34,3 +34,7 @@ void Lights::init() {
 void Lights::update() {
 	memcpy(cbvGPUDest, &lights, sizeof(lights));
 }
+
+XMFLOAT4 Lights::factor(float fac, XMFLOAT4 color) {
+	return XMFLOAT4(fac * color.x, fac * color.y, fac * color.z, color.w);
+}

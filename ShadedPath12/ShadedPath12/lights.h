@@ -11,6 +11,8 @@
 
 class Lights {
 public:
+	// apply a global factor to a light:
+	XMFLOAT4 factor(float factor, XMFLOAT4 color);
 	void createConstantBuffer(size_t s, wchar_t * name);
 	ComPtr<ID3D12Resource> cbvResource;
 	UINT8* cbvGPUDest;  // mempy changed cbv data to this address before draw()

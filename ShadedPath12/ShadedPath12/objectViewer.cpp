@@ -57,8 +57,9 @@ void ObjectViewer::init()
 
 	textEffect.setSize(textSize);
 	dotcrossEffect.setLineLength(6.0f * textSize);
-	textEffect.addTextLine(XMFLOAT4(-5.0f, 6 * lineHeight, 0.0f, 0.0f), xapp().buildInfo, Linetext::XY);
-	textEffect.addTextLine(XMFLOAT4(-5.0f, 5 * lineHeight, 0.0f, 0.0f), "F1-F2 to change abient light level", Linetext::XY);
+	textEffect.addTextLine(XMFLOAT4(-5.0f, 7 * lineHeight, 0.0f, 0.0f), xapp().buildInfo, Linetext::XY);
+	textEffect.addTextLine(XMFLOAT4(-5.0f, 6 * lineHeight, 0.0f, 0.0f), "F1-F2 to change abient light level", Linetext::XY);
+	textEffect.addTextLine(XMFLOAT4(-5.0f, 5 * lineHeight, 0.0f, 0.0f), "F3-F4 to change directional+ light level", Linetext::XY);
 	fpsLine = textEffect.addTextLine(XMFLOAT4(-5.0f, 4 * lineHeight, 0.0f, 0.0f), "FPS", Linetext::XY);
 	framenumLine = textEffect.addTextLine(XMFLOAT4(-5.0f, 3 * lineHeight, 0.0f, 0.0f), "0123456789", Linetext::XY);
 
@@ -95,7 +96,7 @@ void ObjectViewer::init()
 	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
-	if (false) {
+	if (true) {
 		/*
 		Remember to smooth normals for organic meshes like this worm,
 		otherwise you will see checkered display when lighting is on.
@@ -110,7 +111,7 @@ void ObjectViewer::init()
 		xapp().objectStore.addObject(object, "Worm", XMFLOAT3(10.0f, 10.0f, 10.0f), WormTex);
 		object.setAction("Armature");
 		object.pathDescBone->pathMode = Path_Loop;
-		object.pathDescBone->speed = 10000.0;
+		object.pathDescBone->speed = 3.0;
 		object.forceBoundingBox(BoundingBox(XMFLOAT3(0.0171146f, 2.33574f, -0.236285f), XMFLOAT3(1.29998f, 2.3272f, 9.97486f)));
 		object.material.specExp = 100.0f;       // no spec color 1 0 nothing
 		object.material.specIntensity = 10.0f; // no spec color
@@ -121,7 +122,6 @@ void ObjectViewer::init()
 		xapp().objectStore.addObject(object, "Joint", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
 		object.setAction("Armature");
 		object.pathDescBone->pathMode = Path_Reverse;
-		object.pathDescBone->speed = 1000.0;
 		object.forceBoundingBox(BoundingBox(XMFLOAT3(3.16211f, 3.16214f, 7.28022f), XMFLOAT3(4.51012f, 4.51011f, 7.6599f)));
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
@@ -136,15 +136,13 @@ void ObjectViewer::init()
 		object.material.specExp = 200.0f;       // no spec color 1 0 nothing
 		object.material.specIntensity = 1000.0f; // no spec color
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"house4_anim.b", "House");
 		xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
 		//object.drawBoundingBox = true;
 		object.drawNormals = true;
 		object.setAction("Cube");
 		object.pathDescMove->pathMode = Path_Reverse;
-		object.pathDescMove->speed = 5000.0f;
-		//object.pathDescMove->speed = 1000.0f;
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
 	}
@@ -157,14 +155,17 @@ void ObjectViewer::init()
 	//lights->ambient[0].ambient = XMFLOAT4(0.3, 0.3, 0.3, 1); overwritten in update()
 	assert(0 < MAX_AMBIENT);
 	globalAmbientLightLevel = 0.3f;
+	globalDirectionalLightLevel = 1.0f;
 
 	// directional lights:
-	lights->directionalLights[0].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	dirColor1 = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	dirColor2 = XMFLOAT4(0.6f, 0.4f, 0.6f, 1.0f);
+	lights->directionalLights[0].color = dirColor1;
 	//lights->directionalLights[0].color = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	lights->directionalLights[0].pos = XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f);
 	lights->directionalLights[0].used_fill.x = 1.0f;
 
-	lights->directionalLights[1].color = XMFLOAT4(1.0f, 0.8f, 0.8f, 1.0f);
+	lights->directionalLights[1].color = dirColor2;
 	lights->directionalLights[1].pos = XMFLOAT4(0.0f, 0.5f, 1.0f, 1.0f);
 	lights->directionalLights[1].used_fill.x = 1.0f;
 }
@@ -176,6 +177,8 @@ void ObjectViewer::update()
 	static bool done = false;
 	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
 	}
+
+	// ambient light level
 	if (xapp().keyDown(VK_F1)) {
 		globalAmbientLightLevel -= 0.01f;
 	}
@@ -184,6 +187,16 @@ void ObjectViewer::update()
 	}
 	if (globalAmbientLightLevel < 0.0f) globalAmbientLightLevel = 0.0f;
 	if (globalAmbientLightLevel > 1.0f) globalAmbientLightLevel = 1.0f;
+
+	// directional light level
+	if (xapp().keyDown(VK_F3)) {
+		globalDirectionalLightLevel -= 0.01f;
+	}
+	if (xapp().keyDown(VK_F4)) {
+		globalDirectionalLightLevel += 0.01f;
+	}
+	if (globalDirectionalLightLevel < 0.0f) globalDirectionalLightLevel = 0.0f;
+	if (globalDirectionalLightLevel > 1.0f) globalDirectionalLightLevel = 1.0f;
 
 	xapp().lights.update();
 	linesEffect.update();
@@ -204,8 +217,11 @@ void ObjectViewer::update()
 	//billboardEffect.update();
 
 	CBVLights *lights = &xapp().lights.lights;
+	auto &lightControl = xapp().lights;
 	float f = globalAmbientLightLevel;
 	lights->ambientLights[0].ambient = XMFLOAT4(f,f,f,1);
+	lights->directionalLights[0].color = lightControl.factor(globalDirectionalLightLevel, dirColor1);
+	lights->directionalLights[1].color = lightControl.factor(globalDirectionalLightLevel, dirColor2);
 	object.update();
 	//Log("obj pos " << object.pos().x << endl);
 }

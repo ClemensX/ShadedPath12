@@ -280,7 +280,7 @@ void WorldObject::getBoundingBox(BoundingBox &box) {
 
 void WorldObject::update() {
 	if (this->pathDescBone) {
-		xapp().world.path.updateScene(pathDescBone, this, xapp().gametime.getTimeAbs());
+		xapp().world.path.updateScene(pathDescBone, this, xapp().gametime.getTimeAbsSeconds());
 	}
 	if (drawBoundingBox) {
 		//unique_ptr<Lines>& linesEffect = (unique_ptr<Lines>&)Effect::getUniquePtr(Effect::LINES);
@@ -367,16 +367,16 @@ void WorldObject::draw() {
 	if (action) {
 		//move object
 		XMFLOAT3 pos, rot;
-		xapp().world.path.getPos(*this, xapp().gametime.getTimeAbs(), pos, rot);
+		xapp().world.path.getPos(*this, xapp().gametime.getTimeAbsSeconds(), pos, rot);
 		pos.x = objectStartPos.x + pos.x * scale;
 		pos.y = objectStartPos.y + pos.y * scale;
 		pos.z = objectStartPos.z + pos.z * scale;
 		float diff = getVLen(this->pos(), pos);
-		double t = xapp().gametime.getTimeAbs();
+		//double t = xapp().gametime.getTimeAbs();
 		//Log(" diff " << setprecision(9) << diff << " " << t << endl);
-		if (diff < 0.00001f) {
+		//if (diff < 0.00001f) {
 			//Log(" diff " << diff << endl);
-		}
+		//}
 		this->pos() = pos;
 		this->rot() = rot;
 		worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, alpha);

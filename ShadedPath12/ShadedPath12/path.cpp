@@ -83,8 +83,9 @@ void Path::moveNpc(WorldObject *wo, LONGLONG now, LONGLONG ticks_per_second, Ter
 		// random turn radians:
 		float turn = MathHelper::RandF(pd->minturn, pd->maxturn);
 		// ticks needed for this turn:
-		float turn_seconds = abs(turn) / pd->turnspeed;
-		pd->num_ticks = turn_seconds * ticks_per_second; // turn time in game ticks
+		double turn_seconds = abs(turn) / pd->turnspeed;
+		double nt = turn_seconds * (double)ticks_per_second;
+		pd->num_ticks = (LONGLONG)nt;//turn_seconds * ticks_per_second; // turn time in game ticks
 		pd->yawSourceAngle = wo->rot().x;
 		pd->yawTargetAngle = wo->rot().x + turn;
 		pd->animState = Anim_Turn;
@@ -362,7 +363,6 @@ void Path::getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
 	if (pd->segments == NULL) {
 		initSegments(o, pd);
 	}
-
 	double backnowf = nowf;
 	// adjust time by subtracting start time of this action:
 	nowf = nowf - pd->starttime;

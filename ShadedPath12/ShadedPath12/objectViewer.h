@@ -28,5 +28,7 @@ private:
 	bool textureFullFrameTest = false;
 	WorldObject object;
 	float globalAmbientLightLevel;
+	float globalDirectionalLightLevel;
+	XMFLOAT4 dirColor1, dirColor2;
 };
 
