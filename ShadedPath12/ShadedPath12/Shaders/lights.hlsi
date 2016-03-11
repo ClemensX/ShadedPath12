@@ -22,7 +22,6 @@ float3 calcAmbient() {
 
 float3 calcDirectional(float3 pos, float3 normal, Material material, int index, float3 camera)
 {
-	//if (true) return float3(0, 0, 0);
 	float b = directionalLights[index].used_fill.x;
 	if (b < 1.0) {
 		return float3(0.0f, 0.0f, 0.0f);
@@ -45,23 +44,28 @@ float3 calcDirectional(float3 pos, float3 normal, Material material, int index, 
 
 float3 calcPoint(float3 pos, float3 normal, Material material, int index, float3 camera)
 {
-	//if (true) return float3(0, 0, 0);
 	float b = pointLights[index].used;
 	if (b < 1.0) {
 		return float3(0.0f, 0.0f, 0.0f);
 	}
-	float3 dirToLight = directionalLights[index].pos.xyz;// - pos;
-	dirToLight = normalize(dirToLight);
-	// Phong diffuse:
-	float NDotL = dot(dirToLight, normal);
-	float3 finalColor = directionalLights[index].color.rgb * saturate(NDotL);
+	float3 toLight = pointLights[index].pos.xyz - pos;
+	float3 toEye = camera - pos;
+	float distToLight = length(toLight);
+	toLight /= distToLight;
+	float NDotL = saturate(dot(toLight, normal));
+	float3 finalColor = pointLights[index].color.rgb * NDotL;
 
 	// Blinn specular:
-	float3 toEye = camera - pos;
 	toEye = normalize(toEye);
-	float3 halfWay = normalize(toEye + dirToLight);
+	float3 halfWay = normalize(toEye + toLight);
 	float NDotH = saturate(dot(halfWay, normal));
-	finalColor += directionalLights[index].color.rgb * pow(NDotH, material.specExp) * material.specIntensity;
+	finalColor += pointLights[index].color.rgb * pow(NDotH, material.specExp) * material.specIntensity;
+
+	// Attenuation:
+	float distToLightNorm = 1.0 - saturate(distToLight * pointLights[index].range_reciprocal);
+	//distToLightNorm = 0.5;
+	float attn = distToLightNorm * distToLightNorm;
+	finalColor *= attn;
 
 	return finalColor;
 }
@@ -79,6 +83,6 @@ float3 applyLighting(float3 col, float3 pos, float3 normal, float3 camera) {
 		pointx += calcPoint(pos, normal, material, j, camera);
 	}
 
-	col = col * (ambient + directional);
+	col = col * (ambient + directional + pointx);
 	return saturate(col);
 }

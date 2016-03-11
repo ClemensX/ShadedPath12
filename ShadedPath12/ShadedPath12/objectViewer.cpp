@@ -96,7 +96,7 @@ void ObjectViewer::init()
 	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
-	if (true) {
+	if (false) {
 		/*
 		Remember to smooth normals for organic meshes like this worm,
 		otherwise you will see checkered display when lighting is on.
@@ -128,7 +128,7 @@ void ObjectViewer::init()
 		object.drawNormals = true;
 		//object.drawBoundingBox = true;
 	}
-	if (false) {
+	if (true) {
 		xapp().objectStore.loadObject(L"shaded2.b", "Shaded");
 		xapp().objectStore.addObject(object, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GrassTex);
 		//object.drawNormals = true;
@@ -156,6 +156,8 @@ void ObjectViewer::init()
 	assert(0 < MAX_AMBIENT);
 	globalAmbientLightLevel = 0.3f;
 	globalDirectionalLightLevel = 1.0f;
+	globalAmbientLightLevel = 0.0f;
+	globalDirectionalLightLevel = 0.0f;
 
 	// directional lights:
 	dirColor1 = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -168,6 +170,12 @@ void ObjectViewer::init()
 	lights->directionalLights[1].color = dirColor2;
 	lights->directionalLights[1].pos = XMFLOAT4(0.0f, 0.5f, 1.0f, 1.0f);
 	lights->directionalLights[1].used_fill.x = 1.0f;
+
+	// point lights:
+	lights->pointLights[0].color = dirColor1;
+	lights->pointLights[0].pos = XMFLOAT4(10.0f, 5.0f, 3.0f, 1.0f);
+	lights->pointLights[0].range_reciprocal = 1.0f / 10.0f;
+	lights->pointLights[0].used = 1.0f;
 }
 
 void ObjectViewer::update()
