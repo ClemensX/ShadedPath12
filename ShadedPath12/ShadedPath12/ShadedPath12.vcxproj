@@ -179,6 +179,8 @@
     <ClInclude Include="path.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="sample1.h" />
+    <ClInclude Include="sound.h" />
+    <ClInclude Include="soundtest.h" />
     <ClInclude Include="testDotcross.h" />
     <ClInclude Include="testLinetext.h" />
     <ClInclude Include="testTextures.h" />
@@ -207,6 +209,8 @@
     <ClCompile Include="objectViewer.cpp" />
     <ClCompile Include="path.cpp" />
     <ClCompile Include="sample1.cpp" />
+    <ClCompile Include="sound.cpp" />
+    <ClCompile Include="soundtest.cpp" />
     <ClCompile Include="testDotcross.cpp" />
     <ClCompile Include="testLinetext.cpp" />
     <ClCompile Include="testTextures.cpp" />

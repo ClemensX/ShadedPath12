@@ -53,6 +53,7 @@ using namespace DirectX;
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "xaudio2")
 //d2d1.lib;dwrite.lib;d3d11.lib;d3d12.lib;dxgi.lib;
 
 #define _CRTDBG_MAP_ALLOC
@@ -119,6 +120,9 @@ inline void ErrorExt(wstring msg, const char* file, DWORD line)
 #define Error(x) ErrorExt((x), __FILE__,  (DWORD)__LINE__)
 
 // framework headers
+#include <XAudio2.h>
+#include <x3daudio.h>
+#include "sound.h"
 #include "d3dx12.h"
 #include "DDSTextureLoader.h"
 #include "forward_structures.h"

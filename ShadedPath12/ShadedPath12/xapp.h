@@ -41,7 +41,7 @@ public:
 	XApp();
 	~XApp();
 
-	string buildInfo = "Shaded Path 12 Engine Build 2016_02_06";
+	string buildInfo = "Shaded Path 12 Engine V 0.1.0";
 
 	void init();
 	void resize();
@@ -139,6 +139,7 @@ public:
 	World world;
 	Camera camera;
 	GameTime gametime;
+	Sound sound;
 	VR vr;
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
 private:

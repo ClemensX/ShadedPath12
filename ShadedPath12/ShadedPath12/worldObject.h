@@ -82,7 +82,7 @@ public:
 	bool playing; // true == current cue is actually running
 				  //D3DXVECTOR3 soundPos;
 				  //IXACT3Cue* cue;
-//	SoundDef *soundDef = nullptr;
+	SoundDef *soundDef = nullptr;
 	int maxListeningDistance; // disable sound if farther away than this
 							  //int soundBankIndex;  // sound bank to use for this object
 							  //WORD cueIndex; // cue index

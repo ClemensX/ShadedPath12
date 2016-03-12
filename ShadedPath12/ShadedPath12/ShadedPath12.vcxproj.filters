@@ -121,6 +121,12 @@
     <ClInclude Include="lights.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="soundtest.h">
+      <Filter>Apps</Filter>
+    </ClInclude>
+    <ClInclude Include="sound.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -196,6 +202,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="lights.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="soundtest.cpp">
+      <Filter>Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="sound.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
