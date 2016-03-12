@@ -96,7 +96,7 @@ void ObjectViewer::init()
 	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
-	if (false) {
+	if (true) {
 		/*
 		Remember to smooth normals for organic meshes like this worm,
 		otherwise you will see checkered display when lighting is on.
@@ -125,16 +125,18 @@ void ObjectViewer::init()
 		object.forceBoundingBox(BoundingBox(XMFLOAT3(3.16211f, 3.16214f, 7.28022f), XMFLOAT3(4.51012f, 4.51011f, 7.6599f)));
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
-		object.drawNormals = true;
+		//object.drawNormals = true;
 		//object.drawBoundingBox = true;
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"shaded2.b", "Shaded");
 		xapp().objectStore.addObject(object, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GrassTex);
 		//object.drawNormals = true;
 		object.material.ambient = XMFLOAT4(1, 1, 1, 1);
 		object.material.specExp = 200.0f;       // no spec color 1 0 nothing
 		object.material.specIntensity = 1000.0f; // no spec color
+		object.material.specExp = 1.0f;       // no spec color 1 0 nothing
+		object.material.specIntensity = 0.0f; // no spec color
 	}
 	if (false) {
 		xapp().objectStore.loadObject(L"house4_anim.b", "House");
@@ -173,9 +175,15 @@ void ObjectViewer::init()
 
 	// point lights:
 	lights->pointLights[0].color = dirColor1;
-	lights->pointLights[0].pos = XMFLOAT4(10.0f, 5.0f, 3.0f, 1.0f);
-	lights->pointLights[0].range_reciprocal = 1.0f / 10.0f;
+	lights->pointLights[0].pos = XMFLOAT4(6.0f, 10.0f, 8.0f, 1.0f);
+	lights->pointLights[0].range_reciprocal = 1.0f / 30.0f;
 	lights->pointLights[0].used = 1.0f;
+
+	vector<XMFLOAT3> crossPoints;
+	//for_each(begin(myPoints), end(myPoints), [&crossPoints](XMFLOAT3 p) {crossPoints.push_back(p); });
+	XMFLOAT3 x = XMFLOAT3(6.0f, 10.0f, 8.0f);
+	crossPoints.push_back(x);
+	dotcrossEffect.update(crossPoints);
 }
 
 void ObjectViewer::update()

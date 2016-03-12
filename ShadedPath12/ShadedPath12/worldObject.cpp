@@ -400,6 +400,8 @@ void WorldObject::draw() {
 				XMStoreFloat3(&normfinal_flo, normfinal);
 				mesh->vertices[skV].Normal = normfinal_flo;
 			}
+			//XMMATRIX toWorldT = XMMatrixIdentity();
+			//XMStoreFloat4x4(&finalWorld, toWorldT);
 			mesh->createVertexAndIndexBuffer(worldObjectEffect);
 			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, alpha);
 		}

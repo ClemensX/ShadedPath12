@@ -7,7 +7,8 @@
 
 // root signature: only has CBV that will hold the WVP matrix
 #define LinesRS "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
-              "CBV(b0, space = 0) "
+              "CBV(b0, space = 0), " \
+              "RootConstants(num32BitConstants = 1, b3)" // avoid GRFXTool exception, use different number for each root signature
 
 struct LinesConstantBuffer {
 	float4x4 wvp;

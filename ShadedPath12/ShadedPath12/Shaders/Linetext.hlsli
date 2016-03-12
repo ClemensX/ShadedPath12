@@ -8,7 +8,8 @@
 
 // root signature: only has CBV that will hold the MVP matrix and linelength
 #define LinetextRS "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
-              "CBV(b0, space = 0) "
+              "CBV(b0, space = 0), " \
+              "RootConstants(num32BitConstants = 3, b3)" // avoid GRFXTool exception, use different number for each root signature
 
 //cbuffer cbPerObject {
 //	float4x4 wvp;

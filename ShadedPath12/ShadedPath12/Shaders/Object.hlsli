@@ -34,6 +34,7 @@ struct VSInput
 struct PSInput
 {
 	float4 Pos   : SV_POSITION;
+	float3 PosW  : POSITION;
 	float2 Tex   : TEXCOORD;
 	float3 Normal: NORMAL;
 };

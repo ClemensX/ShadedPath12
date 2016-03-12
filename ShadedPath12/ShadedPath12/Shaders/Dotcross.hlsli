@@ -11,8 +11,8 @@
 
 // root signature: only has CBV that will hold the MVP matrix and linelength
 #define DotcrossRS "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
-              "CBV(b0, space = 0) "
-
+              "CBV(b0, space = 0), " \
+              "RootConstants(num32BitConstants = 2, b3)" // avoid GRFXTool exception, use different number for each root signature
 struct DotcrossConstantBuffer {
 	float4x4 wvp;
 	float linelen;

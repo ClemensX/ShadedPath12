@@ -70,7 +70,7 @@ float3 calcPoint(float3 pos, float3 normal, Material material, int index, float3
 	return finalColor;
 }
 
-float3 applyLighting(float3 col, float3 pos, float3 normal, float3 camera) {
+float3 applyLighting(float3 col, float3 pos, float3 posw, float3 normal, float3 camera) {
 	float3 ambient = calcAmbient();
 
 	float3 directional = float3(0,0,0);
@@ -80,7 +80,7 @@ float3 applyLighting(float3 col, float3 pos, float3 normal, float3 camera) {
 
 	float3 pointx = float3(0,0,0);
 	[unroll] for (int j = 0; j < MAX_POINT; j++) {
-		pointx += calcPoint(pos, normal, material, j, camera);
+		pointx += calcPoint(posw, normal, material, j, camera);
 	}
 
 	col = col * (ambient + directional + pointx);
