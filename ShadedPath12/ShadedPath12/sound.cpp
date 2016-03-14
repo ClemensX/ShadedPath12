@@ -79,7 +79,9 @@ Sound::Sound(void)
 Sound::~Sound(void)
 {
 	for (auto s : sounds) {
-		s.second.voice->DestroyVoice();
+		if (s.second.voice) {
+			s.second.voice->DestroyVoice();
+		}
 		delete s.second.buffer.pAudioData;
 	}
 	submixVoiceBackground->DestroyVoice();

@@ -86,6 +86,8 @@ public:
 
 	// randomly generate ine position within the defined world coords
 	XMFLOAT3 getRandomPos();
+	// randomly generate ine position within the defined world coords with a given minimum height
+	XMFLOAT3 getRandomPos(float minHeight);
 	LinesEffect *linesEffect = nullptr;
 private:
 	// world size in absolute units around origin, e.g. x is from -x to x
