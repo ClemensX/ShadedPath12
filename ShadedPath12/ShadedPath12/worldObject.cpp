@@ -461,7 +461,7 @@ XMFLOAT3& WorldObject::rot() {
 }
 
 WorldObject::WorldObject() {
-	pathDescBone = nullptr;
+	pathDescBone = pathDescMove = nullptr;
 	scale = 1.0f;
 	drawBoundingBox = false;
 	drawNormals = false;

@@ -63,7 +63,8 @@ void HangOn::init()
 	lights->ambientLights[0].ambient = XMFLOAT4(f, f, f, 1);
 
 	xapp().world.drawCoordinateSystem(XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), "Origin", textEffect, dotcrossEffect, textSize);
-	initStarfield(10000, 300.0f);
+	//initStarfield(10000, 300.0f);
+	initMeteorField();
 	//xapp().world.
 
 	// stereo background music and mono sound from world object
@@ -91,11 +92,37 @@ void HangOn::initStarfield(int num, float minHeight)
 	Log("# crosses: " << dotcrossEffect.points.size() << endl);
 }
 
+static int NUM_METEOR = 1000;
+
+void HangOn::initMeteorField() {
+	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
+	TextureInfo *HouseTex = xapp().textureStore.getTexture("default");
+	xapp().objectStore.loadObject(L"house4_anim.b", "House");
+
+	xapp().objectStore.createGroup("meteor");
+	for (int i = 0; i < NUM_METEOR; i++) {
+		XMFLOAT3 p = xapp().world.getRandomPos(50);
+		xapp().objectStore.addObject("meteor", "House", p, HouseTex);
+	}
+    //object.drawBoundingBox = true;
+	//object.drawNormals = true;
+	//object.setAction("Cube");
+	//object.pathDescMove->pathMode = Path_Reverse;
+	// update meteor data:
+	auto grp = xapp().objectStore.getGroup("meteor");
+	for (auto & w : *grp) {
+		w.get()->material.specExp = 1.0f;       // no spec color
+		w.get()->material.specIntensity = 0.0f; // no spec color
+		w.get()->material.ambient = XMFLOAT4(1, 1, 1, 1);
+	}
+}
+
 void HangOn::update()
 {
 	gameTime.advanceTime();
 	LONGLONG now = gameTime.getRealTime();
 	static bool done = false;
+	xapp().lights.update();
 	linesEffect.update();
 	dotcrossEffect.update();
 
@@ -108,6 +135,18 @@ void HangOn::update()
 	textEffect.update();
 
 	object.update();
+	auto grp = xapp().objectStore.getGroup("meteor");
+	// update worms position:
+	for (auto & w : *grp) {
+		if (w->pathDescMove && w->pathDescMove->pathMode == Path_Random) {
+
+			//wo->updateScene(&path, &worldUtil, &mTerrain, md3dDevice, md3dImmediateContext, *gCamera, time);
+			//if (gametype == game && false) {
+			//	xapp->world.path.moveNpc(w.get(), xapp->gametime.getRealTime(), xapp->gametime.getTicksPerSec(), &terrain);
+			//	//path.moveNpc(wo, now, ticks_per_sec, &mTerrain);
+			//}
+		}
+	}
 	xapp().sound.Update();
 }
 
@@ -116,7 +155,11 @@ void HangOn::draw()
 	linesEffect.draw();
 	dotcrossEffect.draw();
 	textEffect.draw();
-	object.draw();
+	auto grp = xapp().objectStore.getGroup("meteor");
+	for (auto & w : *grp) {
+		w->draw();
+	}
+	//object.draw();
 	postEffect.draw();
 }
 

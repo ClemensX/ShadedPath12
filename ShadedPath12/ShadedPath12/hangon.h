@@ -9,6 +9,7 @@ public:
 	void init();
 	// fixed number of stars, randomly anywhere in the world, but only eith at least the provided height
 	void initStarfield(int num, float minHeight);
+	void initMeteorField();
 	void update();
 	void draw();
 	void destroy();
