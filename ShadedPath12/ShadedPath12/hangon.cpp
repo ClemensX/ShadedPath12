@@ -159,7 +159,10 @@ void HangOn::draw()
 	for (auto & w : *grp) {
 		w->draw();
 	}
-	//object.draw();
+
+	// optimization: draw whole group (objects with same mesh)
+	xapp().objectStore.drawGroup("meteor");
+
 	postEffect.draw();
 }
 

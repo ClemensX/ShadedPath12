@@ -278,6 +278,22 @@ void WorldObject::getBoundingBox(BoundingBox &box) {
 	else mesh->getBoundingBox(box);
 }
 
+XMMATRIX WorldObject::calcToWorld() {
+	// quaternion
+	XMVECTOR q = XMQuaternionIdentity();
+	//XMVECTOR q = XMVectorSet(rot().x, rot().y, rot().z, 0.0f);
+	XMVECTOR q_origin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	XMMATRIX rotateM = XMMatrixRotationRollPitchYaw(rot().y, rot().x, rot().z);
+	q = XMQuaternionRotationMatrix(rotateM);
+	q = XMQuaternionNormalize(q);
+	// scalar
+	XMVECTOR s = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
+	// translation
+	XMVECTOR t = XMVectorSet(pos().x, pos().y, pos().z, 0.0f);
+	// toWorld matrix:
+	return XMMatrixAffineTransformation(s, q_origin, q, t);
+}
+
 void WorldObject::update() {
 	if (this->pathDescBone) {
 		xapp().world.path.updateScene(pathDescBone, this, xapp().gametime.getTimeAbsSeconds());
@@ -335,34 +351,19 @@ float getVLen(XMFLOAT3 &p0, XMFLOAT3 &p1) {
 
 void WorldObject::draw() {
 	WorldObjectEffect *worldObjectEffect = xapp().objectStore.getWorldObjectEffect();
-	// quaternion
-	XMVECTOR q = XMQuaternionIdentity();
-	//XMVECTOR q = XMVectorSet(rot().x, rot().y, rot().z, 0.0f);
-	XMVECTOR q_origin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	XMMATRIX rotateM = XMMatrixRotationRollPitchYaw(rot().y, rot().x, rot().z);
-	q = XMQuaternionRotationMatrix(rotateM);
-	q = XMQuaternionNormalize(q);
-	// scalar
-	XMVECTOR s = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
-	// translation
-	XMVECTOR t = XMVectorSet(pos().x, pos().y, pos().z, 0.0f);
-	// toWorld matrix:
-	XMMATRIX toWorld = XMMatrixAffineTransformation(s, q_origin, q, t);
+	
+	XMMATRIX toWorld = calcToWorld();
 
 	xapp().camera.viewTransform();
 	xapp().camera.projectionTransform();
 	BoundingBox box;
 	getBoundingBox(box);
 	int visible = xapp().camera.calculateVisibility(box, toWorld);  // TODO first move, then calc visibility
-																   //Log("visible == " << visible << endl);
+    //Log("visible == " << visible << endl);
 	if (visible == 0) return;
-	XMMATRIX p = XMLoadFloat4x4(&xapp().camera.projection);
-	XMMATRIX v = XMLoadFloat4x4(&xapp().camera.view);
-//	XMMATRIX wvp = toWorld * (v * p);
-	XMMATRIX toWorldT = XMMatrixTranspose(toWorld);
 
 	XMFLOAT4X4 finalWorld;
-	XMStoreFloat4x4(&finalWorld, toWorldT);
+	XMStoreFloat4x4(&finalWorld, XMMatrixTranspose(toWorld));
 	TextureInfo *info = this->textureID;
 	if (action) {
 		//move object
@@ -372,24 +373,12 @@ void WorldObject::draw() {
 		pos.y = objectStartPos.y + pos.y * scale;
 		pos.z = objectStartPos.z + pos.z * scale;
 		float diff = getVLen(this->pos(), pos);
-		//double t = xapp().gametime.getTimeAbs();
-		//Log(" diff " << setprecision(9) << diff << " " << t << endl);
-		//if (diff < 0.00001f) {
-			//Log(" diff " << diff << endl);
-		//}
 		this->pos() = pos;
 		this->rot() = rot;
-		worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, alpha);
-		//centralObject->draw(&path, &worldUtil, &mTerrain, md3dDevice, md3dImmediateContext, *gCamera, getGameTimeAbs());
-	}
-	else {
+	} else {
 		if (mesh->skinnedVertices.size() > 0) {
 			for (int skV = 0; skV < (int)mesh->skinnedVertices.size(); skV++) {
-				//if (skV > mesh->skinnedVertices.size()-60)
-				//path->recalculateBoneAnimation(this->pathDescBone, this, worldUtil, terrain, device, dc, cam, time);
-
 				WorldObjectVertex::VertexSkinned *v = &mesh->skinnedVertices[skV];
-				//XMVECTOR vfinal = Path::skin(v, &mesh->clips["Armature"], &boneAction->curves, pathDescBone->curSegment, 7.0f, pathDescBone->percentage);
 				XMVECTOR vfinal, normfinal;
 				xapp().world.path.skin(vfinal, normfinal, v, pathDescBone);
 				// TODO handle cpu calculated normals after animation/skinning here
@@ -400,16 +389,12 @@ void WorldObject::draw() {
 				XMStoreFloat3(&normfinal_flo, normfinal);
 				mesh->vertices[skV].Normal = normfinal_flo;
 			}
-			//XMMATRIX toWorldT = XMMatrixIdentity();
-			//XMStoreFloat4x4(&finalWorld, toWorldT);
 			mesh->createVertexAndIndexBuffer(worldObjectEffect);
-			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, alpha);
-		}
-		else {
-			// no skinned vertices
-			worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, alpha);
+		} else {
+			// no skinned vertices, no action/movement - nothing to do
 		}
 	}
+	worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, alpha);
 }
 
 void WorldObject::setAction(string name) {
@@ -499,6 +484,10 @@ void WorldObjectStore::createGroup(string groupname) {
 const vector<unique_ptr<WorldObject>> *WorldObjectStore::getGroup(string groupname) {
 	if (groups.count(groupname) == 0) return nullptr;
 	return &groups[groupname];
+}
+
+void WorldObjectStore::drawGroup(string groupname, size_t maxNum)
+{
 }
 
 void WorldObjectStore::addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid) {

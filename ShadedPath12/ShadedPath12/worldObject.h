@@ -90,6 +90,7 @@ public:
 	bool drawBoundingBox;
 	bool drawNormals;
 	Material material;
+	XMMATRIX calcToWorld();
 private:
 	XMFLOAT3 _pos;
 	XMFLOAT3 _rot;
@@ -111,6 +112,8 @@ public:
 	// obbject groups: give fast access to specific objects (e.g. all worm NPCs)
 	void createGroup(string groupname);
 	const vector<unique_ptr<WorldObject>> *getGroup(string groupname);
+	// draw all objects within a group (all have same mesh), set maxNum != 0 to draw max amount of objects per command list
+	void drawGroup(string groupname, size_t maxNum = 0);
 	void setWorldObjectEffect(WorldObjectEffect *objectEffect);
 	WorldObjectEffect*  getWorldObjectEffect() { return objectEffect; };
 private:
