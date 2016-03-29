@@ -38,11 +38,11 @@ void VR::init()
 	desc = ovr_GetHmdDesc(session);
 	resolution = desc.Resolution;
 	// Start the sensor which provides the Rift’s pose and motion.
-	result = ovr_ConfigureTracking(session, ovrTrackingCap_Orientation |
+/*	result = ovr_ConfigureTracking(session, ovrTrackingCap_Orientation |
 		ovrTrackingCap_MagYawCorrection |
 		ovrTrackingCap_Position, 0);
 	if (OVR_FAILURE(result)) Error(L"Could not enable Oculus Rift Tracking. Cannot run in OVR mode without Oculus Rift tracking.");
-
+	*/
 	// Setup VR components, filling out description
 	eyeRenderDesc[0] = ovr_GetRenderDesc(session, ovrEye_Left, desc.DefaultEyeFov[0]);
 	eyeRenderDesc[1] = ovr_GetRenderDesc(session, ovrEye_Right, desc.DefaultEyeFov[1]);
@@ -68,7 +68,7 @@ void VR::initD3D()
 
 
 	// xapp->d3d11Device.Get() will not work, we need a real D3D11 device
-	
+
 	for (int i = 0; i < xapp->FrameCount; i++) {
 		ID3D12Resource *resource = xapp->renderTargets[i].Get();
 		D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
@@ -83,7 +83,19 @@ void VR::initD3D()
 		//xapp->d3d11On12Device->AcquireWrappedResources(xapp->wrappedBackBuffers[i].GetAddressOf(), 1);
 	}
 
-	D3D11_TEXTURE2D_DESC dsDesc;
+	ovrTextureSwapChainDesc dsDesc = {};
+	dsDesc.Type = ovrTexture_2D;
+	dsDesc.Format = OVR_FORMAT_R8G8B8A8_UNORM_SRGB;
+	dsDesc.ArraySize = 1;
+	dsDesc.Width = bufferSize.w;
+	dsDesc.Height = bufferSize.h;
+	dsDesc.MipLevels = 1;
+	dsDesc.SampleCount = 1;
+	dsDesc.StaticImage = ovrFalse;
+	dsDesc.MiscFlags = ovrTextureMisc_None;
+	dsDesc.BindFlags = ovrTextureBind_DX_RenderTarget;
+
+/*	D3D11_TEXTURE2D_DESC dsDesc;
 	dsDesc.Width = bufferSize.w;
 	dsDesc.Height = bufferSize.h;
 	dsDesc.MipLevels = 1;
@@ -95,11 +107,20 @@ void VR::initD3D()
 	dsDesc.CPUAccessFlags = 0;
 	dsDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
 	dsDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-	if (ovr_CreateSwapTextureSetD3D11(session, xapp->reald3d11Device.Get(), &dsDesc, 0, &pTextureSet) == ovrSuccess)
+	*/
+	if (ovr_CreateTextureSwapChainDX(session, xapp->reald3d11Device.Get(), &dsDesc, &textureSwapChain) == ovrSuccess)
 	{
-		for (int i = 0; i < pTextureSet->TextureCount; ++i)
+		int count = 0;
+		ovr_GetTextureSwapChainLength(session, textureSwapChain, &count);
+		texRtv.resize(count);
+		for (int i = 0; i < count; ++i)
 		{
-			ovrD3D11Texture* tex = (ovrD3D11Texture*)&pTextureSet->Textures[i];
+			ID3D11Texture2D* texture = nullptr;
+			ovr_GetTextureSwapChainBufferDX(session, textureSwapChain, i, IID_PPV_ARGS(&texture));
+			xapp->reald3d11Device.Get()->CreateRenderTargetView(texture, nullptr, &texRtv[i]);
+			texture->Release();
+
+/*			ovrD3D11Texture* tex = (ovrD3D11Texture*)&pTextureSet->Textures[i];
 			ComPtr<IDXGIResource> dxgires;
 			tex->D3D11.pTexture->QueryInterface<IDXGIResource>(&dxgires);
 			//Log("dxgires = " << dxgires.GetAddressOf() << endl);
@@ -108,13 +129,13 @@ void VR::initD3D()
 			//Log("shared handle = " << shHandle << endl);
 			xapp->d3d11Device->OpenSharedResource(shHandle, IID_PPV_ARGS(&xapp->wrappedTextures[i]));
 			//xapp->reald3d11Device->CreateRenderTargetView(tex->D3D11.pTexture, NULL, &pTexRtv[i]);
-		}
+*/		}
 	}
 	// Initialize our single full screen Fov layer.
 	layer.Header.Type = ovrLayerType_EyeFov;
 	layer.Header.Flags = 0;
-	layer.ColorTexture[0] = pTextureSet;
-	layer.ColorTexture[1] = nullptr;
+	layer.ColorTexture[0] = textureSwapChain;
+	layer.ColorTexture[1] = textureSwapChain;
 	layer.Fov[0] = eyeRenderDesc[0].Fov;
 	layer.Fov[1] = eyeRenderDesc[1].Fov;
 	layer.Viewport[0] = Recti(0, 0, bufferSize.w / 2, bufferSize.h);
@@ -231,9 +252,10 @@ void Matrix4fToXM(XMFLOAT4X4 &xm, Matrix4f &m) {
 void VR::nextTracking()
 {
 	// Get both eye poses simultaneously, with IPD offset already included. 
-	ovrVector3f useHmdToEyeViewOffset[2] = { eyeRenderDesc[0].HmdToEyeViewOffset, eyeRenderDesc[1].HmdToEyeViewOffset };
+	ovrVector3f useHmdToEyeViewOffset[2] = { eyeRenderDesc[0].HmdToEyeOffset, eyeRenderDesc[1].HmdToEyeOffset };
 	//ovrPosef temp_EyeRenderPose[2];
-	ovrTrackingState ts = ovr_GetTrackingState(session, ovr_GetTimeInSeconds(), false);
+	double displayMidpointSeconds = ovr_GetPredictedDisplayTime(session, 0);
+	ovrTrackingState ts = ovr_GetTrackingState(session, displayMidpointSeconds, false);
 	ovr_CalcEyePoses(ts.HeadPose.ThePose, useHmdToEyeViewOffset, layer.RenderPose);
 
 	// Render the two undistorted eye views into their render buffers.  
@@ -279,9 +301,13 @@ void VR::submitFrame()
 	UINT frameIndex = xapp->swapChain->GetCurrentBackBufferIndex();
 
 	// Increment to use next texture, just before writing
-	pTextureSet->CurrentIndex = (pTextureSet->CurrentIndex + 1) % pTextureSet->TextureCount;
+	int currentIndex;
+	ovr_GetTextureSwapChainCurrentIndex(session, textureSwapChain, &currentIndex);
+	ovr_CommitTextureSwapChain(session, textureSwapChain);
+/*	pTextureSet->CurrentIndex = (pTextureSet->CurrentIndex + 1) % pTextureSet->TextureCount; */
 	xapp->d3d11On12Device->AcquireWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
-	xapp->d3d11DeviceContext->CopyResource(xapp->wrappedTextures[pTextureSet->CurrentIndex].Get(), xapp->wrappedBackBuffers[frameIndex].Get());
+	//xapp->d3d11DeviceContext->CopyResource(xapp->wrappedTextures[pTextureSet->CurrentIndex].Get(), xapp->wrappedBackBuffers[frameIndex].Get());
+	xapp->d3d11DeviceContext->CopyResource(xapp->wrappedTextures[currentIndex].Get(), xapp->wrappedBackBuffers[frameIndex].Get());
 	xapp->d3d11On12Device->ReleaseWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
 	xapp->d3d11DeviceContext->Flush();
 

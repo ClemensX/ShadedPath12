@@ -79,7 +79,9 @@ private:
 	ovrPosef         EyeRenderPose[2];     // Useful to remember where the rendered eye originated
 	float            YawAtRender[2];       // Useful to remember where the rendered eye originated
 	XMFLOAT4X4 viewOVR[2], projOVR[2];
-	ovrSwapTextureSet *      pTextureSet = 0;
+	//ovrSwapTextureSet *      pTextureSet = 0;
+	ovrTextureSwapChain textureSwapChain = 0;
+	std::vector<ID3D11RenderTargetView*> texRtv;
 	ovrLayerEyeFov layer;
 
 #endif
