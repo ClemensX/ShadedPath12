@@ -13,6 +13,13 @@ XMFLOAT4X4 VR::ident;
 
 VR::~VR() {
 #if defined(_OVR_)
+	int count;
+	ovr_GetTextureSwapChainLength(session, textureSwapChain, &count);
+	for (int i = 0; i < count; ++i)
+	{
+		texRtv[i]->Release();
+	}
+	ovr_DestroyTextureSwapChain(session, textureSwapChain);
 	ovr_Destroy(session);
 	ovr_Shutdown();
 #endif
@@ -115,21 +122,24 @@ void VR::initD3D()
 		texRtv.resize(count);
 		for (int i = 0; i < count; ++i)
 		{
-			ID3D11Texture2D* texture = nullptr;
-			ovr_GetTextureSwapChainBufferDX(session, textureSwapChain, i, IID_PPV_ARGS(&texture));
-			xapp->reald3d11Device.Get()->CreateRenderTargetView(texture, nullptr, &texRtv[i]);
-			texture->Release();
+			ID3D11Texture2D* tex = nullptr;
+			ovr_GetTextureSwapChainBufferDX(session, textureSwapChain, i, IID_PPV_ARGS(&tex));
+			xapp->reald3d11Device.Get()->CreateRenderTargetView(tex, nullptr, &texRtv[i]);
+			//tex->Release();
 
-/*			ovrD3D11Texture* tex = (ovrD3D11Texture*)&pTextureSet->Textures[i];
+			//ovrD3D11Texture* tex = (ovrD3D11Texture*)&pTextureSet->Textures[i];
+			////ID3D11Texture2D* tex = nullptr;
+			////ovr_GetMirrorTextureBufferDX(session, mirrorTexture, IID_PPV_ARGS(&tex));
 			ComPtr<IDXGIResource> dxgires;
-			tex->D3D11.pTexture->QueryInterface<IDXGIResource>(&dxgires);
+			tex->QueryInterface<IDXGIResource>(&dxgires);
 			//Log("dxgires = " << dxgires.GetAddressOf() << endl);
 			HANDLE shHandle;
 			dxgires->GetSharedHandle(&shHandle);
 			//Log("shared handle = " << shHandle << endl);
 			xapp->d3d11Device->OpenSharedResource(shHandle, IID_PPV_ARGS(&xapp->wrappedTextures[i]));
+			tex->Release();
 			//xapp->reald3d11Device->CreateRenderTargetView(tex->D3D11.pTexture, NULL, &pTexRtv[i]);
-*/		}
+		}
 	}
 	// Initialize our single full screen Fov layer.
 	layer.Header.Type = ovrLayerType_EyeFov;
@@ -290,7 +300,7 @@ void VR::nextTracking()
 		xapp->camera.look.z = finalForward.z;
 
 		Matrix4f view = Matrix4f::LookAtLH(shiftedEyePos, shiftedEyePos + finalForward, finalUp);
-		Matrix4f projO = ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.2f, 2000.0f, false);
+		Matrix4f projO = ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.2f, 2000.0f, ovrProjection_LeftHanded);
 		Matrix4fToXM(this->viewOVR[eye], view.Transposed());
 		Matrix4fToXM(this->projOVR[eye], projO.Transposed());
 	}
@@ -303,14 +313,15 @@ void VR::submitFrame()
 	// Increment to use next texture, just before writing
 	int currentIndex;
 	ovr_GetTextureSwapChainCurrentIndex(session, textureSwapChain, &currentIndex);
-	ovr_CommitTextureSwapChain(session, textureSwapChain);
-/*	pTextureSet->CurrentIndex = (pTextureSet->CurrentIndex + 1) % pTextureSet->TextureCount; */
 	xapp->d3d11On12Device->AcquireWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
 	//xapp->d3d11DeviceContext->CopyResource(xapp->wrappedTextures[pTextureSet->CurrentIndex].Get(), xapp->wrappedBackBuffers[frameIndex].Get());
 	xapp->d3d11DeviceContext->CopyResource(xapp->wrappedTextures[currentIndex].Get(), xapp->wrappedBackBuffers[frameIndex].Get());
 	xapp->d3d11On12Device->ReleaseWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
 	xapp->d3d11DeviceContext->Flush();
-
+	ovr_CommitTextureSwapChain(session, textureSwapChain);
+	ovr_CommitTextureSwapChain(session, textureSwapChain);
+	/*	pTextureSet->CurrentIndex = (pTextureSet->CurrentIndex + 1) % pTextureSet->TextureCount;
+*/
 	// Submit frame with one layer we have.
 	ovrLayerHeader* layers = &layer.Header;
 	ovrResult       result = ovr_SubmitFrame(session, 0, nullptr, &layers, 1);
