@@ -17,7 +17,7 @@ VR::~VR() {
 	ovr_GetTextureSwapChainLength(session, textureSwapChain, &count);
 	for (int i = 0; i < count; ++i)
 	{
-		texRtv[i]->Release();
+		//texRtv[i]->Release();
 	}
 	ovr_DestroyTextureSwapChain(session, textureSwapChain);
 	ovr_Destroy(session);
@@ -115,21 +115,39 @@ void VR::initD3D()
 	dsDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
 	dsDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
 	*/
-	if (ovr_CreateTextureSwapChainDX(session, xapp->reald3d11Device.Get(), &dsDesc, &textureSwapChain) == ovrSuccess)
+	if (ovr_CreateTextureSwapChainDX(session, xapp->commandQueue.Get()/*xapp->reald3d11Device.Get()*/, &dsDesc, &textureSwapChain) == ovrSuccess)
 	{
 		int count = 0;
 		ovr_GetTextureSwapChainLength(session, textureSwapChain, &count);
 		texRtv.resize(count);
+		texResource.resize(count);
+		// Create descriptor heaps.
+		UINT rtvDescriptorSize;
+		{
+			// Describe and create a render target view (RTV) descriptor heap.
+
+			D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
+			rtvHeapDesc.NumDescriptors = count;
+			rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+			rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+			ThrowIfFailed(xapp->device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvVRHeap)));
+			rtvVRHeap->SetName(L"rtVRHeap_xapp");
+
+			rtvDescriptorSize = xapp->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		}
 		for (int i = 0; i < count; ++i)
 		{
 			ID3D11Texture2D* tex = nullptr;
-			ovr_GetTextureSwapChainBufferDX(session, textureSwapChain, i, IID_PPV_ARGS(&tex));
-			xapp->reald3d11Device.Get()->CreateRenderTargetView(tex, nullptr, &texRtv[i]);
-			//tex->Release();
+			ovr_GetTextureSwapChainBufferDX(session, textureSwapChain, i, IID_PPV_ARGS(&texResource[i]));
+			//xapp->reald3d11Device.Get()->CreateRenderTargetView(tex, nullptr, &texRtv[i]);
 
-			//ovrD3D11Texture* tex = (ovrD3D11Texture*)&pTextureSet->Textures[i];
-			////ID3D11Texture2D* tex = nullptr;
-			////ovr_GetMirrorTextureBufferDX(session, mirrorTexture, IID_PPV_ARGS(&tex));
+			D3D12_RENDER_TARGET_VIEW_DESC rtvd = {};
+			rtvd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			rtvd.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvVRHeap->GetCPUDescriptorHandleForHeapStart(), count, rtvDescriptorSize);
+			texRtv[i] = rtvHandle;
+			xapp->device->CreateRenderTargetView(texResource[i], &rtvd, texRtv[i]);
+
 			ComPtr<IDXGIResource> dxgires;
 			tex->QueryInterface<IDXGIResource>(&dxgires);
 			//Log("dxgires = " << dxgires.GetAddressOf() << endl);
@@ -138,7 +156,6 @@ void VR::initD3D()
 			//Log("shared handle = " << shHandle << endl);
 			xapp->d3d11Device->OpenSharedResource(shHandle, IID_PPV_ARGS(&xapp->wrappedTextures[i]));
 			tex->Release();
-			//xapp->reald3d11Device->CreateRenderTargetView(tex->D3D11.pTexture, NULL, &pTexRtv[i]);
 		}
 	}
 	// Initialize our single full screen Fov layer.

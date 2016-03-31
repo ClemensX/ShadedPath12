@@ -81,7 +81,10 @@ private:
 	XMFLOAT4X4 viewOVR[2], projOVR[2];
 	//ovrSwapTextureSet *      pTextureSet = 0;
 	ovrTextureSwapChain textureSwapChain = 0;
-	std::vector<ID3D11RenderTargetView*> texRtv;
+	//std::vector<ID3D11RenderTargetView*> texRtv;
+	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texRtv;
+	std::vector<ID3D12Resource*> texResource;
+	ComPtr<ID3D12DescriptorHeap> rtvVRHeap;  // Resource Target View Heap
 	ovrLayerEyeFov layer;
 
 #endif
