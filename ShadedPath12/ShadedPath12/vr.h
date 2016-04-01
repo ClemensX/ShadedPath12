@@ -59,6 +59,9 @@ public:
 #endif
 
 	bool enabled = false;  // default: VR is off, switch on by command line option -vr
+	std::vector<ID3D12Resource*> texResource;
+	ComPtr<ID3D12DescriptorHeap> rtvVRHeap;  // Resource Target View Heap
+	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texRtv;
 protected:
 	EyePos curEye = EyeLeft;
 private:
@@ -82,9 +85,6 @@ private:
 	//ovrSwapTextureSet *      pTextureSet = 0;
 	ovrTextureSwapChain textureSwapChain = 0;
 	//std::vector<ID3D11RenderTargetView*> texRtv;
-	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texRtv;
-	std::vector<ID3D12Resource*> texResource;
-	ComPtr<ID3D12DescriptorHeap> rtvVRHeap;  // Resource Target View Heap
 	ovrLayerEyeFov layer;
 
 #endif

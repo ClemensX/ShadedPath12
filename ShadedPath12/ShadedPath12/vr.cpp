@@ -144,18 +144,18 @@ void VR::initD3D()
 			D3D12_RENDER_TARGET_VIEW_DESC rtvd = {};
 			rtvd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 			rtvd.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvVRHeap->GetCPUDescriptorHandleForHeapStart(), count, rtvDescriptorSize);
+			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvVRHeap->GetCPUDescriptorHandleForHeapStart(), i, rtvDescriptorSize);
 			texRtv[i] = rtvHandle;
-			xapp->device->CreateRenderTargetView(texResource[i], &rtvd, texRtv[i]);
+			xapp->device->CreateRenderTargetView(texResource[i], nullptr/*&rtvd*/, texRtv[i]);
 
-			ComPtr<IDXGIResource> dxgires;
-			tex->QueryInterface<IDXGIResource>(&dxgires);
-			//Log("dxgires = " << dxgires.GetAddressOf() << endl);
-			HANDLE shHandle;
-			dxgires->GetSharedHandle(&shHandle);
-			//Log("shared handle = " << shHandle << endl);
-			xapp->d3d11Device->OpenSharedResource(shHandle, IID_PPV_ARGS(&xapp->wrappedTextures[i]));
-			tex->Release();
+			//ComPtr<IDXGIResource> dxgires;
+			//tex->QueryInterface<IDXGIResource>(&dxgires);
+			////Log("dxgires = " << dxgires.GetAddressOf() << endl);
+			//HANDLE shHandle;
+			//dxgires->GetSharedHandle(&shHandle);
+			////Log("shared handle = " << shHandle << endl);
+			//xapp->d3d11Device->OpenSharedResource(shHandle, IID_PPV_ARGS(&xapp->wrappedTextures[i]));
+			//tex->Release();
 		}
 	}
 	// Initialize our single full screen Fov layer.
@@ -330,11 +330,11 @@ void VR::submitFrame()
 	// Increment to use next texture, just before writing
 	int currentIndex;
 	ovr_GetTextureSwapChainCurrentIndex(session, textureSwapChain, &currentIndex);
-	xapp->d3d11On12Device->AcquireWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
-	//xapp->d3d11DeviceContext->CopyResource(xapp->wrappedTextures[pTextureSet->CurrentIndex].Get(), xapp->wrappedBackBuffers[frameIndex].Get());
-	xapp->d3d11DeviceContext->CopyResource(xapp->wrappedTextures[currentIndex].Get(), xapp->wrappedBackBuffers[frameIndex].Get());
-	xapp->d3d11On12Device->ReleaseWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
-	xapp->d3d11DeviceContext->Flush();
+	//xapp->d3d11On12Device->AcquireWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+	//xapp->d3d11DeviceContext->CopyResource(xapp->wrappedTextures[currentIndex].Get(), xapp->wrappedBackBuffers[frameIndex].Get());
+	//xapp->d3d11On12Device->ReleaseWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
+	//xapp->d3d11DeviceContext->Flush();
+	//xapp->device->
 	ovr_CommitTextureSwapChain(session, textureSwapChain);
 	ovr_CommitTextureSwapChain(session, textureSwapChain);
 	/*	pTextureSet->CurrentIndex = (pTextureSet->CurrentIndex + 1) % pTextureSet->TextureCount;
