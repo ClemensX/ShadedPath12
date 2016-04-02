@@ -330,12 +330,13 @@ void VR::submitFrame()
 	// Increment to use next texture, just before writing
 	int currentIndex;
 	ovr_GetTextureSwapChainCurrentIndex(session, textureSwapChain, &currentIndex);
+	assert(currentIndex == frameIndex);
 	//xapp->d3d11On12Device->AcquireWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
 	//xapp->d3d11DeviceContext->CopyResource(xapp->wrappedTextures[currentIndex].Get(), xapp->wrappedBackBuffers[frameIndex].Get());
 	//xapp->d3d11On12Device->ReleaseWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
 	//xapp->d3d11DeviceContext->Flush();
 	//xapp->device->
-	ovr_CommitTextureSwapChain(session, textureSwapChain);
+	//ovr_CommitTextureSwapChain(session, textureSwapChain);
 	ovr_CommitTextureSwapChain(session, textureSwapChain);
 	/*	pTextureSet->CurrentIndex = (pTextureSet->CurrentIndex + 1) % pTextureSet->TextureCount;
 */
