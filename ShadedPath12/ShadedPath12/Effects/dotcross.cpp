@@ -26,7 +26,7 @@ void Dotcross::init()
 		psoDesc.SampleMask = UINT_MAX;
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
 		psoDesc.NumRenderTargets = 1;
-		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 		psoDesc.SampleDesc.Count = 1;
 
@@ -100,7 +100,7 @@ void Dotcross::updateTask()
 	}
 	size_t vertexBufferSize = sizeof(Vertex) * all.size();
 	mutex_dotcross.unlock();
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	//createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(), L"dotcross");
 	createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(), L"dotcross", vertexBuffer, vertexBufferUpload, commandAllocators[frameIndex], commandLists[frameIndex], vertexBufferView);
 
@@ -130,7 +130,7 @@ void Dotcross::destroy()
 void Dotcross::preDraw()
 {
 	// last frame must have been finished before we run here!!!
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	//auto &f = frameData[xapp().lastPresentedFrame];
 	//waitForSyncPoint(f);
 	//auto &f = frameData[frameIndex];
@@ -156,7 +156,8 @@ void Dotcross::preDraw()
 	// Indicate that the back buffer will be used as a render target.
 	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
 	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
@@ -190,7 +191,7 @@ void Dotcross::draw()
 
 void Dotcross::drawInternal()
 {
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	preDraw();
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
@@ -201,7 +202,7 @@ void Dotcross::drawInternal()
 
 void Dotcross::postDraw()
 {
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 
 	ThrowIfFailed(commandLists[frameIndex]->Close());
 	// Execute the command list.

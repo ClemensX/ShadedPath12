@@ -36,7 +36,7 @@ void WorldObjectEffect::init(WorldObjectStore *oStore) {
 		psoDesc.SampleMask = UINT_MAX;
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		psoDesc.NumRenderTargets = 1;
-		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 		psoDesc.SampleDesc.Count = 1;
 
@@ -95,7 +95,7 @@ void WorldObjectEffect::init(WorldObjectStore *oStore) {
 }
 
 void WorldObjectEffect::createAndUploadVertexBuffer(Mesh * mesh) {
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	size_t vertexSize = sizeof(WorldObjectVertex::VertexTextured);
 	size_t bufferSize = vertexSize * mesh->numVertices;
 	void *data = &mesh->vertices[0];
@@ -178,7 +178,7 @@ void WorldObjectEffect::draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, 
 void WorldObjectEffect::preDraw()
 {
 	// last frame must have been finished before we run here!!!
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	//auto &f = frameData[xapp().lastPresentedFrame];
 	//waitForSyncPoint(f);
 	//auto &f = frameData[frameIndex];
@@ -205,7 +205,8 @@ void WorldObjectEffect::preDraw()
 	// Indicate that the back buffer will be used as a render target.
 	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
 	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
@@ -267,7 +268,7 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 void WorldObjectEffect::drawInternal(DrawInfo &di)
 {
 	mutex_Object.lock();
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	preDraw();
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// update buffers for this text line:
@@ -289,7 +290,7 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 
 void WorldObjectEffect::postDraw()
 {
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 
 	ThrowIfFailed(commandLists[frameIndex]->Close());
 	// Execute the command list.

@@ -9,7 +9,7 @@ void EffectBase::createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> qu
 
 void EffectBase::waitForSyncPoint(FrameResource & f)
 {
-	//UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	//	int frameIndex = xapp().getCurrentBackBufferIndex();
 	UINT64 completed = f.fence->GetCompletedValue();
 	//Log("ev start " << frameIndex << " " << completed << " " << f.fenceValue << endl);
 	if (completed == -1) {
@@ -50,7 +50,7 @@ void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSiz
 	D3D12_VERTEX_BUFFER_VIEW &vertexBufferView
 	)
 {
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	UINT vertexBufferSize = (UINT)bufferSize;
 	ThrowIfFailed(xapp().device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
@@ -100,7 +100,7 @@ void EffectBase::createAndUploadIndexBuffer(size_t bufferSize, void *data, ID3D1
 	D3D12_INDEX_BUFFER_VIEW &indexBufferView
 	)
 {
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	UINT indexBufferSize = (UINT)bufferSize;
 	ThrowIfFailed(xapp().device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
@@ -146,7 +146,7 @@ void EffectBase::createAndUploadIndexBuffer(size_t bufferSize, void *data, ID3D1
 /*
 static void createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void *data, ID3D12PipelineState *pipelineState, LPCWSTR baseName)
 {
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	UINT vertexBufferSize = (UINT)bufferSize;
 	ThrowIfFailed(xapp().device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),

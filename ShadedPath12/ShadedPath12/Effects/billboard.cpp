@@ -32,7 +32,7 @@ void Billboard::init() {
 		psoDesc.SampleMask = UINT_MAX;
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		psoDesc.NumRenderTargets = 1;
-		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 		psoDesc.SampleDesc.Count = 1;
 
@@ -115,7 +115,7 @@ void Billboard::updateTask()
 {
 	mutex_Billboard.lock();
 	//updateRunning = true; already done in update()
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	// first run: determine size for all text
 	vector<Vertex>& vertexBuffer = recreateVertexBufferContent();
 	size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
@@ -153,7 +153,7 @@ void Billboard::updateTask()
 void Billboard::preDraw()
 {
 	// last frame must have been finished before we run here!!!
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	//auto &f = frameData[xapp().lastPresentedFrame];
 	//waitForSyncPoint(f);
 	//auto &f = frameData[frameIndex];
@@ -179,7 +179,8 @@ void Billboard::preDraw()
 	// Indicate that the back buffer will be used as a render target.
 	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
 	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
@@ -217,7 +218,7 @@ void Billboard::draw()
 void Billboard::drawInternal()
 {
 	mutex_Billboard.lock();
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	preDraw();
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// update buffers for this text line:
@@ -246,7 +247,7 @@ void Billboard::drawInternal()
 
 void Billboard::postDraw()
 {
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 
 	ThrowIfFailed(commandLists[frameIndex]->Close());
 	// Execute the command list.

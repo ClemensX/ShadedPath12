@@ -17,6 +17,7 @@ VR::~VR() {
 	ovr_GetTextureSwapChainLength(session, textureSwapChain, &count);
 	for (int i = 0; i < count; ++i)
 	{
+		texResource[i]->Release();
 		//texRtv[i]->Release();
 	}
 	ovr_DestroyTextureSwapChain(session, textureSwapChain);
@@ -76,19 +77,19 @@ void VR::initD3D()
 
 	// xapp->d3d11Device.Get() will not work, we need a real D3D11 device
 
-	for (int i = 0; i < xapp->FrameCount; i++) {
-		ID3D12Resource *resource = xapp->renderTargets[i].Get();
-		D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
-		D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
-		ThrowIfFailed(xapp->d3d11On12Device->CreateWrappedResource(
-			resource,
-			&d3d11Flags,
-			D3D12_RESOURCE_STATE_RENDER_TARGET,
-			D3D12_RESOURCE_STATE_PRESENT,
-			IID_PPV_ARGS(&xapp->wrappedBackBuffers[i])
-			));
-		//xapp->d3d11On12Device->AcquireWrappedResources(xapp->wrappedBackBuffers[i].GetAddressOf(), 1);
-	}
+	//for (int i = 0; i < xapp->FrameCount; i++) {
+	//	ID3D12Resource *resource = xapp->renderTargets[i].Get();
+	//	D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
+	//	D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
+	//	ThrowIfFailed(xapp->d3d11On12Device->CreateWrappedResource(
+	//		resource,
+	//		&d3d11Flags,
+	//		D3D12_RESOURCE_STATE_RENDER_TARGET,
+	//		D3D12_RESOURCE_STATE_PRESENT,
+	//		IID_PPV_ARGS(&xapp->wrappedBackBuffers[i])
+	//		));
+	//	//xapp->d3d11On12Device->AcquireWrappedResources(xapp->wrappedBackBuffers[i].GetAddressOf(), 1);
+	//}
 
 	ovrTextureSwapChainDesc dsDesc = {};
 	dsDesc.Type = ovrTexture_2D;
@@ -325,12 +326,13 @@ void VR::nextTracking()
 
 void VR::submitFrame()
 {
-	UINT frameIndex = xapp->swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp->getCurrentBackBufferIndex();
 
 	// Increment to use next texture, just before writing
 	int currentIndex;
 	ovr_GetTextureSwapChainCurrentIndex(session, textureSwapChain, &currentIndex);
 	assert(currentIndex == frameIndex);
+	xapp->lastPresentedFrame = frameIndex;
 	//xapp->d3d11On12Device->AcquireWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
 	//xapp->d3d11DeviceContext->CopyResource(xapp->wrappedTextures[currentIndex].Get(), xapp->wrappedBackBuffers[frameIndex].Get());
 	//xapp->d3d11On12Device->ReleaseWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
@@ -346,6 +348,7 @@ void VR::submitFrame()
 	bool isVisible = (result == ovrSuccess); 
 	//Log
 }
+
 #else
 void VR::nextTracking()
 {
@@ -356,4 +359,11 @@ void VR::submitFrame()
 }
 
 #endif
+
+CD3DX12_CPU_DESCRIPTOR_HANDLE VR::getRTVHandle(int frameIndex) {
+	UINT rtvDescriptorSize;
+	rtvDescriptorSize = xapp->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvVRHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescriptorSize);
+	return rtvHandle;
+};
 

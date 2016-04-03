@@ -62,6 +62,13 @@ public:
 	std::vector<ID3D12Resource*> texResource;
 	ComPtr<ID3D12DescriptorHeap> rtvVRHeap;  // Resource Target View Heap
 	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texRtv;
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE getRTVHandle(int frameIndex);
+	int getCurrentFrameBufferIndex() {
+		int currentIndex;
+		ovr_GetTextureSwapChainCurrentIndex(session, textureSwapChain, &currentIndex);
+		return currentIndex;
+	};
 protected:
 	EyePos curEye = EyeLeft;
 private:

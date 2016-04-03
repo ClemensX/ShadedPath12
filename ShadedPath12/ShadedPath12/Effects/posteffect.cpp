@@ -6,9 +6,9 @@ void PostEffect::init()
 	Log("PostEffect init for " << frameCount << " frames called" << endl);
 
 	// create render textures for post effects:
-	DXGI_SWAP_CHAIN_DESC1 scd;
-	xapp().swapChain->GetDesc1(&scd);
-	Log("" << scd.Format << endl);
+	//DXGI_SWAP_CHAIN_DESC1 scd;
+	//xapp().swapChain->GetDesc1(&scd);
+	//Log("" << scd.Format << endl);
 
 	// try to do all expensive operations like shader loading and PSO creation here
 	// Create the pipeline state, which includes compiling and loading shaders.
@@ -33,7 +33,6 @@ void PostEffect::init()
 		psoDesc.SampleMask = UINT_MAX;
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		psoDesc.NumRenderTargets = 1;
-		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		psoDesc.SampleDesc.Count = 1;
 		//ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
@@ -169,7 +168,7 @@ void PostEffect::init2()
 		{ XMFLOAT3(1,  1, 0),  XMFLOAT2(1, 0) }
 	};
 	UINT vertexBufferSize = (UINT)(sizeof(all));
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	ThrowIfFailed(xapp().device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
@@ -226,7 +225,7 @@ void PostEffect::init2()
 }
 
 void PostEffect::preDraw() {
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	// Command list allocators can only be reset when the associated 
 	// command lists have finished execution on the GPU; apps should use 
 	// fences to determine GPU execution progress.
@@ -238,7 +237,9 @@ void PostEffect::preDraw() {
 	ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
 
 	// Indicate that the back buffer will now be used as pixel shader input.
-	ID3D12Resource *resource = xapp().renderTargets[frameIndex].Get();
+	ID3D12Resource *resource;
+	if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
+	else resource = xapp().vr.texResource[frameIndex];
 	D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
 	//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 	//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
@@ -265,17 +266,22 @@ void PostEffect::preDraw() {
 	// Indicate that the back buffer will be used as a render target.
 	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
-	//commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
-	commandLists[frameIndex]->OMSetRenderTargets(1, &xapp().vr.texRtv[frameIndex], FALSE, nullptr);
+	if (!xapp().ovrRendering) {
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+		commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+	} else {
+		commandLists[frameIndex]->OMSetRenderTargets(1, &xapp().vr.texRtv[frameIndex], FALSE, nullptr);
+	}
 }
 
 void PostEffect::draw()
 {
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	preDraw();
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	ID3D12Resource *frame = xapp().renderTargets[frameIndex].Get();
+	ID3D12Resource *frame;
+	if (!xapp().ovrRendering) frame = xapp().renderTargets[frameIndex].Get();
+	else frame = xapp().vr.texResource[frameIndex];
 	CD3DX12_TEXTURE_COPY_LOCATION Dst(m_texture.Get(), 0);
 	CD3DX12_TEXTURE_COPY_LOCATION Src(frame, 0);
 	commandLists[frameIndex]->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
@@ -286,7 +292,8 @@ void PostEffect::draw()
 		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
 	const float clearColor[] = { 0.0f, 1.0f, 0.0f, 1.0f };
 	commandLists[frameIndex]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	// we now have the current frame in the texture - make draw calls to refill our rtv
@@ -299,7 +306,7 @@ void PostEffect::draw()
 }
 
 void PostEffect::ovrDraw() {
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	// Note: do not transition the render target to present here.
 	// the transition will occur when the wrapped 11On12 render
 	// target resource is released.
@@ -314,19 +321,20 @@ void PostEffect::ovrDraw() {
 	//xapp().d3d11On12Device->ReleaseWrappedResources(xapp().wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
 	//xapp().d3d11DeviceContext->Flush();
 
-	xapp().vr.submitFrame();
 
 	//rDesc = resource->GetDesc();
 }
 
 void PostEffect::postDraw() {
-	UINT frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	// Note: do not transition the render target to present here.
 	// the transition will occur when the wrapped 11On12 render
 	// target resource is released.
 
 	// Indicate that the back buffer will now be used to present.
-	ID3D12Resource *resource = xapp().renderTargets[frameIndex].Get();
+	ID3D12Resource *resource;
+	if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
+	else resource = xapp().vr.texResource[frameIndex];
 	D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
 	//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PRESENT,
 	//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
@@ -339,6 +347,7 @@ void PostEffect::postDraw() {
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 	//Sleep(50);
 	rDesc = resource->GetDesc();
+	xapp().vr.submitFrame();
 }
 
 void PostEffect::setAlternateFinalFrame(ID3D12DescriptorHeap * heap) {

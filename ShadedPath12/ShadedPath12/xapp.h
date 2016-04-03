@@ -81,6 +81,21 @@ public:
 		}
 	};
 
+	CD3DX12_CPU_DESCRIPTOR_HANDLE getRTVHandle(int frameIndex) {
+		if (ovrRendering) return vr.getRTVHandle(frameIndex);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescriptorSize);
+		return rtvHandle;
+	};
+
+	int getCurrentBackBufferIndex() {
+		int frameIndex = 0;
+		if (!ovrRendering) {
+			frameIndex = swapChain->GetCurrentBackBufferIndex();
+		} else {
+			frameIndex = vr.getCurrentFrameBufferIndex();
+		}
+		return frameIndex;
+	}
 	// query virtual key definitions (VK_) from Winuser.h
 	bool keyDown(BYTE key);
 
