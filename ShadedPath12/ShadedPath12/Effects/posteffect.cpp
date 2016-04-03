@@ -347,7 +347,7 @@ void PostEffect::postDraw() {
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 	//Sleep(50);
 	rDesc = resource->GetDesc();
-	xapp().vr.submitFrame();
+	if (xapp().ovrRendering) xapp().vr.submitFrame();
 }
 
 void PostEffect::setAlternateFinalFrame(ID3D12DescriptorHeap * heap) {

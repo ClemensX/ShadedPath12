@@ -299,42 +299,42 @@ void XApp::init()
 		&swapChain0
 		));
 
-	//ThrowIfFailed(swapChain0.As(&swapChain));
-	swapChain = nullptr;
-	frameIndex = 0;//xapp().swapChain->GetCurrentBackBufferIndex();
+	ThrowIfFailed(swapChain0.As(&swapChain));
+	//swapChain = nullptr;
+	frameIndex = xapp().swapChain->GetCurrentBackBufferIndex();
 
 	if (ovrRendering) {
 		vr.initD3D();
 	}
 
-	//// Create descriptor heaps.
-	//{
-	//	// Describe and create a render target view (RTV) descriptor heap.
+	// Create descriptor heaps.
+	{
+		// Describe and create a render target view (RTV) descriptor heap.
 
-	//	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-	//	rtvHeapDesc.NumDescriptors = FrameCount;
-	//	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	//	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	//	ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap)));
-	//	rtvHeap->SetName(L"rtvHeap_xapp");
+		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
+		rtvHeapDesc.NumDescriptors = FrameCount;
+		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+		ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap)));
+		rtvHeap->SetName(L"rtvHeap_xapp");
 
-	//	rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	//}
+		rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	}
 
 	// Create frame resources.
 	{
-		//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart());
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart());
 
 		// Create a RTV for each frame.
 		for (UINT n = 0; n < FrameCount; n++)
 		{
-		//	ThrowIfFailed(swapChain->GetBuffer(n, IID_PPV_ARGS(&renderTargets[n])));
-		//	device->CreateRenderTargetView(renderTargets[n].Get(), nullptr, rtvHandle);
-		//	wstringstream s;
-		//	s << L"renderTarget_xapp[" << n << "]";
-		//	renderTargets[n]->SetName(s.str().c_str());
-		//	rtvHandle.Offset(1, rtvDescriptorSize);
-		//	//ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
+			ThrowIfFailed(swapChain->GetBuffer(n, IID_PPV_ARGS(&renderTargets[n])));
+			device->CreateRenderTargetView(renderTargets[n].Get(), nullptr, rtvHandle);
+			wstringstream s;
+			s << L"renderTarget_xapp[" << n << "]";
+			renderTargets[n]->SetName(s.str().c_str());
+			rtvHandle.Offset(1, rtvDescriptorSize);
+			//ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
 
 			// Describe and create a depth stencil view (DSV) descriptor heap.
 			D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
