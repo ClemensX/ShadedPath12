@@ -1,6 +1,10 @@
 # ShadedPath12
 DirectX 12 Framework and Applications
 
+**Update:** Now fully supporting Oculus SDK 1.3 with DirectX 12 render path.
+
+Old info text:
+
 For the time being, this repo will be used to port my DX11/Oculus framework to DX12. Until it has at least limited public use the version will stay on 0.0.
 
 Most development is done in C++ and uses VisualStudio 2015 Community with Win 10 SDK.
@@ -19,7 +23,7 @@ Some tools are Java based and use eclipse 4. This is mostly done for tools used 
 clone https://github.com/ClemensX/ShadedPath12.git to local folder, e.g. F:\dev\dx12test
 you will now have a sub folder ShadedPath12, this is where all my code is located.
 
-You need to copy / extract the Oculus SDK 8.0 to the same parent folder, so that you have the OculusSDK folder directly below dx12test, next to ShadedPath12
+You need to copy / extract the Oculus SDK 1.3 to the same parent folder, so that you have the OculusSDK folder directly below dx12test, next to ShadedPath12
 Now start the solution file F:\dev\dx12test\ShadedPath12\ShadedPath12\ShadedPath12.sln
 
 If you now compile/run the sample will run only in a window. To render to the Rift, go to the configuration properties/Debugging/Command Arguments and add -vr
