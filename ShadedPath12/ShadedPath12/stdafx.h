@@ -119,6 +119,7 @@ inline void ErrorExt(wstring msg, const char* file, DWORD line)
 
 #define Error(x) ErrorExt((x), __FILE__,  (DWORD)__LINE__)
 
+//#define DXGI_FORMAT_R8G8B8A8_UNORM_SRGB DXGI_FORMAT_R8G8B8A8_UNORM
 // framework headers
 #include <XAudio2.h>
 #include <x3daudio.h>

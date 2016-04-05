@@ -100,7 +100,7 @@ void VR::initD3D()
 	dsDesc.MipLevels = 1;
 	dsDesc.SampleCount = 1;
 	dsDesc.StaticImage = ovrFalse;
-	dsDesc.MiscFlags = ovrTextureMisc_None;
+	dsDesc.MiscFlags = ovrTextureMisc_DX_Typeless;//ovrTextureMisc_None;
 	dsDesc.BindFlags = ovrTextureBind_DX_RenderTarget;
 
 /*	D3D11_TEXTURE2D_DESC dsDesc;
@@ -147,7 +147,7 @@ void VR::initD3D()
 			rtvd.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvVRHeap->GetCPUDescriptorHandleForHeapStart(), i, rtvDescriptorSize);
 			texRtv[i] = rtvHandle;
-			xapp->device->CreateRenderTargetView(texResource[i], nullptr/*&rtvd*/, texRtv[i]);
+			xapp->device->CreateRenderTargetView(texResource[i], /*nullptr*/&rtvd, texRtv[i]);
 
 			//ComPtr<IDXGIResource> dxgires;
 			//tex->QueryInterface<IDXGIResource>(&dxgires);

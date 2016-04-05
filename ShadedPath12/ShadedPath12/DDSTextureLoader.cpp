@@ -194,7 +194,6 @@ static size_t BitsPerPixel( _In_ DXGI_FORMAT fmt )
     case DXGI_FORMAT_Y210:
     case DXGI_FORMAT_Y216:
         return 64;
-
     case DXGI_FORMAT_R10G10B10A2_TYPELESS:
     case DXGI_FORMAT_R10G10B10A2_UNORM:
     case DXGI_FORMAT_R10G10B10A2_UINT:
