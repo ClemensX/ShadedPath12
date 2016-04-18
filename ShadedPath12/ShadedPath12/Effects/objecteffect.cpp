@@ -48,7 +48,7 @@ void WorldObjectEffect::init(WorldObjectStore *oStore) {
 		ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
 		pipelineState.Get()->SetName(L"state_objecteffect_init");
 
-		createConstantBuffer((UINT) sizeof(cbv), L"objecteffect_cbv_resource");
+		createConstantBuffer((UINT) 2*sizeof(cbv), L"objecteffect_cbv_resource");
 		// set cbv data:
 		XMMATRIX ident = XMMatrixIdentity();
 		XMStoreFloat4x4(&cbv.wvp, ident);
@@ -199,7 +199,7 @@ void WorldObjectEffect::preDraw()
 	commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
 
 	// Set CBVs
-	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress());
+	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress()+sizeof(cbv));
 	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
 
 	// Indicate that the back buffer will be used as a render target.
@@ -240,7 +240,7 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		cbv.cameraPos.y = xapp().camera.pos.y;
 		cbv.cameraPos.z = xapp().camera.pos.z;
 		cbv.alpha = di.alpha;
-		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+		memcpy(cbvGPUDest+ sizeof(cbv), &cbv, sizeof(cbv));
 		drawInternal(di);
 		return;
 	}

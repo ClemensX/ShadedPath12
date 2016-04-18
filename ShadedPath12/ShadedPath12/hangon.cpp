@@ -157,7 +157,7 @@ void HangOn::draw()
 	textEffect.draw();
 	auto grp = xapp().objectStore.getGroup("meteor");
 	for (auto & w : *grp) {
-		//w->draw();
+		w->draw();
 	}
 
 	// optimization: draw whole group (objects with same mesh)
