@@ -10,6 +10,7 @@ public:
 		XMFLOAT3   cameraPos;
 		float    alpha;
 	};
+	UINT cbvAlignedSize = 0;	// aligned size of cbv for using indexes into larger buffers (256 byte alignment)
 	// gather all info needed to draw one object here
 	struct DrawInfo {
 		ComPtr<ID3D12Resource> &vertexBuffer;
