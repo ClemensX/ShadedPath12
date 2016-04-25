@@ -37,12 +37,14 @@ public:
 	void draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> &indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, Material &material, UINT objNum, float alpha = 1.0f);
 	void draw(DrawInfo &di);
 
+	// bull update is concerning a large number of world objects
+	void beginBulkUpdate();
+	void endBulkUpdate();
 private:
 	ConstantBufferFixed cb;
 	// globally enable wireframe display of objects
 	bool wireframe = false;
 
-private:
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
 	void preDraw(DrawInfo &di);
@@ -60,4 +62,5 @@ private:
 	ComPtr<ID3D12Resource> vertexBufferUploadX;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
 	WorldObjectStore *objectStore;
+	bool inBulkOperation = false;
 };

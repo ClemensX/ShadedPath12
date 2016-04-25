@@ -182,19 +182,21 @@ void WorldObjectEffect::preDraw(DrawInfo &di)
 {
 	// last frame must have been finished before we run here!!!
 	int frameIndex = xapp().getCurrentBackBufferIndex();
-	//auto &f = frameData[xapp().lastPresentedFrame];
-	//waitForSyncPoint(f);
-	//auto &f = frameData[frameIndex];
-	//waitForSyncPoint(f);
-	// Command list allocators can only be reset when the associated 
-	// command lists have finished execution on the GPU; apps should use 
-	// fences to determine GPU execution progress.
-	ThrowIfFailed(commandAllocators[frameIndex]->Reset());
+	if (!inBulkOperation) {
+		//auto &f = frameData[xapp().lastPresentedFrame];
+		//waitForSyncPoint(f);
+		//auto &f = frameData[frameIndex];
+		//waitForSyncPoint(f);
+		// Command list allocators can only be reset when the associated 
+		// command lists have finished execution on the GPU; apps should use 
+		// fences to determine GPU execution progress.
+		ThrowIfFailed(commandAllocators[frameIndex]->Reset());
 
-	// However, when ExecuteCommandList() is called on a particular command 
-	// list, that command list can then be reset at any time and must be before 
-	// re-recording.
-	ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
+		// However, when ExecuteCommandList() is called on a particular command 
+		// list, that command list can then be reset at any time and must be before 
+		// re-recording.
+		ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
+	}
 
 	// Set necessary state.
 	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
@@ -272,6 +274,20 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 	xapp().vr.endDraw();
 }
 
+void WorldObjectEffect::beginBulkUpdate()
+{
+	int frameIndex = xapp().getCurrentBackBufferIndex();
+	inBulkOperation = true;
+	ThrowIfFailed(commandAllocators[frameIndex]->Reset());
+	ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
+}
+
+void WorldObjectEffect::endBulkUpdate()
+{
+	inBulkOperation = false;
+	postDraw();
+}
+
 void WorldObjectEffect::drawInternal(DrawInfo &di)
 {
 	mutex_Object.lock();
@@ -298,6 +314,7 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 void WorldObjectEffect::postDraw()
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
+	if (inBulkOperation) return;
 
 	ThrowIfFailed(commandLists[frameIndex]->Close());
 	// Execute the command list.
@@ -306,7 +323,7 @@ void WorldObjectEffect::postDraw()
 	// tests
 	auto &f = frameData[frameIndex];
 	// Wait for the gpu to complete the draw.
-	//createSyncPoint(f, xapp().commandQueue);
-	//waitForSyncPoint(f); // ok, but not optimal
+	createSyncPoint(f, xapp().commandQueue);
+	waitForSyncPoint(f); // ok, but not optimal
 						 //Sleep(1);
 }
