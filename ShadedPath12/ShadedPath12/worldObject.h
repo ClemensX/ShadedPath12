@@ -49,6 +49,7 @@ public:
 
 class WorldObject {
 public:
+	static UINT count; // count all objects
 	WorldObject();
 	virtual ~WorldObject();
 	//XMFLOAT4 pos;
@@ -91,6 +92,7 @@ public:
 	bool drawNormals;
 	Material material;
 	XMMATRIX calcToWorld();
+	UINT objectNum; // used for single CBV buffer calculations - must be unique for all objects
 private:
 	XMFLOAT3 _pos;
 	XMFLOAT3 _rot;

@@ -394,7 +394,7 @@ void WorldObject::draw() {
 			// no skinned vertices, no action/movement - nothing to do
 		}
 	}
-	worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, alpha);
+	worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, objectNum, alpha);
 }
 
 void WorldObject::setAction(string name) {
@@ -450,6 +450,7 @@ WorldObject::WorldObject() {
 	scale = 1.0f;
 	drawBoundingBox = false;
 	drawNormals = false;
+	objectNum = count++;
 }
 
 WorldObject::~WorldObject() {
@@ -517,3 +518,5 @@ void WorldObjectStore::addObjectPrivate(WorldObject *w, string id, XMFLOAT3 pos,
 void WorldObjectStore::setWorldObjectEffect(WorldObjectEffect *weff) {
 	this->objectEffect = weff;
 }
+
+UINT WorldObject::count = 0;

@@ -21,19 +21,20 @@ public:
 		Material *material;
 		float alpha;
 		Mesh* mesh;
+		UINT objectNum;
 		DrawInfo(ComPtr<ID3D12Resource> &vBuffer, ComPtr<ID3D12Resource> &iBuffer)
 			: vertexBuffer(vBuffer), indexBuffer(iBuffer)
 		{};
 	};
 
-	void init(WorldObjectStore *objectStore);
+	void init(WorldObjectStore *objectStore, UINT maxNumObjects = 0);
 	void prepare();
 	// update cbuffer and vertex buffer
 	void update();
 	//void draw();
 	// create and upload vertex buffer for a newly loaded mesh
 	void createAndUploadVertexBuffer(Mesh *mesh);
-	void draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> &indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, Material &material, float alpha = 1.0f);
+	void draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> &indexBuffer, XMFLOAT4X4 wvp, long numIndexes, TextureID tex, Material &material, UINT objNum, float alpha = 1.0f);
 	void draw(DrawInfo &di);
 
 private:
@@ -44,7 +45,7 @@ private:
 private:
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
-	void preDraw();
+	void preDraw(DrawInfo &di);
 	void postDraw();
 	CBV cbv;
 	mutex mutex_Object;

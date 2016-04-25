@@ -3,7 +3,7 @@
 #include "CompiledShaders/ObjectVS.h"
 #include "CompiledShaders/ObjectPS.h"
 
-void WorldObjectEffect::init(WorldObjectStore *oStore) {
+void WorldObjectEffect::init(WorldObjectStore *oStore, UINT maxNumObjects) {
 	objectStore = oStore;
 	oStore->setWorldObjectEffect(this);
 	// try to do all expensive operations like shader loading and PSO creation here
@@ -49,12 +49,13 @@ void WorldObjectEffect::init(WorldObjectStore *oStore) {
 		pipelineState.Get()->SetName(L"state_objecteffect_init");
 		cbvAlignedSize = calcConstantBufferSize((UINT)sizeof(cbv));
 
-		createConstantBuffer((UINT) 2*cbvAlignedSize, L"objecteffect_cbv_resource");
+		//createConstantBuffer((UINT)2 * cbvAlignedSize, L"objecteffect_cbv_resource");
+		setSingleCBVMode(maxNumObjects, sizeof(cbv), L"objecteffect_cbvsingle_resource");
 		// set cbv data:
 		XMMATRIX ident = XMMatrixIdentity();
 		XMStoreFloat4x4(&cbv.wvp, ident);
 		cbv.world = cbv.wvp;
-		memcpy(cbvGPUDest+cbvAlignedSize, &cbv, sizeof(cbv));
+		//memcpy(cbvGPUDest+cbvAlignedSize, &cbv, sizeof(cbv));
 	}
 
 	// Create command allocators and command lists for each frame.
@@ -165,7 +166,7 @@ void WorldObjectEffect::createAndUploadVertexBuffer(Mesh * mesh) {
 	*/
 }
 
-void WorldObjectEffect::draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> &indexBuffer, XMFLOAT4X4 world, long numIndexes, TextureID tex, Material &material, float alpha) {
+void WorldObjectEffect::draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, ComPtr<ID3D12Resource> &indexBuffer, XMFLOAT4X4 world, long numIndexes, TextureID tex, Material &material, UINT objNum, float alpha) {
 	DrawInfo di(vertexBuffer, indexBuffer);
 	di.world = world;
 	di.numIndexes = numIndexes;
@@ -173,10 +174,11 @@ void WorldObjectEffect::draw(Mesh * mesh, ComPtr<ID3D12Resource> &vertexBuffer, 
 	di.alpha = alpha;
 	di.mesh = mesh;
 	di.material = &material;
+	di.objectNum = objNum;
 	draw(di);
 }
 
-void WorldObjectEffect::preDraw()
+void WorldObjectEffect::preDraw(DrawInfo &di)
 {
 	// last frame must have been finished before we run here!!!
 	int frameIndex = xapp().getCurrentBackBufferIndex();
@@ -200,7 +202,8 @@ void WorldObjectEffect::preDraw()
 	commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
 
 	// Set CBVs
-	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress()+cbvAlignedSize);
+	//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress() + cbvAlignedSize);
+	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, di.objectNum));
 	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
 
 	// Indicate that the back buffer will be used as a render target.
@@ -229,6 +232,8 @@ XMMATRIX calcWVP(XMMATRIX &toWorld, XMMATRIX &vp) {
 }
 
 void WorldObjectEffect::draw(DrawInfo &di) {
+	if (singleCbvBufferMode) assert(di.objectNum < maxObjects);
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	xapp().lights.lights.material = *di.material;
 	xapp().lights.update();
 	if (!xapp().ovrRendering) {
@@ -241,7 +246,8 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		cbv.cameraPos.y = xapp().camera.pos.y;
 		cbv.cameraPos.z = xapp().camera.pos.z;
 		cbv.alpha = di.alpha;
-		memcpy(cbvGPUDest + cbvAlignedSize, &cbv, sizeof(cbv));
+		//memcpy(cbvGPUDest + cbvAlignedSize, &cbv, sizeof(cbv));
+		memcpy(getCBVUploadAddress(frameIndex, di.objectNum), &cbv, sizeof(cbv));
 		drawInternal(di);
 		return;
 	}
@@ -270,7 +276,7 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 {
 	mutex_Object.lock();
 	int frameIndex = xapp().getCurrentBackBufferIndex();
-	preDraw();
+	preDraw(di);
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// update buffers for this text line:
 	//XMStoreFloat4x4(&cbv.wvp, wvp);
@@ -300,7 +306,7 @@ void WorldObjectEffect::postDraw()
 	// tests
 	auto &f = frameData[frameIndex];
 	// Wait for the gpu to complete the draw.
-	createSyncPoint(f, xapp().commandQueue);
-	waitForSyncPoint(f); // ok, but not optimal
+	//createSyncPoint(f, xapp().commandQueue);
+	//waitForSyncPoint(f); // ok, but not optimal
 						 //Sleep(1);
 }

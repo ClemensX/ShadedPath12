@@ -1,4 +1,5 @@
 #include "stdafx.h"
+//#include "effectbase.h"
 
 void EffectBase::createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue)
 {
@@ -40,6 +41,46 @@ void EffectBase::createConstantBuffer(size_t s, wchar_t * name)
 	cbvResource.Get()->SetName(name);
 	//Log("GPU virtual: " <<  cbvResource->GetGPUVirtualAddress(); << endl);
 	ThrowIfFailed(cbvResource->Map(0, nullptr, reinterpret_cast<void**>(&cbvGPUDest)));
+}
+
+void EffectBase::setSingleCBVMode(UINT maxObjects, size_t s, wchar_t * name)
+{
+	if (maxObjects == 0) {
+		singleCbvBufferMode = false;
+		return;
+	}
+	singleCbvBufferMode = true;
+	this->maxObjects = maxObjects;
+	slotSize = calcConstantBufferSize((UINT)s);
+	// allocate const buffer for all frames and possibly OVR:
+	UINT totalSize = slotSize * maxObjects;
+	if (xapp().ovrRendering) totalSize *= 2;
+	for (int i = 0; i < XApp::FrameCount; i++) {
+		ThrowIfFailed(xapp().device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE, // do not set - dx12 does this automatically depending on resource type
+			&CD3DX12_RESOURCE_DESC::Buffer(totalSize),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&singleCBVResources[i])));
+		singleCBVResources[i].Get()->SetName(name);
+		//Log("GPU virtual: " <<  cbvResource->GetGPUVirtualAddress(); << endl);
+		ThrowIfFailed(singleCBVResources[i]->Map(0, nullptr, reinterpret_cast<void**>(&singleCBV_GPUDests[i])));
+	}
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS EffectBase::getCBVVirtualAddress(int frame, UINT objectIndex)
+{
+	// TODO correction for OVR mode
+	UINT64 plus = slotSize * objectIndex;
+	return singleCBVResources[frame]->GetGPUVirtualAddress() + plus;
+}
+
+UINT8* EffectBase::getCBVUploadAddress(int frame, UINT objectIndex)
+{
+	// TODO correction for OVR mode
+	UINT64 plus = slotSize * objectIndex;
+	return singleCBV_GPUDests[frame] + plus;
 }
 
 void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void *data, ID3D12PipelineState *pipelineState, LPCWSTR baseName,

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "hangon.h"
 
+static int NUM_METEOR = 1000;
 
 HangOn::HangOn() : XAppBase()
 {
@@ -23,7 +24,7 @@ void HangOn::init()
 	linesEffect.init();
 	textEffect.init();
 	postEffect.init();
-	objectEffect.init(&xapp().objectStore);
+	objectEffect.init(&xapp().objectStore, NUM_METEOR + 10);
 
 	// initialize game time to real time:
 	gameTime.init(1);
@@ -91,8 +92,6 @@ void HangOn::initStarfield(int num, float minHeight)
 	dotcrossEffect.update(addCrossPoints);
 	Log("# crosses: " << dotcrossEffect.points.size() << endl);
 }
-
-static int NUM_METEOR = 1000;
 
 void HangOn::initMeteorField() {
 	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
