@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "hangon.h"
 
-static int NUM_METEOR = 1000;
+static int NUM_METEOR = 10000;
 
 HangOn::HangOn() : XAppBase()
 {

@@ -196,28 +196,26 @@ void WorldObjectEffect::preDraw(DrawInfo &di)
 		// list, that command list can then be reset at any time and must be before 
 		// re-recording.
 		ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
+		// Set necessary state.
+		commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
+		commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
+		commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
+
+		// Set CBVs
+		//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress() + cbvAlignedSize);
+		commandLists[frameIndex]->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
+
+		// Indicate that the back buffer will be used as a render target.
+		//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+		//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
+		//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+		commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+		xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
 	}
-
-	// Set necessary state.
-	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
-	commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
-	commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
-
-	// Set CBVs
-	//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress() + cbvAlignedSize);
 	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, di.objectNum));
-	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
-
-	// Indicate that the back buffer will be used as a render target.
-	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-
-	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
-	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
-	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-
-	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
 }
 
 /*
@@ -280,6 +278,24 @@ void WorldObjectEffect::beginBulkUpdate()
 	inBulkOperation = true;
 	ThrowIfFailed(commandAllocators[frameIndex]->Reset());
 	ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
+	// Set necessary state.
+	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
+	commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
+	commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
+
+	// Set CBVs
+	//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress() + cbvAlignedSize);
+	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
+
+	// Indicate that the back buffer will be used as a render target.
+	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
+	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
 }
 
 void WorldObjectEffect::endBulkUpdate()
@@ -323,7 +339,7 @@ void WorldObjectEffect::postDraw()
 	// tests
 	auto &f = frameData[frameIndex];
 	// Wait for the gpu to complete the draw.
-	createSyncPoint(f, xapp().commandQueue);
-	waitForSyncPoint(f); // ok, but not optimal
+	//createSyncPoint(f, xapp().commandQueue);
+	//waitForSyncPoint(f); // ok, but not optimal
 						 //Sleep(1);
 }
