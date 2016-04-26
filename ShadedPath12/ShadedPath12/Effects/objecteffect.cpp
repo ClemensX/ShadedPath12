@@ -331,7 +331,7 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi)
 {
 	//Log(" obj bulk update thread " << this_thread::get_id() << endl);
 	Log(" obj bulk update thread " << bi.start << endl);
-	Sleep(2000);
+	this_thread::sleep_for(2s);
 	Log(" obj bulk update thread " << bi.start << " complete" << endl);
 }
 
@@ -373,10 +373,12 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads)
 	}
 
 	// now launch all the threads:
-	for each (BulkDivideInfo bi in bulkInfos)
-	{
-		WorldObjectEffect *l = this;
-		auto fut = async(launch::async, [l,bi] { return l->updateTask(bi); });
+	//for each (BulkDivideInfo bi in bulkInfos)
+	//{
+	//	WorldObjectEffect *l = this;
+	//	auto fut = async(launch::async, [l,bi] { return l->updateTask(bi); });
 
-	}
+	//}
+	WorldObjectEffect *l = this;
+	auto fut = async(launch::async, [l, bi] { return l->updateTask(bi); });
 }
