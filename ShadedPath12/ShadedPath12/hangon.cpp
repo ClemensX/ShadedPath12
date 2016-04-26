@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "hangon.h"
 
-static int NUM_METEOR = 10000;
+static int NUM_METEOR = 1000;
 
 HangOn::HangOn() : XAppBase()
 {
@@ -154,15 +154,9 @@ void HangOn::draw()
 	linesEffect.draw();
 	dotcrossEffect.draw();
 	textEffect.draw();
-	objectEffect.beginBulkUpdate();
-	auto grp = xapp().objectStore.getGroup("meteor");
-	for (auto & w : *grp) {
-		w->draw();
-	}
 
 	// optimization: draw whole group (objects with same mesh)
-	xapp().objectStore.drawGroup("meteor");
-	objectEffect.endBulkUpdate();
+	xapp().objectStore.drawGroup("meteor", 8);
 
 	postEffect.draw();
 }

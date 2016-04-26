@@ -1,4 +1,9 @@
 // world object effect
+struct BulkDivideInfo {
+	UINT start;
+	UINT end;
+};
+
 class WorldObjectEffect : public EffectBase {
 public:
 	struct ConstantBufferFixed {
@@ -40,6 +45,7 @@ public:
 	// bull update is concerning a large number of world objects
 	void beginBulkUpdate();
 	void endBulkUpdate();
+	void divideBulk(size_t numObjects, size_t numThreads);
 private:
 	ConstantBufferFixed cb;
 	// globally enable wireframe display of objects
@@ -52,7 +58,7 @@ private:
 	CBV cbv;
 	mutex mutex_Object;
 	void drawInternal(DrawInfo &di);
-	void updateTask();
+	void updateTask(BulkDivideInfo bi);
 	atomic<bool> updateRunning = false;
 	future<void> objecteffectFuture;
 	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
@@ -63,4 +69,5 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
 	WorldObjectStore *objectStore;
 	bool inBulkOperation = false;
+	vector<BulkDivideInfo> bulkInfos;
 };

@@ -487,8 +487,17 @@ const vector<unique_ptr<WorldObject>> *WorldObjectStore::getGroup(string groupna
 	return &groups[groupname];
 }
 
-void WorldObjectStore::drawGroup(string groupname, size_t maxNum)
+void WorldObjectStore::drawGroup(string groupname, size_t threadNum)
 {
+	WorldObjectEffect *objectEffect = xapp().objectStore.getWorldObjectEffect();
+	objectEffect->beginBulkUpdate();
+	auto grp = xapp().objectStore.getGroup(groupname);
+	//Log(" draw objects: " << grp->size() << endl);
+	objectEffect->divideBulk(grp->size(), threadNum);
+	for (auto & w : *grp) {
+		w->draw();
+	}
+	objectEffect->endBulkUpdate();
 }
 
 void WorldObjectStore::addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid) {

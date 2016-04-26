@@ -327,6 +327,14 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 	//Sleep(50);
 }
 
+void WorldObjectEffect::updateTask(BulkDivideInfo bi)
+{
+	//Log(" obj bulk update thread " << this_thread::get_id() << endl);
+	Log(" obj bulk update thread " << bi.start << endl);
+	Sleep(2000);
+	Log(" obj bulk update thread " << bi.start << " complete" << endl);
+}
+
 void WorldObjectEffect::postDraw()
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
@@ -342,4 +350,33 @@ void WorldObjectEffect::postDraw()
 	//createSyncPoint(f, xapp().commandQueue);
 	//waitForSyncPoint(f); // ok, but not optimal
 						 //Sleep(1);
+}
+
+void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads)
+{
+	if (numThreads < 2) return;
+	bulkInfos.clear();
+	BulkDivideInfo bi;
+	UINT totalNum = (UINT) numObjects;
+	UINT perThread = totalNum / (UINT)numThreads;
+	// adjust for rounding error: better to increase the count per thread by one instead of starting a new thread with very few elements:
+	if (perThread * (UINT)numThreads < totalNum)
+		perThread++;
+	UINT count = 0;
+	while (count < totalNum) {
+		bi.start = count;
+		bi.end = count + perThread - 1;
+		if (bi.end > (totalNum - 1))
+			bi.end = totalNum - 1;
+		count += perThread;
+		bulkInfos.push_back(bi);
+	}
+
+	// now launch all the threads:
+	for each (BulkDivideInfo bi in bulkInfos)
+	{
+		WorldObjectEffect *l = this;
+		auto fut = async(launch::async, [l,bi] { return l->updateTask(bi); });
+
+	}
 }

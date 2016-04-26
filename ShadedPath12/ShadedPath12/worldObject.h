@@ -114,8 +114,8 @@ public:
 	// obbject groups: give fast access to specific objects (e.g. all worm NPCs)
 	void createGroup(string groupname);
 	const vector<unique_ptr<WorldObject>> *getGroup(string groupname);
-	// draw all objects within a group (all have same mesh), set maxNum != 0 to draw max amount of objects per command list
-	void drawGroup(string groupname, size_t maxNum = 0);
+	// draw all objects within a group (all have same mesh), set threadNum > 1 to draw with multiple threads
+	void drawGroup(string groupname, size_t threadNum = 0);
 	void setWorldObjectEffect(WorldObjectEffect *objectEffect);
 	WorldObjectEffect*  getWorldObjectEffect() { return objectEffect; };
 private:
