@@ -58,7 +58,7 @@ private:
 	CBV cbv;
 	mutex mutex_Object;
 	void drawInternal(DrawInfo &di);
-	void updateTask(BulkDivideInfo bi);
+	static void updateTask();
 	atomic<bool> updateRunning = false;
 	future<void> objecteffectFuture;
 	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
@@ -70,4 +70,5 @@ private:
 	WorldObjectStore *objectStore;
 	bool inBulkOperation = false;
 	vector<BulkDivideInfo> bulkInfos;
+	BulkDivideInfo globbi;
 };

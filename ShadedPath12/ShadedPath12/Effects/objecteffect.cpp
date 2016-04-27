@@ -327,12 +327,12 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 	//Sleep(50);
 }
 
-void WorldObjectEffect::updateTask(BulkDivideInfo bi)
+void WorldObjectEffect::updateTask()
 {
 	//Log(" obj bulk update thread " << this_thread::get_id() << endl);
-	Log(" obj bulk update thread " << bi.start << endl);
+	Log(" obj bulk update thread " << 100 << endl);
 	this_thread::sleep_for(2s);
-	Log(" obj bulk update thread " << bi.start << " complete" << endl);
+	Log(" obj bulk update thread " << 199 << " complete" << endl);
 }
 
 void WorldObjectEffect::postDraw()
@@ -380,5 +380,12 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads)
 
 	//}
 	WorldObjectEffect *l = this;
-	auto fut = async(launch::async, [l, bi] { return l->updateTask(bi); });
+	//auto fut = async(launch::async, [l, bi] { return l->updateTask(bi); });
+	Log("async lambda call " << endl);
+	//auto &fut = async(launch::async, [this, globbi] { this->updateTask(globbi); });
+	//auto &fut = async(launch::async, [] { return updateTask(); });
+	thread t(updateTask);
+	Log("async lambda call initiated" << endl);
+	t.detach();
+	//t.join();
 }

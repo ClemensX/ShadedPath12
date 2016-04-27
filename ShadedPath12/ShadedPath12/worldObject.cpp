@@ -494,6 +494,7 @@ void WorldObjectStore::drawGroup(string groupname, size_t threadNum)
 	auto grp = xapp().objectStore.getGroup(groupname);
 	//Log(" draw objects: " << grp->size() << endl);
 	objectEffect->divideBulk(grp->size(), threadNum);
+	Log("after bulk divide" << endl);
 	for (auto & w : *grp) {
 		w->draw();
 	}
