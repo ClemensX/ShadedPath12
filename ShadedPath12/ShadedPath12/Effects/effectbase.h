@@ -64,5 +64,8 @@ protected:
 protected:
 	bool singleCbvBufferMode = false;
 	UINT maxObjects = 0;
+	vector<thread> workerThreads;
+	void waitForWorkerThreads();
+	virtual ~EffectBase();
 public:
 };

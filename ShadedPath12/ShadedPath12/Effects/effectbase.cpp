@@ -184,6 +184,25 @@ void EffectBase::createAndUploadIndexBuffer(size_t bufferSize, void *data, ID3D1
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 }
 
+void EffectBase::waitForWorkerThreads()
+{
+	if (workerThreads.size() > 0) {
+		// we still have threads running
+		for (auto& t : workerThreads) {
+			if (t.joinable()) {
+				t.join();
+			}
+		}
+		// all threads finished - remove from list
+		workerThreads.clear();
+	}
+}
+
+EffectBase::~EffectBase()
+{
+	waitForWorkerThreads();
+}
+
 /*
 static void createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void *data, ID3D12PipelineState *pipelineState, LPCWSTR baseName)
 {

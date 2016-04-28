@@ -327,12 +327,17 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 	//Sleep(50);
 }
 
-void WorldObjectEffect::updateTask()
+void WorldObjectEffect::updateTask(BulkDivideInfo bi, const vector<unique_ptr<WorldObject>> *grp, ID3D12CommandAllocator *commandAllocatorXXX, ID3D12PipelineState *pipelineState)
 {
 	//Log(" obj bulk update thread " << this_thread::get_id() << endl);
-	Log(" obj bulk update thread " << 100 << endl);
-	this_thread::sleep_for(2s);
-	Log(" obj bulk update thread " << 199 << " complete" << endl);
+	//Log(" obj bulk update thread " << bi.start << endl);
+	//this_thread::sleep_for(2s);
+	int frameIndex = xapp().getCurrentBackBufferIndex();
+	ComPtr<ID3D12GraphicsCommandList> commandList;
+	ComPtr<ID3D12CommandAllocator> commandAllocator;
+	ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
+	ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), pipelineState, IID_PPV_ARGS(&commandList)));
+	//Log(" obj bulk update thread " << bi.end << " complete" << endl);
 }
 
 void WorldObjectEffect::postDraw()
@@ -352,7 +357,7 @@ void WorldObjectEffect::postDraw()
 						 //Sleep(1);
 }
 
-void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads)
+void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const vector<unique_ptr<WorldObject>> *grp)
 {
 	if (numThreads < 2) return;
 	bulkInfos.clear();
@@ -372,6 +377,7 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads)
 		bulkInfos.push_back(bi);
 	}
 
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	// now launch all the threads:
 	//for each (BulkDivideInfo bi in bulkInfos)
 	//{
@@ -381,11 +387,22 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads)
 	//}
 	WorldObjectEffect *l = this;
 	//auto fut = async(launch::async, [l, bi] { return l->updateTask(bi); });
-	Log("async lambda call " << endl);
-	//auto &fut = async(launch::async, [this, globbi] { this->updateTask(globbi); });
-	//auto &fut = async(launch::async, [] { return updateTask(); });
-	thread t(updateTask);
-	Log("async lambda call initiated" << endl);
-	t.detach();
+
+	waitForWorkerThreads();
+	assert(workerThreads.size() == 0);
+	//Log("all workers finished " << endl);
+	if (workerThreads.size() == 0) {
+		//Log("threads start" << endl);
+		//auto &fut = async(launch::async, [this, globbi] { this->updateTask(globbi); });
+		//auto &fut = async(launch::async, [] { return updateTask(); });
+		for each (BulkDivideInfo bi in bulkInfos)
+		{
+			thread t(updateTask, bi, grp, commandAllocators[frameIndex].Get(), pipelineState.Get());
+			workerThreads.push_back(move(t));
+		}
+		//Log("all threads started" << endl);
+	}
+	//t.detach();
 	//t.join();
+	//xapp().mythread = move(t);
 }

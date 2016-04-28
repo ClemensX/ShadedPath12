@@ -45,7 +45,7 @@ public:
 	// bull update is concerning a large number of world objects
 	void beginBulkUpdate();
 	void endBulkUpdate();
-	void divideBulk(size_t numObjects, size_t numThreads);
+	void divideBulk(size_t numObjects, size_t numThreads, const vector<unique_ptr<WorldObject>> *grp);
 private:
 	ConstantBufferFixed cb;
 	// globally enable wireframe display of objects
@@ -58,7 +58,7 @@ private:
 	CBV cbv;
 	mutex mutex_Object;
 	void drawInternal(DrawInfo &di);
-	static void updateTask();
+	static void updateTask(BulkDivideInfo bi, const vector<unique_ptr<WorldObject>> *grp, ID3D12CommandAllocator *commandAllocator, ID3D12PipelineState *pipelineState);
 	atomic<bool> updateRunning = false;
 	future<void> objecteffectFuture;
 	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
