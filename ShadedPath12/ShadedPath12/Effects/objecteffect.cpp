@@ -327,7 +327,7 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 	//Sleep(50);
 }
 
-void WorldObjectEffect::updateTask(BulkDivideInfo bi, const vector<unique_ptr<WorldObject>> *grp, ID3D12CommandAllocator *commandAllocatorXXX, ID3D12PipelineState *pipelineState)
+void WorldObjectEffect::updateTask(BulkDivideInfo bi, const vector<unique_ptr<WorldObject>> *grp, WorldObjectEffect *effect)
 {
 	//Log(" obj bulk update thread " << this_thread::get_id() << endl);
 	//Log(" obj bulk update thread " << bi.start << endl);
@@ -336,8 +336,32 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, const vector<unique_ptr<Wo
 	ComPtr<ID3D12GraphicsCommandList> commandList;
 	ComPtr<ID3D12CommandAllocator> commandAllocator;
 	ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
-	ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), pipelineState, IID_PPV_ARGS(&commandList)));
+	ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), effect->pipelineState.Get(), IID_PPV_ARGS(&commandList)));
 	//Log(" obj bulk update thread " << bi.end << " complete" << endl);
+	commandList->SetGraphicsRootSignature(effect->rootSignature.Get());
+	commandList->RSSetViewports(1, xapp().vr.getViewport());
+	commandList->RSSetScissorRects(1, xapp().vr.getScissorRect());
+
+	// Set CBVs
+	//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress() + cbvAlignedSize);
+	commandList->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
+
+	// Indicate that the back buffer will be used as a render target.
+	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
+	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+	commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+	commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, 0/*di.objectNum*/));
+
+	for (auto i = bi.start; i <= bi.end; i++) {
+		WorldObject *w = grp->at(i).get();
+		Log(" pos" << w->objectNum << endl)
+		//auto & w = grp[i];
+		//w.->draw();
+	}
 }
 
 void WorldObjectEffect::postDraw()
@@ -397,7 +421,7 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 		//auto &fut = async(launch::async, [] { return updateTask(); });
 		for each (BulkDivideInfo bi in bulkInfos)
 		{
-			thread t(updateTask, bi, grp, commandAllocators[frameIndex].Get(), pipelineState.Get());
+			thread t(updateTask, bi, grp, this);
 			workerThreads.push_back(move(t));
 		}
 		//Log("all threads started" << endl);

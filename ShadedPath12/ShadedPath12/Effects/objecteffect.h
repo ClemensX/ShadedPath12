@@ -58,7 +58,7 @@ private:
 	CBV cbv;
 	mutex mutex_Object;
 	void drawInternal(DrawInfo &di);
-	static void updateTask(BulkDivideInfo bi, const vector<unique_ptr<WorldObject>> *grp, ID3D12CommandAllocator *commandAllocator, ID3D12PipelineState *pipelineState);
+	static void updateTask(BulkDivideInfo bi, const vector<unique_ptr<WorldObject>> *grp, WorldObjectEffect *effect);
 	atomic<bool> updateRunning = false;
 	future<void> objecteffectFuture;
 	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
