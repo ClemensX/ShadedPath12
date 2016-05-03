@@ -69,6 +69,7 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
 	WorldObjectStore *objectStore;
 	bool inBulkOperation = false;
+	bool inThreadOperation = false;
 	vector<BulkDivideInfo> bulkInfos;
 	BulkDivideInfo globbi;
 };

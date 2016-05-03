@@ -157,6 +157,7 @@ public:
 	Sound sound;
 	VR vr;
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
+	thread mythread;
 private:
 	UINT frameIndex;
 	bool rtvCleared = false; // shaders can ask if ClearRenderTargetView still has to be called (usually only first shader needs to)

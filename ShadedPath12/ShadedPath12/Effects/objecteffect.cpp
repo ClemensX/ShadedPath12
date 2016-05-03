@@ -274,6 +274,7 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 
 void WorldObjectEffect::beginBulkUpdate()
 {
+	if (inThreadOperation) return;
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	inBulkOperation = true;
 	ThrowIfFailed(commandAllocators[frameIndex]->Reset());
@@ -300,6 +301,7 @@ void WorldObjectEffect::beginBulkUpdate()
 
 void WorldObjectEffect::endBulkUpdate()
 {
+	if (inThreadOperation) return;
 	inBulkOperation = false;
 	postDraw();
 }
@@ -355,13 +357,17 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, const vector<unique_ptr<Wo
 	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, 0/*di.objectNum*/));
-
-	for (auto i = bi.start; i <= bi.end; i++) {
-		WorldObject *w = grp->at(i).get();
-		Log(" pos" << w->objectNum << endl)
-		//auto & w = grp[i];
-		//w.->draw();
-	}
+	//for (auto i = bi.start; i <= bi.end; i++) {
+	//	WorldObject *w = grp->at(i).get();
+	//	w->draw();
+	//	//Log(" pos" << w->objectNum << endl)
+	//	//auto & w = grp[i];
+	//	//w.->draw();
+	//}
+	ThrowIfFailed(commandList->Close());
+	// Execute the command list.
+	ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
+	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 }
 
 void WorldObjectEffect::postDraw()
@@ -383,7 +389,8 @@ void WorldObjectEffect::postDraw()
 
 void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const vector<unique_ptr<WorldObject>> *grp)
 {
-	if (numThreads < 2) return;
+	//if (numThreads < 2) return;
+	inThreadOperation = true;
 	bulkInfos.clear();
 	BulkDivideInfo bi;
 	UINT totalNum = (UINT) numObjects;
