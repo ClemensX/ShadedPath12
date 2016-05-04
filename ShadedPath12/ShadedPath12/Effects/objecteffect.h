@@ -72,4 +72,5 @@ private:
 	bool inThreadOperation = false;
 	vector<BulkDivideInfo> bulkInfos;
 	BulkDivideInfo globbi;
+	static thread_local ComPtr<ID3D12GraphicsCommandList> commandList;
 };

@@ -308,8 +308,25 @@ void WorldObjectEffect::endBulkUpdate()
 
 void WorldObjectEffect::drawInternal(DrawInfo &di)
 {
-	mutex_Object.lock();
 	int frameIndex = xapp().getCurrentBackBufferIndex();
+	if (inThreadOperation) {
+		commandList->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, di.objectNum));
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		// update buffers for this text line:
+		//XMStoreFloat4x4(&cbv.wvp, wvp);
+		//cbv.rot = lines[0].rot;
+		//memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+		commandList->IASetVertexBuffers(0, 1, &di.mesh->vertexBufferView);
+		commandList->IASetIndexBuffer(&di.mesh->indexBufferView);
+		//auto *tex = xapp().textureStore.getTexture(elvec.first);
+		// Set SRV
+		ID3D12DescriptorHeap* ppHeaps[] = { di.tex->m_srvHeap.Get() };
+		commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+		commandList->SetGraphicsRootDescriptorTable(2, di.tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+		commandList->DrawIndexedInstanced(di.numIndexes, 1, 0, 0, 0);
+		return;
+	}
+	mutex_Object.lock();
 	preDraw(di);
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// update buffers for this text line:
@@ -335,7 +352,6 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, const vector<unique_ptr<Wo
 	//Log(" obj bulk update thread " << bi.start << endl);
 	//this_thread::sleep_for(2s);
 	int frameIndex = xapp().getCurrentBackBufferIndex();
-	ComPtr<ID3D12GraphicsCommandList> commandList;
 	ComPtr<ID3D12CommandAllocator> commandAllocator;
 	ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
 	ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), effect->pipelineState.Get(), IID_PPV_ARGS(&commandList)));
@@ -356,18 +372,20 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, const vector<unique_ptr<Wo
 	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
 	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-	commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, 0/*di.objectNum*/));
-	//for (auto i = bi.start; i <= bi.end; i++) {
-	//	WorldObject *w = grp->at(i).get();
-	//	w->draw();
-	//	//Log(" pos" << w->objectNum << endl)
-	//	//auto & w = grp[i];
-	//	//w.->draw();
-	//}
+	//commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, 0/*di.objectNum*/));
+	for (auto i = bi.start; i <= bi.end; i++) {
+		WorldObject *w = grp->at(i).get();
+		//commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, w->objectNum));
+		w->draw();
+		//Log(" pos" << w->objectNum << endl)
+		//auto & w = grp[i];
+		//w.->draw();
+	}
 	ThrowIfFailed(commandList->Close());
 	// Execute the command list.
 	ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	this_thread::sleep_for(20ms);
 }
 
 void WorldObjectEffect::postDraw()
@@ -437,3 +455,5 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 	//t.join();
 	//xapp().mythread = move(t);
 }
+
+thread_local ComPtr<ID3D12GraphicsCommandList> WorldObjectEffect::commandList;
