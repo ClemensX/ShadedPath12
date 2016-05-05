@@ -310,6 +310,7 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	if (inThreadOperation) {
+		//mutex_Object.lock();
 		commandList->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, di.objectNum));
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		// update buffers for this text line:
@@ -324,6 +325,7 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 		commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 		commandList->SetGraphicsRootDescriptorTable(2, di.tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
 		commandList->DrawIndexedInstanced(di.numIndexes, 1, 0, 0, 0);
+		//mutex_Object.unlock();
 		return;
 	}
 	mutex_Object.lock();
@@ -385,7 +387,7 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, const vector<unique_ptr<Wo
 	// Execute the command list.
 	ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-	this_thread::sleep_for(20ms);
+	//this_thread::sleep_for(200ms);
 }
 
 void WorldObjectEffect::postDraw()
@@ -437,7 +439,6 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 	WorldObjectEffect *l = this;
 	//auto fut = async(launch::async, [l, bi] { return l->updateTask(bi); });
 
-	waitForWorkerThreads();
 	assert(workerThreads.size() == 0);
 	//Log("all workers finished " << endl);
 	if (workerThreads.size() == 0) {
@@ -451,6 +452,10 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 		}
 		//Log("all threads started" << endl);
 	}
+	waitForWorkerThreads();
+	//auto &f = frameData[frameIndex];
+	//createSyncPoint(f, xapp().commandQueue);
+	//waitForSyncPoint(f); // ok, but not optimal
 	//t.detach();
 	//t.join();
 	//xapp().mythread = move(t);
