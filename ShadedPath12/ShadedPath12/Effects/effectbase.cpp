@@ -79,8 +79,12 @@ D3D12_GPU_VIRTUAL_ADDRESS EffectBase::getCBVVirtualAddress(int frame, UINT objec
 UINT8* EffectBase::getCBVUploadAddress(int frame, UINT objectIndex)
 {
 	// TODO correction for OVR mode
+	UINT8* mem = singleCBV_GPUDests[frame];
+	if (mem == nullptr) {
+		return this->cbvGPUDest;
+	}
 	UINT64 plus = slotSize * objectIndex;
-	return singleCBV_GPUDests[frame] + plus;
+	return  mem + plus;
 }
 
 void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void *data, ID3D12PipelineState *pipelineState, LPCWSTR baseName,

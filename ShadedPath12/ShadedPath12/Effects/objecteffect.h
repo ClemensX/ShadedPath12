@@ -46,6 +46,7 @@ public:
 	void beginBulkUpdate();
 	void endBulkUpdate();
 	void divideBulk(size_t numObjects, size_t numThreads, const vector<unique_ptr<WorldObject>> *grp);
+	void createRootSigAndPSO(ComPtr<ID3D12RootSignature> &sig, ComPtr<ID3D12PipelineState> &pso);
 private:
 	ConstantBufferFixed cb;
 	// globally enable wireframe display of objects
