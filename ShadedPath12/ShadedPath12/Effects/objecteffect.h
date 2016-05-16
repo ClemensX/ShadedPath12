@@ -47,6 +47,7 @@ public:
 	void endBulkUpdate();
 	void divideBulk(size_t numObjects, size_t numThreads, const vector<unique_ptr<WorldObject>> *grp);
 	void createRootSigAndPSO(ComPtr<ID3D12RootSignature> &sig, ComPtr<ID3D12PipelineState> &pso);
+	bool inThreadOperation = false;
 private:
 	ConstantBufferFixed cb;
 	// globally enable wireframe display of objects
@@ -70,7 +71,6 @@ private:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
 	WorldObjectStore *objectStore;
 	bool inBulkOperation = false;
-	bool inThreadOperation = false;
 	vector<BulkDivideInfo> bulkInfos;
 	BulkDivideInfo globbi;
 	static thread_local ComPtr<ID3D12GraphicsCommandList> commandList;

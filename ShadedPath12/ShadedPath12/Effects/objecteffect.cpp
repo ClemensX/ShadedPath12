@@ -363,6 +363,7 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, const vector<unique_ptr<Wo
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	ComPtr<ID3D12CommandAllocator> commandAllocator;
 	ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
+	// TODO: next line eats performance during multi-thread
 	ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), effect->pipelineState.Get(), IID_PPV_ARGS(&commandList)));
 	//Log(" obj bulk update thread " << bi.end << " complete" << endl);
 	commandList->SetGraphicsRootSignature(effect->rootSignature.Get());
@@ -416,7 +417,7 @@ void WorldObjectEffect::postDraw()
 
 void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const vector<unique_ptr<WorldObject>> *grp)
 {
-	//if (numThreads < 2) return;
+	if (numThreads < 1) return;
 	inThreadOperation = true;
 	bulkInfos.clear();
 	BulkDivideInfo bi;
