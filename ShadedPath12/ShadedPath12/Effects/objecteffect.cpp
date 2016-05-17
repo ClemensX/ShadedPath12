@@ -447,7 +447,7 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 	WorldObjectEffect *l = this;
 	//auto fut = async(launch::async, [l, bi] { return l->updateTask(bi); });
 
-	assert(workerThreads.size() == 0);
+	//assert(workerThreads.size() == 0);
 	//Log("all workers finished " << endl);
 	if (workerThreads.size() == 0) {
 		//Log("threads start" << endl);
@@ -460,7 +460,15 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 		}
 		//Log("all threads started" << endl);
 	}
+
+	unique_lock<mutex> lock(multiRenderLock);
+	while (waiting_for_rendering < numThreads) {
+		render_start.wait(lock, [this, numThreads]() {return waiting_for_rendering == numThreads; });
+	}
+
 	waitForWorkerThreads();
+	//this_thread::sleep_for(1s);
+
 	//auto &f = frameData[frameIndex];
 	//createSyncPoint(f, xapp().commandQueue);
 	//waitForSyncPoint(f); // ok, but not optimal
