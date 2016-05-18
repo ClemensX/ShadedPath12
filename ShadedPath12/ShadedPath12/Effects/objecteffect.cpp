@@ -114,7 +114,7 @@ void WorldObjectEffect::createAndUploadVertexBuffer(Mesh * mesh) {
 		commandAllocators[frameIndex],
 		updateCommandList,
 		mesh->vertexBufferView
-		);
+	);
 	// upload index
 	bufferSize = sizeof(mesh->indexes[0]) * mesh->indexes.size();
 	data = &mesh->indexes[0];
@@ -125,7 +125,7 @@ void WorldObjectEffect::createAndUploadVertexBuffer(Mesh * mesh) {
 		commandAllocators[frameIndex],
 		updateCommandList,
 		mesh->indexBufferView
-		);
+	);
 	// Close the command list and execute it to begin the vertex buffer copy into
 	// the default heap.
 	ThrowIfFailed(updateCommandList->Close());
@@ -225,8 +225,8 @@ void WorldObjectEffect::preDraw(DrawInfo &di)
 }
 
 /*
- * Calculate WVP matrix from projection and world matrix
- */
+* Calculate WVP matrix from projection and world matrix
+*/
 XMMATRIX calcWVP(XMMATRIX &toWorld, XMMATRIX &vp) {
 	// optimization of commented code via transpose rule: (A*B)T = BT * AT
 	//vp = XMMatrixTranspose(vp);
@@ -357,59 +357,67 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 
 void WorldObjectEffect::updateTask(BulkDivideInfo bi, const vector<unique_ptr<WorldObject>> *grp, WorldObjectEffect *effect)
 {
-	//Log(" obj bulk update thread " << this_thread::get_id() << endl);
-	//Log(" obj bulk update thread " << bi.start << endl);
-	//this_thread::sleep_for(2s);
-	int frameIndex = xapp().getCurrentBackBufferIndex();
 	ComPtr<ID3D12CommandAllocator> commandAllocator;
-	ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
-	// TODO: next line eats performance during multi-thread
-	ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), effect->pipelineState.Get(), IID_PPV_ARGS(&commandList)));
-	//Log(" obj bulk update thread " << bi.end << " complete" << endl);
-	commandList->SetGraphicsRootSignature(effect->rootSignature.Get());
-	commandList->RSSetViewports(1, xapp().vr.getViewport());
-	commandList->RSSetScissorRects(1, xapp().vr.getScissorRect());
+	while (true) {
+		{
+			unique_lock<mutex> lock(effect->multiRenderLock);
+			effect->waiting_for_rendering++;
+			effect->render_start.notify_one();
+			effect->render_wait.wait(lock);
+		}
+		// now running outside lock so that all worker threads run in parallel
+		//Log("rendering " << this_thread::get_id() << endl);
+		//this_thread::sleep_for(1s);
+		//Log("rendering ended " << this_thread::get_id() << endl);
+		int frameIndex = xapp().getCurrentBackBufferIndex();
+		if (!initialized) {
+			initialized = true;
+			//Log(" obj bulk update thread " << this_thread::get_id() << endl);
+			//Log(" obj bulk update thread " << bi.start << endl);
+			//this_thread::sleep_for(2s);
+			ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
+			// TODO: next line eats performance during multi-thread
+			ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), effect->pipelineState.Get(), IID_PPV_ARGS(&commandList)));
+		}
+		else {
+			commandList->Reset(commandAllocator.Get(), effect->pipelineState.Get());
+		}
+		//Log(" obj bulk update thread " << bi.end << " complete" << endl);
+		commandList->SetGraphicsRootSignature(effect->rootSignature.Get());
+		commandList->RSSetViewports(1, xapp().vr.getViewport());
+		commandList->RSSetScissorRects(1, xapp().vr.getScissorRect());
 
-	// Set CBVs
-	//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress() + cbvAlignedSize);
-	commandList->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
+		// Set CBVs
+		//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress() + cbvAlignedSize);
+		commandList->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
 
-	// Indicate that the back buffer will be used as a render target.
-	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+		// Indicate that the back buffer will be used as a render target.
+		//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
-	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
-	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-	commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-	//commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, 0/*di.objectNum*/));
-	for (auto i = bi.start; i <= bi.end; i++) {
-		WorldObject *w = grp->at(i).get();
-		//commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, w->objectNum));
-		w->draw();
-		//Log(" pos" << w->objectNum << endl)
-		//auto & w = grp[i];
-		//w.->draw();
-	}
-	ThrowIfFailed(commandList->Close());
-	// Execute the command list.
-	ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
-	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-	//this_thread::sleep_for(200ms);
-	{
-		unique_lock<mutex> lock(effect->multiRenderLock);
-		effect->waiting_for_rendering++;
-		effect->render_start.notify_one();
-		effect->render_wait.wait(lock);
-	}
-	// now running outside lock so that all worker threads run in parallel
-	//Log("rendering " << this_thread::get_id() << endl);
-	//this_thread::sleep_for(1s);
-	//Log("rendering ended " << this_thread::get_id() << endl);
-	{
-		unique_lock<mutex> lock(effect->multiRenderLock);
-		effect->finished_rendering++;
-		effect->render_ended.notify_one();
+		//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
+		//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+		commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+		//commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, 0/*di.objectNum*/));
+		for (auto i = bi.start; i <= bi.end; i++) {
+			WorldObject *w = grp->at(i).get();
+			//commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, w->objectNum));
+			w->draw();
+			//Log(" pos" << w->objectNum << endl)
+			//auto & w = grp[i];
+			//w.->draw();
+		}
+		ThrowIfFailed(commandList->Close());
+		// Execute the command list.
+		ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
+		xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+		//this_thread::sleep_for(200ms);
+		{
+			unique_lock<mutex> lock(effect->multiRenderLock);
+			effect->finished_rendering++;
+			effect->render_ended.notify_one();
+		}
 	}
 }
 
@@ -427,7 +435,7 @@ void WorldObjectEffect::postDraw()
 	// Wait for the gpu to complete the draw.
 	//createSyncPoint(f, xapp().commandQueue);
 	//waitForSyncPoint(f); // ok, but not optimal
-						 //Sleep(1);
+	//Sleep(1);
 }
 
 void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const vector<unique_ptr<WorldObject>> *grp)
@@ -436,7 +444,7 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 	inThreadOperation = true;
 	bulkInfos.clear();
 	BulkDivideInfo bi;
-	UINT totalNum = (UINT) numObjects;
+	UINT totalNum = (UINT)numObjects;
 	UINT perThread = totalNum / (UINT)numThreads;
 	// adjust for rounding error: better to increase the count per thread by one instead of starting a new thread with very few elements:
 	if (perThread * (UINT)numThreads < totalNum)
@@ -445,7 +453,7 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 	while (count < totalNum) {
 		bi.start = count;
 		bi.end = count + perThread - 1;
-		if (bi.end > (totalNum - 1))
+		if (bi.end >(totalNum - 1))
 			bi.end = totalNum - 1;
 		count += perThread;
 		bulkInfos.push_back(bi);
@@ -485,7 +493,7 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 	// now wait for render threads to finish
 	render_ended.wait(lock, [this, numThreads]() {return finished_rendering == numThreads; });
 	finished_rendering = 0;
-	waitForWorkerThreads();
+	//waitForWorkerThreads();
 	//this_thread::sleep_for(1s);
 
 	//auto &f = frameData[frameIndex];
@@ -497,3 +505,4 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 }
 
 thread_local ComPtr<ID3D12GraphicsCommandList> WorldObjectEffect::commandList;
+thread_local bool WorldObjectEffect::initialized = false;

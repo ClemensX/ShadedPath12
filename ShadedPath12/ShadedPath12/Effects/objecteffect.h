@@ -74,6 +74,7 @@ private:
 	vector<BulkDivideInfo> bulkInfos;
 	BulkDivideInfo globbi;
 	static thread_local ComPtr<ID3D12GraphicsCommandList> commandList;
+	static thread_local bool initialized;
 	condition_variable render_start; // main thread waits until all render threads are ready to run
 	condition_variable render_ended; // main thread waits until render threads finished work
 	condition_variable render_wait;  // worker thread waits until main thread signaly render start
