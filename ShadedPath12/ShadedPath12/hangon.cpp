@@ -156,7 +156,7 @@ void HangOn::draw()
 	textEffect.draw();
 
 	// optimization: draw whole group (objects with same mesh)
-	xapp().objectStore.drawGroup("meteor", 8);
+	xapp().objectStore.drawGroup("meteor", 4);
 
 	postEffect.draw();
 }

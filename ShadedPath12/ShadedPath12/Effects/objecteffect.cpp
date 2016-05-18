@@ -396,6 +396,21 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, const vector<unique_ptr<Wo
 	ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 	//this_thread::sleep_for(200ms);
+	{
+		unique_lock<mutex> lock(effect->multiRenderLock);
+		effect->waiting_for_rendering++;
+		effect->render_start.notify_one();
+		effect->render_wait.wait(lock);
+	}
+	// now running outside lock so that all worker threads run in parallel
+	//Log("rendering " << this_thread::get_id() << endl);
+	//this_thread::sleep_for(1s);
+	//Log("rendering ended " << this_thread::get_id() << endl);
+	{
+		unique_lock<mutex> lock(effect->multiRenderLock);
+		effect->finished_rendering++;
+		effect->render_ended.notify_one();
+	}
 }
 
 void WorldObjectEffect::postDraw()
@@ -462,10 +477,14 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 	}
 
 	unique_lock<mutex> lock(multiRenderLock);
-	while (waiting_for_rendering < numThreads) {
-		render_start.wait(lock, [this, numThreads]() {return waiting_for_rendering == numThreads; });
-	}
+	render_start.wait(lock, [this, numThreads]() {return waiting_for_rendering == numThreads; });
+	// all threads are ready for action, set counter to 0 and signal threads to do rendering
+	waiting_for_rendering = 0;
+	render_wait.notify_all();
 
+	// now wait for render threads to finish
+	render_ended.wait(lock, [this, numThreads]() {return finished_rendering == numThreads; });
+	finished_rendering = 0;
 	waitForWorkerThreads();
 	//this_thread::sleep_for(1s);
 
