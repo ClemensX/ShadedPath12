@@ -55,7 +55,7 @@ void WorldObjectEffect::init(WorldObjectStore *oStore, UINT maxThreads, UINT max
 		createRootSigAndPSO(rootSignature, pipelineState);
 		cbvAlignedSize = calcConstantBufferSize((UINT)sizeof(cbv));
 
-		//createConstantBuffer((UINT)2 * cbvAlignedSize, L"objecteffect_cbv_resource");
+		createConstantBuffer((UINT)2 * cbvAlignedSize, L"objecteffect_cbv_resource");
 		setSingleCBVMode(maxThreads, maxNumObjects, sizeof(cbv), L"objecteffect_cbvsingle_resource");
 		// set cbv data:
 		XMMATRIX ident = XMMatrixIdentity();
@@ -209,7 +209,7 @@ void WorldObjectEffect::preDraw(DrawInfo &di)
 		commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
 
 		// Set CBVs
-		//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress() + cbvAlignedSize);
+		commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress()/* + cbvAlignedSize*/);
 		commandLists[frameIndex]->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
 
 		// Indicate that the back buffer will be used as a render target.
@@ -221,6 +221,7 @@ void WorldObjectEffect::preDraw(DrawInfo &di)
 		//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 		commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 		xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
+		return;
 	}
 	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, di.objectNum));
 }
@@ -253,8 +254,13 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		cbv.cameraPos.y = xapp().camera.pos.y;
 		cbv.cameraPos.z = xapp().camera.pos.z;
 		cbv.alpha = di.alpha;
+		if (inBulkOperation) {
+			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum), &cbv, sizeof(cbv));
+		} else {
+			memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+		}
+		//memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum), &cbv, sizeof(cbv));
 		//memcpy(cbvGPUDest + cbvAlignedSize, &cbv, sizeof(cbv));
-		memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum), &cbv, sizeof(cbv));
 		//memcpy(getCBVUploadAddress(frameIndex, 0), &cbv, sizeof(cbv));
 		drawInternal(di);
 		return;
@@ -273,8 +279,14 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		cbv.cameraPos.y = xapp().camera.pos.y;
 		cbv.cameraPos.z = xapp().camera.pos.z;
 		cbv.alpha = di.alpha;
-		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+		if (eyeNum == 1) di.objectNum += 1010;
+		if (inBulkOperation) {
+			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum), &cbv, sizeof(cbv));
+		} else {
+			memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+		}
 		drawInternal(di);
+		if (eyeNum == 1) di.objectNum -= 1010;
 		xapp().vr.nextEye();
 	}
 	xapp().vr.endDraw();
@@ -381,6 +393,7 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vec
 			ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
 			ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), effect->pipelineState.Get(), IID_PPV_ARGS(&commandList)));
 		} else {
+			commandAllocator->Reset();
 			commandList->Reset(commandAllocator.Get(), effect->pipelineState.Get());
 		}
 		//Log(" obj bulk update thread " << bi.end << " complete" << endl);
@@ -413,8 +426,6 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vec
 		// Execute the command list.
 		ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
 		xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-		//this_thread::sleep_for(200ms);
-		commandAllocator->Reset();
 		{
 			unique_lock<mutex> lock(effect->multiRenderLock);
 			effect->finished_rendering++;
@@ -435,8 +446,8 @@ void WorldObjectEffect::postDraw()
 	// tests
 	auto &f = frameData[frameIndex];
 	// Wait for the gpu to complete the draw.
-	//createSyncPoint(f, xapp().commandQueue);
-	//waitForSyncPoint(f); // ok, but not optimal
+	createSyncPoint(f, xapp().commandQueue);
+	waitForSyncPoint(f); // ok, but not optimal
 	//Sleep(1);
 }
 
