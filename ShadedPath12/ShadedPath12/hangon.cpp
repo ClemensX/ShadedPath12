@@ -24,7 +24,7 @@ void HangOn::init()
 	linesEffect.init();
 	textEffect.init();
 	postEffect.init();
-	objectEffect.init(&xapp().objectStore, NUM_METEOR + 10);
+	objectEffect.init(&xapp().objectStore, 4, NUM_METEOR + 10);
 
 	// initialize game time to real time:
 	gameTime.init(1);
@@ -156,7 +156,7 @@ void HangOn::draw()
 	textEffect.draw();
 
 	// optimization: draw whole group (objects with same mesh)
-	xapp().objectStore.drawGroup("meteor", 4);
+	xapp().objectStore.drawGroup("meteor", 2);
 
 	postEffect.draw();
 }

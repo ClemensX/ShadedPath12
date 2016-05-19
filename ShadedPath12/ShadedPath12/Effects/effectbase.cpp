@@ -43,7 +43,7 @@ void EffectBase::createConstantBuffer(size_t s, wchar_t * name)
 	ThrowIfFailed(cbvResource->Map(0, nullptr, reinterpret_cast<void**>(&cbvGPUDest)));
 }
 
-void EffectBase::setSingleCBVMode(UINT maxObjects, size_t s, wchar_t * name)
+void EffectBase::setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wchar_t * name)
 {
 	if (maxObjects == 0) {
 		singleCbvBufferMode = false;
@@ -55,7 +55,9 @@ void EffectBase::setSingleCBVMode(UINT maxObjects, size_t s, wchar_t * name)
 	// allocate const buffer for all frames and possibly OVR:
 	UINT totalSize = slotSize * maxObjects;
 	if (xapp().ovrRendering) totalSize *= 2;
-	for (int i = 0; i < XApp::FrameCount; i++) {
+	for (int i = 0; i < XApp::FrameCount*maxThreads; i++) {
+		//ComPtr<ID3D12Resource> t;
+		//singleCBVResources.push_back(move(t));
 		ThrowIfFailed(xapp().device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 			D3D12_HEAP_FLAG_NONE, // do not set - dx12 does this automatically depending on resource type
@@ -69,17 +71,19 @@ void EffectBase::setSingleCBVMode(UINT maxObjects, size_t s, wchar_t * name)
 	}
 }
 
-D3D12_GPU_VIRTUAL_ADDRESS EffectBase::getCBVVirtualAddress(int frame, UINT objectIndex)
+D3D12_GPU_VIRTUAL_ADDRESS EffectBase::getCBVVirtualAddress(int frame, int thread, UINT objectIndex)
 {
 	// TODO correction for OVR mode
+	//assert(XApp::FrameCount*thread + frame <= singleCBVResources);
 	UINT64 plus = slotSize * objectIndex;
-	return singleCBVResources[frame]->GetGPUVirtualAddress() + plus;
+	return singleCBVResources[XApp::FrameCount*thread + frame]->GetGPUVirtualAddress() + plus;
 }
 
-UINT8* EffectBase::getCBVUploadAddress(int frame, UINT objectIndex)
+UINT8* EffectBase::getCBVUploadAddress(int frame, int thread, UINT objectIndex)
 {
 	// TODO correction for OVR mode
-	UINT8* mem = singleCBV_GPUDests[frame];
+	//assert(XApp::FrameCount*thread + frame <= singleCBVResources.size());
+	UINT8* mem = singleCBV_GPUDests[XApp::FrameCount*thread + frame];
 	if (mem == nullptr) {
 		return this->cbvGPUDest;
 	}

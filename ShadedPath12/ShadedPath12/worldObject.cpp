@@ -394,7 +394,7 @@ void WorldObject::draw() {
 			// no skinned vertices, no action/movement - nothing to do
 		}
 	}
-	worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, objectNum, alpha);
+	worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, objectNum, threadNum, alpha);
 }
 
 void WorldObject::setAction(string name) {
@@ -451,6 +451,7 @@ WorldObject::WorldObject() {
 	drawBoundingBox = false;
 	drawNormals = false;
 	objectNum = count++;
+	threadNum = 0;
 }
 
 WorldObject::~WorldObject() {
@@ -493,7 +494,7 @@ void WorldObjectStore::drawGroup(string groupname, size_t threadNum)
 	objectEffect->beginBulkUpdate();
 	auto grp = xapp().objectStore.getGroup(groupname);
 	//Log(" draw objects: " << grp->size() << endl);
-	if (threadNum > 1) {
+	if (threadNum >= 1) {
 		objectEffect->divideBulk(grp->size(), threadNum, grp);
 	}
 	else {

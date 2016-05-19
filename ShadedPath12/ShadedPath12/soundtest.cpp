@@ -23,7 +23,7 @@ void Soundtest::init()
 	linesEffect.init();
 	textEffect.init();
 	postEffect.init();
-	objectEffect.init(&xapp().objectStore);
+	objectEffect.init(&xapp().objectStore, 1);
 	float aspectRatio = xapp().aspectRatio;
 
 	LineDef myLines[] = {

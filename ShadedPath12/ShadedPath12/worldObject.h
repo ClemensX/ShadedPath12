@@ -93,6 +93,7 @@ public:
 	Material material;
 	XMMATRIX calcToWorld();
 	UINT objectNum; // used for single CBV buffer calculations - must be unique for all objects
+	int threadNum; // only used in multi thread drawing
 private:
 	XMFLOAT3 _pos;
 	XMFLOAT3 _rot;
