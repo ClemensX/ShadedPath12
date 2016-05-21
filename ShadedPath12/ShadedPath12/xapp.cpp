@@ -142,6 +142,11 @@ void XApp::draw() {
 
 	if (ovrRendering) {
 		vr.endFrame();
+		if (ovrMirror) {
+			int frameIndex = xapp().getCurrentBackBufferIndex();
+			lastPresentedFrame = frameIndex;
+			ThrowIfFailedWithDevice(swapChain->Present(0, 0), xapp().device.Get());
+		}
 	}
 	frameFinished();
 }
@@ -176,6 +181,7 @@ void XApp::init()
 	if (initialized) return;
 	initialized = true;
 
+	if (!ovrRendering) ovrMirror = false;
 	if (ovrRendering) vr.init();
 
 	if (appName.length() == 0) {
