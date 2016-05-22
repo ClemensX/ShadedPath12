@@ -355,22 +355,23 @@ void WorldObject::draw() {
 	BoundingBox box;
 	XMFLOAT4X4 finalWorld;
 	XMMATRIX toWorld;
+	TextureInfo *info;
 	{
 		unique_lock<mutex> lock(worldObjectEffect->mutex_wo_drawing);
 		//Log(" obj draw locked" << objectNum << endl);
 		toWorld = calcToWorld();
 		xapp().camera.viewTransform();
 		xapp().camera.projectionTransform();
-		getBoundingBox(box);
+		//getBoundingBox(box);//}
 		int visible = true; // TODO rethink visibility xapp().camera.calculateVisibility(box, toWorld);  // TODO first move, then calc visibility
 																		//Log("visible == " << visible << endl);
 		if (visible == 0) {
 			//Log(" obj invisible" << objectNum << endl);
-			return; 
+			return;
 		}
 
 		XMStoreFloat4x4(&finalWorld, XMMatrixTranspose(toWorld));
-		TextureInfo *info = this->textureID;
+		info = this->textureID;
 		if (action) {
 			//move object
 			XMFLOAT3 pos, rot;
@@ -381,7 +382,8 @@ void WorldObject::draw() {
 			float diff = getVLen(this->pos(), pos);
 			this->pos() = pos;
 			this->rot() = rot;
-		} else {
+		}
+		else {
 			if (mesh->skinnedVertices.size() > 0) {
 				for (int skV = 0; skV < (int)mesh->skinnedVertices.size(); skV++) {
 					WorldObjectVertex::VertexSkinned *v = &mesh->skinnedVertices[skV];
@@ -396,11 +398,12 @@ void WorldObject::draw() {
 					mesh->vertices[skV].Normal = normfinal_flo;
 				}
 				mesh->createVertexAndIndexBuffer(worldObjectEffect);
-			} else {
+			}
+			else {
 				// no skinned vertices, no action/movement - nothing to do
 			}
 		}
-		worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, objectNum, threadNum, alpha);
+	worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, objectNum, threadNum, alpha);
 		//Log(" obj locked end" << objectNum << endl);
 	} // lock end
 }
