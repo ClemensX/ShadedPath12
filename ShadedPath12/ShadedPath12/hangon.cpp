@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "hangon.h"
 
-static int NUM_METEOR = 10000;
+static int NUM_METEOR = 1000;
+static int NUM_THREADS = 2;
 
 HangOn::HangOn() : XAppBase()
 {
@@ -24,7 +25,7 @@ void HangOn::init()
 	linesEffect.init();
 	textEffect.init();
 	postEffect.init();
-	objectEffect.init(&xapp().objectStore, 2, NUM_METEOR + 10);
+	objectEffect.init(&xapp().objectStore, NUM_THREADS, NUM_METEOR + 10);
 
 	// initialize game time to real time:
 	gameTime.init(1);
@@ -158,7 +159,8 @@ void HangOn::draw()
 	textEffect.draw();
 
 	// optimization: draw whole group (objects with same mesh)
-	xapp().objectStore.drawGroup("meteor", 2); // TODO
+	xapp().objectStore.drawGroup("meteor", NUM_THREADS); // TODO
+	//xapp().objectStore.drawGroup("meteor", 0); // use for bulk update w/o threads
 
 	postEffect.draw();
 }

@@ -361,6 +361,11 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 	//XMStoreFloat4x4(&cbv.wvp, wvp);
 	//cbv.rot = lines[0].rot;
 	//memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+	if (inBulkOperation) {
+		commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
+		commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
+		commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, di.threadNum, di.objectNum, di.eyeNum));
+	}
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &di.mesh->vertexBufferView);
 	commandLists[frameIndex]->IASetIndexBuffer(&di.mesh->indexBufferView);
 	//auto *tex = xapp().textureStore.getTexture(elvec.first);

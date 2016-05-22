@@ -56,8 +56,10 @@ void EffectBase::setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wc
 	UINT totalSize = slotSize * maxObjects;
 	if (xapp().ovrRendering) totalSize *= 2; // TODO: really needed?
 	for (int i = 0; i < XApp::FrameCount*maxThreads; i++) {
-		//ComPtr<ID3D12Resource> t;
-		//singleCBVResources.push_back(move(t));
+		ComPtr<ID3D12Resource> t;
+		singleCBVResources.push_back(move(t));
+		UINT8 * gpud;
+		singleCBV_GPUDests.push_back(gpud);
 		ThrowIfFailed(xapp().device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 			D3D12_HEAP_FLAG_NONE, // do not set - dx12 does this automatically depending on resource type
