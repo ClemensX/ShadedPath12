@@ -352,49 +352,57 @@ float getVLen(XMFLOAT3 &p0, XMFLOAT3 &p1) {
 void WorldObject::draw() {
 	WorldObjectEffect *worldObjectEffect = xapp().objectStore.getWorldObjectEffect();
 	
-	XMMATRIX toWorld = calcToWorld();
-
-	xapp().camera.viewTransform();
-	xapp().camera.projectionTransform();
 	BoundingBox box;
-	getBoundingBox(box);
-	int visible = xapp().camera.calculateVisibility(box, toWorld);  // TODO first move, then calc visibility
-    //Log("visible == " << visible << endl);
-	if (visible == 0) return;
-
 	XMFLOAT4X4 finalWorld;
-	XMStoreFloat4x4(&finalWorld, XMMatrixTranspose(toWorld));
-	TextureInfo *info = this->textureID;
-	if (action) {
-		//move object
-		XMFLOAT3 pos, rot;
-		xapp().world.path.getPos(*this, xapp().gametime.getTimeAbsSeconds(), pos, rot);
-		pos.x = objectStartPos.x + pos.x * scale;
-		pos.y = objectStartPos.y + pos.y * scale;
-		pos.z = objectStartPos.z + pos.z * scale;
-		float diff = getVLen(this->pos(), pos);
-		this->pos() = pos;
-		this->rot() = rot;
-	} else {
-		if (mesh->skinnedVertices.size() > 0) {
-			for (int skV = 0; skV < (int)mesh->skinnedVertices.size(); skV++) {
-				WorldObjectVertex::VertexSkinned *v = &mesh->skinnedVertices[skV];
-				XMVECTOR vfinal, normfinal;
-				xapp().world.path.skin(vfinal, normfinal, v, pathDescBone);
-				// TODO handle cpu calculated normals after animation/skinning here
-				XMFLOAT3 vfinal_flo;
-				XMStoreFloat3(&vfinal_flo, vfinal);
-				mesh->vertices[skV].Pos = vfinal_flo;
-				XMFLOAT3 normfinal_flo;
-				XMStoreFloat3(&normfinal_flo, normfinal);
-				mesh->vertices[skV].Normal = normfinal_flo;
-			}
-			mesh->createVertexAndIndexBuffer(worldObjectEffect);
-		} else {
-			// no skinned vertices, no action/movement - nothing to do
+	XMMATRIX toWorld;
+	{
+		unique_lock<mutex> lock(worldObjectEffect->mutex_wo_drawing);
+		//Log(" obj draw locked" << objectNum << endl);
+		toWorld = calcToWorld();
+		xapp().camera.viewTransform();
+		xapp().camera.projectionTransform();
+		getBoundingBox(box);
+		int visible = true; // TODO rethink visibility xapp().camera.calculateVisibility(box, toWorld);  // TODO first move, then calc visibility
+																		//Log("visible == " << visible << endl);
+		if (visible == 0) {
+			//Log(" obj invisible" << objectNum << endl);
+			return; 
 		}
-	}
-	worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, objectNum, threadNum, alpha);
+
+		XMStoreFloat4x4(&finalWorld, XMMatrixTranspose(toWorld));
+		TextureInfo *info = this->textureID;
+		if (action) {
+			//move object
+			XMFLOAT3 pos, rot;
+			xapp().world.path.getPos(*this, xapp().gametime.getTimeAbsSeconds(), pos, rot);
+			pos.x = objectStartPos.x + pos.x * scale;
+			pos.y = objectStartPos.y + pos.y * scale;
+			pos.z = objectStartPos.z + pos.z * scale;
+			float diff = getVLen(this->pos(), pos);
+			this->pos() = pos;
+			this->rot() = rot;
+		} else {
+			if (mesh->skinnedVertices.size() > 0) {
+				for (int skV = 0; skV < (int)mesh->skinnedVertices.size(); skV++) {
+					WorldObjectVertex::VertexSkinned *v = &mesh->skinnedVertices[skV];
+					XMVECTOR vfinal, normfinal;
+					xapp().world.path.skin(vfinal, normfinal, v, pathDescBone);
+					// TODO handle cpu calculated normals after animation/skinning here
+					XMFLOAT3 vfinal_flo;
+					XMStoreFloat3(&vfinal_flo, vfinal);
+					mesh->vertices[skV].Pos = vfinal_flo;
+					XMFLOAT3 normfinal_flo;
+					XMStoreFloat3(&normfinal_flo, normfinal);
+					mesh->vertices[skV].Normal = normfinal_flo;
+				}
+				mesh->createVertexAndIndexBuffer(worldObjectEffect);
+			} else {
+				// no skinned vertices, no action/movement - nothing to do
+			}
+		}
+		worldObjectEffect->draw(mesh, mesh->vertexBuffer, mesh->indexBuffer, finalWorld, mesh->numIndexes, info, material, objectNum, threadNum, alpha);
+		//Log(" obj locked end" << objectNum << endl);
+	} // lock end
 }
 
 void WorldObject::setAction(string name) {

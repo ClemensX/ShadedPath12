@@ -55,7 +55,7 @@ void WorldObjectEffect::init(WorldObjectStore *oStore, UINT maxThreads, UINT max
 		createRootSigAndPSO(rootSignature, pipelineState);
 		cbvAlignedSize = calcConstantBufferSize((UINT)sizeof(cbv));
 
-		createConstantBuffer((UINT)2 * cbvAlignedSize, L"objecteffect_cbv_resource");
+		createConstantBuffer((UINT)2 * cbvAlignedSize, L"objecteffect_cbv_resource"); // TODO
 		setSingleCBVMode(maxThreads, maxNumObjects, sizeof(cbv), L"objecteffect_cbvsingle_resource");
 		// set cbv data:
 		XMMATRIX ident = XMMatrixIdentity();
@@ -223,7 +223,7 @@ void WorldObjectEffect::preDraw(DrawInfo &di)
 		xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
 		return;
 	}
-	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, di.objectNum));
+	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, di.objectNum, 0));
 }
 
 /*
@@ -255,7 +255,7 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		cbv.cameraPos.z = xapp().camera.pos.z;
 		cbv.alpha = di.alpha;
 		if (inBulkOperation) {
-			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum), &cbv, sizeof(cbv));
+			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, 0), &cbv, sizeof(cbv));
 		} else {
 			memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 		}
@@ -269,6 +269,7 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 	xapp().vr.prepareDraw();
 	for (int eyeNum = 0; eyeNum < 2; eyeNum++) {
 		// adjust PVW matrix
+		di.eyeNum = eyeNum;
 		XMMATRIX adjustedEyeMatrix;
 		xapp().vr.adjustEyeMatrix(adjustedEyeMatrix);
 		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
@@ -279,16 +280,17 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		cbv.cameraPos.y = xapp().camera.pos.y;
 		cbv.cameraPos.z = xapp().camera.pos.z;
 		cbv.alpha = di.alpha;
-		if (eyeNum == 1) di.objectNum += 1010;
+		//if (eyeNum == 1) di.objectNum += 12;//10010;
 		if (inBulkOperation) {
-			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum), &cbv, sizeof(cbv));
+			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, eyeNum), &cbv, sizeof(cbv));
 		} else {
 			memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 		}
 		drawInternal(di);
-		if (eyeNum == 1) di.objectNum -= 1010;
+		//if (eyeNum == 1) di.objectNum -= 12;//10010;
 		xapp().vr.nextEye();
 	}
+	di.eyeNum = 0;
 	xapp().vr.endDraw();
 }
 
@@ -331,7 +333,9 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	if (inThreadOperation) {
 		//mutex_Object.lock();
-		commandList->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, di.threadNum, di.objectNum));
+		commandList->RSSetViewports(1, xapp().vr.getViewport());
+		commandList->RSSetScissorRects(1, xapp().vr.getScissorRect());
+		commandList->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, di.threadNum, di.objectNum, di.eyeNum));
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		// update buffers for this text line:
 		//XMStoreFloat4x4(&cbv.wvp, wvp);
@@ -345,6 +349,8 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 		commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 		commandList->SetGraphicsRootDescriptorTable(2, di.tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
 		commandList->DrawIndexedInstanced(di.numIndexes, 1, 0, 0, 0);
+		//Log("draw frame/thread/obj/eye " << frameIndex << " " << di.threadNum << " " << di.objectNum << " " << di.eyeNum << endl);
+		//this_thread::sleep_for(20ms);
 		//mutex_Object.unlock();
 		return;
 	}
@@ -411,13 +417,15 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vec
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
 		CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
 		commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-		commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, threadIndex, 0));
+		commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, threadIndex, 0, 0));
 		for (auto i = bi.start; i <= bi.end; i++) {
 			WorldObject *w = grp->at(i).get();
 			//commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, w->objectNum));
 			w->threadNum = threadIndex;
-			//if (threadIndex == 1)
+			//if (threadIndex == 1) 			this_thread::sleep_for(30ms);
+			//Log(" obj draw" << w->objectNum << endl);
 			w->draw();
+			//Log("    obj end" << w->objectNum << endl);
 			//Log(" pos" << w->objectNum << endl)
 			//auto & w = grp[i];
 			//w.->draw();

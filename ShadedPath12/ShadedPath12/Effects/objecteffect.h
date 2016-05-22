@@ -28,6 +28,7 @@ public:
 		Mesh* mesh;
 		UINT objectNum;
 		int threadNum = 0;
+		int eyeNum = 0;
 		DrawInfo(ComPtr<ID3D12Resource> &vBuffer, ComPtr<ID3D12Resource> &iBuffer)
 			: vertexBuffer(vBuffer), indexBuffer(iBuffer)
 		{};
@@ -49,6 +50,7 @@ public:
 	void divideBulk(size_t numObjects, size_t numThreads, const vector<unique_ptr<WorldObject>> *grp);
 	void createRootSigAndPSO(ComPtr<ID3D12RootSignature> &sig, ComPtr<ID3D12PipelineState> &pso);
 	bool inThreadOperation = false;
+	mutex mutex_wo_drawing;
 private:
 	ConstantBufferFixed cb;
 	// globally enable wireframe display of objects

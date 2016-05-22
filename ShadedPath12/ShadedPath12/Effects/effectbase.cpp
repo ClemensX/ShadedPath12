@@ -54,7 +54,7 @@ void EffectBase::setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wc
 	slotSize = calcConstantBufferSize((UINT)s);
 	// allocate const buffer for all frames and possibly OVR:
 	UINT totalSize = slotSize * maxObjects;
-	if (xapp().ovrRendering) totalSize *= 2;
+	if (xapp().ovrRendering) totalSize *= 2; // TODO: really needed?
 	for (int i = 0; i < XApp::FrameCount*maxThreads; i++) {
 		//ComPtr<ID3D12Resource> t;
 		//singleCBVResources.push_back(move(t));
@@ -71,23 +71,32 @@ void EffectBase::setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wc
 	}
 }
 
-D3D12_GPU_VIRTUAL_ADDRESS EffectBase::getCBVVirtualAddress(int frame, int thread, UINT objectIndex)
+D3D12_GPU_VIRTUAL_ADDRESS EffectBase::getCBVVirtualAddress(int frame, int thread, UINT objectIndex, int eyeNum)
 {
 	// TODO correction for OVR mode
 	//assert(XApp::FrameCount*thread + frame <= singleCBVResources);
-	UINT64 plus = slotSize * objectIndex;
+	UINT64 plus = slotSize * objectIndex*2;
+	if (xapp().ovrRendering && eyeNum == 1) {
+		plus += slotSize;
+	}
+	//UINT64 va = singleCBVResources[XApp::FrameCount*thread + frame]->GetGPUVirtualAddress() + plus;
+	//Log("va " << va << endl);
 	return singleCBVResources[XApp::FrameCount*thread + frame]->GetGPUVirtualAddress() + plus;
 }
 
-UINT8* EffectBase::getCBVUploadAddress(int frame, int thread, UINT objectIndex)
+UINT8* EffectBase::getCBVUploadAddress(int frame, int thread, UINT objectIndex, int eyeNum)
 {
-	// TODO correction for OVR mode
+	// TODO: slotsize has to be object specific?
 	//assert(XApp::FrameCount*thread + frame <= singleCBVResources.size());
 	UINT8* mem = singleCBV_GPUDests[XApp::FrameCount*thread + frame];
 	if (mem == nullptr) {
 		return this->cbvGPUDest;
 	}
-	UINT64 plus = slotSize * objectIndex;
+	UINT64 plus = slotSize * objectIndex*2;
+	if (xapp().ovrRendering && eyeNum == 1) {
+		plus += slotSize;
+	}
+	//Log("vup " << (mem + plus) << endl);
 	return  mem + plus;
 }
 

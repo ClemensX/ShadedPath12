@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "hangon.h"
 
-static int NUM_METEOR = 1000;
+static int NUM_METEOR = 10000;
 
 HangOn::HangOn() : XAppBase()
 {
@@ -24,7 +24,7 @@ void HangOn::init()
 	linesEffect.init();
 	textEffect.init();
 	postEffect.init();
-	objectEffect.init(&xapp().objectStore, 4, NUM_METEOR + 10);
+	objectEffect.init(&xapp().objectStore, 2, NUM_METEOR + 10);
 
 	// initialize game time to real time:
 	gameTime.init(1);
@@ -101,6 +101,8 @@ void HangOn::initMeteorField() {
 	xapp().objectStore.createGroup("meteor");
 	for (int i = 0; i < NUM_METEOR; i++) {
 		XMFLOAT3 p = xapp().world.getRandomPos(50);
+		//p.x = p.y = p.z = 0.0f;
+		//p.x = i * 10.0f;
 		xapp().objectStore.addObject("meteor", "House", p, HouseTex);
 	}
     //object.drawBoundingBox = true;
@@ -156,7 +158,7 @@ void HangOn::draw()
 	textEffect.draw();
 
 	// optimization: draw whole group (objects with same mesh)
-	xapp().objectStore.drawGroup("meteor", 1);
+	xapp().objectStore.drawGroup("meteor", 2); // TODO
 
 	postEffect.draw();
 }
