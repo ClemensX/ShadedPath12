@@ -77,7 +77,10 @@ D3D12_GPU_VIRTUAL_ADDRESS EffectBase::getCBVVirtualAddress(int frame, int thread
 {
 	// TODO correction for OVR mode
 	//assert(XApp::FrameCount*thread + frame <= singleCBVResources);
-	UINT64 plus = slotSize * objectIndex*2;
+	UINT64 plus = slotSize * objectIndex;
+	if (xapp().ovrRendering) {
+		plus *= 2; // adjust for two eyes
+	}
 	if (xapp().ovrRendering && eyeNum == 1) {
 		plus += slotSize;
 	}
@@ -94,7 +97,10 @@ UINT8* EffectBase::getCBVUploadAddress(int frame, int thread, UINT objectIndex, 
 	if (mem == nullptr) {
 		return this->cbvGPUDest;
 	}
-	UINT64 plus = slotSize * objectIndex*2;
+	UINT64 plus = slotSize * objectIndex;
+	if (xapp().ovrRendering) {
+		plus *= 2; // adjust for two eyes
+	}
 	if (xapp().ovrRendering && eyeNum == 1) {
 		plus += slotSize;
 	}
