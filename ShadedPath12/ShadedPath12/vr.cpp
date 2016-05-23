@@ -12,6 +12,7 @@ XMFLOAT4X4 VR::ident;
 #endif
 
 VR::~VR() {
+	if (!this->xapp->ovrRendering) return;
 #if defined(_OVR_)
 	int count;
 	ovr_GetTextureSwapChainLength(session, textureSwapChain, &count);

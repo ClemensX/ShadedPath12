@@ -340,6 +340,16 @@ void PostEffect::postDraw() {
 	//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT,
 		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+	if (xapp().ovrMirror) {
+		commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE,
+			D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+		ID3D12Resource *resource = xapp().renderTargets[frameIndex].Get();
+		CD3DX12_TEXTURE_COPY_LOCATION Src(m_texture.Get(), 0);
+		CD3DX12_TEXTURE_COPY_LOCATION Dst(resource, 0);
+		commandLists[frameIndex]->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
+		commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT,
+			D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+	}
 	// Record commands.
 	ThrowIfFailed(commandLists[frameIndex]->Close());
 	// Execute the command list.

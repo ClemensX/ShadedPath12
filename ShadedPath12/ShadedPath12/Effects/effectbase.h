@@ -28,7 +28,22 @@ protected:
 
 	void createConstantBuffer(size_t s, wchar_t * name);
 	ComPtr<ID3D12Resource> cbvResource;
-	UINT8* cbvGPUDest;  // mempy changed cbv data to this address before draw()
+	UINT8* cbvGPUDest;  // memcpy() changed cbv data to this address before draw()
+
+	// enable single CBV mode: one large constand buffer for all objects.
+	// duplicated for each worker thread
+	// max number of objects has to be given 
+	// setting maxObjects to 0 disables single buffer mode
+	// has to ge called in init() before rendering
+	void setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wchar_t * name);
+	vector<ComPtr<ID3D12Resource>> singleCBVResources;
+	//ComPtr<ID3D12Resource> singleCBVResources[XApp::FrameCount*2]; // TODO
+	vector<UINT8*> singleCBV_GPUDests;
+	//UINT8* singleCBV_GPUDests[XApp::FrameCount*4];  // memcpy() changed cbv data to this address before draw()
+	UINT slotSize = 0;  // allocated size for single CVB element
+	D3D12_GPU_VIRTUAL_ADDRESS getCBVVirtualAddress(int frame, int thread, UINT objectIndex, int eyeNum);
+	UINT8* getCBVUploadAddress(int frame, int thread, UINT objectIndex, int eyeNum);
+
 
 	// vertex buffer
 	static void createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void *data, ID3D12PipelineState *pipelineState, LPCWSTR baseName,
@@ -49,4 +64,11 @@ protected:
 	ComPtr<ID3D12Resource> vertexBuffer;
 	ComPtr<ID3D12Resource> vertexBufferUpload;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+protected:
+	bool singleCbvBufferMode = false;
+	UINT maxObjects = 0;
+	vector<thread> workerThreads;
+	void waitForWorkerThreads();
+	virtual ~EffectBase();
+public:
 };

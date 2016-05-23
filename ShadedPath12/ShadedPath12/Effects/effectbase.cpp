@@ -1,4 +1,5 @@
 #include "stdafx.h"
+//#include "effectbase.h"
 
 void EffectBase::createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue)
 {
@@ -40,6 +41,71 @@ void EffectBase::createConstantBuffer(size_t s, wchar_t * name)
 	cbvResource.Get()->SetName(name);
 	//Log("GPU virtual: " <<  cbvResource->GetGPUVirtualAddress(); << endl);
 	ThrowIfFailed(cbvResource->Map(0, nullptr, reinterpret_cast<void**>(&cbvGPUDest)));
+}
+
+void EffectBase::setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wchar_t * name)
+{
+	if (maxObjects == 0) {
+		singleCbvBufferMode = false;
+		return;
+	}
+	singleCbvBufferMode = true;
+	this->maxObjects = maxObjects;
+	slotSize = calcConstantBufferSize((UINT)s);
+	// allocate const buffer for all frames and possibly OVR:
+	UINT totalSize = slotSize * maxObjects;
+	if (xapp().ovrRendering) totalSize *= 2; // TODO: really needed?
+	for (int i = 0; i < XApp::FrameCount*maxThreads; i++) {
+		ComPtr<ID3D12Resource> t;
+		singleCBVResources.push_back(move(t));
+		UINT8 * gpud;
+		singleCBV_GPUDests.push_back(gpud);
+		ThrowIfFailed(xapp().device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE, // do not set - dx12 does this automatically depending on resource type
+			&CD3DX12_RESOURCE_DESC::Buffer(totalSize),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&singleCBVResources[i])));
+		singleCBVResources[i].Get()->SetName(name);
+		//Log("GPU virtual: " <<  cbvResource->GetGPUVirtualAddress(); << endl);
+		ThrowIfFailed(singleCBVResources[i]->Map(0, nullptr, reinterpret_cast<void**>(&singleCBV_GPUDests[i])));
+	}
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS EffectBase::getCBVVirtualAddress(int frame, int thread, UINT objectIndex, int eyeNum)
+{
+	// TODO correction for OVR mode
+	//assert(XApp::FrameCount*thread + frame <= singleCBVResources);
+	UINT64 plus = slotSize * objectIndex;
+	if (xapp().ovrRendering) {
+		plus *= 2; // adjust for two eyes
+	}
+	if (xapp().ovrRendering && eyeNum == 1) {
+		plus += slotSize;
+	}
+	//UINT64 va = singleCBVResources[XApp::FrameCount*thread + frame]->GetGPUVirtualAddress() + plus;
+	//Log("va " << va << endl);
+	return singleCBVResources[XApp::FrameCount*thread + frame]->GetGPUVirtualAddress() + plus;
+}
+
+UINT8* EffectBase::getCBVUploadAddress(int frame, int thread, UINT objectIndex, int eyeNum)
+{
+	// TODO: slotsize has to be object specific?
+	//assert(XApp::FrameCount*thread + frame <= singleCBVResources.size());
+	UINT8* mem = singleCBV_GPUDests[XApp::FrameCount*thread + frame];
+	if (mem == nullptr) {
+		return this->cbvGPUDest;
+	}
+	UINT64 plus = slotSize * objectIndex;
+	if (xapp().ovrRendering) {
+		plus *= 2; // adjust for two eyes
+	}
+	if (xapp().ovrRendering && eyeNum == 1) {
+		plus += slotSize;
+	}
+	//Log("vup " << (mem + plus) << endl);
+	return  mem + plus;
 }
 
 void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void *data, ID3D12PipelineState *pipelineState, LPCWSTR baseName,
@@ -141,6 +207,25 @@ void EffectBase::createAndUploadIndexBuffer(size_t bufferSize, void *data, ID3D1
 	indexBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
 	indexBufferView.SizeInBytes = indexBufferSize;
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+}
+
+void EffectBase::waitForWorkerThreads()
+{
+	if (workerThreads.size() > 0) {
+		// we still have threads running
+		for (auto& t : workerThreads) {
+			if (t.joinable()) {
+				t.join();
+			}
+		}
+		// all threads finished - remove from list
+		workerThreads.clear();
+	}
+}
+
+EffectBase::~EffectBase()
+{
+	waitForWorkerThreads();
 }
 
 /*

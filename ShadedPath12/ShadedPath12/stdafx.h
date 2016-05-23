@@ -29,6 +29,7 @@
 #include <codecvt>
 #include <mutex>
 #include <future>
+#include <condition_variable>
 //#include <new>
 using namespace std;
 #include <assert.h>
@@ -66,6 +67,21 @@ using namespace DirectX;
 #pragma warning( disable : 4005 )
 #include <crtdbg.h>
 #pragma warning( default : 4005 )
+
+inline void LogFile(const WCHAR *s) {
+	static bool firstcall = true;
+	ios_base::openmode mode;
+	if (firstcall) {
+		mode = ios_base::out;
+		firstcall = false;
+	}
+	else {
+		mode = ios_base::out | ios_base::app;
+	}
+	std::wofstream out("xapp_run.log", mode);
+	out << s;
+	out.close();
+}
 
 #if defined(DEBUG) | defined(_DEBUG)
 #define LogCond(y,x) if(y){Log(x)}

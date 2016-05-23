@@ -106,6 +106,7 @@ public:
 	string commandline;
 	HWND hwnd = 0;
 	bool ovrRendering = false;   // use split screen ovr rendering
+	bool ovrMirror = true;       // if ovrRendering() then this flag indicates if mirroring to app window should occur, always false for non-ovr rendering
 	bool warp; //use warp device to render (a.k.a. software rendering)
 	// on some systems there is no debug version of DX 11 available,
 	// then set -disableDX11Debug on command line to be able to let debug build run
@@ -157,6 +158,7 @@ public:
 	Sound sound;
 	VR vr;
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
+	thread mythread;
 private:
 	UINT frameIndex;
 	bool rtvCleared = false; // shaders can ask if ClearRenderTargetView still has to be called (usually only first shader needs to)

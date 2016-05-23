@@ -25,7 +25,7 @@ void ObjectViewer::init()
 	xapp().world.linesEffect = &linesEffect;
 	textEffect.init();
 	//billboardEffect.init();
-	objectEffect.init(&xapp().objectStore);
+	objectEffect.init(&xapp().objectStore, 1);
 	float aspectRatio = xapp().aspectRatio;
 
 	LineDef myLines[] = {
@@ -128,7 +128,7 @@ void ObjectViewer::init()
 		//object.drawNormals = true;
 		//object.drawBoundingBox = true;
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"shaded2.b", "Shaded");
 		xapp().objectStore.addObject(object, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GrassTex);
 		//object.drawNormals = true;
@@ -138,13 +138,13 @@ void ObjectViewer::init()
 		object.material.specExp = 1.0f;       // no spec color 1 0 nothing
 		object.material.specIntensity = 0.0f; // no spec color
 	}
-	if (false) {
+	if (true) {
 		xapp().objectStore.loadObject(L"house4_anim.b", "House");
 		xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
 		//object.drawBoundingBox = true;
 		object.drawNormals = true;
-		object.setAction("Cube");
-		object.pathDescMove->pathMode = Path_Reverse;
+		//object.setAction("Cube");
+		//object.pathDescMove->pathMode = Path_Reverse;
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
 	}
