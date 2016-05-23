@@ -16,6 +16,7 @@ public:
 		float    alpha;
 	};
 	UINT cbvAlignedSize = 0;	// aligned size of cbv for using indexes into larger buffers (256 byte alignment)
+	~WorldObjectEffect();
 	// gather all info needed to draw one object here
 	struct DrawInfo {
 		ComPtr<ID3D12Resource> &vertexBuffer;
@@ -65,6 +66,7 @@ private:
 	void drawInternal(DrawInfo &di);
 	static void updateTask(BulkDivideInfo bi, int threadIndex, const vector<unique_ptr<WorldObject>> *grp, WorldObjectEffect *effect);
 	atomic<bool> updateRunning = false;
+	atomic<bool> allThreadsShouldEnd = false;
 	future<void> objecteffectFuture;
 	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
 	ComPtr<ID3D12GraphicsCommandList> updateCommandList;

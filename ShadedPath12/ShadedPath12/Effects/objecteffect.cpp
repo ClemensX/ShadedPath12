@@ -390,6 +390,7 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vec
 			effect->waiting_for_rendering++;
 			effect->render_start.notify_one();
 			effect->render_wait.wait(lock);
+			if (effect->allThreadsShouldEnd) return;
 		}
 		// now running outside lock so that all worker threads run in parallel
 		//Log("rendering " << this_thread::get_id() << endl);
@@ -507,6 +508,11 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 	finished_rendering = 0;
 	//waitForWorkerThreads();
 	//this_thread::sleep_for(1s);
+}
+
+WorldObjectEffect::~WorldObjectEffect() {
+	allThreadsShouldEnd = true;
+	render_wait.notify_all();
 }
 
 thread_local ComPtr<ID3D12GraphicsCommandList> WorldObjectEffect::commandList;
