@@ -12,6 +12,7 @@ Target Platform is Windows 10 (64 bit only).
 Some tools are Java based and use eclipse 4. This is mostly done for tools used in asset handling.
 
 # Versions
+* 0.1.1 - mass rendering / mutli-thread support
 * 0.1.0 - lighting and sound
 * 0.0.5 - animation and collada import
 * 0.0.3 - added DDS texture support
@@ -39,12 +40,20 @@ Running Sample1 now should give you lots of lines to see inside the rift.
 * **-disableDX11Debug** Used on systems that don't have DX11 Debug enabled. (Rarely used.)
 
 # Sample Apps
+* **HangOn**       Uses new mass rendering API to draw lots of small objects
 * **Soundtest**    Show use of background music and directional sound of 3D objects
 * **ObjectViewer** Display one of the predefined objects with animation and lighting
 * **TestTextures** Load 12 texture files and display each at 83.000 different world positions (a total of 1 Million billboards)
 * **TestDotcross** Draw an increasing number of crosses. Single Thread Example that will show system degredation for generating and transmitting large amounts of objects to the GPU
 * **TestLinetext** Optimized Multi Thread example of a geometry shader for drawing 3D text. Displays FPS, some engine info and 1000 lines of text. Should render with more than 300 FPS on any system supporting the Oculus Rift (in window mode)
 * **Sample1** Draw a lot of lines to mark the floor and ceiling of the world, some lines of text and a coordinate system at the origin point.
+
+# Features for 0.1.1
+* Mass rendering: As a first step to support rendering of lots of small objects, thread support and a different approach to rendering objects was implemented. See classes WorldObjectEffect and WorldObject.
+While currently some thousand objects can be rendered ok I am still not exactly where I want to be. Most of the performance gain by using multiple threads is eaten up because some classes proved to be not thread save and I had to protect critical sections with mutexes.
+This is mainly for the camera class and some deep down rendering code. Also, I am not too satisfied with the current architecure for mass rendering. Expect more rewrites in the future to fix these shortcomings.
+
+See HangOn.cpp for example mass rendering. A group of objects that share the same mesh are rendered by splitting the draw calls to any number of threads. All thread creation, maintenance and synchronization has been done with standard C++11 features.
 
 # Features for 0.1.0
 * Lighting: Ambient, Directional and Point Lights. See ObjectViewer.cpp

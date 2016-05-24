@@ -41,7 +41,7 @@ public:
 	XApp();
 	~XApp();
 
-	string buildInfo = "Shaded Path 12 Engine V 0.1.0";
+	string buildInfo = "Shaded Path 12 Engine V 0.1.1"; // version text
 
 	void init();
 	void resize();
