@@ -176,6 +176,7 @@
     <ClInclude Include="gametime.h" />
     <ClInclude Include="hangon.h" />
     <ClInclude Include="lights.h" />
+    <ClInclude Include="mass.h" />
     <ClInclude Include="objectViewer.h" />
     <ClInclude Include="path.h" />
     <ClInclude Include="Resource.h" />
@@ -208,6 +209,7 @@
     <ClCompile Include="gametime.cpp" />
     <ClCompile Include="hangon.cpp" />
     <ClCompile Include="lights.cpp" />
+    <ClCompile Include="mass.cpp" />
     <ClCompile Include="objectViewer.cpp" />
     <ClCompile Include="path.cpp" />
     <ClCompile Include="sample1.cpp" />

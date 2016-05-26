@@ -1,29 +1,25 @@
 #include "stdafx.h"
-#include "hangon.h"
+#include "mass.h"
 
-#if (defined(_DEBUG))
-static int NUM_METEOR = 500;
-#else
 static int NUM_METEOR = 3000;
-#endif
 static int NUM_THREADS = 2;
 
-HangOn::HangOn() : XAppBase()
+MassTest::MassTest() : XAppBase()
 {
 	myClass = string(typeid(*this).name());
 	xapp().registerApp(myClass, this);
 }
 
 
-HangOn::~HangOn()
+MassTest::~MassTest()
 {
 }
 
-string HangOn::getWindowTitle() {
-	return "Hang On";
+string MassTest::getWindowTitle() {
+	return "Mass Render Test";
 }
 
-void HangOn::init()
+void MassTest::init()
 {
 	dotcrossEffect.init();
 	linesEffect.init();
@@ -87,7 +83,7 @@ void HangOn::init()
 */
 }
 
-void HangOn::initStarfield(int num, float minHeight)
+void MassTest::initStarfield(int num, float minHeight)
 {
 	vector<XMFLOAT3> addCrossPoints;
 	for (int i = 0; i < num; i++) {
@@ -98,7 +94,7 @@ void HangOn::initStarfield(int num, float minHeight)
 	Log("# crosses: " << dotcrossEffect.points.size() << endl);
 }
 
-void HangOn::initMeteorField() {
+void MassTest::initMeteorField() {
 	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
 	TextureInfo *HouseTex = xapp().textureStore.getTexture("default");
 	xapp().objectStore.loadObject(L"house4_anim.b", "House");
@@ -123,7 +119,7 @@ void HangOn::initMeteorField() {
 	}
 }
 
-void HangOn::update()
+void MassTest::update()
 {
 	gameTime.advanceTime();
 	LONGLONG now = gameTime.getRealTime();
@@ -156,7 +152,7 @@ void HangOn::update()
 	xapp().sound.Update();
 }
 
-void HangOn::draw()
+void MassTest::draw()
 {
 	linesEffect.draw();
 	dotcrossEffect.draw();
@@ -169,8 +165,8 @@ void HangOn::draw()
 	postEffect.draw();
 }
 
-void HangOn::destroy()
+void MassTest::destroy()
 {
 }
 
-static HangOn soundtest;
+static MassTest soundtest;

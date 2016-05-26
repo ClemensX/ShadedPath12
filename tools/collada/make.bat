@@ -1,16 +1,16 @@
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ path.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ house4_anim.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ joint5_anim.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ worm5.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ shaded2.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ floor.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ wallWest.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ wallEast.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ wallSouth.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ wallNorth.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ bank.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ uschrank.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ oschrank.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ geraete.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ hsw.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ path.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ house4_anim.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ joint5_anim.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ worm5.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ shaded2.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ floor.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ wallWest.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ wallEast.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ wallSouth.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ wallNorth.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ bank.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ uschrank.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ oschrank.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ geraete.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ hsw.dae
 java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ sphere3.dae

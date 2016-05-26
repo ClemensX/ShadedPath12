@@ -130,6 +130,9 @@
     <ClInclude Include="hangon.h">
       <Filter>Apps</Filter>
     </ClInclude>
+    <ClInclude Include="mass.h">
+      <Filter>Apps</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -214,6 +217,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="hangon.cpp">
+      <Filter>Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="mass.cpp">
       <Filter>Apps</Filter>
     </ClCompile>
   </ItemGroup>
