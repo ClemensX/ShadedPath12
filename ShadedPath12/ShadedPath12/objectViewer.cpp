@@ -74,7 +74,9 @@ void ObjectViewer::init()
 	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
 	xapp().textureStore.loadTexture(L"metal1.dds", "metal");
 	xapp().textureStore.loadTexture(L"worm1.dds", "worm");
-
+	xapp().textureStore.loadTexture(L"mars_6k_color.dds", "planet");
+	//xapp().textureStore.loadTexture(L"mars_12k_color.dds", "planet");
+	xapp().textureStore.loadTexture(L"met1.dds", "meteor1");
 	// create a billboards:
 	BillboardElement b;
 	b.pos = XMFLOAT3(15.0f, 0.0f, 2.0f);
@@ -94,6 +96,8 @@ void ObjectViewer::init()
 	TextureInfo *HouseTex = xapp().textureStore.getTexture("default");
 	TextureInfo *MetalTex = xapp().textureStore.getTexture("metal");
 	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
+	TextureInfo *PlanetTex = xapp().textureStore.getTexture("planet");
+	TextureInfo *Meteor1Tex = xapp().textureStore.getTexture("meteor1");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	if (false) {
@@ -138,7 +142,7 @@ void ObjectViewer::init()
 		object.material.specExp = 1.0f;       // no spec color 1 0 nothing
 		object.material.specIntensity = 0.0f; // no spec color
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"house4_anim.b", "House");
 		xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
 		//object.drawBoundingBox = true;
@@ -146,6 +150,28 @@ void ObjectViewer::init()
 		//object.setAction("Cube");
 		//object.pathDescMove->pathMode = Path_Reverse;
 		object.material.specExp = 1.0f;       // no spec color
+		object.material.specIntensity = 0.0f; // no spec color
+	}
+	if (false) {
+		xapp().objectStore.loadObject(L"sphere3.b", "Planet", 5);
+		//xapp().objectStore.addObject(object, "Planet", XMFLOAT3(700.0f, 300.0f, -700.0f), PlanetTex);
+		xapp().objectStore.addObject(object, "Planet", XMFLOAT3(10.0f, 30.0f, -70.0f), PlanetTex);
+		//object.drawNormals = true;
+		object.material.ambient = XMFLOAT4(1, 1, 1, 1);
+		object.material.specExp = 200.0f;       // no spec color 1 0 nothing
+		object.material.specIntensity = 1000.0f; // no spec color
+		object.material.specExp = 1.0f;       // no spec color 1 0 nothing
+		object.material.specIntensity = 0.0f; // no spec color
+	}
+	if (true) {
+		xapp().objectStore.loadObject(L"meteor_single.b", "Meteor1");
+		//xapp().objectStore.addObject(object, "Planet", XMFLOAT3(700.0f, 300.0f, -700.0f), PlanetTex);
+		xapp().objectStore.addObject(object, "Meteor1", XMFLOAT3(10.0f, 30.0f, -70.0f), Meteor1Tex);
+		//object.drawNormals = true;
+		object.material.ambient = XMFLOAT4(1, 1, 1, 1);
+		object.material.specExp = 200.0f;       // no spec color 1 0 nothing
+		object.material.specIntensity = 1000.0f; // no spec color
+		object.material.specExp = 1.0f;       // no spec color 1 0 nothing
 		object.material.specIntensity = 0.0f; // no spec color
 	}
 	// draw lines for mesh:

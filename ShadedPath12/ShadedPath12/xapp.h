@@ -72,10 +72,15 @@ public:
 		}
 		return false;
 	};
+	void setBackgroundColor(XMFLOAT4 bgColor) {
+		clearColor[0] = bgColor.x;
+		clearColor[1] = bgColor.y;
+		clearColor[2] = bgColor.z;
+		clearColor[3] = bgColor.w;
+	};
 	void handleRTVClearing(ID3D12GraphicsCommandList *commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle, D3D12_CPU_DESCRIPTOR_HANDLE dsv_handle) {
 		if (rtvHasToBeCleared()) {
 			rtvCleared = true;
-			const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 			commandList->ClearRenderTargetView(rtv_handle, clearColor, 0, nullptr);
 			commandList->ClearDepthStencilView(dsv_handle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 		}
@@ -168,6 +173,7 @@ private:
 	string appName;
 
 	XAppBase *app = nullptr;
+	float clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
 };
 
 // reference to global instance:

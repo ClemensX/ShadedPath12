@@ -4,7 +4,7 @@
 #if (defined(_DEBUG))
 static int NUM_METEOR = 500;
 #else
-static int NUM_METEOR = 3000;
+static int NUM_METEOR = 1500;
 #endif
 static int NUM_THREADS = 2;
 
@@ -35,6 +35,9 @@ void HangOn::init()
 	gameTime.init(1);
 	startTime = gameTime.getRealTime();
 
+	//xapp().setBackgroundColor(Colors::Black);
+	xapp().setBackgroundColor(XMFLOAT4(0.0021973f, 0.0021973f, 0.0021973f, 1.0f));   // prevent strange smearing effect for total black pixels (only in HMD)
+
 	float textSize = 0.5f;
 	float lineHeight = 2 * textSize;
 	xapp().camera.nearZ = 0.2f;
@@ -43,7 +46,7 @@ void HangOn::init()
 	//xapp().camera.setSpeed(1.0f); // seems ok for VR
 	xapp().camera.setSpeed(10.5f); // faster for dev usability
 	xapp().camera.fieldOfViewAngleY = 1.289f;
-	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
+	xapp().world.setWorldSize(2048.0f, 782.0f, 2048.0f);
 
 	textEffect.setSize(textSize);
 	dotcrossEffect.setLineLength(6.0f * textSize);
@@ -64,9 +67,32 @@ void HangOn::init()
 	object.material.specIntensity = 1000.0f; // no spec color
 
 	CBVLights *lights = &xapp().lights.lights;
+
+	// ambient light
+	float ambLvl = 0.04f;
+	//ambLvl *= 10;
+	lights->ambientLights[0].ambient = XMFLOAT4(ambLvl, ambLvl, ambLvl, 1);
+	assert(0 < MAX_AMBIENT);
+	//globalAmbientLightLevel = 0.3f;
+	//globalDirectionalLightLevel = 1.0f;
+	//globalAmbientLightLevel = 0.0f;
+	//globalDirectionalLightLevel = 0.0f;
+
+	// directional lights:
+	XMFLOAT4 dirColor1 = XMFLOAT4(0.980f, 0.910f, 0.723f, 1.0f);
+	//dirColor2 = XMFLOAT4(0.6f, 0.4f, 0.6f, 1.0f);
 	auto &lightControl = xapp().lights;
-	float f = 1.0f;
-	lights->ambientLights[0].ambient = XMFLOAT4(f, f, f, 1);
+	//lights->directionalLights[0].color = dirColor1;
+	lights->directionalLights[0].color = lightControl.factor(0.1f, dirColor1);
+	//lights->directionalLights[0].color = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	lights->directionalLights[0].pos = XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f);
+	lights->directionalLights[0].used_fill.x = 0.0f;
+
+	// point lights:
+	lights->pointLights[0].color = dirColor1;
+	lights->pointLights[0].pos = XMFLOAT4(6.0f, 250.0f, 25.0f, 1.0f);
+	lights->pointLights[0].range_reciprocal = 1.0f / 300.0f;
+	lights->pointLights[0].used = 1.0f;
 
 	xapp().world.drawCoordinateSystem(XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), "Origin", textEffect, dotcrossEffect, textSize);
 	//initStarfield(10000, 300.0f);
@@ -74,8 +100,8 @@ void HangOn::init()
 	//xapp().world.
 
 	// stereo background music and mono sound from world object
-	xapp().sound.openSoundFile(L"Shaded_Path_Game_Music.wav", "intro_music", true);
-	//xapp().sound.playSound("intro_music", SoundCategory::MUSIC);
+	xapp().sound.openSoundFile(L"Wind-Mark_DiAngelo-1940285615.wav", "background_sound", true);
+	xapp().sound.playSound("background_sound", SoundCategory::EFFECT);  // cleanup volume/type
 	//xapp().sound.lowBackgroundMusicVolume();
 
 /*	// mono game sound from world object
@@ -99,16 +125,20 @@ void HangOn::initStarfield(int num, float minHeight)
 }
 
 void HangOn::initMeteorField() {
-	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
-	TextureInfo *HouseTex = xapp().textureStore.getTexture("default");
-	xapp().objectStore.loadObject(L"house4_anim.b", "House");
+	//xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
+	xapp().textureStore.loadTexture(L"met1.dds", "meteor1");
+	TextureInfo *Meteor1Tex = xapp().textureStore.getTexture("meteor1");
+	//xapp().objectStore.loadObject(L"house4_anim.b", "House");
+	xapp().objectStore.loadObject(L"meteor_single.b", "Meteor1");
+	//xapp().objectStore.addObject(object, "Planet", XMFLOAT3(700.0f, 300.0f, -700.0f), PlanetTex);
+	//xapp().objectStore.addObject(object, "Meteor1", XMFLOAT3(10.0f, 30.0f, -70.0f), Meteor1Tex);
 
 	xapp().objectStore.createGroup("meteor");
 	for (int i = 0; i < NUM_METEOR; i++) {
 		XMFLOAT3 p = xapp().world.getRandomPos(50);
 		//p.x = p.y = p.z = 0.0f;
 		//p.x = i * 10.0f;
-		xapp().objectStore.addObject("meteor", "House", p, HouseTex);
+		xapp().objectStore.addObject("meteor", "Meteor1", p, Meteor1Tex);
 	}
     //object.drawBoundingBox = true;
 	//object.drawNormals = true;
@@ -120,6 +150,12 @@ void HangOn::initMeteorField() {
 		w.get()->material.specExp = 1.0f;       // no spec color
 		w.get()->material.specIntensity = 0.0f; // no spec color
 		w.get()->material.ambient = XMFLOAT4(1, 1, 1, 1);
+		float rx = MathHelper::RandF(0.0f, XM_PI * 2.0f);
+		w.get()->rot().x = rx;
+		float ry = MathHelper::RandF(0.0f, XM_PI * 2.0f);
+		w.get()->rot().y = ry;
+		float rz = MathHelper::RandF(0.0f, XM_PI * 2.0f);
+		w.get()->rot().z = rz;
 	}
 }
 
@@ -159,8 +195,8 @@ void HangOn::update()
 void HangOn::draw()
 {
 	linesEffect.draw();
-	dotcrossEffect.draw();
-	textEffect.draw();
+	//dotcrossEffect.draw();
+	//textEffect.draw();
 
 	// optimization: draw whole group (objects with same mesh)
 	xapp().objectStore.drawGroup("meteor", NUM_THREADS); // TODO
