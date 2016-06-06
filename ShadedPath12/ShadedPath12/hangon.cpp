@@ -194,7 +194,7 @@ void HangOn::update()
 		vector<XMFLOAT4> points = { { 500.0f, 500.0f, 500.0f, 1.0f },{ 500.0f, 500.0f, 1000.0f, 80.0f },{ 0.0f, 0.0f, 0.0f, 160.0f } };
 		path.defineAction("movetest", movingMeteor, points);
 		movingMeteor.setAction("movetest");
-		movingMeteor.pathDescMove->pathMode = Path_SimpleMode;
+		//movingMeteor.pathDescMove->pathMode = Path_SimpleMode;
 		movingMeteor.pathDescMove->starttime = now;
 		movingMeteor.pathDescMove->isLastPos = false;
 		movingMeteor.update();
