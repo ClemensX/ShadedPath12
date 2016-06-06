@@ -365,7 +365,7 @@ void Path::getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
 	}
 	double backnowf = nowf;
 	// adjust time by subtracting start time of this action:
-	nowf = nowf - pd->starttime;
+	nowf = nowf - pd->starttime_f;
 	// find current segment:
 	float total_path_length = pd->segments[pd->numSegments-1].cumulated_length;
 	while (nowf < 0.0f)
@@ -847,6 +847,11 @@ vec.z = bz.cp[1];
 
 void Path::defineAction(char* name, WorldObject & wo, vector<XMFLOAT4>& ctrlPoints)
 {
+	if (wo.mesh->actions.count(name)) {
+		// key already exists, do a cleanup
+		if (wo.pathDescMove->segments) delete[] wo.pathDescMove->segments;
+		delete wo.pathDescMove;
+	}
 	auto action = new Action();
 	action->name = std::string(name);
 	for (int i = 0; i < 9; i++) {

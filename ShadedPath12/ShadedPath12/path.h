@@ -37,7 +37,7 @@ struct PathDesc {
 	int numSegments;
 	LONGLONG starttime;
 	XMFLOAT3 currentPos;
-	float starttime_f;
+	double starttime_f;
 	float fps;
 	XMFLOAT3 segment_start_pos;
 	SegmentInfo *segments;

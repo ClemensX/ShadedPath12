@@ -42,7 +42,7 @@ void HangOn::init()
 	float lineHeight = 2 * textSize;
 	xapp().camera.nearZ = 0.2f;
 	xapp().camera.farZ = 2000.0f;
-	xapp().camera.pos = XMFLOAT4(0.0f, 0.0f, -3.0f, 0.0f);
+	xapp().camera.pos = XMFLOAT4(0.0f, 0.0f, -100.0f, 0.0f);
 	//xapp().camera.setSpeed(1.0f); // seems ok for VR
 	xapp().camera.setSpeed(10.5f); // faster for dev usability
 	xapp().camera.fieldOfViewAngleY = 1.289f;
@@ -70,7 +70,9 @@ void HangOn::init()
 
 	// ambient light
 	float ambLvl = 0.04f;
-	//ambLvl *= 10;
+#if defined _DEBUG
+	ambLvl *= 10;
+#endif
 	lights->ambientLights[0].ambient = XMFLOAT4(ambLvl, ambLvl, ambLvl, 1);
 	assert(0 < MAX_AMBIENT);
 	//globalAmbientLightLevel = 0.3f;
@@ -143,7 +145,7 @@ void HangOn::initMeteorField() {
 
 	xapp().objectStore.createGroup("meteor");
 	for (int i = 0; i < NUM_METEOR; i++) {
-		XMFLOAT3 p = xapp().world.getRandomPos(50);
+		XMFLOAT3 p = xapp().world.getRandomPos(-50);
 		//p.x = p.y = p.z = 0.0f;
 		//p.x = i * 10.0f;
 		xapp().objectStore.addObject("meteor", "Meteor1", p, Meteor1Tex);
@@ -170,7 +172,8 @@ void HangOn::initMeteorField() {
 void HangOn::update()
 {
 	gameTime.advanceTime();
-	LONGLONG now = gameTime.getRealTime();
+	//LONGLONG now = gameTime.getRealTime();
+	double nowf = gameTime.getTimeAbsSeconds();
 	static bool done = false;
 	xapp().lights.update();
 	linesEffect.update();
@@ -189,22 +192,47 @@ void HangOn::update()
 	// update meteor position:
 	if (movingMeteorOn == false) {
 		movingMeteorOn = true;
-		auto &path = xapp().world.path;
+		bool nearMe = MathHelper::RandF() > 0.7f;  // percentage of meteors that go near me
+		vector<XMFLOAT4> points;
+		auto start = xapp().world.getRandomPos(50);
+		start.y = 1000;
+		points.push_back(XMFLOAT4(start.x, start.y, start.z, 1.0));
+		if (nearMe) {
+			auto end = xapp().camera.pos;
+			end.y = -100;
+			points.push_back(XMFLOAT4(end.x, end.y, end.z, 250.0));
+		} else {
+			auto end = xapp().world.getRandomPos(50);
+			end.y = -1000;
+			points.push_back(XMFLOAT4(end.x, end.y, end.z, 250.0));
+		}
+		/*		float rx = MathHelper::RandF(0.0f, XM_PI * 2.0f);
+		w.get()->rot().x = rx;
+		float ry = MathHelper::RandF(0.0f, XM_PI * 2.0f);
+		w.get()->rot().y = ry;
+		float rz = MathHelper::RandF(0.0f, XM_PI * 2.0f);
+		w.get()->rot().z = rz;
+*/
+		float rx = MathHelper::RandF(0.0f, XM_PI * 2.0f);
+		movingMeteor.rot().x = rx;
+		float ry = MathHelper::RandF(0.0f, XM_PI * 2.0f);
+		movingMeteor.rot().y = ry;
+		float rz = MathHelper::RandF(0.0f, XM_PI * 2.0f);
+		movingMeteor.rot().z = rz;
 		//vector<XMFLOAT4> points = { { 0.0f, 0.0f, 0.0f, 1.0f },{ 500.0f, 500.0f, 500.0f, 80.0f },{ 500.0f, 500.0f, 1000.0f, 160.0f } };
-		vector<XMFLOAT4> points = { { 500.0f, 500.0f, 500.0f, 1.0f },{ 500.0f, 500.0f, 1000.0f, 80.0f },{ 0.0f, 0.0f, 0.0f, 160.0f } };
+		//vector<XMFLOAT4> points = { { 500.0f, 500.0f, 500.0f, 1.0f },{ 500.0f, 500.0f, 1000.0f, 80.0f },{ 0.0f, 0.0f, 0.0f, 160.0f } };
+		auto &path = xapp().world.path;
 		path.defineAction("movetest", movingMeteor, points);
 		movingMeteor.setAction("movetest");
-		//movingMeteor.pathDescMove->pathMode = Path_SimpleMode;
-		movingMeteor.pathDescMove->starttime = now;
-		movingMeteor.pathDescMove->isLastPos = false;
-		movingMeteor.update();
+		movingMeteor.pathDescMove->pathMode = Path_SimpleMode;
+		movingMeteor.pathDescMove->starttime_f = nowf;
 	}
 	else {
 		CBVLights *lights = &xapp().lights.lights;
 		XMFLOAT4 lpos = XMFLOAT4(movingMeteor.pos().x, movingMeteor.pos().y, movingMeteor.pos().z, 1.0f);
 		lights->pointLights[0].pos = lpos;
 		if (movingMeteor.pathDescMove->isLastPos) {
-			//movingMeteorOn = false;
+			movingMeteorOn = false;
 		}
 	}
 	xapp().sound.Update();
