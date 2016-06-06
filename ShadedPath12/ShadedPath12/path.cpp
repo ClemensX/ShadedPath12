@@ -375,6 +375,7 @@ void Path::getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
 		if (pd->pathMode == Path_SimpleMode) {
 			// return last pos
 			fillPosVector(o, pd->numSegments, pos);
+			pd->isLastPos = true;
 			return;
 		} else if (pd->pathMode == Path_Loop) {
 			nowf = fmod(nowf, total_path_length);

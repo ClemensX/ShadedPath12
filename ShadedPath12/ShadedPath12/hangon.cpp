@@ -190,14 +190,22 @@ void HangOn::update()
 	if (movingMeteorOn == false) {
 		movingMeteorOn = true;
 		auto &path = xapp().world.path;
-		vector<XMFLOAT4> points = { { 0.0f, 0.0f, 0.0f, 1.0f },{ 500.0f, 500.0f, 500.0f, 80.0f },{ 500.0f, 500.0f, 1000.0f, 160.0f } };
+		//vector<XMFLOAT4> points = { { 0.0f, 0.0f, 0.0f, 1.0f },{ 500.0f, 500.0f, 500.0f, 80.0f },{ 500.0f, 500.0f, 1000.0f, 160.0f } };
+		vector<XMFLOAT4> points = { { 500.0f, 500.0f, 500.0f, 1.0f },{ 500.0f, 500.0f, 1000.0f, 80.0f },{ 0.0f, 0.0f, 0.0f, 160.0f } };
 		path.defineAction("movetest", movingMeteor, points);
 		movingMeteor.setAction("movetest");
+		movingMeteor.pathDescMove->pathMode = Path_SimpleMode;
+		movingMeteor.pathDescMove->starttime = now;
+		movingMeteor.pathDescMove->isLastPos = false;
+		movingMeteor.update();
 	}
 	else {
 		CBVLights *lights = &xapp().lights.lights;
 		XMFLOAT4 lpos = XMFLOAT4(movingMeteor.pos().x, movingMeteor.pos().y, movingMeteor.pos().z, 1.0f);
 		lights->pointLights[0].pos = lpos;
+		if (movingMeteor.pathDescMove->isLastPos) {
+			//movingMeteorOn = false;
+		}
 	}
 	xapp().sound.Update();
 }
@@ -208,7 +216,14 @@ void HangOn::draw()
 	//dotcrossEffect.draw();
 	//textEffect.draw();
 
-	if (movingMeteorOn) movingMeteor.draw();
+	if (movingMeteorOn) {
+		static XMFLOAT4 dirColor1 = XMFLOAT4(0.980f, 0.910f, 0.723f, 1.0f);
+		CBVLights *lights = &xapp().lights.lights;
+		XMFLOAT4 currentAmbientLight = lights->ambientLights[0].ambient;// = XMFLOAT4(ambLvl, ambLvl, ambLvl, 1);
+		lights->ambientLights[0].ambient = dirColor1;//XMFLOAT4(1.0f, 1.0f, 1.0f, 1);
+		movingMeteor.draw();
+		lights->ambientLights[0].ambient = currentAmbientLight;
+	}
 	// optimization: draw whole group (objects with same mesh)
 	xapp().objectStore.drawGroup("meteor", NUM_THREADS); // TODO
 	//xapp().objectStore.drawGroup("meteor", 0); // use for bulk update w/o threads
