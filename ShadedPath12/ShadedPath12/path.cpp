@@ -800,3 +800,84 @@ Path::Path(void)
 Path::~Path(void)
 {
 }
+
+// on-the-fly path composition:
+/*
+action = new Action();
+action->name = std::string(ani_name);
+for (int i = 0; i < 9; i++) {
+Curve curve;
+int numSegments;
+bfile.read((char*)&numSegments, 4);
+for (int j = 0; j < numSegments; j++) {
+BezTriple b;
+b.isBoneAnimation = false;
+bfile.read((char*)&b.h1[0], 4);
+bfile.read((char*)&b.h1[1], 4);
+bfile.read((char*)&b.cp[0], 4);
+bfile.read((char*)&b.cp[1], 4);
+bfile.read((char*)&b.h2[0], 4);
+bfile.read((char*)&b.h2[1], 4);
+curve.bezTriples.push_back(b);
+}
+action->curves.push_back(curve);
+}
+mesh->actions[action->name] = *action;
+delete action;
+
+void fillPosVector(WorldObject &o, UINT n, XMFLOAT3& vec) {
+BezTriple bz = o.action->curves[0].bezTriples[n];
+vec.x = bz.cp[1];
+bz = o.action->curves[1].bezTriples[n];
+vec.y = bz.cp[1];
+bz = o.action->curves[2].bezTriples[n];
+vec.z = bz.cp[1];
+}
+
+void fillRotVector(WorldObject &o, UINT n, XMFLOAT3& vec) {
+BezTriple bz = o.action->curves[4].bezTriples[n]; // RotY
+vec.x = -1.0f * bz.cp[1];
+bz = o.action->curves[3].bezTriples[n];
+vec.y = bz.cp[1];
+bz = o.action->curves[5].bezTriples[n];
+vec.z = bz.cp[1];
+}
+*/
+
+void Path::defineAction(char* name, WorldObject & wo, vector<XMFLOAT4>& ctrlPoints)
+{
+	auto action = new Action();
+	action->name = std::string(name);
+	for (int i = 0; i < 9; i++) {
+		Curve curve;
+		int numSegments = ctrlPoints.size();
+		//bfile.read((char*)&numSegments, 4);
+		for (int j = 0; j < numSegments; j++) {
+			BezTriple b;
+			b.isBoneAnimation = false;
+			b.h1[0] = 0.0f;
+			b.h1[1] = 0.0f;
+			b.h2[0] = 0.0f;
+			b.h2[1] = 0.0f;
+			switch (i) {
+			case 0:
+				b.cp[0] = ctrlPoints[j].w; // frame/time index
+				b.cp[1] = ctrlPoints[j].x;
+				break;
+			case 1:
+				b.cp[0] = ctrlPoints[j].w; // frame/time index
+				b.cp[1] = ctrlPoints[j].y;
+				break;
+			case 2:
+				b.cp[0] = ctrlPoints[j].w; // frame/time index
+				b.cp[1] = ctrlPoints[j].z;
+				break;
+			}
+			curve.bezTriples.push_back(b);
+		}
+		action->curves.push_back(curve);
+	}
+	wo.mesh->actions[action->name] = *action;
+	delete action;
+}
+

@@ -97,6 +97,14 @@ void HangOn::init()
 	xapp().world.drawCoordinateSystem(XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), "Origin", textEffect, dotcrossEffect, textSize);
 	//initStarfield(10000, 300.0f);
 	initMeteorField();
+	TextureInfo *Meteor1Tex = xapp().textureStore.getTexture("meteor1");
+	xapp().objectStore.addObject(movingMeteor, "Meteor1", XMFLOAT3(10.0f, 30.0f, -70.0f), Meteor1Tex);
+	//object.drawNormals = true;
+	movingMeteor.material.ambient = XMFLOAT4(1, 1, 1, 1);
+	movingMeteor.material.specExp = 200.0f;       // no spec color 1 0 nothing
+	movingMeteor.material.specIntensity = 1000.0f; // no spec color
+	movingMeteor.material.specExp = 1.0f;       // no spec color 1 0 nothing
+	movingMeteor.material.specIntensity = 0.0f; // no spec color
 	//xapp().world.
 
 	// stereo background music and mono sound from world object
@@ -178,16 +186,18 @@ void HangOn::update()
 
 	object.update();
 	auto grp = xapp().objectStore.getGroup("meteor");
-	// update worms position:
-	for (auto & w : *grp) {
-		if (w->pathDescMove && w->pathDescMove->pathMode == Path_Random) {
-
-			//wo->updateScene(&path, &worldUtil, &mTerrain, md3dDevice, md3dImmediateContext, *gCamera, time);
-			//if (gametype == game && false) {
-			//	xapp->world.path.moveNpc(w.get(), xapp->gametime.getRealTime(), xapp->gametime.getTicksPerSec(), &terrain);
-			//	//path.moveNpc(wo, now, ticks_per_sec, &mTerrain);
-			//}
-		}
+	// update meteor position:
+	if (movingMeteorOn == false) {
+		movingMeteorOn = true;
+		auto &path = xapp().world.path;
+		vector<XMFLOAT4> points = { { 0.0f, 0.0f, 0.0f, 1.0f },{ 500.0f, 500.0f, 500.0f, 80.0f },{ 500.0f, 500.0f, 1000.0f, 160.0f } };
+		path.defineAction("movetest", movingMeteor, points);
+		movingMeteor.setAction("movetest");
+	}
+	else {
+		CBVLights *lights = &xapp().lights.lights;
+		XMFLOAT4 lpos = XMFLOAT4(movingMeteor.pos().x, movingMeteor.pos().y, movingMeteor.pos().z, 1.0f);
+		lights->pointLights[0].pos = lpos;
 	}
 	xapp().sound.Update();
 }
@@ -198,6 +208,7 @@ void HangOn::draw()
 	//dotcrossEffect.draw();
 	//textEffect.draw();
 
+	if (movingMeteorOn) movingMeteor.draw();
 	// optimization: draw whole group (objects with same mesh)
 	xapp().objectStore.drawGroup("meteor", NUM_THREADS); // TODO
 	//xapp().objectStore.drawGroup("meteor", 0); // use for bulk update w/o threads

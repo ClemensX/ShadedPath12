@@ -147,7 +147,7 @@ void ObjectViewer::init()
 		xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
 		//object.drawBoundingBox = true;
 		object.drawNormals = true;
-		//object.setAction("Cube");
+		object.setAction("Cube");
 		//object.pathDescMove->pathMode = Path_Reverse;
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
@@ -173,6 +173,10 @@ void ObjectViewer::init()
 		object.material.specIntensity = 1000.0f; // no spec color
 		object.material.specExp = 1.0f;       // no spec color 1 0 nothing
 		object.material.specIntensity = 0.0f; // no spec color
+		auto &path = xapp().world.path;
+		vector<XMFLOAT4> points = { {0.0f, 0.0f, 0.0f, 1.0f}, { 500.0f, 500.0f, 500.0f, 80.0f },{ 500.0f, 500.0f, 1000.0f, 160.0f } };
+		path.defineAction("movetest", object, points);
+		object.setAction("movetest");
 	}
 	// draw lines for mesh:
 	Log(" object created ok, #vertices == " << object.mesh->vertices.size() << endl);

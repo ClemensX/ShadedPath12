@@ -81,7 +81,8 @@ public:
 	void addRandomNPC(WorldObject *wo, char *name);
 	PathDesc *createNpcPath(char *name);
 	void moveNpc(WorldObject *wo, LONGLONG now, LONGLONG ticks_per_second, Terrain *terrain);
-
+	// define movement path on-the-fly instead from blender/.b file
+	void defineAction(char *name, WorldObject &wo, vector<XMFLOAT4> &ctrlPoints);
 private:
 	XMMATRIX getInterpolationMatrix(int i, PathDesc *pd);
 	void saveInterpolationMatrix(int i, PathDesc *pd, XMMATRIX *m);

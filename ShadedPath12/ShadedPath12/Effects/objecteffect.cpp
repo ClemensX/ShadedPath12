@@ -323,8 +323,8 @@ void WorldObjectEffect::beginBulkUpdate()
 
 void WorldObjectEffect::endBulkUpdate()
 {
-	if (inThreadOperation) return;
 	inBulkOperation = false;
+	if (inThreadOperation) return;
 	postDraw();
 }
 
@@ -506,6 +506,7 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 	// now wait for render threads to finish
 	render_ended.wait(lock, [this, numThreads]() {return finished_rendering == numThreads; });
 	finished_rendering = 0;
+	inThreadOperation = false;
 	//waitForWorkerThreads();
 	//this_thread::sleep_for(1s);
 }
