@@ -176,8 +176,8 @@ void HangOn::update()
 	double nowf = gameTime.getTimeAbsSeconds();
 	static bool done = false;
 	xapp().lights.update();
-	linesEffect.update();
-	dotcrossEffect.update();
+	//linesEffect.update();
+	//dotcrossEffect.update();
 
 	// update info text:
 	string fps_str("FPS ");
@@ -185,7 +185,7 @@ void HangOn::update()
 	sss << xapp().fps;
 	fps_str.append(sss.str());
 	textEffect.changeTextLine(fpsLine, fps_str);
-	textEffect.update();
+	//textEffect.update();
 
 	object.update();
 	auto grp = xapp().objectStore.getGroup("meteor");

@@ -148,7 +148,7 @@ void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSiz
 
 	//PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"lines: update vertex buffer");
 	commandList.Get()->Reset(commandAllocator.Get(), pipelineState);
-	UpdateSubresources<1>(commandList.Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData);
+	UpdateSubresources<1>(commandList.Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData); // TODO
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 	PIXEndEvent(commandList.Get());
 
