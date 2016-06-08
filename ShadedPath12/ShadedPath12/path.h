@@ -60,6 +60,7 @@ struct PathDesc {
 	XMFLOAT3 targetPos; // end pos for current move
 	float minturn, maxturn, turnspeed, minPathLen, maxPathLen;
 	bool disableDraw;
+	bool handleRotation; // no auto rotation along path movement
 	XMFLOAT4X4 interpolationMatrices[100];
 	XMFLOAT4X4 interpolationMatricesChained[100];  // all children already premultiplied by parent
 };

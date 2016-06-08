@@ -376,6 +376,8 @@ void Path::getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
 			// return last pos
 			fillPosVector(o, pd->numSegments, pos);
 			pd->isLastPos = true;
+			rot = o.rot();
+			pos = o.pos();
 			return;
 		} else if (pd->pathMode == Path_Loop) {
 			nowf = fmod(nowf, total_path_length);
@@ -439,21 +441,27 @@ void Path::getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
 	}
 
 	// handle rotation:
-	rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	XMFLOAT3 r0;
-	fillRotVector(o, pd->curSegment, r0);
-	XMFLOAT3 r1;
-	fillRotVector(o, pd->curSegment + 1, r1);
-	XMVECTOR segmentRot = XMLoadFloat3(&r1) - XMLoadFloat3(&r0);
-	float lenRot = XMVectorGetX(XMVector3Length(segmentRot));
-	if (lenRot == 0.0f) {
-		rot = r0;	// no rotation
+	if (pd->handleRotation == false) {
+		// just copy back original rotation - no chnges along path movement
+		rot = o.rot();
 	} else {
-		double passed_segment = nowf - pd->segments[pd->curSegment].cumulated_start;
-		double length_segment = pd->segments[pd->curSegment].length;
-		XMVECTOR scale = XMVectorScale(segmentRot, (float)(passed_segment / length_segment));
-		scale = XMLoadFloat3(&r0) + scale;
-		XMStoreFloat3(&rot, scale);
+		rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		XMFLOAT3 r0;
+		fillRotVector(o, pd->curSegment, r0);
+		XMFLOAT3 r1;
+		fillRotVector(o, pd->curSegment + 1, r1);
+		XMVECTOR segmentRot = XMLoadFloat3(&r1) - XMLoadFloat3(&r0);
+		float lenRot = XMVectorGetX(XMVector3Length(segmentRot));
+		if (lenRot == 0.0f) {
+			rot = r0;	// no rotation
+		}
+		else {
+			double passed_segment = nowf - pd->segments[pd->curSegment].cumulated_start;
+			double length_segment = pd->segments[pd->curSegment].length;
+			XMVECTOR scale = XMVectorScale(segmentRot, (float)(passed_segment / length_segment));
+			scale = XMLoadFloat3(&r0) + scale;
+			XMStoreFloat3(&rot, scale);
+		}
 	}
 
 	// return 1st pos

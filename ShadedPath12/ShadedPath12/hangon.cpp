@@ -23,6 +23,28 @@ string HangOn::getWindowTitle() {
 	return "Hang On";
 }
 
+// totalTime in seconds
+void adjustTimings(vector<XMFLOAT4> &p, float totalTime, float speed) {
+	float totalLen = 0.0f;
+	for (int i = 1; i < p.size(); i++) {
+		// store length of segment 
+		XMFLOAT3 p1p = XMFLOAT3(p[i-1].x, p[i-1].y, p[i-1].z);
+		XMFLOAT3 p2p = XMFLOAT3(p[i].x, p[i].y, p[i].z);
+		XMVECTOR p1 = XMLoadFloat3(&p1p);
+		XMVECTOR p2 = XMLoadFloat3(&p2p);
+		float len = XMVectorGetX(XMVector3Length(p2 - p1));
+		totalLen += len;
+		p[i].w = len;  // temporary store len
+	}
+	float speedfactor = totalTime / totalLen;
+	float totalFPSTime = p[0].w;
+	for (int i = 1; i < p.size(); i++) {
+		float segmentTime = p[i].w * speedfactor;
+		p[i].w = (segmentTime * 25.0f) + totalFPSTime; // FPS
+		totalFPSTime += segmentTime * 25.0f;
+	}
+}
+
 void HangOn::init()
 {
 	dotcrossEffect.init();
@@ -108,6 +130,66 @@ void HangOn::init()
 	movingMeteor.material.specExp = 1.0f;       // no spec color 1 0 nothing
 	movingMeteor.material.specIntensity = 0.0f; // no spec color
 	//xapp().world.
+
+	xapp().textureStore.loadTexture(L"mars_6k_color.dds", "mars");
+	//xapp().textureStore.loadTexture(L"mars_12k_color.dds", "planet");
+	TextureInfo *MarsTex = xapp().textureStore.getTexture("mars");
+	xapp().objectStore.loadObject(L"sphere3.b", "Mars", 100);
+	//xapp().objectStore.addObject(mars, "Mars", XMFLOAT3(2000.0f, -300.0f, -700.0f), MarsTex);
+	xapp().objectStore.addObject(mars, "Mars", XMFLOAT3(0.0f, 0.0f, 0.0f), MarsTex);
+	mars.rot().x = 0.1f;
+	mars.rot().y = 0.1f;
+	mars.rot().z = 0.1f;
+	//object.drawNormals = true;
+	mars.material.ambient = XMFLOAT4(1, 1, 1, 1);
+	mars.material.specExp = 200.0f;       // no spec color 1 0 nothing
+	mars.material.specIntensity = 1000.0f; // no spec color
+	mars.material.specExp = 1.0f;       // no spec color 1 0 nothing
+	mars.material.specIntensity = 0.0f; // no spec color
+	vector<XMFLOAT4> points;
+	/*
+	XMFLOAT3(2000.0f, -300.0f, -700.0f),//start
+	XMFLOAT3(1995.0f, 100.0f, -700.0f),
+	XMFLOAT3(1990.0f, 200.0f, -700.0f),
+	XMFLOAT3(1980.0f, 300.0f, -700.0f),
+	XMFLOAT3(1970.0f, 400.0f, -700.0f),
+	XMFLOAT3(1950.0f, 500.0f, -700.0f),
+	XMFLOAT3(1925.0f, 600.0f, -700.0f),
+	XMFLOAT3(1895.0f, 700.0f, -700.0f),
+	XMFLOAT3(1855.0f, 800.0f, -700.0f),
+	XMFLOAT3(1800.0f, 900.0f, -700.0f),
+	XMFLOAT3(1750.0f, 1000.0f, -700.0f), //10
+	XMFLOAT3(1660.0f, 1100.0f, -700.0f),
+	XMFLOAT3(1400.0f, 1200.0f, -700.0f),
+	XMFLOAT3(1300.0f, 1250.0f, -700.0f),//mid
+	XMFLOAT3(800.0f, 1250.0f, -700.0f)//end
+*/
+	points.push_back(XMFLOAT4(2000.0f, -300.0f, -700.0f, 1.0));//start
+	points.push_back(XMFLOAT4(1995.0f, 100.0f, -700.0f, 1.0));
+	points.push_back(XMFLOAT4(1990.0f, 200.0f, -700.0f, 1.0));
+	points.push_back(XMFLOAT4(1980.0f, 300.0f, -700.0f, 1.0));
+	points.push_back(XMFLOAT4(1970.0f, 400.0f, -700.0f, 1.0));
+	points.push_back(XMFLOAT4(1950.0f, 500.0f, -700.0f, 1.0));
+	points.push_back(XMFLOAT4(1925.0f, 600.0f, -700.0f, 1.0));
+	points.push_back(XMFLOAT4(1895.0f, 700.0f, -700.0f, 1.0));
+	points.push_back(XMFLOAT4(1855.0f, 800.0f, -700.0f, 1.0));
+	points.push_back(XMFLOAT4(1800.0f, 900.0f, -700.0f, 1.0));
+	points.push_back(XMFLOAT4(1750.0f, 1000.0f, -700.0f, 1.0)); //10
+	points.push_back(XMFLOAT4(1660.0f, 1100.0f, -700.0f, 1.0));
+	points.push_back(XMFLOAT4(1400.0f, 1200.0f, -700.0f, 1.0));
+	points.push_back(XMFLOAT4(1300.0f, 1250.0f, -700.0f, 1.0));//mid
+	points.push_back(XMFLOAT4(800.0f, 1250.0f, -700.0f, 1.0));//end
+	adjustTimings(points, 120.0f, 1.0f);
+	//points.push_back(XMFLOAT4(2000.0f, -300.0f, -700.0f, 1.0));//start
+	//points.push_back(XMFLOAT4(1995.0f, 100.0f, -700.0f, 200.0));
+	//vector<XMFLOAT4> points = { { 0.0f, 0.0f, 0.0f, 1.0f },{ 500.0f, 500.0f, 500.0f, 80.0f },{ 500.0f, 500.0f, 1000.0f, 160.0f } };
+	//vector<XMFLOAT4> points = { { 500.0f, 500.0f, 500.0f, 1.0f },{ 500.0f, 500.0f, 1000.0f, 80.0f },{ 0.0f, 0.0f, 0.0f, 160.0f } };
+	auto &path = xapp().world.path;
+	path.defineAction("marsmove", mars, points);
+	mars.setAction("marsmove");
+	mars.pathDescMove->pathMode = Path_SimpleMode;
+	mars.pathDescMove->starttime_f = gameTime.getTimeAbsSeconds();
+	mars.pathDescMove->handleRotation = false;
 
 	// stereo background music and mono sound from world object
 	xapp().sound.openSoundFile(L"Wind-Mark_DiAngelo-1940285615.wav", "background_sound", true);
@@ -226,6 +308,7 @@ void HangOn::update()
 		movingMeteor.setAction("movetest");
 		movingMeteor.pathDescMove->pathMode = Path_SimpleMode;
 		movingMeteor.pathDescMove->starttime_f = nowf;
+		movingMeteor.pathDescMove->handleRotation = false;
 	}
 	else {
 		CBVLights *lights = &xapp().lights.lights;
@@ -235,9 +318,48 @@ void HangOn::update()
 			movingMeteorOn = false;
 		}
 	}
+	mars.rot().x += 0.0002f;
+	mars.rot().y += 0.00009f;
+	mars.update();
 	xapp().sound.Update();
 }
+/*
+XMFLOAT3 planetPos[] = {
+XMFLOAT3(2000.0f, -300.0f, -700.0f),//start
+XMFLOAT3(1995.0f, 100.0f, -700.0f),
+XMFLOAT3(1990.0f, 200.0f, -700.0f),
+XMFLOAT3(1980.0f, 300.0f, -700.0f),
+XMFLOAT3(1970.0f, 400.0f, -700.0f),
+XMFLOAT3(1950.0f, 500.0f, -700.0f),
+XMFLOAT3(1925.0f, 600.0f, -700.0f),
+XMFLOAT3(1895.0f, 700.0f, -700.0f),
+XMFLOAT3(1855.0f, 800.0f, -700.0f),
+XMFLOAT3(1800.0f, 900.0f, -700.0f),
+XMFLOAT3(1750.0f, 1000.0f, -700.0f), //10
+XMFLOAT3(1660.0f, 1100.0f, -700.0f),
+XMFLOAT3(1400.0f, 1200.0f, -700.0f),
+XMFLOAT3(1300.0f, 1250.0f, -700.0f),//mid
+XMFLOAT3(800.0f, 1250.0f, -700.0f)//end
+};
+PathDesc paths[] = {
+//{ 2.0f*SpeedFactor },
+//{}
+//speed, pos, look, cur segment, num segments, starttime
+{ 2.0f*SpeedFactor, &titlePos[0], NULL, 0, 4, 0L },
+{ 1.5f*SpeedFactor, &camIntroPos[0], NULL, 0, 2, 0L },
+{ 0.5f*SpeedFactor, &planetPos[0], NULL, 0, 14, 0L }
+//	{0.4f, &titlePos[0], NULL, 0, 4, 0L},
+//	{0.3f, &camIntroPos[0], NULL, 0, 2, 0L}
+};
 
+// object movement
+XMFLOAT3* objPos = &xapp->world.path.getPos(PATHID_PLANET, xapp->gametime.getRealTime(), 0);
+planet.pos() = *objPos;
+planet.rot().x += 0.0002f;
+planet.rot().y += 0.00009f;
+planet.update();
+
+*/
 void HangOn::draw()
 {
 	linesEffect.draw();
@@ -250,6 +372,14 @@ void HangOn::draw()
 		XMFLOAT4 currentAmbientLight = lights->ambientLights[0].ambient;// = XMFLOAT4(ambLvl, ambLvl, ambLvl, 1);
 		lights->ambientLights[0].ambient = dirColor1;//XMFLOAT4(1.0f, 1.0f, 1.0f, 1);
 		movingMeteor.draw();
+		lights->ambientLights[0].ambient = currentAmbientLight;
+	}
+	{
+		static XMFLOAT4 dirColor1 = XMFLOAT4(0.980f, 0.910f, 0.723f, 1.0f);
+		CBVLights *lights = &xapp().lights.lights;
+		XMFLOAT4 currentAmbientLight = lights->ambientLights[0].ambient;// = XMFLOAT4(ambLvl, ambLvl, ambLvl, 1);
+		lights->ambientLights[0].ambient = dirColor1;//XMFLOAT4(1.0f, 1.0f, 1.0f, 1);
+		mars.draw();
 		lights->ambientLights[0].ambient = currentAmbientLight;
 	}
 	// optimization: draw whole group (objects with same mesh)

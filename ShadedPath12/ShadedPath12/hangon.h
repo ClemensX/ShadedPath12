@@ -27,6 +27,7 @@ private:
 	// other:
 	WorldObject object;
 	WorldObject movingMeteor;
+	WorldObject mars;
 	bool movingMeteorOn = false;
 	LONGLONG startTime;
 	int framenumLine, fpsLine;  // indexes into the text array for Linetext effect
