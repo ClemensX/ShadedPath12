@@ -1,3 +1,4 @@
+rem javac -d bin src\de\fehrprice\collada\ColladaImport.java
 rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ path.dae
 rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ house4_anim.dae
 rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ joint5_anim.dae
@@ -13,5 +14,5 @@ rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ usc
 rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ oschrank.dae
 rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ geraete.dae
 rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ hsw.dae
-rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ sphere3.dae
+java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ sphere3.dae
 java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ meteor_single.dae

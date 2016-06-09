@@ -256,6 +256,7 @@ void HangOn::update()
 	gameTime.advanceTime();
 	//LONGLONG now = gameTime.getRealTime();
 	double nowf = gameTime.getTimeAbsSeconds();
+	double dt = gameTime.getDeltaTime(); // seconds since last frame
 	static bool done = false;
 	xapp().lights.update();
 	//linesEffect.update();
@@ -318,9 +319,12 @@ void HangOn::update()
 			movingMeteorOn = false;
 		}
 	}
-	mars.rot().x += 0.0002f;
-	mars.rot().y += 0.00009f;
-	mars.update();
+	double fullturn_sec = 1000.0;
+	double turnfrac = fmod(nowf, fullturn_sec)/fullturn_sec;  // 0.0 .. 1.0
+	mars.rot().x = turnfrac * XM_2PI;
+	fullturn_sec *= 2.0; // half rotation speed vertically
+	turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
+	mars.rot().y = turnfrac * XM_2PI;
 	xapp().sound.Update();
 }
 /*
