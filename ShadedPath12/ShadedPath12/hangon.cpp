@@ -107,7 +107,7 @@ void HangOn::init()
 	//dirColor2 = XMFLOAT4(0.6f, 0.4f, 0.6f, 1.0f);
 	auto &lightControl = xapp().lights;
 	//lights->directionalLights[0].color = dirColor1;
-	lights->directionalLights[0].color = lightControl.factor(0.1f, dirColor1);
+	lights->directionalLights[0].color = lightControl.factor(1.0f, dirColor1);
 	//lights->directionalLights[0].color = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	lights->directionalLights[0].pos = XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f);
 	lights->directionalLights[0].used_fill.x = 0.0f;
@@ -382,8 +382,10 @@ void HangOn::draw()
 		static XMFLOAT4 dirColor1 = XMFLOAT4(0.980f, 0.910f, 0.723f, 1.0f);
 		CBVLights *lights = &xapp().lights.lights;
 		XMFLOAT4 currentAmbientLight = lights->ambientLights[0].ambient;// = XMFLOAT4(ambLvl, ambLvl, ambLvl, 1);
-		lights->ambientLights[0].ambient = dirColor1;//XMFLOAT4(1.0f, 1.0f, 1.0f, 1);
+		//lights->ambientLights[0].ambient = dirColor1;//XMFLOAT4(1.0f, 1.0f, 1.0f, 1);
+		lights->directionalLights[0].used_fill.x = 1.0f;
 		mars.draw();
+		lights->directionalLights[0].used_fill.x = 0.0f;
 		lights->ambientLights[0].ambient = currentAmbientLight;
 	}
 	// optimization: draw whole group (objects with same mesh)
