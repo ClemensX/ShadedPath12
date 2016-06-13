@@ -183,7 +183,7 @@ void ObjectViewer::init()
 		path.defineAction("movetest", object, points);
 		object.setAction("movetest");
 	}
-	if (false) {
+	if (true) {
 		xapp().objectStore.loadObject(L"brickwall.b", "Brickwall");
 		xapp().objectStore.addObject(object, "Brickwall", XMFLOAT3(10.0f, 5.0f, 10.0f), BrickwallTex);
 		//object.drawNormals = true;
@@ -193,7 +193,7 @@ void ObjectViewer::init()
 		object.material.specExp = 1.0f;       // no spec color 1 0 nothing
 		object.material.specIntensity = 0.0f; // no spec color
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"axistest.b", "axistest");
 		xapp().objectStore.addObject(object, "axistest", XMFLOAT3(10.0f, 10.0f, 10.0f), AxistestTex);
 		//object.drawBoundingBox = true;

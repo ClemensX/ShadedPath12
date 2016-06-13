@@ -191,6 +191,20 @@ void HangOn::init()
 	mars.pathDescMove->starttime_f = gameTime.getTimeAbsSeconds();
 	mars.pathDescMove->handleRotation = false;
 
+	xapp().textureStore.loadTexture(L"2create_brick_0001.dds", "brickwall");
+	//xapp().textureStore.loadTexture(L"mars_12k_color.dds", "planet");
+	TextureInfo *BrickwallTex = xapp().textureStore.getTexture("brickwall");
+	xapp().objectStore.loadObject(L"brickwall.b", "Brickwall");
+	auto cp = xapp().camera.pos;
+	XMFLOAT3 brickpos = XMFLOAT3(cp.x, cp.y - 2.85f, cp.z);
+	xapp().objectStore.addObject(brickwall, "Brickwall", brickpos, BrickwallTex);
+	//object.drawNormals = true;
+	brickwall.material.ambient = XMFLOAT4(1, 1, 1, 1);
+	brickwall.material.specExp = 200.0f;       // no spec color 1 0 nothing
+	brickwall.material.specIntensity = 1000.0f; // no spec color
+	brickwall.material.specExp = 1.0f;       // no spec color 1 0 nothing
+	brickwall.material.specIntensity = 0.0f; // no spec color
+
 	// stereo background music and mono sound from world object
 	xapp().sound.openSoundFile(L"Wind-Mark_DiAngelo-1940285615.wav", "background_sound", true);
 	xapp().sound.playSound("background_sound", SoundCategory::EFFECT);  // cleanup volume/type
@@ -385,6 +399,7 @@ void HangOn::draw()
 		//lights->ambientLights[0].ambient = dirColor1;//XMFLOAT4(1.0f, 1.0f, 1.0f, 1);
 		lights->directionalLights[0].used_fill.x = 1.0f;
 		mars.draw();
+		brickwall.draw();
 		lights->directionalLights[0].used_fill.x = 0.0f;
 		lights->ambientLights[0].ambient = currentAmbientLight;
 	}
