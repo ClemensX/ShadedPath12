@@ -40,6 +40,7 @@ public class ColladaImport {
     public static boolean fakeTextureMapping = false;  // set to true if no UV mapping available to fake texture coord
 
     public static boolean discardBoneInfluenceGreater4 = true;  // bone influence > 4 will be discarded instead of failed assertion
+	private static boolean fixaxis = false;
 
     /**
      * @param args
@@ -51,20 +52,24 @@ public class ColladaImport {
             usage();
             System.exit(0);
         }
-        if (args[0].startsWith("-outdir")) {
-        	if (args.length < 3) {
-                System.out.println("missing parameter: output directory or input filname of collada xml");
-                usage();
-                System.exit(0);
-        	}
-            outdir = args[1];
-            filename = args[2];
-            File dir = new File(outdir);
-            if (!dir.exists()) {
-                failUsage("Output directory " + outdir + " does not exist");
-            }
-        } else {
-        	filename = args[0];
+        for (int i = 0; i < args.length; i++) {
+            filename = args[args.length-1]; // collada input filename is last param
+            if (args[i].startsWith("-outdir")) {
+            	if (args.length < i+2) {
+                    System.out.println("missing parameter: output directory or input filname of collada xml");
+                    usage();
+                    System.exit(0);
+            	}
+                outdir = args[i+1];
+                File dir = new File(outdir);
+                if (!dir.exists()) {
+                    failUsage("Output directory " + outdir + " does not exist");
+                }
+            }        	
+            if (args[i].startsWith("-fixaxis")) {
+            	fixaxis  = true;
+            	System.out.println(" Conversion from Blender coordinate system to SP engine enabled!");
+            }        	
         }
         try {
 
@@ -399,12 +404,27 @@ public class ColladaImport {
                         
                     }
                 }
+                assert (all.size() % 3 == 0); // assert we have triples
+                // fix triangle order:
+                if (fixaxis) {
+                    for (int i = 0; i < all.size(); i+=3) {
+                    	D3DVertex s = all.get(i+1);
+                    	all.set(i+1, all.get(i+2));
+                    	all.set(i+2, s);
+                    }
+                }
                 // vertices length + data
                 writeInt(oos, all.size()*3);
                 for (int i = 0; i < all.size(); i++) {
-                    writeFloat(oos, all.get(i).x);
-                    writeFloat(oos, all.get(i).y);
-                    writeFloat(oos, all.get(i).z);
+                	if (fixaxis) {
+	                    writeFloat(oos, all.get(i).x);
+	                    writeFloat(oos, all.get(i).z);
+	                    writeFloat(oos, all.get(i).y);
+                	} else {
+                        writeFloat(oos, all.get(i).x);
+                        writeFloat(oos, all.get(i).y);
+                        writeFloat(oos, all.get(i).z);
+                	}
                 }
                 for (int i = 0; i < all.size(); i++) {
                     writeFloat(oos, all.get(i).cu);
@@ -412,9 +432,15 @@ public class ColladaImport {
                 }
                 // write normals
                 for (int i = 0; i < all.size(); i++) {
-                    writeFloat(oos, all.get(i).nx);
-                    writeFloat(oos, all.get(i).ny);
-                    writeFloat(oos, all.get(i).nz);
+                	if (fixaxis) {
+	                    writeFloat(oos, all.get(i).nx);
+	                    writeFloat(oos, all.get(i).nz);
+	                    writeFloat(oos, all.get(i).ny);
+                	} else {
+	                    writeFloat(oos, all.get(i).nx);
+	                    writeFloat(oos, all.get(i).ny);
+	                    writeFloat(oos, all.get(i).nz);
+                	}
                 }
                 if (isSkinned) {
                     for (int i = 0; i < all.size(); i++) {
@@ -1040,7 +1066,7 @@ public class ColladaImport {
     }
 
     static void usage() {
-        System.out.println("usage: java de.fehrprice.collada.ColladaImport [-outdir <output_directory] garbage_text");
+        System.out.println("usage: java de.fehrprice.collada.ColladaImport [-outdir <output_directory] [-fixaxis] collada_file");
         System.out.println("     Use Apply for bones and mesh objects in blender before exporting!");
     }
 
