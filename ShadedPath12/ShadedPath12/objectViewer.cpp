@@ -102,7 +102,6 @@ void ObjectViewer::init()
 	TextureInfo *PlanetTex = xapp().textureStore.getTexture("planet");
 	TextureInfo *Meteor1Tex = xapp().textureStore.getTexture("meteor1");
 	TextureInfo *AxistestTex = xapp().textureStore.getTexture("axistest");
-	TextureInfo *AxistestTex = xapp().textureStore.getTexture("axistest");
 	TextureInfo *BrickwallTex = xapp().textureStore.getTexture("brickwall");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
@@ -184,16 +183,7 @@ void ObjectViewer::init()
 		path.defineAction("movetest", object, points);
 		object.setAction("movetest");
 	}
-	if (true) {
-		xapp().objectStore.loadObject(L"axistest.b", "axistest");
-		xapp().objectStore.addObject(object, "axistest", XMFLOAT3(10.0f, 10.0f, 10.0f), AxistestTex);
-		//object.drawBoundingBox = true;
-		object.drawNormals = true;
-		//object.pathDescMove->pathMode = Path_Reverse;
-		object.material.specExp = 1.0f;       // no spec color
-		object.material.specIntensity = 0.0f; // no spec color
-	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"brickwall.b", "Brickwall");
 		xapp().objectStore.addObject(object, "Brickwall", XMFLOAT3(10.0f, 5.0f, 10.0f), BrickwallTex);
 		//object.drawNormals = true;
