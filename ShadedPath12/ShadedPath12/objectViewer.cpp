@@ -77,6 +77,7 @@ void ObjectViewer::init()
 	xapp().textureStore.loadTexture(L"mars_6k_color.dds", "planet");
 	//xapp().textureStore.loadTexture(L"mars_12k_color.dds", "planet");
 	xapp().textureStore.loadTexture(L"met1.dds", "meteor1");
+	xapp().textureStore.loadTexture(L"axistest.dds", "axistest");
 	xapp().textureStore.loadTexture(L"2create_brick_0001.dds", "brickwall");
 	// create a billboards:
 	BillboardElement b;
@@ -99,6 +100,7 @@ void ObjectViewer::init()
 	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	TextureInfo *PlanetTex = xapp().textureStore.getTexture("planet");
 	TextureInfo *Meteor1Tex = xapp().textureStore.getTexture("meteor1");
+	TextureInfo *AxistestTex = xapp().textureStore.getTexture("axistest");
 	TextureInfo *BrickwallTex = xapp().textureStore.getTexture("brickwall");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
@@ -179,6 +181,15 @@ void ObjectViewer::init()
 		vector<XMFLOAT4> points = { {0.0f, 0.0f, 0.0f, 1.0f}, { 500.0f, 500.0f, 500.0f, 80.0f },{ 500.0f, 500.0f, 1000.0f, 160.0f } };
 		path.defineAction("movetest", object, points);
 		object.setAction("movetest");
+	}
+	if (true) {
+		xapp().objectStore.loadObject(L"axistest.b", "axistest");
+		xapp().objectStore.addObject(object, "axistest", XMFLOAT3(10.0f, 10.0f, 10.0f), AxistestTex);
+		//object.drawBoundingBox = true;
+		object.drawNormals = true;
+		//object.pathDescMove->pathMode = Path_Reverse;
+		object.material.specExp = 1.0f;       // no spec color
+		object.material.specIntensity = 0.0f; // no spec color
 	}
 	if (true) {
 		xapp().objectStore.loadObject(L"brickwall.b", "Brickwall");

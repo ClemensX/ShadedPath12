@@ -16,4 +16,7 @@ rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ ger
 rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ hsw.dae
 rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ sphere3.dae
 rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ meteor_single.dae
+java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ axistest.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ sphere3.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ meteor_single.dae
 java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ brickwall.dae
