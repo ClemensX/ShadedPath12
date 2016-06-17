@@ -164,7 +164,7 @@ void VR::initD3D()
 	layer.Header.Type = ovrLayerType_EyeFov;
 	layer.Header.Flags = 0;
 	layer.ColorTexture[0] = textureSwapChain;
-	layer.ColorTexture[1] = textureSwapChain;
+	layer.ColorTexture[1] = nullptr;//textureSwapChain;
 	layer.Fov[0] = eyeRenderDesc[0].Fov;
 	layer.Fov[1] = eyeRenderDesc[1].Fov;
 	layer.Viewport[0] = Recti(0, 0, bufferSize.w / 2, bufferSize.h);
@@ -215,6 +215,7 @@ void VR::prepareDraw()
 	//cam_look = xapp->camera.look;
 	//cam_up = xapp->camera.up;
 	firstEye = true;
+	curEye = EyeLeft;
 }
 
 void VR::endDraw() {
@@ -225,6 +226,7 @@ void VR::endDraw() {
 }
 
 void VR::adjustEyeMatrix(XMMATRIX &m) {
+	xapp->camera.projectionTransform();
 	m = xapp->camera.worldViewProjection();
 	//Camera c2 = xapp->camera;
 	//if (curEye == EyeLeft) {
@@ -286,6 +288,8 @@ void VR::nextTracking()
 	double displayMidpointSeconds = ovr_GetPredictedDisplayTime(session, 0);
 	ovrTrackingState ts = ovr_GetTrackingState(session, displayMidpointSeconds, false);
 	ovr_CalcEyePoses(ts.HeadPose.ThePose, useHmdToEyeViewOffset, layer.RenderPose);
+	layer.Fov[0] = eyeRenderDesc[0].Fov;
+	layer.Fov[1] = eyeRenderDesc[1].Fov;
 
 	// Render the two undistorted eye views into their render buffers.  
 	for (int eye = 0; eye < 2; eye++)
@@ -310,6 +314,10 @@ void VR::nextTracking()
 		Posf.y = xapp->camera.pos.y;
 		Posf.z = xapp->camera.pos.z;
 		Vector3f diff = rollPitchYaw.Transform(useEyePose->Position);
+		//diff /= 10.0f;
+		//diff.x = 0.0f;
+		//diff.y = 0.0f;
+		//diff.z = 0.0f;
 		Vector3f shiftedEyePos;
 		shiftedEyePos.x = Posf.x - diff.x;
 		shiftedEyePos.y = Posf.y + diff.y;
@@ -319,7 +327,7 @@ void VR::nextTracking()
 		xapp->camera.look.z = finalForward.z;
 
 		Matrix4f view = Matrix4f::LookAtLH(shiftedEyePos, shiftedEyePos + finalForward, finalUp);
-		Matrix4f projO = ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.2f, 2000.0f, ovrProjection_LeftHanded);
+		Matrix4f projO = ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.2f, 2000.0f,  ovrProjection_LeftHanded);
 		Matrix4fToXM(this->viewOVR[eye], view.Transposed());
 		Matrix4fToXM(this->projOVR[eye], projO.Transposed());
 	}
@@ -368,3 +376,11 @@ CD3DX12_CPU_DESCRIPTOR_HANDLE VR::getRTVHandle(int frameIndex) {
 	return rtvHandle;
 };
 
+XMFLOAT4X4 VR::getOVRViewMatrix() { 
+	return viewOVR[curEye];
+};
+
+// get projection matrix for current eye
+XMFLOAT4X4 VR::getOVRProjectionMatrix() { 
+	return projOVR[curEye];
+};

@@ -53,6 +53,7 @@ void ObjectViewer::init()
 	//xapp().camera.setSpeed(1.0f); // seems ok for VR
 	xapp().camera.setSpeed(10.5f); // faster for dev usability
 	xapp().camera.fieldOfViewAngleY = 1.289f;
+	//xapp().camera.fieldOfViewAngleY = 0.6f;
 	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 
 	textEffect.setSize(textSize);
@@ -137,7 +138,7 @@ void ObjectViewer::init()
 		//object.drawNormals = true;
 		//object.drawBoundingBox = true;
 	}
-	if (false) {
+	if (true) {
 		xapp().objectStore.loadObject(L"shaded2.b", "Shaded");
 		xapp().objectStore.addObject(object, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GrassTex);
 		//object.drawNormals = true;
@@ -183,7 +184,7 @@ void ObjectViewer::init()
 		path.defineAction("movetest", object, points);
 		object.setAction("movetest");
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"brickwall.b", "Brickwall");
 		xapp().objectStore.addObject(object, "Brickwall", XMFLOAT3(10.0f, 5.0f, 10.0f), BrickwallTex);
 		//object.drawNormals = true;

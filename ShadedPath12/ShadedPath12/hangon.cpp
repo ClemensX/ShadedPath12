@@ -4,7 +4,7 @@
 #if (defined(_DEBUG))
 static int NUM_METEOR = 500;
 #else
-static int NUM_METEOR = 1500;
+static int NUM_METEOR = 1000;
 #endif
 static int NUM_THREADS = 2;
 
@@ -196,7 +196,7 @@ void HangOn::init()
 	TextureInfo *BrickwallTex = xapp().textureStore.getTexture("brickwall");
 	xapp().objectStore.loadObject(L"brickwall.b", "Brickwall");
 	auto cp = xapp().camera.pos;
-	XMFLOAT3 brickpos = XMFLOAT3(cp.x, cp.y - 2.85f, cp.z);
+	XMFLOAT3 brickpos = XMFLOAT3(cp.x, cp.y - 1.85f, cp.z);
 	xapp().objectStore.addObject(brickwall, "Brickwall", brickpos, BrickwallTex);
 	//object.drawNormals = true;
 	brickwall.material.ambient = XMFLOAT4(1, 1, 1, 1);

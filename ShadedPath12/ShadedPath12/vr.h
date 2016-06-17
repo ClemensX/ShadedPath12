@@ -46,9 +46,9 @@ public:
 	void submitFrame();
 #if defined(_OVR_)
 	// get view matrix for current eye
-	XMFLOAT4X4 getOVRViewMatrix() { return viewOVR[curEye]; };
+	XMFLOAT4X4 getOVRViewMatrix();
 	// get projection matrix for current eye
-	XMFLOAT4X4 getOVRProjectionMatrix() { return projOVR[curEye]; };
+	XMFLOAT4X4 getOVRProjectionMatrix();
 #else
 	// just return identity matrix if ovr not enabled
 	static XMFLOAT4X4 ident;
