@@ -80,7 +80,7 @@ void ObjectViewer::init()
 	xapp().textureStore.loadTexture(L"met1.dds", "meteor1");
 	xapp().textureStore.loadTexture(L"axistest.dds", "axistest");
 	xapp().textureStore.loadTexture(L"axistest.dds", "axistest");
-	xapp().textureStore.loadTexture(L"2create_brick_0001.dds", "brickwall");
+	//xapp().textureStore.loadTexture(L"2create_brick_0001.dds", "brickwall");
 	// create a billboards:
 	BillboardElement b;
 	b.pos = XMFLOAT3(15.0f, 0.0f, 2.0f);
@@ -103,7 +103,7 @@ void ObjectViewer::init()
 	TextureInfo *PlanetTex = xapp().textureStore.getTexture("planet");
 	TextureInfo *Meteor1Tex = xapp().textureStore.getTexture("meteor1");
 	TextureInfo *AxistestTex = xapp().textureStore.getTexture("axistest");
-	TextureInfo *BrickwallTex = xapp().textureStore.getTexture("brickwall");
+	//TextureInfo *BrickwallTex = xapp().textureStore.getTexture("brickwall");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	if (false) {
@@ -138,7 +138,7 @@ void ObjectViewer::init()
 		//object.drawNormals = true;
 		//object.drawBoundingBox = true;
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"shaded2.b", "Shaded");
 		xapp().objectStore.addObject(object, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GrassTex);
 		//object.drawNormals = true;
@@ -186,7 +186,7 @@ void ObjectViewer::init()
 	}
 	if (false) {
 		xapp().objectStore.loadObject(L"brickwall.b", "Brickwall");
-		xapp().objectStore.addObject(object, "Brickwall", XMFLOAT3(10.0f, 5.0f, 10.0f), BrickwallTex);
+		//xapp().objectStore.addObject(object, "Brickwall", XMFLOAT3(10.0f, 5.0f, 10.0f), BrickwallTex);
 		//object.drawNormals = true;
 		object.material.ambient = XMFLOAT4(1, 1, 1, 1);
 		object.material.specExp = 200.0f;       // no spec color 1 0 nothing
@@ -199,6 +199,15 @@ void ObjectViewer::init()
 		xapp().objectStore.addObject(object, "axistest", XMFLOAT3(10.0f, 10.0f, 10.0f), AxistestTex);
 		//object.drawBoundingBox = true;
 		object.drawNormals = true;
+		//object.pathDescMove->pathMode = Path_Reverse;
+		object.material.specExp = 1.0f;       // no spec color
+		object.material.specIntensity = 0.0f; // no spec color
+	}
+	if (true) {
+		xapp().objectStore.loadObject(L"logo.b", "logo");
+		xapp().objectStore.addObject(object, "logo", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
+		//object.drawBoundingBox = true;
+		//object.drawNormals = true;
 		//object.pathDescMove->pathMode = Path_Reverse;
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
