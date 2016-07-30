@@ -73,7 +73,8 @@ void ObjectViewer::init()
 	// textures
 	xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
 	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
-	xapp().textureStore.loadTexture(L"metal1.dds", "metal");
+	//xapp().textureStore.loadTexture(L"metal1.dds", "metal");
+	xapp().textureStore.loadTexture(L"blue.dds", "metal");
 	xapp().textureStore.loadTexture(L"worm1.dds", "worm");
 	xapp().textureStore.loadTexture(L"mars_6k_color.dds", "planet");
 	//xapp().textureStore.loadTexture(L"mars_12k_color.dds", "planet");
@@ -205,7 +206,7 @@ void ObjectViewer::init()
 	}
 	if (true) {
 		xapp().objectStore.loadObject(L"logo.b", "logo");
-		xapp().objectStore.addObject(object, "logo", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
+		xapp().objectStore.addObject(object, "logo", XMFLOAT3(3.0f, -1.0f, 2.0f), MetalTex);
 		//object.drawBoundingBox = true;
 		//object.drawNormals = true;
 		//object.pathDescMove->pathMode = Path_Reverse;
