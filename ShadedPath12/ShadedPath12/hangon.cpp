@@ -23,28 +23,6 @@ string HangOn::getWindowTitle() {
 	return "Hang On";
 }
 
-// totalTime in seconds
-void adjustTimings(vector<XMFLOAT4> &p, float totalTime, float speed) {
-	float totalLen = 0.0f;
-	for (int i = 1; i < p.size(); i++) {
-		// store length of segment 
-		XMFLOAT3 p1p = XMFLOAT3(p[i-1].x, p[i-1].y, p[i-1].z);
-		XMFLOAT3 p2p = XMFLOAT3(p[i].x, p[i].y, p[i].z);
-		XMVECTOR p1 = XMLoadFloat3(&p1p);
-		XMVECTOR p2 = XMLoadFloat3(&p2p);
-		float len = XMVectorGetX(XMVector3Length(p2 - p1));
-		totalLen += len;
-		p[i].w = len;  // temporary store len
-	}
-	float speedfactor = totalTime / totalLen;
-	float totalFPSTime = p[0].w;
-	for (int i = 1; i < p.size(); i++) {
-		float segmentTime = p[i].w * speedfactor;
-		p[i].w = (segmentTime * 25.0f) + totalFPSTime; // FPS
-		totalFPSTime += segmentTime * 25.0f;
-	}
-}
-
 void HangOn::init()
 {
 	dotcrossEffect.init();
@@ -147,23 +125,6 @@ void HangOn::init()
 	mars.material.specExp = 1.0f;       // no spec color 1 0 nothing
 	mars.material.specIntensity = 0.0f; // no spec color
 	vector<XMFLOAT4> points;
-	/*
-	XMFLOAT3(2000.0f, -300.0f, -700.0f),//start
-	XMFLOAT3(1995.0f, 100.0f, -700.0f),
-	XMFLOAT3(1990.0f, 200.0f, -700.0f),
-	XMFLOAT3(1980.0f, 300.0f, -700.0f),
-	XMFLOAT3(1970.0f, 400.0f, -700.0f),
-	XMFLOAT3(1950.0f, 500.0f, -700.0f),
-	XMFLOAT3(1925.0f, 600.0f, -700.0f),
-	XMFLOAT3(1895.0f, 700.0f, -700.0f),
-	XMFLOAT3(1855.0f, 800.0f, -700.0f),
-	XMFLOAT3(1800.0f, 900.0f, -700.0f),
-	XMFLOAT3(1750.0f, 1000.0f, -700.0f), //10
-	XMFLOAT3(1660.0f, 1100.0f, -700.0f),
-	XMFLOAT3(1400.0f, 1200.0f, -700.0f),
-	XMFLOAT3(1300.0f, 1250.0f, -700.0f),//mid
-	XMFLOAT3(800.0f, 1250.0f, -700.0f)//end
-*/
 	points.push_back(XMFLOAT4(2000.0f, -300.0f, -700.0f, 1.0));//start
 	points.push_back(XMFLOAT4(1995.0f, 100.0f, -700.0f, 1.0));
 	points.push_back(XMFLOAT4(1990.0f, 200.0f, -700.0f, 1.0));
@@ -179,12 +140,9 @@ void HangOn::init()
 	points.push_back(XMFLOAT4(1400.0f, 1200.0f, -700.0f, 1.0));
 	points.push_back(XMFLOAT4(1300.0f, 1250.0f, -700.0f, 1.0));//mid
 	points.push_back(XMFLOAT4(800.0f, 1250.0f, -700.0f, 1.0));//end
-	adjustTimings(points, 120.0f, 1.0f);
-	//points.push_back(XMFLOAT4(2000.0f, -300.0f, -700.0f, 1.0));//start
-	//points.push_back(XMFLOAT4(1995.0f, 100.0f, -700.0f, 200.0));
-	//vector<XMFLOAT4> points = { { 0.0f, 0.0f, 0.0f, 1.0f },{ 500.0f, 500.0f, 500.0f, 80.0f },{ 500.0f, 500.0f, 1000.0f, 160.0f } };
-	//vector<XMFLOAT4> points = { { 500.0f, 500.0f, 500.0f, 1.0f },{ 500.0f, 500.0f, 1000.0f, 80.0f },{ 0.0f, 0.0f, 0.0f, 160.0f } };
+
 	auto &path = xapp().world.path;
+	path.adjustTimings(points, 120.0f);
 	path.defineAction("marsmove", mars, points);
 	mars.setAction("marsmove");
 	mars.pathDescMove->pathMode = Path_SimpleMode;
@@ -414,4 +372,4 @@ void HangOn::destroy()
 {
 }
 
-static HangOn soundtest;
+static HangOn hangon;

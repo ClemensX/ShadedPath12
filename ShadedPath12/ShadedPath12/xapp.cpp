@@ -499,16 +499,17 @@ wstring XApp::findFile(wstring filename, FileCategory cat) {
 			filename = SOUND_PATH + filename;
 			break;
 		}
+		bfile.open(filename.c_str(), ios::in | ios::binary);
+		if (!bfile && cat == TEXTURE) {
+			// try loading default texture
+			filename = TEXTURE_PATH + wstring(L"default.dds");
+			bfile.open(filename.c_str(), ios::in | ios::binary);
+		}
+		if (!bfile) {
+			Error(L"failed reading file: " + filename);
+		}
 	}
-	else {
-		bfile.close();
-		return filename;
-	}
-	ifstream bfile2(filename.c_str(), ios::in | ios::binary);
-	if (!bfile2) {
-		Error(L"failed reading file: " + filename);
-	}
-	else {
+	if (bfile) {
 		bfile.close();
 		return filename;
 	}

@@ -82,7 +82,13 @@ public:
 	void addRandomNPC(WorldObject *wo, char *name);
 	PathDesc *createNpcPath(char *name);
 	void moveNpc(WorldObject *wo, LONGLONG now, LONGLONG ticks_per_second, Terrain *terrain);
+
+	// calculate the timing component w of control points in a xmfloat4 vector.
+	// Path takes totalTime seconds at constant speed to move from start to end pos
+	void adjustTimings(vector<XMFLOAT4>& p, float totalTime);
+
 	// define movement path on-the-fly instead from blender/.b file
+	// ctrlPoints define the control points in world coords. w holds the frame number/fraction (always 25 fps assumed)
 	void defineAction(char *name, WorldObject &wo, vector<XMFLOAT4> &ctrlPoints);
 private:
 	XMMATRIX getInterpolationMatrix(int i, PathDesc *pd);

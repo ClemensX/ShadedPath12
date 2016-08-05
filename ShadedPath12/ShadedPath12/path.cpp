@@ -853,6 +853,28 @@ vec.z = bz.cp[1];
 }
 */
 
+// totalTime in seconds
+void Path::adjustTimings(vector<XMFLOAT4> &p, float totalTime) {
+	float totalLen = 0.0f;
+	for (int i = 1; i < p.size(); i++) {
+		// store length of segment 
+		XMFLOAT3 p1p = XMFLOAT3(p[i - 1].x, p[i - 1].y, p[i - 1].z);
+		XMFLOAT3 p2p = XMFLOAT3(p[i].x, p[i].y, p[i].z);
+		XMVECTOR p1 = XMLoadFloat3(&p1p);
+		XMVECTOR p2 = XMLoadFloat3(&p2p);
+		float len = XMVectorGetX(XMVector3Length(p2 - p1));
+		totalLen += len;
+		p[i].w = len;  // temporary store len
+	}
+	float speedfactor = totalTime / totalLen;
+	float totalFPSTime = p[0].w;
+	for (int i = 1; i < p.size(); i++) {
+		float segmentTime = p[i].w * speedfactor;
+		p[i].w = (segmentTime * 25.0f) + totalFPSTime; // FPS
+		totalFPSTime += segmentTime * 25.0f;
+	}
+}
+
 void Path::defineAction(char* name, WorldObject & wo, vector<XMFLOAT4>& ctrlPoints)
 {
 	if (wo.mesh->actions.count(name)) {
