@@ -89,7 +89,8 @@ public:
 
 	// define movement path on-the-fly instead from blender/.b file
 	// ctrlPoints define the control points in world coords. w holds the frame number/fraction (always 25 fps assumed)
-	void defineAction(char *name, WorldObject &wo, vector<XMFLOAT4> &ctrlPoints);
+	// rot defines rotation for each control point, may be left out for no rotation
+	void defineAction(char *name, WorldObject &wo, vector<XMFLOAT4> &ctrlPoints, vector<XMFLOAT3> *rot = nullptr);
 private:
 	XMMATRIX getInterpolationMatrix(int i, PathDesc *pd);
 	void saveInterpolationMatrix(int i, PathDesc *pd, XMMATRIX *m);

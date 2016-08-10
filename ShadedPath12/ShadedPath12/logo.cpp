@@ -70,11 +70,34 @@ void Logo::init()
 	lights->pointLights[0].pos = XMFLOAT4(6.0f, 10.0f, 8.0f, 1.0f);
 	lights->pointLights[0].range_reciprocal = 1.0f / 30.0f;
 	lights->pointLights[0].used = 1.0f;
+
+	startMovement = true;
 }
 
 void Logo::update()
 {
+	gameTime.advanceTime();
+	double nowf = gameTime.getTimeAbsSeconds();
 	xapp().lights.update();
+	if (startMovement == true) {
+		startMovement = false;
+		vector<XMFLOAT4> points;
+		points.push_back(XMFLOAT4(-1, -1, 2, 1.0)); // start
+		points.push_back(XMFLOAT4(0, 0, -2.5, 100)); // end
+		points.push_back(XMFLOAT4(0, 0, -2.5, 200)); // end
+		vector<XMFLOAT3> rotations;
+		rotations.push_back(XMFLOAT3(0, 0, 0)); // start
+		//rotations.push_back(XMFLOAT3(XM_PIDIV2, XM_PIDIV2, XM_PIDIV2)); // end
+		rotations.push_back(XMFLOAT3(XM_PIDIV2, 0, 0)); // end
+		rotations.push_back(XMFLOAT3(XM_PIDIV4, 0.5f, 0)); // end
+
+		auto &path = xapp().world.path;
+		path.defineAction("movelogo", logo, points, &rotations);
+		logo.setAction("movelogo");
+		logo.pathDescMove->pathMode = Path_SimpleMode;
+		logo.pathDescMove->starttime_f = nowf;
+		logo.pathDescMove->handleRotation = true;
+	}
 }
 
 void Logo::draw()

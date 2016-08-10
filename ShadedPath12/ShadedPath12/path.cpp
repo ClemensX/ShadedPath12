@@ -875,8 +875,11 @@ void Path::adjustTimings(vector<XMFLOAT4> &p, float totalTime) {
 	}
 }
 
-void Path::defineAction(char* name, WorldObject & wo, vector<XMFLOAT4>& ctrlPoints)
+void Path::defineAction(char* name, WorldObject & wo, vector<XMFLOAT4>& ctrlPoints, vector<XMFLOAT3> *rot)
 {
+	if (rot != nullptr) {
+		assert(rot->size() == ctrlPoints.size());
+	}
 	if (wo.mesh->actions.count(name)) {
 		// key already exists, do a cleanup
 		if (wo.pathDescMove->segments) delete[] wo.pathDescMove->segments;
@@ -908,6 +911,22 @@ void Path::defineAction(char* name, WorldObject & wo, vector<XMFLOAT4>& ctrlPoin
 				b.cp[0] = ctrlPoints[j].w; // frame/time index
 				b.cp[1] = ctrlPoints[j].z;
 				break;
+			}
+			if (rot != nullptr) {
+				switch (i) {
+				case 4:
+					b.cp[0] = ctrlPoints[j].w; // frame/time index
+					b.cp[1] = (*rot)[j].y;
+					break;
+				case 3:
+					b.cp[0] = ctrlPoints[j].w; // frame/time index
+					b.cp[1] = -1.0f * (*rot)[j].x;
+					break;
+				case 5:
+					b.cp[0] = ctrlPoints[j].w; // frame/time index
+					b.cp[1] = (*rot)[j].z;
+					break;
+				}
 			}
 			curve.bezTriples.push_back(b);
 		}

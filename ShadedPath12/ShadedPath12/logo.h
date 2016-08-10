@@ -21,5 +21,6 @@ private:
 	// other:
 	WorldObject logo;
 	LONGLONG startTime;
+	bool startMovement = false;
 };
 
