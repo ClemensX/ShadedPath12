@@ -35,6 +35,17 @@ protected:
 
 };
 
+// Multi Scene Apps inherit from this:
+class XAppMultiBase
+{
+	public:
+		// inital all apps - call after all apps were added to vector
+		void initAllApps();
+		virtual void initScenes() = 0;
+	protected:
+		vector<XAppBase *> apps;	// all apps maintained by this Mult-Scene App
+};
+
 class XApp
 {
 public:

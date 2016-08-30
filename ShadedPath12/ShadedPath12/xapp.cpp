@@ -638,3 +638,11 @@ XApp& xapp() {
 void xappDestroy() {
 	delete xappPtr;
 }
+
+void XAppMultiBase::initAllApps()
+{
+	for ( auto app : apps)
+	{
+		app->init();
+	}
+}
