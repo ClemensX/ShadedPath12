@@ -48,6 +48,7 @@ void HangOn::init()
 	xapp().camera.fieldOfViewAngleY = 1.289f;
 	xapp().world.setWorldSize(2048.0f, 782.0f, 2048.0f);
 
+#define TEST_MUTI_XAPPS
 #if defined(TEST_MUTI_XAPPS)
 	textEffect.setSize(textSize);
 	dotcrossEffect.setLineLength(6.0f * textSize);
