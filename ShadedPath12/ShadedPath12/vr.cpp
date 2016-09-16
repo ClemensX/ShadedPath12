@@ -65,6 +65,11 @@ void VR::init()
 	Sizei recommenedTex1Size = ovr_GetFovTextureSize(session, ovrEye_Right, desc.DefaultEyeFov[1], 1.0f);
 	buffersize_width = recommenedTex0Size.w + recommenedTex1Size.w;
 	buffersize_height = max(recommenedTex0Size.h, recommenedTex1Size.h);
+	result = ovr_RequestBoundaryVisible(session, ovrTrue);
+	if (OVR_FAILURE(result)) {
+		Error(L"ERROR: Boundary failed to initialize.");
+		return;
+	}
 #endif
 }
 
