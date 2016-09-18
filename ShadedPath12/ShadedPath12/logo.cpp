@@ -33,7 +33,9 @@ void Logo::init()
 	xapp().world.setWorldSize(2048.0f, 782.0f, 2048.0f);
 
 	xapp().textureStore.loadTexture(L"metal1.dds", "metal");
+	xapp().textureStore.loadTexture(L"white.dds", "white");
 	TextureInfo *MetalTex = xapp().textureStore.getTexture("metal");
+	TextureInfo *WhiteTex = xapp().textureStore.getTexture("white");
 	//object.drawBoundingBox = true;
 	//object.drawNormals = true;
 	//object.pathDescMove->pathMode = Path_Reverse;
@@ -49,6 +51,20 @@ void Logo::init()
 	logo.material.specExp = 1.0f;       // no spec color
 	logo.material.specIntensity = 0.0f; // no spec color
 
+	XMFLOAT4 lightStartPos4 = XMFLOAT4(-2, 0, -4.5, 1);
+//	XMFLOAT3 lightStartPos3 = XMFLOAT3(-2, 0, -4.5);
+	XMFLOAT3 lightStartPos3 = XMFLOAT3(0, 0, 0);
+	// init light objects:
+	xapp().objectStore.loadObject(L"light1.b", "light1", 0.01f);
+	for (int i = 0; i < 1; i++) {
+		woLights[i].material.ambient = XMFLOAT4(1, 1, 1, 1);
+		woLights[i].material.specExp = 1.0f;       // no spec color
+		woLights[i].material.specIntensity = 0.0f; // no spec color
+		xapp().objectStore.addObject(woLights[i], "light1", lightStartPos3, WhiteTex);
+		woLights[i].material.specExp = 1.0f;       // no spec color
+		woLights[i].material.specIntensity = 0.0f; // no spec color
+
+	}
 	// lights
 	CBVLights *lights = &xapp().lights.lights;
 
@@ -59,15 +75,15 @@ void Logo::init()
 	// directional lights:
 	lights->directionalLights[0].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	lights->directionalLights[0].pos = XMFLOAT4(-1.0f, -1.0f, -1.0f, 1.0f);
-	lights->directionalLights[0].used_fill.x = 1.0f;
+	lights->directionalLights[0].used_fill.x = 0.0f;
 
 	lights->directionalLights[1].color = XMFLOAT4(0.6f, 0.4f, 0.6f, 1.0f);
 	lights->directionalLights[1].pos = XMFLOAT4(0.0f, 0.5f, 1.0f, 1.0f);
-	lights->directionalLights[1].used_fill.x = 1.0f;
+	lights->directionalLights[1].used_fill.x = 0.0f;
 
 	// point lights:
 	lights->pointLights[0].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	lights->pointLights[0].pos = XMFLOAT4(6.0f, 10.0f, 8.0f, 1.0f);
+	lights->pointLights[0].pos = lightStartPos4;
 	lights->pointLights[0].range_reciprocal = 1.0f / 30.0f;
 	lights->pointLights[0].used = 1.0f;
 
@@ -97,12 +113,30 @@ void Logo::update()
 		logo.pathDescMove->pathMode = Path_SimpleMode;
 		logo.pathDescMove->starttime_f = nowf;
 		logo.pathDescMove->handleRotation = true;
+
+		// light movement:
+		{
+			vector<XMFLOAT4> pointsL;
+			pointsL.push_back(XMFLOAT4(-2, 0, -4.5, 1.0)); // start
+			pointsL.push_back(XMFLOAT4(0, 0, -4.5, 500)); // end
+			pointsL.push_back(XMFLOAT4(2, 0, -4.5, 1000)); // end
+			path.defineAction("movelight", woLights[0], pointsL);
+			woLights[0].setAction("movelight");
+			woLights[0].pathDescMove->pathMode = Path_Reverse;
+			woLights[0].pathDescMove->starttime_f = nowf;
+			woLights[0].pathDescMove->handleRotation = false;
+		}
 	}
+	CBVLights *lights = &xapp().lights.lights;
+	XMFLOAT4 curPos = XMFLOAT4(woLights[0].pos().x, woLights[0].pos().y, woLights[0].pos().z, 1);
+	Log("curPos " << curPos.x << " " << curPos.y << " " << curPos.z << endl);
+	lights->pointLights[0].pos = curPos;
 }
 
 void Logo::draw()
 {
 	logo.draw();
+	woLights[0].draw();
 	postEffect.draw();
 }
 
