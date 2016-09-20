@@ -57,22 +57,25 @@ public:
 	// visibility:
 	int calculateVisibility(BoundingBox &box, XMMATRIX &toWorld);
 	Camera& Camera::operator=(const Camera& other) {
-		pos = other.pos;
-		look = other.look;
-		up = other.up;
-		right = other.right;
-		look_straight = other.look_straight;
-		up_straight = other.up_straight;
-		right_straight = other.right_straight;
-		view = other.view;
-		fieldOfViewAngleY = other.fieldOfViewAngleY;
+		activeEye = other.activeEye;
 		aspectRatio = other.aspectRatio;
-		nearZ = other.nearZ;
 		farZ = other.farZ;
+		fieldOfViewAngleY = other.fieldOfViewAngleY;
+		look = other.look;
+		look_straight = other.look_straight;
+		nearZ = other.nearZ;
+		ovrCamera = other.ovrCamera;
 		pitch = other.pitch;
-		yaw = other.yaw;
+		pos = other.pos;
 		projection = other.projection;
+		right = other.right;
+		right_straight = other.right_straight;
 		speed = other.speed;
+		up = other.up;
+		up_straight = other.up_straight;
+		view = other.view;
+		world = other.world;
+		yaw = other.yaw;
 		return *this;
 	}
 private:

@@ -399,9 +399,9 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vec
 		frameIndex = xapp().getCurrentBackBufferIndex();
 		if (!initialized) {
 			initialized = true;
-			//Log(" obj bulk update thread " << this_thread::get_id() << endl);
+			Log(" obj bulk update thread " << std::hex << this_thread::get_id() << " " << bi.start << endl);
 			//Log(" obj bulk update thread " << bi.start << endl);
-			//this_thread::sleep_for(2s);
+			this_thread::sleep_for(2s);
 			ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
 			ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), effect->pipelineState.Get(), IID_PPV_ARGS(&commandList)));
 		} else {
