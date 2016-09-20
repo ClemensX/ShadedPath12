@@ -80,7 +80,7 @@ void ObjectViewer::init()
 	//xapp().textureStore.loadTexture(L"mars_12k_color.dds", "planet");
 	xapp().textureStore.loadTexture(L"met1.dds", "meteor1");
 	xapp().textureStore.loadTexture(L"axistest.dds", "axistest");
-	xapp().textureStore.loadTexture(L"axistest.dds", "axistest");
+	xapp().textureStore.loadTexture(L"white.dds", "white");
 	//xapp().textureStore.loadTexture(L"2create_brick_0001.dds", "brickwall");
 	// create a billboards:
 	BillboardElement b;
@@ -104,6 +104,7 @@ void ObjectViewer::init()
 	TextureInfo *PlanetTex = xapp().textureStore.getTexture("planet");
 	TextureInfo *Meteor1Tex = xapp().textureStore.getTexture("meteor1");
 	TextureInfo *AxistestTex = xapp().textureStore.getTexture("axistest");
+	TextureInfo *WhiteTex = xapp().textureStore.getTexture("white");
 	//TextureInfo *BrickwallTex = xapp().textureStore.getTexture("brickwall");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
@@ -204,9 +205,18 @@ void ObjectViewer::init()
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"logo.b", "logo");
 		xapp().objectStore.addObject(object, "logo", XMFLOAT3(3.0f, -1.0f, 2.0f), MetalTex);
+		//object.drawBoundingBox = true;
+		//object.drawNormals = true;
+		//object.pathDescMove->pathMode = Path_Reverse;
+		object.material.specExp = 1.0f;       // no spec color
+		object.material.specIntensity = 0.0f; // no spec color
+	}
+	if (true) {
+		xapp().objectStore.loadObject(L"light1.b", "light1", 0.1f);
+		xapp().objectStore.addObject(object, "light1", XMFLOAT3(3.0f, -1.0f, 2.0f), WhiteTex);
 		//object.drawBoundingBox = true;
 		//object.drawNormals = true;
 		//object.pathDescMove->pathMode = Path_Reverse;

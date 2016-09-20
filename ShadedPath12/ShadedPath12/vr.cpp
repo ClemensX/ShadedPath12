@@ -65,6 +65,13 @@ void VR::init()
 	Sizei recommenedTex1Size = ovr_GetFovTextureSize(session, ovrEye_Right, desc.DefaultEyeFov[1], 1.0f);
 	buffersize_width = recommenedTex0Size.w + recommenedTex1Size.w;
 	buffersize_height = max(recommenedTex0Size.h, recommenedTex1Size.h);
+	result = ovr_RequestBoundaryVisible(session, ovrTrue);
+	if (OVR_FAILURE(result)) {
+		Log(L"Oculus Boundary system inactive.");
+	}
+	else {
+		Log(L"Oculus Boundary system activated!!");
+	}
 #endif
 }
 
@@ -170,6 +177,9 @@ void VR::initD3D()
 	layer.Viewport[0] = Recti(0, 0, bufferSize.w / 2, bufferSize.h);
 	layer.Viewport[1] = Recti(bufferSize.w / 2, 0, bufferSize.w / 2, bufferSize.h);
 	// ld.RenderPose and ld.SensorSampleTime are updated later per frame.
+#endif
+#if defined(_DEBUG)
+	xapp->device->SetStablePowerState(true);
 #endif
 }
 
@@ -288,6 +298,21 @@ void VR::nextTracking()
 	double displayMidpointSeconds = ovr_GetPredictedDisplayTime(session, 0);
 	ovrTrackingState ts = ovr_GetTrackingState(session, displayMidpointSeconds, false);
 	ovr_CalcEyePoses(ts.HeadPose.ThePose, useHmdToEyeViewOffset, layer.RenderPose);
+	ovrResult result;
+	ovrBoundaryTestResult btest;
+	ovrBool visible;
+	result = ovr_GetBoundaryVisible(session, &visible);
+	if (0) {
+		Log("visible = " << (visible == ovrTrue) << endl);
+
+		result = ovr_TestBoundary(session, ovrTrackedDevice_HMD, ovrBoundary_Outer, &btest);
+		if (OVR_SUCCESS(result)) {
+			//Log("boundary success");
+			if (result == ovrSuccess) Log("success" << endl);
+			if (result == ovrSuccess_BoundaryInvalid) Log("success boundary invalid" << endl);
+			if (result == ovrSuccess_DeviceUnavailable) Log("success device unavailable" << endl);
+		}
+	}
 	layer.Fov[0] = eyeRenderDesc[0].Fov;
 	layer.Fov[1] = eyeRenderDesc[1].Fov;
 
