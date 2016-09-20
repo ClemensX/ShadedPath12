@@ -69,7 +69,7 @@ void Logo::init()
 	CBVLights *lights = &xapp().lights.lights;
 
 	// ambient light
-	lights->ambientLights[0].ambient = XMFLOAT4(0.3, 0.3, 0.3, 1);
+	lights->ambientLights[0].ambient = XMFLOAT4(0.1, 0.1, 0.1, 1);
 	assert(0 < MAX_AMBIENT);
 
 	// directional lights:
@@ -84,8 +84,9 @@ void Logo::init()
 	// point lights:
 	lights->pointLights[0].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	lights->pointLights[0].pos = lightStartPos4;
-	lights->pointLights[0].range_reciprocal = 1.0f / 30.0f;
+	lights->pointLights[0].range_reciprocal = 1.0f / 10.0f;
 	lights->pointLights[0].used = 1.0f;
+	//lights->pointLights[0].used = 0.0f;
 
 	startMovement = true;
 }
@@ -117,9 +118,9 @@ void Logo::update()
 		// light movement:
 		{
 			vector<XMFLOAT4> pointsL;
-			pointsL.push_back(XMFLOAT4(-2, 0, -4.5, 1.0)); // start
-			pointsL.push_back(XMFLOAT4(0, 0, -4.5, 500)); // end
-			pointsL.push_back(XMFLOAT4(2, 0, -4.5, 1000)); // end
+			pointsL.push_back(XMFLOAT4(-10, 2, -5.5, 1.0)); // start
+			pointsL.push_back(XMFLOAT4(0, 2, -5.5, 100)); // end
+			pointsL.push_back(XMFLOAT4(10, 2, 5.5, 200)); // end
 			path.defineAction("movelight", woLights[0], pointsL);
 			woLights[0].setAction("movelight");
 			woLights[0].pathDescMove->pathMode = Path_Reverse;
@@ -129,7 +130,7 @@ void Logo::update()
 	}
 	CBVLights *lights = &xapp().lights.lights;
 	XMFLOAT4 curPos = XMFLOAT4(woLights[0].pos().x, woLights[0].pos().y, woLights[0].pos().z, 1);
-	Log("curPos " << curPos.x << " " << curPos.y << " " << curPos.z << endl);
+	//Log("curPos " << curPos.x << " " << curPos.y << " " << curPos.z << endl);
 	lights->pointLights[0].pos = curPos;
 }
 
