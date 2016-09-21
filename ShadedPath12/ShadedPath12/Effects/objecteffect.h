@@ -88,4 +88,6 @@ private:
 	int waiting_for_rendering = 0;
 	int finished_rendering = 0;
 	mutex multiRenderLock;
+public:
+	Camera *getThreadedCamera() { return &camera; };
 };
