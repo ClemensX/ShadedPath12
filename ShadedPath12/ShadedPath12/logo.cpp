@@ -29,6 +29,7 @@ void Logo::init()
 	xapp().camera.farZ = 2000.0f;
 	xapp().camera.pos = XMFLOAT4(0.0f, 0.0f, -3.0f, 0.0f);
 	xapp().camera.setSpeed(10.5f); // faster for dev usability
+	xapp().camera.setSpeed(1.0f); // slow
 	xapp().camera.fieldOfViewAngleY = 1.289f;
 	xapp().world.setWorldSize(2048.0f, 782.0f, 2048.0f);
 
@@ -63,6 +64,7 @@ void Logo::init()
 		xapp().objectStore.addObject(woLights[i], "light1", lightStartPos3, WhiteTex);
 		woLights[i].material.specExp = 1.0f;       // no spec color
 		woLights[i].material.specIntensity = 0.0f; // no spec color
+		woLights[i].material.isLightSource = 1.0f; // set light source to draw bright
 
 	}
 	// lights
@@ -117,19 +119,29 @@ void Logo::update()
 		// light movement:
 		{
 			vector<XMFLOAT4> pointsL;
-			pointsL.push_back(XMFLOAT4(-4.6, 2, -7.5, 1.0)); // start
-			pointsL.push_back(XMFLOAT4(-4.5, 2, -7.5, 50)); // end
-			//pointsL.push_back(XMFLOAT4(0, 2, -5.5, 50)); // end
-			//pointsL.push_back(XMFLOAT4(10, 2, 5.5, 100)); // end
+			//pointsL.push_back(XMFLOAT4(-4.6, 2, -7.5, 1.0)); // start
+			//pointsL.push_back(XMFLOAT4(-4.5, 2, -7.5, 50)); // end
+
+			pointsL.push_back(XMFLOAT4(-2.47637, -0.428942, -4.57383, 1.0));
+			pointsL.push_back(XMFLOAT4(-1.94098, -0.245658, -4.32551, 20));
+			pointsL.push_back(XMFLOAT4(0.104937, -0.039326, -3.22724, 40));
+			//pointsL.push_back(XMFLOAT4(0.104937, -0.029326, -3.02724, 42));
+			pointsL.push_back(XMFLOAT4(0.58536, 0.377923, -2.11765, 60));
+			pointsL.push_back(XMFLOAT4(0.611514, 0.0257527, -1.59095, 80));
+			pointsL.push_back(XMFLOAT4(1.35694, -0.00639158, -1.2624, 100));
+			pointsL.push_back(XMFLOAT4(1.71278, 0.354593, -1.56838, 120));
+			pointsL.push_back(XMFLOAT4(3.20307, 0.375338, -0.700157, 140));
+			path.adjustTimings(pointsL, 4.0);
 			path.defineAction("movelight", woLights[0], pointsL);
 			woLights[0].setAction("movelight");
-			woLights[0].pathDescMove->pathMode = Path_Reverse;
+			woLights[0].pathDescMove->pathMode = Path_Loop;
 			woLights[0].pathDescMove->starttime_f = nowf;
 			woLights[0].pathDescMove->handleRotation = false;
 		}
 	}
 	CBVLights *lights = &xapp().lights.lights;
 	XMFLOAT4 curPos = XMFLOAT4(woLights[0].pos().x, woLights[0].pos().y, woLights[0].pos().z, 1);
+	//curPos = xapp().camera.pos;
 	//Log("curPos " << curPos.x << " " << curPos.y << " " << curPos.z << endl);
 	lights->pointLights[0].pos = curPos;
 }
