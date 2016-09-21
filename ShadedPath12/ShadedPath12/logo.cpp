@@ -84,7 +84,7 @@ void Logo::init()
 	// point lights:
 	lights->pointLights[0].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	lights->pointLights[0].pos = lightStartPos4;
-	lights->pointLights[0].range_reciprocal = 1.0f / 10.0f;
+	lights->pointLights[0].range_reciprocal = 1.0f / 8.0f;
 	lights->pointLights[0].used = 1.0f;
 	//lights->pointLights[0].used = 0.0f;
 
@@ -100,11 +100,10 @@ void Logo::update()
 		startMovement = false;
 		vector<XMFLOAT4> points;
 		points.push_back(XMFLOAT4(-1, -1, 2, 1.0)); // start
-		points.push_back(XMFLOAT4(0, 0, -2.5, 100)); // end
-		points.push_back(XMFLOAT4(0, 0, -2.5, 200)); // end
+		points.push_back(XMFLOAT4(0, 0, -2.5, 10)); // end
+		points.push_back(XMFLOAT4(0, 0, -2.5, 20)); // end
 		vector<XMFLOAT3> rotations;
 		rotations.push_back(XMFLOAT3(0, 0, 0)); // start
-		//rotations.push_back(XMFLOAT3(XM_PIDIV2, XM_PIDIV2, XM_PIDIV2)); // end
 		rotations.push_back(XMFLOAT3(XM_PIDIV2, 0, 0)); // end
 		rotations.push_back(XMFLOAT3(XM_PIDIV4, 0.5f, 0)); // end
 
@@ -118,9 +117,10 @@ void Logo::update()
 		// light movement:
 		{
 			vector<XMFLOAT4> pointsL;
-			pointsL.push_back(XMFLOAT4(-10, 2, -5.5, 1.0)); // start
-			pointsL.push_back(XMFLOAT4(0, 2, -5.5, 100)); // end
-			pointsL.push_back(XMFLOAT4(10, 2, 5.5, 200)); // end
+			pointsL.push_back(XMFLOAT4(-4.6, 2, -7.5, 1.0)); // start
+			pointsL.push_back(XMFLOAT4(-4.5, 2, -7.5, 50)); // end
+			//pointsL.push_back(XMFLOAT4(0, 2, -5.5, 50)); // end
+			//pointsL.push_back(XMFLOAT4(10, 2, 5.5, 100)); // end
 			path.defineAction("movelight", woLights[0], pointsL);
 			woLights[0].setAction("movelight");
 			woLights[0].pathDescMove->pathMode = Path_Reverse;
