@@ -30,9 +30,13 @@ VR::~VR() {
 void VR::init()
 {
 #if defined(_OVR_)
-	ovrResult result = ovr_Initialize(nullptr);
+	ovrInitParams initParams = { ovrInit_RequestVersion, OVR_MINOR_VERSION, NULL, 0, 0 };
+	ovrResult result = ovr_Initialize(&initParams);
 	if (OVR_FAILURE(result)) {
-		Error(L"ERROR: LibOVR failed to initialize.");
+		ovrErrorInfo errorInfo;
+		ovr_GetLastErrorInfo(&errorInfo);
+		Log(L"ovr_Initialize failed: " << errorInfo.ErrorString << endl);
+		Error(L"ovr_Initialize failed");
 		return;
 	}
 	Log("LibOVR initialized ok!" << endl);

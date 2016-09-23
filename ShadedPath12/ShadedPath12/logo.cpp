@@ -89,6 +89,7 @@ void Logo::init()
 	lights->pointLights[0].range_reciprocal = 1.0f / 8.0f;
 	lights->pointLights[0].used = 1.0f;
 	//lights->pointLights[0].used = 0.0f;
+
 	lights->pointLights[1] = lights->pointLights[0];
 	lights->pointLights[2] = lights->pointLights[0];
 	lights->pointLights[3] = lights->pointLights[0];
@@ -105,8 +106,8 @@ void Logo::update()
 		startMovement = false;
 		vector<XMFLOAT4> points;
 		points.push_back(XMFLOAT4(-1, -1, 2, 1.0)); // start
-		points.push_back(XMFLOAT4(0, 0, -2.5, 10)); // end
-		points.push_back(XMFLOAT4(0, 0, -2.5, 20)); // end
+		points.push_back(XMFLOAT4(0, 0, -2.5, 100)); // end
+		points.push_back(XMFLOAT4(0, 0, -2.5, 200)); // end
 		vector<XMFLOAT3> rotations;
 		rotations.push_back(XMFLOAT3(0, 0, 0)); // start
 		rotations.push_back(XMFLOAT3(XM_PIDIV2, 0, 0)); // end
@@ -125,15 +126,18 @@ void Logo::update()
 			//pointsL.push_back(XMFLOAT4(-4.6, 2, -7.5, 1.0)); // start
 			//pointsL.push_back(XMFLOAT4(-4.5, 2, -7.5, 50)); // end
 
-			pointsL.push_back(XMFLOAT4(-2.47637, -0.428942, -4.57383, 1.0));
-			pointsL.push_back(XMFLOAT4(-1.94098, -0.245658, -4.32551, 20));
-			pointsL.push_back(XMFLOAT4(0.104937, -0.039326, -3.22724, 40));
-			//pointsL.push_back(XMFLOAT4(0.104937, -0.029326, -3.02724, 42));
-			pointsL.push_back(XMFLOAT4(0.58536, 0.377923, -2.11765, 60));
-			pointsL.push_back(XMFLOAT4(0.611514, 0.0257527, -1.59095, 80));
-			pointsL.push_back(XMFLOAT4(1.35694, -0.00639158, -1.2624, 100));
-			pointsL.push_back(XMFLOAT4(1.71278, 0.354593, -1.56838, 120));
-			pointsL.push_back(XMFLOAT4(3.20307, 0.375338, -0.700157, 140));
+			pointsL.push_back(XMFLOAT4(-3.94999, 0.3105, -4.57103, 1));
+			pointsL.push_back(XMFLOAT4(-1.75236, 0.183313, -3.70876, 20));
+			pointsL.push_back(XMFLOAT4(-1.24807, 0.105603, -3.43801, 20));
+			pointsL.push_back(XMFLOAT4(-1.02751, 0.14676, -3.2325, 20));
+			pointsL.push_back(XMFLOAT4(-0.705992, 0.351725, -2.84486, 20));
+			pointsL.push_back(XMFLOAT4(-0.545172, 0.37157, -2.71474, 20));
+			pointsL.push_back(XMFLOAT4(-0.463309, 0.323662, -2.62874, 20));
+			pointsL.push_back(XMFLOAT4(-0.409953, 0.141652, -2.40447, 20));
+			pointsL.push_back(XMFLOAT4(0.722906, -0.073686, -1.92322, 20));
+			pointsL.push_back(XMFLOAT4(1.39551, 0.230524, -1.99702, 20));
+			pointsL.push_back(XMFLOAT4(4.13389, 0.195271, -0.354313, 20));
+
 			path.adjustTimings(pointsL, 4.0);
 			path.defineAction("movelight", woLights[0], pointsL);
 			woLights[0].setAction("movelight");
