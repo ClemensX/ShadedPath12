@@ -24,8 +24,9 @@ void XAppBase::destroy() {
 
 }
 
-XApp::XApp() : camera(world), world(this), vr(this)
+XApp::XApp() : camera(), world(this), vr(this)
 {
+	camera.init();
 	requestHeight = requestWidth = 0;
 	mouseTodo = true;
 	mouseDx = 0;

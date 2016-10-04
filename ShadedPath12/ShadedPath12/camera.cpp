@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-Camera::Camera(World& w) : world(w) {
+void Camera::init() {
 	// camera view
 	pos = XMFLOAT4(0.0f, 0.0f, -2.0f, 0.0f);
 	look = XMFLOAT4(0.0f, 0.0f, 1.0f, 0.0f);
@@ -22,6 +22,9 @@ Camera::Camera(World& w) : world(w) {
 Camera::~Camera() {
 }
 
+Camera::Camera() {
+}
+
 void Camera::lookAt(XMFLOAT4 posp, XMFLOAT4 targetp, XMFLOAT4 upp) {
 	posp.w = targetp.w = upp.w = 0.0f;
 	XMVECTOR p = XMLoadFloat4(&posp);
@@ -38,16 +41,6 @@ void Camera::lookAt(XMFLOAT4 posp, XMFLOAT4 targetp, XMFLOAT4 upp) {
 	XMStoreFloat4(&up, u);
 	XMStoreFloat4(&up_straight, u);
 }
-
-World& Camera::getWorld() {
-	return world;
-}
-
-void Camera::setWorld(World& w) {
-	world = w;
-}
-
-
 
 void Camera::viewTransform() {
 	XMMATRIX v = XMMatrixLookToLH(XMLoadFloat4(&pos), XMLoadFloat4(&look), XMLoadFloat4(&up));

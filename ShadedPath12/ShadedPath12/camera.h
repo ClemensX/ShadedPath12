@@ -6,11 +6,11 @@
 class Camera
 {
 public:
-	Camera(World& w);
+//	Camera(World& w);
+	Camera();
 	~Camera();
+	void init();
 	void lookAt(XMFLOAT4 pos, XMFLOAT4 target, XMFLOAT4 up);
-	World& getWorld();
-	void setWorld(World& w);
 	float getSpeed();
 	void setSpeed(float speed);
 	void walk(double dt);
@@ -76,13 +76,13 @@ public:
 		up = other.up;
 		up_straight = other.up_straight;
 		view = other.view;
-		world = other.world;
+		//world = other.world;
 		yaw = other.yaw;
 		return *this;
 	}
 
 private:
-	World& world;
+	//World& world;
 	float speed;
 };
 
