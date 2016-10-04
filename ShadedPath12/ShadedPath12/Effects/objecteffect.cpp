@@ -333,22 +333,22 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	if (inThreadOperation) {
 		//mutex_Object.lock();
-		commandList->RSSetViewports(1, xapp().vr.getViewport());
-		commandList->RSSetScissorRects(1, xapp().vr.getScissorRect());
-		commandList->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, di.threadNum, di.objectNum, di.eyeNum));
-		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		threadLocal.commandList->RSSetViewports(1, xapp().vr.getViewport());
+		threadLocal.commandList->RSSetScissorRects(1, xapp().vr.getScissorRect());
+		threadLocal.commandList->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, di.threadNum, di.objectNum, di.eyeNum));
+		threadLocal.commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		// update buffers for this text line:
 		//XMStoreFloat4x4(&cbv.wvp, wvp);
 		//cbv.rot = lines[0].rot;
 		//memcpy(cbvGPUDest, &cbv, sizeof(cbv));
-		commandList->IASetVertexBuffers(0, 1, &di.mesh->vertexBufferView);
-		commandList->IASetIndexBuffer(&di.mesh->indexBufferView);
+		threadLocal.commandList->IASetVertexBuffers(0, 1, &di.mesh->vertexBufferView);
+		threadLocal.commandList->IASetIndexBuffer(&di.mesh->indexBufferView);
 		//auto *tex = xapp().textureStore.getTexture(elvec.first);
 		// Set SRV
 		ID3D12DescriptorHeap* ppHeaps[] = { di.tex->m_srvHeap.Get() };
-		commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-		commandList->SetGraphicsRootDescriptorTable(2, di.tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
-		commandList->DrawIndexedInstanced(di.numIndexes, 1, 0, 0, 0);
+		threadLocal.commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+		threadLocal.commandList->SetGraphicsRootDescriptorTable(2, di.tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+		threadLocal.commandList->DrawIndexedInstanced(di.numIndexes, 1, 0, 0, 0);
 		//Log("draw frame/thread/obj/eye " << frameIndex << " " << di.threadNum << " " << di.objectNum << " " << di.eyeNum << endl);
 		//this_thread::sleep_for(20ms);
 		//mutex_Object.unlock();
@@ -397,33 +397,33 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vec
 		//this_thread::sleep_for(1s);
 		//Log("rendering ended " << this_thread::get_id() << endl);
 		frameIndex = xapp().getCurrentBackBufferIndex();
-		if (!initialized) {
-			initialized = true;
+		if (!threadLocal.initialized) {
+			threadLocal.initialized = true;
 			Log(" obj bulk update thread " << std::hex << this_thread::get_id() << " " << bi.start << endl);
 			//Log(" obj bulk update thread " << bi.start << endl);
 			this_thread::sleep_for(2s);
-			ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
-			ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), effect->pipelineState.Get(), IID_PPV_ARGS(&commandList)));
+			ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&threadLocal.commandAllocator)));
+			ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, threadLocal.commandAllocator.Get(), effect->pipelineState.Get(), IID_PPV_ARGS(&threadLocal.commandList)));
 		} else {
-			commandAllocator->Reset();
-			commandList->Reset(commandAllocator.Get(), effect->pipelineState.Get());
+			threadLocal.commandAllocator->Reset();
+			threadLocal.commandList->Reset(threadLocal.commandAllocator.Get(), effect->pipelineState.Get());
 		}
 		//Log(" obj bulk update thread " << bi.end << " complete" << endl);
-		commandList->SetGraphicsRootSignature(effect->rootSignature.Get());
-		commandList->RSSetViewports(1, xapp().vr.getViewport());
-		commandList->RSSetScissorRects(1, xapp().vr.getScissorRect());
+		threadLocal.commandList->SetGraphicsRootSignature(effect->rootSignature.Get());
+		threadLocal.commandList->RSSetViewports(1, xapp().vr.getViewport());
+		threadLocal.commandList->RSSetScissorRects(1, xapp().vr.getScissorRect());
 
 		// Set CBVs
 		//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress() + cbvAlignedSize);
-		commandList->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
+		threadLocal.commandList->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
 
 		// Indicate that the back buffer will be used as a render target.
 		//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
 		CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
-		commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-		commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, threadIndex, 0, 0));
+		threadLocal.commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+		threadLocal.commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, threadIndex, 0, 0));
 		for (auto i = bi.start; i <= bi.end; i++) {
 			WorldObject *w = grp->at(i).get();
 			//commandList->SetGraphicsRootConstantBufferView(0, effect->getCBVVirtualAddress(frameIndex, w->objectNum));
@@ -436,9 +436,9 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vec
 			//auto & w = grp[i];
 			//w.->draw();
 		}
-		ThrowIfFailed(commandList->Close());
+		ThrowIfFailed(threadLocal.commandList->Close());
 		// Execute the command list.
-		ID3D12CommandList* ppCommandLists[] = { commandList.Get() };
+		ID3D12CommandList* ppCommandLists[] = { threadLocal.commandList.Get() };
 		xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 		{
 			unique_lock<mutex> lock(effect->multiRenderLock);
@@ -516,6 +516,9 @@ WorldObjectEffect::~WorldObjectEffect() {
 	render_wait.notify_all();
 }
 
-thread_local ComPtr<ID3D12GraphicsCommandList> WorldObjectEffect::commandList;
-thread_local ComPtr<ID3D12CommandAllocator> WorldObjectEffect::commandAllocator;
-thread_local bool WorldObjectEffect::initialized = false;
+//thread_local ComPtr<ID3D12GraphicsCommandList> WorldObjectEffect::commandList;
+//thread_local ComPtr<ID3D12CommandAllocator> WorldObjectEffect::commandAllocator;
+//thread_local bool WorldObjectEffect::initialized = false;
+
+//thread_local ThreadLocalData WorldObjectEffect::threadLocal(xapp().camera);
+thread_local ThreadLocalData WorldObjectEffect::threadLocal;

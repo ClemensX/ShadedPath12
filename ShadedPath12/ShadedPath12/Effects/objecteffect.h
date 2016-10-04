@@ -4,6 +4,17 @@ struct BulkDivideInfo {
 	UINT end;
 };
 
+// declare this struct static thread_local to hold thread specific data:
+struct ThreadLocalData {
+	ComPtr<ID3D12GraphicsCommandList> commandList;
+	ComPtr<ID3D12CommandAllocator> commandAllocator;
+//	Camera camera;
+	bool initialized;
+	//ThreadLocalData(Camera& cam) : camera(cam) {
+	//	camera = xapp().camera;
+	//};
+};
+
 class WorldObjectEffect : public EffectBase {
 public:
 	struct ConstantBufferFixed {
@@ -78,10 +89,11 @@ private:
 	bool inBulkOperation = false;
 	vector<BulkDivideInfo> bulkInfos;
 	BulkDivideInfo globbi;
-	static thread_local ComPtr<ID3D12GraphicsCommandList> commandList;
-	static thread_local ComPtr<ID3D12CommandAllocator> commandAllocator;
-	static thread_local Camera camera;
-	static thread_local bool initialized;
+	//static thread_local ComPtr<ID3D12GraphicsCommandList> commandList;
+	//static thread_local ComPtr<ID3D12CommandAllocator> commandAllocator;
+	//static thread_local Camera camera;
+	//static thread_local bool initialized;
+	static thread_local ThreadLocalData threadLocal;
 	condition_variable render_start; // main thread waits until all render threads are ready to run
 	condition_variable render_ended; // main thread waits until render threads finished work
 	condition_variable render_wait;  // worker thread waits until main thread signaly render start
@@ -89,5 +101,5 @@ private:
 	int finished_rendering = 0;
 	mutex multiRenderLock;
 public:
-	Camera *getThreadedCamera() { return &camera; };
+	//Camera *getThreadedCamera() { return &threadLocal.camera; };
 };

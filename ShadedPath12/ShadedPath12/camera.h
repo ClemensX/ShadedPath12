@@ -56,6 +56,8 @@ public:
 
 	// visibility:
 	int calculateVisibility(BoundingBox &box, XMMATRIX &toWorld);
+
+	// copy constructor
 	Camera& Camera::operator=(const Camera& other) {
 		activeEye = other.activeEye;
 		aspectRatio = other.aspectRatio;
@@ -78,6 +80,7 @@ public:
 		yaw = other.yaw;
 		return *this;
 	}
+
 private:
 	World& world;
 	float speed;

@@ -29,7 +29,7 @@ void HangOn::init()
 	linesEffect.init();
 	textEffect.init();
 	postEffect.init();
-	objectEffect.init(&xapp().objectStore, NUM_THREADS, NUM_METEOR + 10);
+	objectEffect.init(&xapp().objectStore, NUM_THREADS, NUM_METEOR + 18); // TODO: 17 triggers assert
 
 	// initialize game time to real time:
 	gameTime.init(1);
