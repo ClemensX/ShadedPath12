@@ -244,20 +244,32 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	xapp().lights.lights.material = *di.material;
 	xapp().lights.update();
+	Camera *cam = nullptr;
+	CBV *cbv = nullptr;
+	if (inThreadOperation) {
+		// copy global camera to thread camera: TODO: should only be needed once
+		threadLocal.camera = xapp().camera;
+		cam = &threadLocal.camera;
+		threadLocal.cbv = this->cbv;
+		cbv = &threadLocal.cbv;
+	} else {
+		cam = &xapp().camera;
+		cbv = &this->cbv;
+	}
 	if (!xapp().ovrRendering) {
-		XMMATRIX vp = xapp().camera.worldViewProjection();
+		XMMATRIX vp = cam->worldViewProjection();
 		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
 		XMMATRIX wvp = calcWVP(toWorld, vp);
-		XMStoreFloat4x4(&cbv.wvp, wvp);
-		cbv.world = di.world;
-		cbv.cameraPos.x = xapp().camera.pos.x;
-		cbv.cameraPos.y = xapp().camera.pos.y;
-		cbv.cameraPos.z = xapp().camera.pos.z;
-		cbv.alpha = di.alpha;
+		XMStoreFloat4x4(&cbv->wvp, wvp);
+		cbv->world = di.world;
+		cbv->cameraPos.x = cam->pos.x;
+		cbv->cameraPos.y = cam->pos.y;
+		cbv->cameraPos.z = cam->pos.z;
+		cbv->alpha = di.alpha;
 		if (inBulkOperation) {
-			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, 0), &cbv, sizeof(cbv));
+			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, 0), cbv, sizeof(cbv));
 		} else {
-			memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+			memcpy(cbvGPUDest, cbv, sizeof(cbv));
 		}
 		//memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum), &cbv, sizeof(cbv));
 		//memcpy(cbvGPUDest + cbvAlignedSize, &cbv, sizeof(cbv));
@@ -274,17 +286,17 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		xapp().vr.adjustEyeMatrix(adjustedEyeMatrix);
 		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
 		XMMATRIX wvp = calcWVP(toWorld, adjustedEyeMatrix);
-		XMStoreFloat4x4(&cbv.wvp, wvp);
-		cbv.world = di.world;
-		cbv.cameraPos.x = xapp().camera.pos.x;
-		cbv.cameraPos.y = xapp().camera.pos.y;
-		cbv.cameraPos.z = xapp().camera.pos.z;
-		cbv.alpha = di.alpha;
+		XMStoreFloat4x4(&cbv->wvp, wvp);
+		cbv->world = di.world;
+		cbv->cameraPos.x = cam->pos.x;
+		cbv->cameraPos.y = cam->pos.y;
+		cbv->cameraPos.z = cam->pos.z;
+		cbv->alpha = di.alpha;
 		//if (eyeNum == 1) di.objectNum += 12;//10010;
 		if (inBulkOperation) {
-			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, eyeNum), &cbv, sizeof(cbv));
+			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, eyeNum), cbv, sizeof(cbv));
 		} else {
-			memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+			memcpy(cbvGPUDest, cbv, sizeof(cbv));
 		}
 		drawInternal(di);
 		//if (eyeNum == 1) di.objectNum -= 12;//10010;
@@ -521,4 +533,4 @@ WorldObjectEffect::~WorldObjectEffect() {
 //thread_local bool WorldObjectEffect::initialized = false;
 
 //thread_local ThreadLocalData WorldObjectEffect::threadLocal(xapp().camera);
-thread_local ThreadLocalData WorldObjectEffect::threadLocal;
+thread_local WorldObjectEffect::ThreadLocalData WorldObjectEffect::threadLocal;

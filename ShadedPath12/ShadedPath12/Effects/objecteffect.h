@@ -4,17 +4,6 @@ struct BulkDivideInfo {
 	UINT end;
 };
 
-// declare this struct static thread_local to hold thread specific data:
-struct ThreadLocalData {
-	ComPtr<ID3D12GraphicsCommandList> commandList;
-	ComPtr<ID3D12CommandAllocator> commandAllocator;
-//	Camera camera;
-	bool initialized;
-	//ThreadLocalData(Camera& cam) : camera(cam) {
-	//	camera = xapp().camera;
-	//};
-};
-
 class WorldObjectEffect : public EffectBase {
 public:
 	struct ConstantBufferFixed {
@@ -26,6 +15,18 @@ public:
 		XMFLOAT3   cameraPos;
 		float    alpha;
 	};
+	// declare this struct static thread_local to hold thread specific data:
+	struct ThreadLocalData {
+		ComPtr<ID3D12GraphicsCommandList> commandList;
+		ComPtr<ID3D12CommandAllocator> commandAllocator;
+		Camera camera;
+		CBV cbv;
+		bool initialized;
+		//ThreadLocalData(Camera& cam) : camera(cam) {
+		//	camera = xapp().camera;
+		//};
+	};
+
 	UINT cbvAlignedSize = 0;	// aligned size of cbv for using indexes into larger buffers (256 byte alignment)
 	~WorldObjectEffect();
 	// gather all info needed to draw one object here
@@ -63,6 +64,7 @@ public:
 	void createRootSigAndPSO(ComPtr<ID3D12RootSignature> &sig, ComPtr<ID3D12PipelineState> &pso);
 	bool inThreadOperation = false;
 	mutex mutex_wo_drawing;
+	static thread_local ThreadLocalData threadLocal;
 private:
 	ConstantBufferFixed cb;
 	// globally enable wireframe display of objects
@@ -93,7 +95,6 @@ private:
 	//static thread_local ComPtr<ID3D12CommandAllocator> commandAllocator;
 	//static thread_local Camera camera;
 	//static thread_local bool initialized;
-	static thread_local ThreadLocalData threadLocal;
 	condition_variable render_start; // main thread waits until all render threads are ready to run
 	condition_variable render_ended; // main thread waits until render threads finished work
 	condition_variable render_wait;  // worker thread waits until main thread signaly render start
