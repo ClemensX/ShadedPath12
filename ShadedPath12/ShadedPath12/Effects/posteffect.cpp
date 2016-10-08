@@ -194,8 +194,8 @@ void PostEffect::init2()
 	vertexData.RowPitch = vertexBufferSize;
 	vertexData.SlicePitch = vertexData.RowPitch;
 
-	PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"posteffect: update vertex buffer for postEffect");
 	commandLists[frameIndex].Get()->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get());
+	PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"posteffect: update vertex buffer for postEffect");
 	UpdateSubresources<1>(commandLists[frameIndex].Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData);
 	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 	PIXEndEvent(commandLists[frameIndex].Get());
