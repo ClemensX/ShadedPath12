@@ -183,7 +183,10 @@ void VR::initD3D()
 	// ld.RenderPose and ld.SensorSampleTime are updated later per frame.
 #endif
 #if defined(_DEBUG)
-	xapp->device->SetStablePowerState(true);
+	// SetStablePowerState requires Win10 to be in developer mode:
+	// start settings app, then search for 'for developers settings', 
+	// then enable it under developer features, developer mode
+	//xapp->device->SetStablePowerState(true);
 #endif
 }
 
