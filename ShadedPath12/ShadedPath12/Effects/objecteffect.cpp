@@ -267,9 +267,9 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		cbv->cameraPos.z = cam->pos.z;
 		cbv->alpha = di.alpha;
 		if (inBulkOperation) {
-			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, 0), cbv, sizeof(cbv));
+			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, 0), cbv, sizeof(*cbv));
 		} else {
-			memcpy(cbvGPUDest, cbv, sizeof(cbv));
+			memcpy(cbvGPUDest, cbv, sizeof(*cbv));
 		}
 		//memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum), &cbv, sizeof(cbv));
 		//memcpy(cbvGPUDest + cbvAlignedSize, &cbv, sizeof(cbv));
@@ -294,9 +294,9 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		cbv->alpha = di.alpha;
 		//if (eyeNum == 1) di.objectNum += 12;//10010;
 		if (inBulkOperation) {
-			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, eyeNum), cbv, sizeof(cbv));
+			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, eyeNum), cbv, sizeof(*cbv));
 		} else {
-			memcpy(cbvGPUDest, cbv, sizeof(cbv));
+			memcpy(cbvGPUDest, cbv, sizeof(*cbv));
 		}
 		drawInternal(di);
 		//if (eyeNum == 1) di.objectNum -= 12;//10010;

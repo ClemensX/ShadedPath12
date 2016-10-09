@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "mass.h"
 
-static int NUM_METEOR = 3000;
-static int NUM_THREADS = 2;
+static int NUM_METEOR = 10000;
+static int NUM_THREADS = 4;
 
 MassTest::MassTest() : XAppBase()
 {
