@@ -20,7 +20,9 @@ public:
 		ComPtr<ID3D12GraphicsCommandList> commandList;
 		ComPtr<ID3D12CommandAllocator> commandAllocator;
 		Camera camera;
+		Camera cameram[2];
 		CBV cbv;
+		CBV cbvm[2];
 		bool initialized;
 		//ThreadLocalData(Camera& cam) : camera(cam) {
 		//	camera = xapp().camera;

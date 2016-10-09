@@ -281,9 +281,15 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 	xapp().vr.prepareDraw();
 	for (int eyeNum = 0; eyeNum < 2; eyeNum++) {
 		// adjust PVW matrix
+		threadLocal.cameram[eyeNum] = xapp().camera;
+		cam = &threadLocal.cameram[eyeNum];
+		cbv = &threadLocal.cbvm[eyeNum];
+		*cbv = this->cbv;
 		di.eyeNum = eyeNum;
 		XMMATRIX adjustedEyeMatrix;
-		xapp().vr.adjustEyeMatrix(adjustedEyeMatrix);
+		cam->eyeNumUse = true;
+		cam->eyeNum = eyeNum;
+		xapp().vr.adjustEyeMatrix(adjustedEyeMatrix, cam);
 		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
 		XMMATRIX wvp = calcWVP(toWorld, adjustedEyeMatrix);
 		XMStoreFloat4x4(&cbv->wvp, wvp);
@@ -294,11 +300,16 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		cbv->alpha = di.alpha;
 		//if (eyeNum == 1) di.objectNum += 12;//10010;
 		if (inBulkOperation) {
-			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, eyeNum), cbv, sizeof(*cbv));
+			UINT8 *mem = getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, eyeNum);
+			if (di.objectNum == 100) {
+				Log(" di100 " << mem << " " << frameIndex << " " << di.threadNum << endl);
+			}
+			memcpy(mem, cbv, sizeof(*cbv));
 		} else {
 			memcpy(cbvGPUDest, cbv, sizeof(*cbv));
 		}
-		drawInternal(di);
+		if (di.objectNum == 100 && eyeNum == 1 && frameIndex < 1) drawInternal(di);
+		//if (eyeNum == 1) drawInternal(di);
 		//if (eyeNum == 1) di.objectNum -= 12;//10010;
 		xapp().vr.nextEye();
 	}
@@ -361,7 +372,7 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 		threadLocal.commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 		threadLocal.commandList->SetGraphicsRootDescriptorTable(2, di.tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
 		threadLocal.commandList->DrawIndexedInstanced(di.numIndexes, 1, 0, 0, 0);
-		//Log("draw frame/thread/obj/eye " << frameIndex << " " << di.threadNum << " " << di.objectNum << " " << di.eyeNum << endl);
+		Log("draw frame/thread/obj/eye " << frameIndex << " " << di.threadNum << " " << di.objectNum << " " << di.eyeNum << endl);
 		//this_thread::sleep_for(20ms);
 		//mutex_Object.unlock();
 		return;
@@ -405,6 +416,7 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vec
 			if (effect->allThreadsShouldEnd) return;
 		}
 		// now running outside lock so that all worker threads run in parallel
+		//if (threadIndex > 0) Sleep(10);
 		//Log("rendering " << this_thread::get_id() << endl);
 		//this_thread::sleep_for(1s);
 		//Log("rendering ended " << this_thread::get_id() << endl);
@@ -427,7 +439,7 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vec
 
 		// Set CBVs
 		//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress() + cbvAlignedSize);
-		threadLocal.commandList->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
+		//threadLocal.commandList->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
 
 		// Indicate that the back buffer will be used as a render target.
 		//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));

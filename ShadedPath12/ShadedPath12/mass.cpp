@@ -1,7 +1,11 @@
 #include "stdafx.h"
 #include "mass.h"
 
+#if defined(_DEBUG)
+static int NUM_METEOR = 500;
+#else
 static int NUM_METEOR = 10000;
+#endif
 static int NUM_THREADS = 4;
 
 MassTest::MassTest() : XAppBase()
@@ -116,6 +120,9 @@ void MassTest::initMeteorField() {
 		w.get()->material.specExp = 1.0f;       // no spec color
 		w.get()->material.specIntensity = 0.0f; // no spec color
 		w.get()->material.ambient = XMFLOAT4(1, 1, 1, 1);
+		if (w.get()->objectNum == 100) {
+			w.get()->pos() = XMFLOAT3(1, 1, 1);
+		}
 	}
 }
 

@@ -46,6 +46,9 @@ public:
 	//XMFLOAT4X4 viewOVR[2], projOVR[2];
 	int activeEye = 0;
 	void recalcOVR(XApp &xapp);
+	int eyeNum;
+	bool eyeNumUse = false;
+
 
 	// projection to 2d
 	void projectionTransform();  // use current frustum and recalc projection matrix
@@ -61,6 +64,8 @@ public:
 	Camera& Camera::operator=(const Camera& other) {
 		activeEye = other.activeEye;
 		aspectRatio = other.aspectRatio;
+		eyeNum = other.eyeNum;
+		eyeNumUse = other.eyeNumUse;
 		farZ = other.farZ;
 		fieldOfViewAngleY = other.fieldOfViewAngleY;
 		look = other.look;

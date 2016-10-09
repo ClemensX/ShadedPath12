@@ -36,7 +36,7 @@ public:
 	// undo the chages to the camera made by prepareDraw
 	void endDraw();
 	// adjust the MVP matrix according to current eye position
-	void adjustEyeMatrix(XMMATRIX &m);
+	void adjustEyeMatrix(XMMATRIX &m, Camera *cam = nullptr);
 	// move to 2nd eye
 	void nextEye();
 	// return if this run is for the first eye - some initializations are not needed for 2nd eye
@@ -47,8 +47,10 @@ public:
 #if defined(_OVR_)
 	// get view matrix for current eye
 	XMFLOAT4X4 getOVRViewMatrix();
+	XMFLOAT4X4 getOVRViewMatrixByIndex(int eyeNum);
 	// get projection matrix for current eye
 	XMFLOAT4X4 getOVRProjectionMatrix();
+	XMFLOAT4X4 getOVRProjectionMatrixByIndex(int eyeNum);
 #else
 	// just return identity matrix if ovr not enabled
 	static XMFLOAT4X4 ident;

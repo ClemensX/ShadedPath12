@@ -242,9 +242,14 @@ void VR::endDraw() {
 	//xapp->camera.worldViewProjection();
 }
 
-void VR::adjustEyeMatrix(XMMATRIX &m) {
-	xapp->camera.projectionTransform();
-	m = xapp->camera.worldViewProjection();
+void VR::adjustEyeMatrix(XMMATRIX &m, Camera *cam) {
+	if (cam == nullptr) {
+		xapp->camera.projectionTransform();
+		m = xapp->camera.worldViewProjection();
+	} else {
+		cam->projectionTransform();
+		m = cam->worldViewProjection();
+	}
 	//Camera c2 = xapp->camera;
 	//if (curEye == EyeLeft) {
 	//	c2.pos.x = cam_pos.x - 0.5f;
@@ -408,11 +413,20 @@ CD3DX12_CPU_DESCRIPTOR_HANDLE VR::getRTVHandle(int frameIndex) {
 	return rtvHandle;
 };
 
-XMFLOAT4X4 VR::getOVRViewMatrix() { 
+XMFLOAT4X4 VR::getOVRViewMatrix() {
 	return viewOVR[curEye];
+};
+XMFLOAT4X4 VR::getOVRViewMatrixByIndex(int eyeNum) {
+	return viewOVR[eyeNum];
+};
+
+
+// get projection matrix for current eye
+XMFLOAT4X4 VR::getOVRProjectionMatrix() {
+	return projOVR[curEye];
 };
 
 // get projection matrix for current eye
-XMFLOAT4X4 VR::getOVRProjectionMatrix() { 
-	return projOVR[curEye];
+XMFLOAT4X4 VR::getOVRProjectionMatrixByIndex(int eyeNum) {
+	return projOVR[eyeNum];
 };
