@@ -301,17 +301,20 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		//if (eyeNum == 1) di.objectNum += 12;//10010;
 		if (inBulkOperation) {
 			UINT8 *mem = getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, eyeNum);
-			if (di.objectNum == 100) {
-				Log(" di100 " << mem << " " << frameIndex << " " << di.threadNum << endl);
-			}
+			//if (di.objectNum == 100) {
+			//	Log(" di100 " << mem << " " << frameIndex << " " << di.threadNum << endl);
+			//}
 			memcpy(mem, cbv, sizeof(*cbv));
 		} else {
 			memcpy(cbvGPUDest, cbv, sizeof(*cbv));
 		}
-		if (di.objectNum == 100 && eyeNum == 1 && frameIndex < 1) drawInternal(di);
+		drawInternal(di);
+		//if (di.objectNum == 100 /*&& eyeNum == 1 && frameIndex < 3*/) drawInternal(di);
 		//if (eyeNum == 1) drawInternal(di);
 		//if (eyeNum == 1) di.objectNum -= 12;//10010;
-		xapp().vr.nextEye();
+		if (!inThreadOperation) {
+			xapp().vr.nextEye();
+		}
 	}
 	di.eyeNum = 0;
 	xapp().vr.endDraw();
@@ -356,8 +359,8 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	if (inThreadOperation) {
 		//mutex_Object.lock();
-		threadLocal.commandList->RSSetViewports(1, xapp().vr.getViewport());
-		threadLocal.commandList->RSSetScissorRects(1, xapp().vr.getScissorRect());
+		threadLocal.commandList->RSSetViewports(1, xapp().vr.getViewportByIndex(di.eyeNum));
+		threadLocal.commandList->RSSetScissorRects(1, xapp().vr.getScissorRectByIndex(di.eyeNum));
 		threadLocal.commandList->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, di.threadNum, di.objectNum, di.eyeNum));
 		threadLocal.commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		// update buffers for this text line:
@@ -372,7 +375,7 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 		threadLocal.commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 		threadLocal.commandList->SetGraphicsRootDescriptorTable(2, di.tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
 		threadLocal.commandList->DrawIndexedInstanced(di.numIndexes, 1, 0, 0, 0);
-		Log("draw frame/thread/obj/eye " << frameIndex << " " << di.threadNum << " " << di.objectNum << " " << di.eyeNum << endl);
+		//Log("draw frame/thread/obj/eye " << frameIndex << " " << di.threadNum << " " << di.objectNum << " " << di.eyeNum << endl);
 		//this_thread::sleep_for(20ms);
 		//mutex_Object.unlock();
 		return;

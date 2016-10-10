@@ -28,6 +28,8 @@ public:
 	void prepareViews(D3D12_VIEWPORT &viewport, D3D12_RECT &scissorRect);
 	D3D12_VIEWPORT *getViewport() { return &viewports[curEye]; };
 	D3D12_RECT *getScissorRect() { return &scissorRects[curEye]; };
+	D3D12_VIEWPORT *getViewportByIndex(int eyeNum) { return &viewports[eyeNum]; };
+	D3D12_RECT *getScissorRectByIndex(int eyeNum) { return &scissorRects[eyeNum]; };
 	// getHeight and getWidth should only be called after init()
 	int getHeight() { return buffersize_height; };
 	int getWidth() { return buffersize_width; };
