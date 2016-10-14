@@ -127,7 +127,7 @@ void Dotcross::destroy()
 {
 }
 
-void Dotcross::preDraw()
+void Dotcross::preDraw(int eyeNum)
 {
 	// last frame must have been finished before we run here!!!
 	int frameIndex = xapp().getCurrentBackBufferIndex();
@@ -147,8 +147,8 @@ void Dotcross::preDraw()
 
 	// Set necessary state.
 	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
-	commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
-	commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
+	commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
+	commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
 
 	// Set CBV
 	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress());
@@ -170,29 +170,27 @@ void Dotcross::draw()
 	if (xapp().disableLineShaders) return;
 	if (points.size() == 0)
 		return;
+	prepareDraw(&xapp().vr);
 	if (!xapp().ovrRendering) {
 		XMStoreFloat4x4(&cbv.wvp, xapp().camera.worldViewProjection());
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 		return drawInternal();
 	}
 	// draw VR, iterate over both eyes
-	xapp().vr.prepareDraw();
 	for (int eyeNum = 0; eyeNum < 2; eyeNum++) {
 		// adjust PVW matrix
 		XMMATRIX adjustedEyeMatrix;
-		xapp().vr.adjustEyeMatrix(adjustedEyeMatrix);
+		vr_eyes.adjustEyeMatrix(adjustedEyeMatrix, &xapp().camera, eyeNum, &xapp().vr);
 		XMStoreFloat4x4(&cbv.wvp, adjustedEyeMatrix);
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
-		drawInternal();
-		xapp().vr.nextEye();
+		drawInternal(eyeNum);
 	}
-	xapp().vr.endDraw();
 }
 
-void Dotcross::drawInternal()
+void Dotcross::drawInternal(int eyeNum)
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
-	preDraw();
+	preDraw(eyeNum);
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
 	auto numVertices = points.size();

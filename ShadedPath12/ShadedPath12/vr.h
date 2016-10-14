@@ -13,7 +13,8 @@ enum EyePos { EyeLeft, EyeRight };
 class XApp;
 class VR;
 
-// support class used in all effects
+// support class used in all effects (each effect has an instance)
+// viewports and scissorRects are set by EffectBase::prepareDraw(), they have to be used by both VR ind non-VR rendering
 class VR_Eyes {
 public:
 	void adjustEyeMatrix(XMMATRIX &m, Camera *cam, int eyeNum, VR* vr);

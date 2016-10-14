@@ -159,7 +159,7 @@ void LinesEffect::destroy()
 	//CloseHandle(fenceEvent);
 }
 
-void LinesEffect::preDraw() {
+void LinesEffect::preDraw(int eyeNum) {
 	// last frame must have been finished before we run here!!!
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	//auto &f = frameData[xapp().lastPresentedFrame];
@@ -178,8 +178,8 @@ void LinesEffect::preDraw() {
 
 	// Set necessary state.
 	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
-	commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
-	commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
+	commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
+	commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
 
 	// Set CBV
 	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress());
@@ -199,29 +199,27 @@ void LinesEffect::preDraw() {
 void LinesEffect::draw()
 {
 	if (xapp().disableLineShaders) return;
+	prepareDraw(&xapp().vr);
 	if (!xapp().ovrRendering) {
 		XMStoreFloat4x4(&cbv.wvp, xapp().camera.worldViewProjection());
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 		return drawInternal();
 	}
 	// draw VR, iterate over both eyes
-	prepareDraw(&xapp().vr);
 	for (int eyeNum = 0; eyeNum < 2; eyeNum++) {
 		// adjust WVP matrix
 		XMMATRIX adjustedEyeMatrix;
 		vr_eyes.adjustEyeMatrix(adjustedEyeMatrix, &xapp().camera, eyeNum, &xapp().vr);
 		XMStoreFloat4x4(&cbv.wvp, adjustedEyeMatrix);
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
-		drawInternal();
-		//xapp().vr.nextEye();
+		drawInternal(eyeNum);
 	}
-	//xapp().vr.endDraw();
 }
 
-void LinesEffect::drawInternal()
+void LinesEffect::drawInternal(int eyeNum)
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
-	preDraw();
+	preDraw(eyeNum);
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
 	//auto numVertices = lines.size() * 2;

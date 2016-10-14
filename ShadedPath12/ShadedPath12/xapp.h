@@ -78,7 +78,7 @@ public:
 	// check if RTV still has to be cleared - take VR rendering into account
 	bool rtvHasToBeCleared() {
 		if (rtvCleared) return false;  // nothing to do - already cleared during this frame
-		if (!ovrRendering || (ovrRendering && vr.isFirstEye())) {
+		if (!ovrRendering || (ovrRendering /*&& vr.isFirstEye()*/)) {
 			return true;
 		}
 		return false;
