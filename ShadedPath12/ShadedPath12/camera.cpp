@@ -84,6 +84,15 @@ XMMATRIX Camera::worldViewProjection() {
 	return XMMatrixTranspose(wvp);
 }
 
+// called in OVR mode only:
+XMMATRIX Camera::worldViewProjection(XMFLOAT4X4 &proj_ovr, XMFLOAT4X4 &view_ovr) {
+	XMMATRIX p = XMLoadFloat4x4(&proj_ovr);
+	assert(ovrCamera);
+	XMMATRIX v = XMLoadFloat4x4(&view_ovr);
+	XMMATRIX wvp = v*p;
+	return XMMatrixTranspose(wvp);
+}
+
 int Camera::calculateVisibility(BoundingBox &box, XMMATRIX &toWorld) {
 	//UpdateViewMatrix();
 	XMMATRIX v = XMLoadFloat4x4(&view);

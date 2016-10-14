@@ -56,7 +56,7 @@ public:
 
 	// world view projection transform - usually for passing to shaders
 	XMMATRIX worldViewProjection();  // use frustum and camera to recalc wvp matrix - no need to update view first, but projection is expected to be up-to-date
-
+	XMMATRIX worldViewProjection(XMFLOAT4X4 & proj_ovr, XMFLOAT4X4 & view_ovr);
 	// visibility:
 	int calculateVisibility(BoundingBox &box, XMMATRIX &toWorld);
 

@@ -11,7 +11,29 @@ using namespace OVR;
 enum EyePos { EyeLeft, EyeRight };
 
 class XApp;
+class VR;
 
+// support class used in all effects
+class VR_Eyes {
+public:
+	void adjustEyeMatrix(XMMATRIX &m, Camera *cam, int eyeNum, VR* vr);
+	D3D12_VIEWPORT *getViewportByIndex(int eyeNum) { return &viewports[eyeNum]; };
+	D3D12_RECT *getScissorRectByIndex(int eyeNum) { return &scissorRects[eyeNum]; };
+
+	// adjust the MVP matrix according to current eye position
+	void adjustEyeMatrix(XMMATRIX &m, Camera *cam = nullptr);
+
+	// get view matrix for current eye
+	XMFLOAT4X4 getOVRViewMatrixByIndex(int eyeNum);
+	// get projection matrix for current eye
+	XMFLOAT4X4 getOVRProjectionMatrixByIndex(int eyeNum);
+
+	D3D12_VIEWPORT viewports[2];
+	D3D12_RECT scissorRects[2];
+	XMFLOAT4X4 viewOVR[2], projOVR[2];
+};
+
+// global class  - only one instance  - used for global VR data and initialization
 class VR {
 public:
 	VR(XApp *xapp);

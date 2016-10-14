@@ -69,6 +69,9 @@ protected:
 	UINT maxObjects = 0;
 	vector<thread> workerThreads;
 	void waitForWorkerThreads();
+	VR_Eyes vr_eyes;
+	// initialize next ovr draw by copying globals from VR class to vr_eyes
+	void prepareDraw(VR *vr);
 	virtual ~EffectBase();
 public:
 };

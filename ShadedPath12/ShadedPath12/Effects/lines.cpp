@@ -205,17 +205,17 @@ void LinesEffect::draw()
 		return drawInternal();
 	}
 	// draw VR, iterate over both eyes
-	xapp().vr.prepareDraw();
+	prepareDraw(&xapp().vr);
 	for (int eyeNum = 0; eyeNum < 2; eyeNum++) {
-		// adjust PVW matrix
+		// adjust WVP matrix
 		XMMATRIX adjustedEyeMatrix;
-		xapp().vr.adjustEyeMatrix(adjustedEyeMatrix);
+		vr_eyes.adjustEyeMatrix(adjustedEyeMatrix, &xapp().camera, eyeNum, &xapp().vr);
 		XMStoreFloat4x4(&cbv.wvp, adjustedEyeMatrix);
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 		drawInternal();
-		xapp().vr.nextEye();
+		//xapp().vr.nextEye();
 	}
-	xapp().vr.endDraw();
+	//xapp().vr.endDraw();
 }
 
 void LinesEffect::drawInternal()

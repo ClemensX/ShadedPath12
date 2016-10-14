@@ -242,6 +242,18 @@ void VR::endDraw() {
 	//xapp->camera.worldViewProjection();
 }
 
+void VR_Eyes::adjustEyeMatrix(XMMATRIX & m, Camera * cam, int eyeNum, VR* vr)
+{
+	// get updated eye pos
+	vr->nextTracking();
+	viewOVR[eyeNum] = vr->getOVRViewMatrixByIndex(eyeNum);
+	projOVR[eyeNum] = vr->getOVRProjectionMatrixByIndex(eyeNum);
+
+	// camera update
+	//cam->projectionTransform(this, eyeNum);
+	m = cam->worldViewProjection(projOVR[eyeNum], viewOVR[eyeNum]);
+}
+
 void VR::adjustEyeMatrix(XMMATRIX &m, Camera *cam) {
 	if (cam == nullptr) {
 		xapp->camera.projectionTransform();

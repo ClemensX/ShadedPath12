@@ -223,6 +223,14 @@ void EffectBase::waitForWorkerThreads()
 	}
 }
 
+void EffectBase::prepareDraw(VR *vr)
+{
+	vr_eyes.viewports[0] = *vr->getViewportByIndex(0);
+	vr_eyes.viewports[1] = *vr->getViewportByIndex(1);
+	vr_eyes.scissorRects[0] = *vr->getScissorRectByIndex(0);
+	vr_eyes.scissorRects[1] = *vr->getScissorRectByIndex(1);
+}
+
 EffectBase::~EffectBase()
 {
 	waitForWorkerThreads();
