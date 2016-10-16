@@ -4,7 +4,7 @@
 #if (defined(_DEBUG))
 static int NUM_METEOR = 500;
 #else
-static int NUM_METEOR = 1000;
+static int NUM_METEOR = 2000;
 #endif
 static int NUM_THREADS = 4;
 

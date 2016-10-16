@@ -357,7 +357,7 @@ void WorldObject::draw() {
 	XMMATRIX toWorld;
 	TextureInfo *info;
 	{
-		unique_lock<mutex> lock(worldObjectEffect->mutex_wo_drawing); //TODO: extensive checks...
+		//unique_lock<mutex> lock(worldObjectEffect->mutex_wo_drawing); //TODO: extensive checks...
 		//Log(" obj draw locked" << objectNum << endl);
 		toWorld = calcToWorld();
 		Camera *cam = nullptr;

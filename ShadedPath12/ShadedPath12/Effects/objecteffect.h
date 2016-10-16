@@ -23,6 +23,7 @@ public:
 		Camera cameram[2];
 		CBV cbv;
 		CBV cbvm[2];
+		VR_Eyes vr_eyesm[2];
 		bool initialized;
 		//ThreadLocalData(Camera& cam) : camera(cam) {
 		//	camera = xapp().camera;

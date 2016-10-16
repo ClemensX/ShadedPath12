@@ -205,8 +205,8 @@ void WorldObjectEffect::preDraw(DrawInfo &di)
 		ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
 		// Set necessary state.
 		commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
-		commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
-		commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
+		commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[di.eyeNum]);
+		commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[di.eyeNum]);
 
 		// Set CBVs
 		commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress()/* + cbvAlignedSize*/);
@@ -242,8 +242,6 @@ XMMATRIX calcWVP(XMMATRIX &toWorld, XMMATRIX &vp) {
 void WorldObjectEffect::draw(DrawInfo &di) {
 	if (singleCbvBufferMode) assert(di.objectNum < maxObjects);
 	int frameIndex = xapp().getCurrentBackBufferIndex();
-	xapp().lights.lights.material = *di.material;
-	xapp().lights.update();
 	Camera *cam = nullptr;
 	CBV *cbv = nullptr;
 	if (inThreadOperation) {
@@ -255,7 +253,11 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 	} else {
 		cam = &xapp().camera;
 		cbv = &this->cbv;
+		// update lights, for thread operations: must have been done earlier in divideBulk (same material for all objects)
+		xapp().lights.lights.material = *di.material;
+		xapp().lights.update();
 	}
+	prepareDraw(&xapp().vr);
 	if (!xapp().ovrRendering) {
 		XMMATRIX vp = cam->worldViewProjection();
 		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
@@ -278,10 +280,11 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		return;
 	}
 	// draw VR, iterate over both eyes
-	xapp().vr.prepareDraw();
+	//xapp().vr.prepareDraw();
 	for (int eyeNum = 0; eyeNum < 2; eyeNum++) {
 		// adjust PVW matrix
 		threadLocal.cameram[eyeNum] = xapp().camera;
+		threadLocal.vr_eyesm[eyeNum] = vr_eyes;
 		cam = &threadLocal.cameram[eyeNum];
 		cbv = &threadLocal.cbvm[eyeNum];
 		*cbv = this->cbv;
@@ -289,7 +292,8 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		XMMATRIX adjustedEyeMatrix;
 		cam->eyeNumUse = true;
 		cam->eyeNum = eyeNum;
-		xapp().vr.adjustEyeMatrix(adjustedEyeMatrix, cam);
+		threadLocal.vr_eyesm[eyeNum].adjustEyeMatrix(adjustedEyeMatrix, cam, eyeNum, &xapp().vr);
+		//xapp().vr.adjustEyeMatrix(adjustedEyeMatrix, cam);
 		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
 		XMMATRIX wvp = calcWVP(toWorld, adjustedEyeMatrix);
 		XMStoreFloat4x4(&cbv->wvp, wvp);
@@ -313,11 +317,11 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		//if (eyeNum == 1) drawInternal(di);
 		//if (eyeNum == 1) di.objectNum -= 12;//10010;
 		if (!inThreadOperation) {
-			xapp().vr.nextEye();
+			//xapp().vr.nextEye();
 		}
 	}
 	di.eyeNum = 0;
-	xapp().vr.endDraw();
+	//xapp().vr.endDraw();
 }
 
 void WorldObjectEffect::beginBulkUpdate()
@@ -329,8 +333,11 @@ void WorldObjectEffect::beginBulkUpdate()
 	ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
 	// Set necessary state.
 	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
-	commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
-	commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
+	// TODO check
+	//commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
+	//commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
+	//commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
+	//commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
 
 	// Set CBVs
 	//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress() + cbvAlignedSize);
@@ -359,8 +366,10 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	if (inThreadOperation) {
 		//mutex_Object.lock();
-		threadLocal.commandList->RSSetViewports(1, xapp().vr.getViewportByIndex(di.eyeNum));
-		threadLocal.commandList->RSSetScissorRects(1, xapp().vr.getScissorRectByIndex(di.eyeNum));
+		threadLocal.commandList->RSSetViewports(1, &threadLocal.vr_eyesm[di.eyeNum].viewports[di.eyeNum]);
+		threadLocal.commandList->RSSetScissorRects(1, &threadLocal.vr_eyesm[di.eyeNum].scissorRects[di.eyeNum]);
+		//threadLocal.commandList->RSSetViewports(1, xapp().vr.getViewportByIndex(di.eyeNum));
+		//threadLocal.commandList->RSSetScissorRects(1, xapp().vr.getScissorRectByIndex(di.eyeNum));
 		threadLocal.commandList->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, di.threadNum, di.objectNum, di.eyeNum));
 		threadLocal.commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		// update buffers for this text line:
@@ -388,8 +397,10 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 	//cbv.rot = lines[0].rot;
 	//memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 	if (inBulkOperation) {
-		commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
-		commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
+		commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[di.eyeNum]);
+		commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[di.eyeNum]);
+		//commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
+		//commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
 		commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, di.threadNum, di.objectNum, di.eyeNum));
 	}
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &di.mesh->vertexBufferView);
@@ -428,7 +439,7 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vec
 			threadLocal.initialized = true;
 			Log(" obj bulk update thread " << std::hex << this_thread::get_id() << " " << bi.start << endl);
 			//Log(" obj bulk update thread " << bi.start << endl);
-			this_thread::sleep_for(2s);
+			this_thread::sleep_for(4s);
 			ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&threadLocal.commandAllocator)));
 			ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, threadLocal.commandAllocator.Get(), effect->pipelineState.Get(), IID_PPV_ARGS(&threadLocal.commandList)));
 		} else {
@@ -437,8 +448,9 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vec
 		}
 		//Log(" obj bulk update thread " << bi.end << " complete" << endl);
 		threadLocal.commandList->SetGraphicsRootSignature(effect->rootSignature.Get());
-		threadLocal.commandList->RSSetViewports(1, xapp().vr.getViewport());
-		threadLocal.commandList->RSSetScissorRects(1, xapp().vr.getScissorRect());
+		// TODO check
+		//threadLocal.commandList->RSSetViewports(1, xapp().vr.getViewport());
+		//threadLocal.commandList->RSSetScissorRects(1, xapp().vr.getScissorRect());
 
 		// Set CBVs
 		//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress() + cbvAlignedSize);
@@ -526,6 +538,9 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 
 	unique_lock<mutex> lock(multiRenderLock);
 	render_start.wait(lock, [this, numThreads]() {return waiting_for_rendering == numThreads; });
+	// update lights with material of this object type:
+	xapp().lights.lights.material = grp->at(0)->material;
+	xapp().lights.update();
 	// all threads are ready for action, set counter to 0 and signal threads to do rendering
 	waiting_for_rendering = 0;
 	render_wait.notify_all();
