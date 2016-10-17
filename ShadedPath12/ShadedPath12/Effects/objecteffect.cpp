@@ -259,6 +259,7 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 	}
 	prepareDraw(&xapp().vr);
 	if (!xapp().ovrRendering) {
+		threadLocal.vr_eyesm[0] = vr_eyes;
 		XMMATRIX vp = cam->worldViewProjection();
 		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
 		XMMATRIX wvp = calcWVP(toWorld, vp);

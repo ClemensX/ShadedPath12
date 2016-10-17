@@ -43,6 +43,7 @@ using namespace std;
 #include <DirectXPackedVector.h>
 #include <DirectXCollision.h>
 using namespace DirectX;
+#include <d3d12sdklayers.h>
 #include <d3d11on12.h>
 #include <d3d12.h>
 #include <pix.h>
