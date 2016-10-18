@@ -71,17 +71,14 @@ void ObjectViewer::init()
 	xapp().world.drawCoordinateSystem(XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), "Origin", textEffect, dotcrossEffect, textSize);
 
 	// textures
-	xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
-	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
-	//xapp().textureStore.loadTexture(L"metal1.dds", "metal");
-	xapp().textureStore.loadTexture(L"blue.dds", "metal");
-	xapp().textureStore.loadTexture(L"worm1.dds", "worm");
-	xapp().textureStore.loadTexture(L"mars_6k_color.dds", "planet");
-	//xapp().textureStore.loadTexture(L"mars_12k_color.dds", "planet");
-	xapp().textureStore.loadTexture(L"met1.dds", "meteor1");
-	xapp().textureStore.loadTexture(L"axistest.dds", "axistest");
+	//xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
+	//xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
+	//xapp().textureStore.loadTexture(L"blue.dds", "metal");
+	//xapp().textureStore.loadTexture(L"worm1.dds", "worm");
+	//xapp().textureStore.loadTexture(L"mars_6k_color.dds", "planet");
+	//xapp().textureStore.loadTexture(L"met1.dds", "meteor1");
+	//xapp().textureStore.loadTexture(L"axistest.dds", "axistest");
 	xapp().textureStore.loadTexture(L"white.dds", "white");
-	//xapp().textureStore.loadTexture(L"2create_brick_0001.dds", "brickwall");
 	// create a billboards:
 	BillboardElement b;
 	b.pos = XMFLOAT3(15.0f, 0.0f, 2.0f);
@@ -97,13 +94,14 @@ void ObjectViewer::init()
 	//xapp->objectStore.loadObject(L"shaded2.b", "Shaded");
 	//xapp->objectStore.addObject(pathObject, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GRASSDIRT8);
 
-	TextureInfo *GrassTex = xapp().textureStore.getTexture("grass");
-	TextureInfo *HouseTex = xapp().textureStore.getTexture("default");
-	TextureInfo *MetalTex = xapp().textureStore.getTexture("metal");
-	TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
-	TextureInfo *PlanetTex = xapp().textureStore.getTexture("planet");
-	TextureInfo *Meteor1Tex = xapp().textureStore.getTexture("meteor1");
-	TextureInfo *AxistestTex = xapp().textureStore.getTexture("axistest");
+	TextureInfo *GrassTex, *HouseTex, *MetalTex, *WormTex, *PlanetTex, *Meteor1Tex, *AxistestTex;
+	//TextureInfo *GrassTex = xapp().textureStore.getTexture("grass");
+	//TextureInfo *HouseTex = xapp().textureStore.getTexture("default");
+	//TextureInfo *MetalTex = xapp().textureStore.getTexture("metal");
+	//TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
+	//TextureInfo *PlanetTex = xapp().textureStore.getTexture("planet");
+	//TextureInfo *Meteor1Tex = xapp().textureStore.getTexture("meteor1");
+	//TextureInfo *AxistestTex = xapp().textureStore.getTexture("axistest");
 	TextureInfo *WhiteTex = xapp().textureStore.getTexture("white");
 	//TextureInfo *BrickwallTex = xapp().textureStore.getTexture("brickwall");
 	xapp().lights.init();

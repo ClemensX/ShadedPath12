@@ -87,16 +87,27 @@ void TextureStore::loadTexture(wstring filename, string id)
 	CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle(texture->m_srvHeap->GetCPUDescriptorHandleForHeapStart());
 	//CD3DX12_CPU_DESCRIPTOR_HANDLE(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-
-	CreateDDSTextureFromFile(
+	vector<byte> file_buffer;
+	xapp().readFile(texture->filename.c_str(), file_buffer, XApp::FileCategory::TEXTURE);
+	CreateDDSTextureFromMemory(
 		xapp().device.Get(),
-		texture->filename.c_str(),
+		&file_buffer[0],
+		file_buffer.size(),
 		0,
 		true,
 		&texture->texSRV,
 		srvHandle,
 		result
-		);
+	);
+	//CreateDDSTextureFromFile(
+	//	xapp().device.Get(),
+	//	texture->filename.c_str(),
+	//	0,
+	//	true,
+	//	&texture->texSRV,
+	//	srvHandle,
+	//	result
+	//	);
 
 	// upload texture to GPU:
 	//ID3D12Resource* UploadBuffer;
