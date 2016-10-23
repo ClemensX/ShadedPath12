@@ -502,9 +502,12 @@ wstring XApp::findFile(wstring filename, FileCategory cat) {
 		}
 		bfile.open(filename.c_str(), ios::in | ios::binary);
 		if (!bfile && cat == TEXTURE) {
+			wstring oldname = filename;
 			// try loading default texture
 			filename = TEXTURE_PATH + wstring(L"default.dds");
 			bfile.open(filename.c_str(), ios::in | ios::binary);
+			if (bfile) Log("WARNING: texture " << oldname << " not found, replaced by default.dds texture" << endl);
+
 		}
 		if (!bfile) {
 			Error(L"failed reading file: " + filename);
