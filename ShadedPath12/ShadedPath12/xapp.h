@@ -17,6 +17,16 @@ namespace Colors {
 	const XMFLOAT4 LightSteelBlue = { 0.69f, 0.77f, 0.87f, 1.0f };
 };
 
+class PakEntry {
+public:
+	long len;    // file length in bytes
+	long offset; // offset in pak - will be transferred to absolute
+				 // position in pak file on save
+	string name; // directory entry - may contain fake folder names
+				 // 'sub/t.dds'
+	ifstream *pakFile; // reference to pak file, stream should be open and ready to read at all times
+};
+
 class XAppBase
 {
 public:
@@ -55,6 +65,7 @@ public:
 	string buildInfo = "Shaded Path 12 Engine V 0.1.2"; // version text
 
 	void init();
+	void initPakFiles();
 	void resize();
 	void update();
 	void draw();
@@ -62,7 +73,7 @@ public:
 	void report();
 	void calcBackbufferSizeAndAspectRatio();
 	// asset handling
-	enum FileCategory { FX, TEXTURE, MESH, SOUND };
+	enum FileCategory { FX, TEXTURE, MESH, SOUND, TEXTUREPAK };
 	wstring findFile(wstring filename, FileCategory cat);
 	void readFile(wstring filename, vector<byte>& buffer, FileCategory cat);
 
@@ -185,6 +196,12 @@ private:
 
 	XAppBase *app = nullptr;
 	float clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
+
+	// pak files:
+private:
+	unordered_map<string, PakEntry> pak_content;
+public:
+	PakEntry* findFileInPak(wstring filename);
 };
 
 // reference to global instance:

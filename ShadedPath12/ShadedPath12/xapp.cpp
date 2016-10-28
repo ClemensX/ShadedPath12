@@ -443,9 +443,71 @@ void XApp::init()
 	gametime.init(1); // init to real time
 	camera.setSpeed(1.0f);
 
+	initPakFiles();
+
 	app->init();
 	app->update();
 }
+
+void XApp::initPakFiles()
+{
+	wstring binFile = xapp().findFile(L"texture01.pak", XApp::TEXTUREPAK);
+	ifstream bfile(binFile, ios::in | ios::binary);
+#if defined(_DEBUG)
+	Log("pak file opened: " << binFile << "\n");
+	Log("long long: " << sizeof(long) << "\n");
+#endif
+
+	// basic assumptions about data types:
+	assert(sizeof(long long) == 8);
+	assert(sizeof(int) == 4);
+
+	long long magic;
+	bfile.read((char*)&magic, 8);
+	magic = _byteswap_uint64(magic);
+	if (magic != 0x5350313250414B30L) {
+		// magic "SP12PAK0" not found
+		Log("pak file invalid: " << binFile << endl);
+		return;
+	}
+	long long numEntries;
+	bfile.read((char*)&numEntries, 8);
+	if (numEntries > 30000) {
+		Log("pak file invalid: contained number of textures: " << numEntries << endl);
+		return;
+	}
+	int num = (int)numEntries;
+	for (int i = 0; i < num; i++) {
+		PakEntry pe;
+		long long ll;
+		bfile.read((char*)&ll, 8);
+		pe.offset = ll;
+		bfile.read((char*)&ll, 8);
+		pe.len = ll;
+		int name_len;
+		bfile.read((char*)&name_len, 4);
+
+		char *tex_name = new char[108 + 1];
+		bfile.read((char*)tex_name, 108);
+		tex_name[name_len] = '\0';
+		Log("pak entry name: " << tex_name << "\n");
+		pe.name = std::string(tex_name);
+		pak_content[pe.name] = pe;
+	}
+	// check:
+	for (auto p : pak_content) {
+		Log(" pak entry parsed: " << p.second.name.c_str() << endl);
+	}
+}
+
+PakEntry * XApp::findFileInPak(wstring filename)
+{
+	string name = w2s(filename);
+	PakEntry *pe = &pak_content[name];
+	return pe;
+}
+
+
 
 void XApp::calcBackbufferSizeAndAspectRatio()
 {
@@ -491,6 +553,7 @@ wstring XApp::findFile(wstring filename, FileCategory cat) {
 			filename = FX_PATH + filename;
 			break;
 		case TEXTURE:
+		case TEXTUREPAK:
 			filename = TEXTURE_PATH + filename;
 			break;
 		case MESH:

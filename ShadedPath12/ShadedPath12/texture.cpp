@@ -67,7 +67,8 @@ TextureInfo* TextureStore::getTexture(string id)
 void TextureStore::loadTexture(wstring filename, string id)
 {
 	TextureLoadResult result;
-	ID3D12GraphicsCommandList *commandList = this->commandList.Get();
+	PakEntry *pakFileEntry = nullptr;
+	pakFileEntry = xapp().findFileInPak(filename.c_str());
 	wstring binFile = xapp().findFile(filename.c_str(), XApp::TEXTURE);
 	TextureInfo initialTexture;  // only use to initialize struct in texture store - do not access this after assignment to store
 	initialTexture.filename = binFile;
@@ -75,6 +76,7 @@ void TextureStore::loadTexture(wstring filename, string id)
 	textures[id] = initialTexture;
 	TextureInfo *texture = &textures[id];
 
+	ID3D12GraphicsCommandList *commandList = this->commandList.Get();
 	//D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
 	// create heap - TODO adjust for one heap for multiple textures
 	// Describe and create a shader resource view (SRV) heap for the texture.
