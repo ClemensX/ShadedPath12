@@ -481,9 +481,9 @@ void XApp::initPakFiles()
 		PakEntry pe;
 		long long ll;
 		bfile.read((char*)&ll, 8);
-		pe.offset = ll;
+		pe.offset = (long)ll;
 		bfile.read((char*)&ll, 8);
-		pe.len = ll;
+		pe.len = (long)ll;
 		int name_len;
 		bfile.read((char*)&name_len, 4);
 
@@ -492,6 +492,7 @@ void XApp::initPakFiles()
 		tex_name[name_len] = '\0';
 		Log("pak entry name: " << tex_name << "\n");
 		pe.name = std::string(tex_name);
+		pe.pakname = binFile;
 		pak_content[pe.name] = pe;
 	}
 	// check:
@@ -503,8 +504,16 @@ void XApp::initPakFiles()
 PakEntry * XApp::findFileInPak(wstring filename)
 {
 	string name = w2s(filename);
-	PakEntry *pe = &pak_content[name];
-	return pe;
+	auto gotit = pak_content.find(name);
+	if (gotit == pak_content.end()) {
+		return nullptr;
+	}
+	return &gotit->second;
+	//if (pak_content.count(name) == 0) {
+	//	return nullptr;
+	//}
+	//PakEntry *pe = &pak_content[name];
+	//return pe;
 }
 
 
@@ -583,6 +592,21 @@ wstring XApp::findFile(wstring filename, FileCategory cat) {
 	return nullptr;
 }
 
+void XApp::readFile(PakEntry * pakEntry, vector<byte>& buffer, FileCategory cat)
+{
+	Log("read file from pak: " << pakEntry->name.c_str() << endl);
+	ifstream bfile(pakEntry->pakname.c_str(), ios::in | ios::binary);
+	if (!bfile) {
+		Error(L"failed re-opening pak file: " + pakEntry->pakname);
+	} else {
+		// position to start of file in pak:
+		bfile.seekg(pakEntry->offset);
+		buffer.resize(pakEntry->len);
+		bfile.read((char*)&(buffer[0]), pakEntry->len);
+		bfile.close();
+	}
+}
+
 void XApp::readFile(wstring filename, vector<byte> &buffer, FileCategory cat) {
 	//ofstream f("fx\\HERE");
 	//f.put('c');
@@ -593,12 +617,11 @@ void XApp::readFile(wstring filename, vector<byte> &buffer, FileCategory cat) {
 	ifstream bfile(filename.c_str(), ios::in | ios::binary);
 	if (!bfile) {
 		Error(L"failed reading file: " + filename);
-	}
-	else {
+	} else {
 		streampos start = bfile.tellg();
 		bfile.seekg(0, std::ios::end);
 		streampos len = bfile.tellg() - start;
-		bfile.seekg(0, (SIZE_T)start);
+		bfile.seekg(start);
 		buffer.resize((SIZE_T)len);
 		bfile.read((char*)&(buffer[0]), len);
 		bfile.close();

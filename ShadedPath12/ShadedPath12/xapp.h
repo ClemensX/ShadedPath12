@@ -24,7 +24,8 @@ public:
 				 // position in pak file on save
 	string name; // directory entry - may contain fake folder names
 				 // 'sub/t.dds'
-	ifstream *pakFile; // reference to pak file, stream should be open and ready to read at all times
+	//ifstream *pakFile; // reference to pak file, stream should be open and ready to read at all times
+	wstring pakname; // we open and close the pak file for every read, so we store filename here
 };
 
 class XAppBase
@@ -76,6 +77,7 @@ public:
 	enum FileCategory { FX, TEXTURE, MESH, SOUND, TEXTUREPAK };
 	wstring findFile(wstring filename, FileCategory cat);
 	void readFile(wstring filename, vector<byte>& buffer, FileCategory cat);
+	void readFile(PakEntry *pakEntry, vector<byte>& buffer, FileCategory cat);
 
 	void registerApp(string name, XAppBase*);
 	XAppBase* getApp(string appName);
@@ -201,6 +203,7 @@ private:
 private:
 	unordered_map<string, PakEntry> pak_content;
 public:
+	// find entry in pak file, return nullptr if not found
 	PakEntry* findFileInPak(wstring filename);
 };
 

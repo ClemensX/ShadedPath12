@@ -67,14 +67,27 @@ TextureInfo* TextureStore::getTexture(string id)
 void TextureStore::loadTexture(wstring filename, string id)
 {
 	TextureLoadResult result;
-	PakEntry *pakFileEntry = nullptr;
-	pakFileEntry = xapp().findFileInPak(filename.c_str());
-	wstring binFile = xapp().findFile(filename.c_str(), XApp::TEXTURE);
 	TextureInfo initialTexture;  // only use to initialize struct in texture store - do not access this after assignment to store
-	initialTexture.filename = binFile;
+	vector<byte> file_buffer;
+
 	initialTexture.id = id;
 	textures[id] = initialTexture;
 	TextureInfo *texture = &textures[id];
+
+	// find texture file, look in pak file first:
+	PakEntry *pakFileEntry = nullptr;
+	pakFileEntry = xapp().findFileInPak(filename.c_str());
+	// try file system if not found in pak:
+	initialTexture.filename = filename; // TODO check: field not needed? only in this method? --> remove
+	if (pakFileEntry == nullptr) {
+		wstring binFile = xapp().findFile(filename.c_str(), XApp::TEXTURE);
+		texture->filename = binFile;
+		//initialTexture.filename = binFile;
+		xapp().readFile(texture->filename.c_str(), file_buffer, XApp::FileCategory::TEXTURE);
+	} else {
+		xapp().readFile(pakFileEntry, file_buffer, XApp::FileCategory::TEXTURE);
+	}
+
 
 	ID3D12GraphicsCommandList *commandList = this->commandList.Get();
 	//D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
@@ -89,8 +102,6 @@ void TextureStore::loadTexture(wstring filename, string id)
 	CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle(texture->m_srvHeap->GetCPUDescriptorHandleForHeapStart());
 	//CD3DX12_CPU_DESCRIPTOR_HANDLE(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	vector<byte> file_buffer;
-	xapp().readFile(texture->filename.c_str(), file_buffer, XApp::FileCategory::TEXTURE);
 	CreateDDSTextureFromMemory(
 		xapp().device.Get(),
 		&file_buffer[0],
