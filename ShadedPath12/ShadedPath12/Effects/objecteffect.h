@@ -83,6 +83,7 @@ private:
 	static void updateTask(BulkDivideInfo bi, int threadIndex, const vector<unique_ptr<WorldObject>> *grp, WorldObjectEffect *effect);
 	atomic<bool> updateRunning = false;
 	atomic<bool> allThreadsShouldEnd = false;
+	atomic<int> workerThreadsCreated = 0;
 	future<void> objecteffectFuture;
 	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
 	ComPtr<ID3D12GraphicsCommandList> updateCommandList;

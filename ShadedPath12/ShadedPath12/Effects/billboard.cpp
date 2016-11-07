@@ -4,6 +4,7 @@
 #include "CompiledShaders/BillboardPS.h"
 
 void Billboard::init() {
+	initialized = true;
 	// try to do all expensive operations like shader loading and PSO creation here
 	// Create the pipeline state, which includes compiling and loading shaders.
 	{

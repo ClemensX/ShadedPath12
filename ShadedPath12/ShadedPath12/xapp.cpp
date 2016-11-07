@@ -494,6 +494,7 @@ void XApp::initPakFiles()
 		pe.name = std::string(tex_name);
 		pe.pakname = binFile;
 		pak_content[pe.name] = pe;
+		delete[] tex_name;
 	}
 	// check:
 	for (auto p : pak_content) {

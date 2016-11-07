@@ -73,5 +73,6 @@ protected:
 	// initialize next ovr draw by copying globals from VR class to vr_eyes
 	void prepareDraw(VR *vr);
 	virtual ~EffectBase();
+	bool initialized = false;  // set to tre in init(). All effects that need to do something in destructor should check if effect was used at all...
 public:
 };

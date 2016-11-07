@@ -47,6 +47,7 @@ void WorldObjectEffect::createRootSigAndPSO(ComPtr<ID3D12RootSignature> &sig, Co
 
 
 void WorldObjectEffect::init(WorldObjectStore *oStore, UINT maxThreads, UINT maxNumObjects) {
+	initialized = true;
 	objectStore = oStore;
 	oStore->setWorldObjectEffect(this);
 	// try to do all expensive operations like shader loading and PSO creation here
@@ -419,6 +420,7 @@ void WorldObjectEffect::drawInternal(DrawInfo &di)
 
 void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vector<unique_ptr<WorldObject>> *grp, WorldObjectEffect *effect)
 {
+	effect->workerThreadsCreated++;
 	//ComPtr<ID3D12GraphicsCommandList> commandList;
 	//ComPtr<ID3D12CommandAllocator> commandAllocator;
 	int frameIndex;
@@ -428,7 +430,7 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vec
 			effect->waiting_for_rendering++;
 			effect->render_start.notify_one();
 			effect->render_wait.wait(lock);
-			if (effect->allThreadsShouldEnd) return;
+			if (effect->allThreadsShouldEnd) break; // jump out of while loop
 		}
 		// now running outside lock so that all worker threads run in parallel
 		//if (threadIndex > 0) Sleep(10);
@@ -486,6 +488,7 @@ void WorldObjectEffect::updateTask(BulkDivideInfo bi, int threadIndex, const vec
 			effect->render_ended.notify_one();
 		}
 	}
+	effect->workerThreadsCreated--;
 }
 
 void WorldObjectEffect::postDraw()
@@ -555,8 +558,17 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 }
 
 WorldObjectEffect::~WorldObjectEffect() {
+	if (!initialized) return;
 	allThreadsShouldEnd = true;
+	// gracefully wait until all threads ended:
 	render_wait.notify_all();
+	int stillRunning = workerThreadsCreated;
+	while (stillRunning > 0) {
+		//Log(" still running: " << stillRunning << endl);
+		render_wait.notify_all();
+		Sleep(10);
+		stillRunning = workerThreadsCreated;
+	}
 }
 
 //thread_local ComPtr<ID3D12GraphicsCommandList> WorldObjectEffect::commandList;
