@@ -451,11 +451,14 @@ void XApp::init()
 
 void XApp::initPakFiles()
 {
-	wstring binFile = xapp().findFile(L"texture01.pak", XApp::TEXTUREPAK);
+	wstring binFile = xapp().findFile(L"texture01.pak", XApp::TEXTUREPAK, false);
+	if (binFile.size() == 0) {
+		Log("pak file texture01.pak not found!" << endl);
+		return;
+	}
 	ifstream bfile(binFile, ios::in | ios::binary);
 #if defined(_DEBUG)
 	Log("pak file opened: " << binFile << "\n");
-	Log("long long: " << sizeof(long) << "\n");
 #endif
 
 	// basic assumptions about data types:
@@ -553,7 +556,7 @@ void XApp::calcBackbufferSizeAndAspectRatio()
 #define MESH_PATH L"..\\..\\data\\mesh\\"
 #define SOUND_PATH L"..\\..\\data\\sound\\"
 
-wstring XApp::findFile(wstring filename, FileCategory cat) {
+wstring XApp::findFile(wstring filename, FileCategory cat, bool errorIfNotFound) {
 	// try without path:
 	ifstream bfile(filename.c_str(), ios::in | ios::binary);
 	if (!bfile) {
@@ -582,7 +585,7 @@ wstring XApp::findFile(wstring filename, FileCategory cat) {
 			if (bfile) Log("WARNING: texture " << oldname << " not found, replaced by default.dds texture" << endl);
 
 		}
-		if (!bfile) {
+		if (!bfile && errorIfNotFound) {
 			Error(L"failed reading file: " + filename);
 		}
 	}
@@ -590,7 +593,7 @@ wstring XApp::findFile(wstring filename, FileCategory cat) {
 		bfile.close();
 		return filename;
 	}
-	return nullptr;
+	return wstring();
 }
 
 void XApp::readFile(PakEntry * pakEntry, vector<byte>& buffer, FileCategory cat)
