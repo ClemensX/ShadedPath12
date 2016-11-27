@@ -174,7 +174,6 @@ public:
 	int mouseDx;
 	int mouseDy;
 	bool mouseTodo;
-	unsigned long framenum;
 	int fps;
 	bool anyKeyDown = false;
 
@@ -190,6 +189,7 @@ public:
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
 	thread mythread;
 private:
+	long long framenum;
 	UINT frameIndex;
 	bool rtvCleared = false; // shaders can ask if ClearRenderTargetView still has to be called (usually only first shader needs to)
 
@@ -201,11 +201,11 @@ private:
 	float clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
 
 	// pak files:
-private:
 	unordered_map<string, PakEntry> pak_content;
 public:
 	// find entry in pak file, return nullptr if not found
 	PakEntry* findFileInPak(wstring filename);
+	long long getFramenum() { return framenum; };
 };
 
 // reference to global instance:

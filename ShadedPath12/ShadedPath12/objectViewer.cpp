@@ -293,7 +293,7 @@ void ObjectViewer::update()
 	// update info text:
 	string fr("Frame ");
 	stringstream ss;
-	ss << xapp().framenum++;
+	ss << xapp().getFramenum();
 	fr.append(ss.str());
 	textEffect.changeTextLine(framenumLine, fr);
 

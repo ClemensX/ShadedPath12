@@ -41,7 +41,7 @@ XApp::~XApp()
 }
 
 void XApp::update() {
-	static long callnum = 0;
+	framenum++;
 	GetKeyboardState(key_state);
 	LONGLONG old = gametime.getRealTime();
 	gametime.advanceTime();

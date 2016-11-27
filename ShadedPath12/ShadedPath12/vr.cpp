@@ -245,7 +245,7 @@ void VR::endDraw() {
 void VR_Eyes::adjustEyeMatrix(XMMATRIX & m, Camera * cam, int eyeNum, VR* vr)
 {
 	// get updated eye pos
-	vr->nextTracking();
+	//vr->nextTracking();
 	viewOVR[eyeNum] = vr->getOVRViewMatrixByIndex(eyeNum);
 	projOVR[eyeNum] = vr->getOVRProjectionMatrixByIndex(eyeNum);
 
@@ -316,6 +316,17 @@ void Matrix4fToXM(XMFLOAT4X4 &xm, Matrix4f &m) {
 
 void VR::nextTracking()
 {
+#if defined(_DEBUG)
+	// make sure we are only caled once per frame:
+	static vector<bool> called;
+	if (xapp->getFramenum() < 50000) {
+		size_t framenum = (size_t) xapp->getFramenum();
+		assert(called.size() <= framenum);
+		called.push_back(true);
+		assert(called.size() == framenum+1);
+	}
+#endif
+
 	// Get both eye poses simultaneously, with IPD offset already included. 
 	ovrVector3f useHmdToEyeViewOffset[2] = { eyeRenderDesc[0].HmdToEyeOffset, eyeRenderDesc[1].HmdToEyeOffset };
 	//ovrPosef temp_EyeRenderPose[2];

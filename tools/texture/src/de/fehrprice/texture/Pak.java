@@ -20,7 +20,8 @@ public class Pak {
 
 	public static final String[] textureFilesAll = { "default.dds", "dirt6_markings.dds", "grassdirt8.dds",
 			"mars_6k_color.dds", "metal1.dds", "vac_00.dds", "vac_01.dds", "vac_02.dds", "vac_03.dds", "vac_04.dds",
-			"vac_05.dds", "vac_06.dds", "vac_07.dds", "vac_08.dds", "vac_09.dds", "vac_10.dds", "vac_11.dds", };
+			"vac_05.dds", "vac_06.dds", "vac_07.dds", "vac_08.dds", "vac_09.dds", "vac_10.dds", "vac_11.dds",
+			"2create_brick_0001.dds", "met1.dds",};
 	public static final String[] textureFilesSome = { "default.dds", "dirt6_markings.dds", };
 
 	// public static final String pathPrepTexture = "../../data/texture/";

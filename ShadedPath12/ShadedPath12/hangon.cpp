@@ -6,7 +6,7 @@ static int NUM_METEOR = 500;
 #else
 static int NUM_METEOR = 2000;
 #endif
-static int NUM_THREADS = 4;
+static int NUM_THREADS = 4; // 4
 
 HangOn::HangOn() : XAppBase()
 {
