@@ -17,14 +17,14 @@ void EffectBase::waitForSyncPoint(FrameResource & f)
 		Error(L"fence.GetCompletedValue breakdown");
 	}
 	if (completed > 100000) {
-		Log("ev MAX " << completed << " " << f.fenceValue << endl);
+		//Log("ev MAX " << completed << " " << f.fenceValue << endl);
 	}
 	if (completed <= f.fenceValue)
 	{
 		WaitForSingleObject(f.fenceEvent, INFINITE);
 	}
 	else {
-		Log("ev " << completed << " " << f.fenceValue << endl);
+		//Log("ev " << completed << " " << f.fenceValue << endl);
 	}
 }
 

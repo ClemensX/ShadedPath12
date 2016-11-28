@@ -493,7 +493,7 @@ void XApp::initPakFiles()
 		char *tex_name = new char[108 + 1];
 		bfile.read((char*)tex_name, 108);
 		tex_name[name_len] = '\0';
-		Log("pak entry name: " << tex_name << "\n");
+		//Log("pak entry name: " << tex_name << "\n");
 		pe.name = std::string(tex_name);
 		pe.pakname = binFile;
 		pak_content[pe.name] = pe;
@@ -501,7 +501,7 @@ void XApp::initPakFiles()
 	}
 	// check:
 	for (auto p : pak_content) {
-		Log(" pak entry parsed: " << p.second.name.c_str() << endl);
+		Log(" pak file entry: " << p.second.name.c_str() << endl);
 	}
 }
 
