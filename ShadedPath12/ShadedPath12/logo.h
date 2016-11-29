@@ -20,6 +20,7 @@ private:
 	WorldObjectEffect objectEffect;
 	// other:
 	WorldObject logo;
+	WorldObject woLights[10];
 	LONGLONG startTime;
 	bool startMovement = false;
 };

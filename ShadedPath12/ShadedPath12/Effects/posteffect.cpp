@@ -50,11 +50,12 @@ void PostEffect::init()
 		psoDesc.pRootSignature = rootSignature.Get();
 		ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
 		pipelineState.Get()->SetName(L"state_post_init");
-		ComPtr<ID3D12RootSignatureDeserializer> de;
-		//D3D12CreateRootSignatureDeserializer(binShader_PostPS, sizeof(binShader_PostPS), __uuidof(ID3D12RootSignatureDeserializer), );
-		ThrowIfFailed(D3D12CreateRootSignatureDeserializer(binShader_PostPS, sizeof(binShader_PostPS), IID_PPV_ARGS(&de)));
-		const D3D12_ROOT_SIGNATURE_DESC *rt = de->GetRootSignatureDesc();
-		Log("num samplers: " << rt->NumStaticSamplers << endl);
+		if (false) {
+			ComPtr<ID3D12RootSignatureDeserializer> de;
+			ThrowIfFailed(D3D12CreateRootSignatureDeserializer(binShader_PostPS, sizeof(binShader_PostPS), IID_PPV_ARGS(&de)));
+			const D3D12_ROOT_SIGNATURE_DESC *rt = de->GetRootSignatureDesc();
+			Log("num samplers: " << rt->NumStaticSamplers << endl);
+		}
 		// set cbv:
 		// flow of control:
 		// initial phase:
@@ -194,8 +195,8 @@ void PostEffect::init2()
 	vertexData.RowPitch = vertexBufferSize;
 	vertexData.SlicePitch = vertexData.RowPitch;
 
-	PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"posteffect: update vertex buffer for postEffect");
 	commandLists[frameIndex].Get()->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get());
+	PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"posteffect: update vertex buffer for postEffect");
 	UpdateSubresources<1>(commandLists[frameIndex].Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData);
 	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 	PIXEndEvent(commandLists[frameIndex].Get());
@@ -282,20 +283,26 @@ void PostEffect::draw()
 	ID3D12Resource *frame;
 	if (!xapp().ovrRendering) frame = xapp().renderTargets[frameIndex].Get();
 	else frame = xapp().vr.texResource[frameIndex];
-	CD3DX12_TEXTURE_COPY_LOCATION Dst(m_texture.Get(), 0);
-	CD3DX12_TEXTURE_COPY_LOCATION Src(frame, 0);
-	commandLists[frameIndex]->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
+	if (true || xapp().ovrMirror) {
+		commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST,
+			D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+		CD3DX12_TEXTURE_COPY_LOCATION Dst(m_texture.Get(), 0);
+		CD3DX12_TEXTURE_COPY_LOCATION Src(frame, 0);
+		commandLists[frameIndex]->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
+	}
 	//	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
 	//	auto numVertices = lines.size() * 2;
 	//	commandLists[frameIndex]->DrawInstanced((UINT)numVertices, 1, 0, 0);
 	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(frame, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET,
 		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
-	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+	if (true || xapp().ovrMirror) {
+		commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE| D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+			D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+	}
 	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
 	const float clearColor[] = { 0.0f, 1.0f, 0.0f, 1.0f };
-	commandLists[frameIndex]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	//commandLists[frameIndex]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	// we now have the current frame in the texture - make draw calls to refill our rtv
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &vertexBufferView);
 	UINT numVertices = 6;
@@ -338,16 +345,24 @@ void PostEffect::postDraw() {
 	D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
 	//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PRESENT,
 	//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
-	commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT,
-		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+	if (!xapp().ovrRendering) {
+		commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT,
+			D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+	}
+	else {
+		commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST,
+			D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+	}
 	if (xapp().ovrMirror) {
-		commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE,
+		commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE|D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE,
 			D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 		ID3D12Resource *resource = xapp().renderTargets[frameIndex].Get();
 		CD3DX12_TEXTURE_COPY_LOCATION Src(m_texture.Get(), 0);
 		CD3DX12_TEXTURE_COPY_LOCATION Dst(resource, 0);
 		commandLists[frameIndex]->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
-		commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT,
+		commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT,
+			D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+		commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
 			D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 	}
 	// Record commands.

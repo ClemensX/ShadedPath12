@@ -4,9 +4,9 @@
 #if (defined(_DEBUG))
 static int NUM_METEOR = 500;
 #else
-static int NUM_METEOR = 1000;
+static int NUM_METEOR = 2000;
 #endif
-static int NUM_THREADS = 2;
+static int NUM_THREADS = 4; // 4
 
 HangOn::HangOn() : XAppBase()
 {
@@ -29,7 +29,7 @@ void HangOn::init()
 	linesEffect.init();
 	textEffect.init();
 	postEffect.init();
-	objectEffect.init(&xapp().objectStore, NUM_THREADS, NUM_METEOR + 10);
+	objectEffect.init(&xapp().objectStore, NUM_THREADS, NUM_METEOR + 18); // TODO: 17 triggers assert
 
 	// initialize game time to real time:
 	gameTime.init(1);
@@ -48,6 +48,8 @@ void HangOn::init()
 	xapp().camera.fieldOfViewAngleY = 1.289f;
 	xapp().world.setWorldSize(2048.0f, 782.0f, 2048.0f);
 
+#define TEST_MUTI_XAPPS
+#if defined(TEST_MUTI_XAPPS)
 	textEffect.setSize(textSize);
 	dotcrossEffect.setLineLength(6.0f * textSize);
 	textEffect.addTextLine(XMFLOAT4(-5.0f, -6 * lineHeight, 0.0f, 0.0f), xapp().buildInfo, Linetext::XY);
@@ -167,7 +169,7 @@ void HangOn::init()
 	xapp().sound.openSoundFile(L"Wind-Mark_DiAngelo-1940285615.wav", "background_sound", true);
 	xapp().sound.playSound("background_sound", SoundCategory::EFFECT);  // cleanup volume/type
 	//xapp().sound.lowBackgroundMusicVolume();
-
+#endif // Multi XApps
 /*	// mono game sound from world object
 	xapp().sound.openSoundFile(L"worm_move.wav", "worm_move", true);
 	xapp().sound.playSound("worm_move");

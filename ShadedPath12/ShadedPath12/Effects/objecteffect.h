@@ -15,6 +15,21 @@ public:
 		XMFLOAT3   cameraPos;
 		float    alpha;
 	};
+	// declare this struct static thread_local to hold thread specific data:
+	struct ThreadLocalData {
+		ComPtr<ID3D12GraphicsCommandList> commandList;
+		ComPtr<ID3D12CommandAllocator> commandAllocator;
+		Camera camera;
+		Camera cameram[2];
+		CBV cbv;
+		CBV cbvm[2];
+		VR_Eyes vr_eyesm[2];
+		bool initialized;
+		//ThreadLocalData(Camera& cam) : camera(cam) {
+		//	camera = xapp().camera;
+		//};
+	};
+
 	UINT cbvAlignedSize = 0;	// aligned size of cbv for using indexes into larger buffers (256 byte alignment)
 	~WorldObjectEffect();
 	// gather all info needed to draw one object here
@@ -52,6 +67,7 @@ public:
 	void createRootSigAndPSO(ComPtr<ID3D12RootSignature> &sig, ComPtr<ID3D12PipelineState> &pso);
 	bool inThreadOperation = false;
 	mutex mutex_wo_drawing;
+	static thread_local ThreadLocalData threadLocal;
 private:
 	ConstantBufferFixed cb;
 	// globally enable wireframe display of objects
@@ -67,6 +83,7 @@ private:
 	static void updateTask(BulkDivideInfo bi, int threadIndex, const vector<unique_ptr<WorldObject>> *grp, WorldObjectEffect *effect);
 	atomic<bool> updateRunning = false;
 	atomic<bool> allThreadsShouldEnd = false;
+	atomic<int> workerThreadsCreated = 0;
 	future<void> objecteffectFuture;
 	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
 	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
@@ -78,13 +95,16 @@ private:
 	bool inBulkOperation = false;
 	vector<BulkDivideInfo> bulkInfos;
 	BulkDivideInfo globbi;
-	static thread_local ComPtr<ID3D12GraphicsCommandList> commandList;
-	static thread_local ComPtr<ID3D12CommandAllocator> commandAllocator;
-	static thread_local bool initialized;
+	//static thread_local ComPtr<ID3D12GraphicsCommandList> commandList;
+	//static thread_local ComPtr<ID3D12CommandAllocator> commandAllocator;
+	//static thread_local Camera camera;
+	//static thread_local bool initialized;
 	condition_variable render_start; // main thread waits until all render threads are ready to run
 	condition_variable render_ended; // main thread waits until render threads finished work
 	condition_variable render_wait;  // worker thread waits until main thread signaly render start
 	int waiting_for_rendering = 0;
 	int finished_rendering = 0;
 	mutex multiRenderLock;
+public:
+	//Camera *getThreadedCamera() { return &threadLocal.camera; };
 };

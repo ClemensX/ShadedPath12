@@ -71,6 +71,10 @@ float3 calcPoint(float3 pos, float3 normal, Material material, int index, float3
 }
 
 float3 applyLighting(float3 col, float3 pos, float3 posw, float3 normal, float3 camera) {
+	float b = material.isLightSource;
+	if (b > 0.0) {
+		return float3(1.0f, 1.0f, 1.0f);
+	}
 	float3 ambient = calcAmbient();
 
 	float3 directional = float3(0,0,0);

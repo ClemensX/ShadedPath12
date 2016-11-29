@@ -357,11 +357,20 @@ void WorldObject::draw() {
 	XMMATRIX toWorld;
 	TextureInfo *info;
 	{
-		unique_lock<mutex> lock(worldObjectEffect->mutex_wo_drawing);
+		//unique_lock<mutex> lock(worldObjectEffect->mutex_wo_drawing); //TODO: extensive checks...
 		//Log(" obj draw locked" << objectNum << endl);
 		toWorld = calcToWorld();
-		xapp().camera.viewTransform();
-		xapp().camera.projectionTransform();
+		Camera *cam = nullptr;
+		if (worldObjectEffect->inThreadOperation) {
+			// copy global camera to thread camera: TODO: should only be needed once
+			worldObjectEffect->threadLocal.camera = xapp().camera;
+			cam = &worldObjectEffect->threadLocal.camera;
+		}
+		else {
+			cam = &xapp().camera;
+		}
+		cam->viewTransform();
+		cam->projectionTransform();
 		//getBoundingBox(box);//}
 		int visible = true; // TODO rethink visibility xapp().camera.calculateVisibility(box, toWorld);  // TODO first move, then calc visibility
 																		//Log("visible == " << visible << endl);

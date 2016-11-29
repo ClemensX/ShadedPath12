@@ -8,6 +8,7 @@ float4 main(PSInput input) : SV_TARGET
 	float3 texColor;
 	texColor = screenTex.Sample(s, thisTexCoord).xyz;
 	float3 finalColor;
+	  //return float4(texColor,1);
 	finalColor = applyLighting(texColor, input.Pos.xyz, input.PosW, input.Normal, cbv.cameraPos);
 
 	float4 alphaColor;

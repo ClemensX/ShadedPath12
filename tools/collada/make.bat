@@ -21,3 +21,4 @@ rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ met
 rem java -cp bin de.fehrprice.collada.ColladaImport -fixaxis -outdir ..\..\data\mesh\ brickwall.dae
 rem java -cp bin de.fehrprice.collada.ColladaImport -fixaxis -outdir ..\..\data\mesh\ axistest.dae
 java -cp bin de.fehrprice.collada.ColladaImport -fixaxis -outdir ..\..\data\mesh\ logo.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -fixaxis -outdir ..\..\data\mesh\ light1.dae

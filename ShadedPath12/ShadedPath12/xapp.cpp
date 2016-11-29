@@ -24,8 +24,9 @@ void XAppBase::destroy() {
 
 }
 
-XApp::XApp() : camera(world), world(this), vr(this)
+XApp::XApp() : camera(), world(this), vr(this)
 {
+	camera.init();
 	requestHeight = requestWidth = 0;
 	mouseTodo = true;
 	mouseDx = 0;
@@ -40,7 +41,7 @@ XApp::~XApp()
 }
 
 void XApp::update() {
-	static long callnum = 0;
+	framenum++;
 	GetKeyboardState(key_state);
 	LONGLONG old = gametime.getRealTime();
 	gametime.advanceTime();
@@ -442,9 +443,84 @@ void XApp::init()
 	gametime.init(1); // init to real time
 	camera.setSpeed(1.0f);
 
+	initPakFiles();
+
 	app->init();
 	app->update();
 }
+
+void XApp::initPakFiles()
+{
+	wstring binFile = xapp().findFile(L"texture01.pak", XApp::TEXTUREPAK, false);
+	if (binFile.size() == 0) {
+		Log("pak file texture01.pak not found!" << endl);
+		return;
+	}
+	ifstream bfile(binFile, ios::in | ios::binary);
+#if defined(_DEBUG)
+	Log("pak file opened: " << binFile << "\n");
+#endif
+
+	// basic assumptions about data types:
+	assert(sizeof(long long) == 8);
+	assert(sizeof(int) == 4);
+
+	long long magic;
+	bfile.read((char*)&magic, 8);
+	magic = _byteswap_uint64(magic);
+	if (magic != 0x5350313250414B30L) {
+		// magic "SP12PAK0" not found
+		Log("pak file invalid: " << binFile << endl);
+		return;
+	}
+	long long numEntries;
+	bfile.read((char*)&numEntries, 8);
+	if (numEntries > 30000) {
+		Log("pak file invalid: contained number of textures: " << numEntries << endl);
+		return;
+	}
+	int num = (int)numEntries;
+	for (int i = 0; i < num; i++) {
+		PakEntry pe;
+		long long ll;
+		bfile.read((char*)&ll, 8);
+		pe.offset = (long)ll;
+		bfile.read((char*)&ll, 8);
+		pe.len = (long)ll;
+		int name_len;
+		bfile.read((char*)&name_len, 4);
+
+		char *tex_name = new char[108 + 1];
+		bfile.read((char*)tex_name, 108);
+		tex_name[name_len] = '\0';
+		//Log("pak entry name: " << tex_name << "\n");
+		pe.name = std::string(tex_name);
+		pe.pakname = binFile;
+		pak_content[pe.name] = pe;
+		delete[] tex_name;
+	}
+	// check:
+	for (auto p : pak_content) {
+		Log(" pak file entry: " << p.second.name.c_str() << endl);
+	}
+}
+
+PakEntry * XApp::findFileInPak(wstring filename)
+{
+	string name = w2s(filename);
+	auto gotit = pak_content.find(name);
+	if (gotit == pak_content.end()) {
+		return nullptr;
+	}
+	return &gotit->second;
+	//if (pak_content.count(name) == 0) {
+	//	return nullptr;
+	//}
+	//PakEntry *pe = &pak_content[name];
+	//return pe;
+}
+
+
 
 void XApp::calcBackbufferSizeAndAspectRatio()
 {
@@ -480,7 +556,7 @@ void XApp::calcBackbufferSizeAndAspectRatio()
 #define MESH_PATH L"..\\..\\data\\mesh\\"
 #define SOUND_PATH L"..\\..\\data\\sound\\"
 
-wstring XApp::findFile(wstring filename, FileCategory cat) {
+wstring XApp::findFile(wstring filename, FileCategory cat, bool errorIfNotFound) {
 	// try without path:
 	ifstream bfile(filename.c_str(), ios::in | ios::binary);
 	if (!bfile) {
@@ -490,6 +566,7 @@ wstring XApp::findFile(wstring filename, FileCategory cat) {
 			filename = FX_PATH + filename;
 			break;
 		case TEXTURE:
+		case TEXTUREPAK:
 			filename = TEXTURE_PATH + filename;
 			break;
 		case MESH:
@@ -501,11 +578,14 @@ wstring XApp::findFile(wstring filename, FileCategory cat) {
 		}
 		bfile.open(filename.c_str(), ios::in | ios::binary);
 		if (!bfile && cat == TEXTURE) {
+			wstring oldname = filename;
 			// try loading default texture
 			filename = TEXTURE_PATH + wstring(L"default.dds");
 			bfile.open(filename.c_str(), ios::in | ios::binary);
+			if (bfile) Log("WARNING: texture " << oldname << " not found, replaced by default.dds texture" << endl);
+
 		}
-		if (!bfile) {
+		if (!bfile && errorIfNotFound) {
 			Error(L"failed reading file: " + filename);
 		}
 	}
@@ -513,7 +593,22 @@ wstring XApp::findFile(wstring filename, FileCategory cat) {
 		bfile.close();
 		return filename;
 	}
-	return nullptr;
+	return wstring();
+}
+
+void XApp::readFile(PakEntry * pakEntry, vector<byte>& buffer, FileCategory cat)
+{
+	Log("read file from pak: " << pakEntry->name.c_str() << endl);
+	ifstream bfile(pakEntry->pakname.c_str(), ios::in | ios::binary);
+	if (!bfile) {
+		Error(L"failed re-opening pak file: " + pakEntry->pakname);
+	} else {
+		// position to start of file in pak:
+		bfile.seekg(pakEntry->offset);
+		buffer.resize(pakEntry->len);
+		bfile.read((char*)&(buffer[0]), pakEntry->len);
+		bfile.close();
+	}
 }
 
 void XApp::readFile(wstring filename, vector<byte> &buffer, FileCategory cat) {
@@ -526,12 +621,11 @@ void XApp::readFile(wstring filename, vector<byte> &buffer, FileCategory cat) {
 	ifstream bfile(filename.c_str(), ios::in | ios::binary);
 	if (!bfile) {
 		Error(L"failed reading file: " + filename);
-	}
-	else {
+	} else {
 		streampos start = bfile.tellg();
 		bfile.seekg(0, std::ios::end);
 		streampos len = bfile.tellg() - start;
-		bfile.seekg(0, (SIZE_T)start);
+		bfile.seekg(start);
 		buffer.resize((SIZE_T)len);
 		bfile.read((char*)&(buffer[0]), len);
 		bfile.close();
@@ -637,4 +731,12 @@ XApp& xapp() {
 
 void xappDestroy() {
 	delete xappPtr;
+}
+
+void XAppMultiBase::initAllApps()
+{
+	for ( auto app : apps)
+	{
+		app->init();
+	}
 }

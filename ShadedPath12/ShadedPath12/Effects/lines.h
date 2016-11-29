@@ -33,12 +33,12 @@ private:
 
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
-	void preDraw();
+	void preDraw(int eyeNum);
 	void postDraw();
 	CBV cbv, updatedCBV;
 	bool signalUpdateCBV = false;
 	mutex mutex_lines;
-	void drawInternal();
+	void drawInternal(int eyeNum = 0);
 	void updateTask();
 	UINT numVericesToDraw = 0;
 };

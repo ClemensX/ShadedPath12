@@ -17,6 +17,17 @@ namespace Colors {
 	const XMFLOAT4 LightSteelBlue = { 0.69f, 0.77f, 0.87f, 1.0f };
 };
 
+class PakEntry {
+public:
+	long len;    // file length in bytes
+	long offset; // offset in pak - will be transferred to absolute
+				 // position in pak file on save
+	string name; // directory entry - may contain fake folder names
+				 // 'sub/t.dds'
+	//ifstream *pakFile; // reference to pak file, stream should be open and ready to read at all times
+	wstring pakname; // we open and close the pak file for every read, so we store filename here
+};
+
 class XAppBase
 {
 public:
@@ -35,15 +46,27 @@ protected:
 
 };
 
+// Multi Scene Apps inherit from this:
+class XAppMultiBase
+{
+	public:
+		// inital all apps - call after all apps were added to vector
+		void initAllApps();
+		virtual void initScenes() = 0;
+	protected:
+		vector<XAppBase *> apps;	// all apps maintained by this Mult-Scene App
+};
+
 class XApp
 {
 public:
 	XApp();
 	~XApp();
 
-	string buildInfo = "Shaded Path 12 Engine V 0.1.1"; // version text
+	string buildInfo = "Shaded Path 12 Engine V 0.1.2"; // version text
 
 	void init();
+	void initPakFiles();
 	void resize();
 	void update();
 	void draw();
@@ -51,9 +74,11 @@ public:
 	void report();
 	void calcBackbufferSizeAndAspectRatio();
 	// asset handling
-	enum FileCategory { FX, TEXTURE, MESH, SOUND };
-	wstring findFile(wstring filename, FileCategory cat);
+	enum FileCategory { FX, TEXTURE, MESH, SOUND, TEXTUREPAK };
+	// find absolute filename for a name and category, defaults to display error dialog, returns empty filename if not found and errorIfNotFound is set to false
+	wstring findFile(wstring filename, FileCategory cat, bool errorIfNotFound = true);
 	void readFile(wstring filename, vector<byte>& buffer, FileCategory cat);
+	void readFile(PakEntry *pakEntry, vector<byte>& buffer, FileCategory cat);
 
 	void registerApp(string name, XAppBase*);
 	XAppBase* getApp(string appName);
@@ -67,7 +92,7 @@ public:
 	// check if RTV still has to be cleared - take VR rendering into account
 	bool rtvHasToBeCleared() {
 		if (rtvCleared) return false;  // nothing to do - already cleared during this frame
-		if (!ovrRendering || (ovrRendering && vr.isFirstEye())) {
+		if (!ovrRendering || (ovrRendering /*&& vr.isFirstEye()*/)) {
 			return true;
 		}
 		return false;
@@ -149,7 +174,6 @@ public:
 	int mouseDx;
 	int mouseDy;
 	bool mouseTodo;
-	unsigned long framenum;
 	int fps;
 	bool anyKeyDown = false;
 
@@ -165,6 +189,7 @@ public:
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
 	thread mythread;
 private:
+	long long framenum;
 	UINT frameIndex;
 	bool rtvCleared = false; // shaders can ask if ClearRenderTargetView still has to be called (usually only first shader needs to)
 
@@ -174,6 +199,13 @@ private:
 
 	XAppBase *app = nullptr;
 	float clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
+
+	// pak files:
+	unordered_map<string, PakEntry> pak_content;
+public:
+	// find entry in pak file, return nullptr if not found
+	PakEntry* findFileInPak(wstring filename);
+	long long getFramenum() { return framenum; };
 };
 
 // reference to global instance:

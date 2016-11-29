@@ -17,14 +17,14 @@ void EffectBase::waitForSyncPoint(FrameResource & f)
 		Error(L"fence.GetCompletedValue breakdown");
 	}
 	if (completed > 100000) {
-		Log("ev MAX " << completed << " " << f.fenceValue << endl);
+		//Log("ev MAX " << completed << " " << f.fenceValue << endl);
 	}
 	if (completed <= f.fenceValue)
 	{
 		WaitForSingleObject(f.fenceEvent, INFINITE);
 	}
 	else {
-		Log("ev " << completed << " " << f.fenceValue << endl);
+		//Log("ev " << completed << " " << f.fenceValue << endl);
 	}
 }
 
@@ -221,6 +221,14 @@ void EffectBase::waitForWorkerThreads()
 		// all threads finished - remove from list
 		workerThreads.clear();
 	}
+}
+
+void EffectBase::prepareDraw(VR *vr)
+{
+	vr_eyes.viewports[0] = *vr->getViewportByIndex(0);
+	vr_eyes.viewports[1] = *vr->getViewportByIndex(1);
+	vr_eyes.scissorRects[0] = *vr->getScissorRectByIndex(0);
+	vr_eyes.scissorRects[1] = *vr->getScissorRectByIndex(1);
 }
 
 EffectBase::~EffectBase()

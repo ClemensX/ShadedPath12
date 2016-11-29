@@ -4,6 +4,7 @@
 #include "CompiledShaders/BillboardPS.h"
 
 void Billboard::init() {
+	initialized = true;
 	// try to do all expensive operations like shader loading and PSO creation here
 	// Create the pipeline state, which includes compiling and loading shaders.
 	{
@@ -150,7 +151,7 @@ void Billboard::updateTask()
 	//Log("updateTask ready" << endl);
 }
 
-void Billboard::preDraw()
+void Billboard::preDraw(int eyeNum)
 {
 	// last frame must have been finished before we run here!!!
 	int frameIndex = xapp().getCurrentBackBufferIndex();
@@ -170,8 +171,8 @@ void Billboard::preDraw()
 
 	// Set necessary state.
 	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
-	commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
-	commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
+	commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
+	commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
 
 	// Set CBV
 	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, cbvResource->GetGPUVirtualAddress());
@@ -190,6 +191,7 @@ void Billboard::preDraw()
 
 void Billboard::draw()
 {
+	prepareDraw(&xapp().vr);
 	if (!xapp().ovrRendering) {
 		XMStoreFloat4x4(&cbv.wvp, xapp().camera.worldViewProjection());
 		cbv.cam.x = xapp().camera.pos.x;
@@ -199,27 +201,24 @@ void Billboard::draw()
 		return drawInternal();
 	}
 	// draw VR, iterate over both eyes
-	xapp().vr.prepareDraw();
 	for (int eyeNum = 0; eyeNum < 2; eyeNum++) {
 		// adjust PVW matrix
 		XMMATRIX adjustedEyeMatrix;
-		xapp().vr.adjustEyeMatrix(adjustedEyeMatrix);
+		vr_eyes.adjustEyeMatrix(adjustedEyeMatrix, &xapp().camera, eyeNum, &xapp().vr);
 		XMStoreFloat4x4(&cbv.wvp, adjustedEyeMatrix);
 		memcpy(cbvGPUDest, &cbv, sizeof(cbv));
 		cbv.cam.x = xapp().camera.pos.x;
 		cbv.cam.y = xapp().camera.pos.y;
 		cbv.cam.z = xapp().camera.pos.z;
-		drawInternal();
-		xapp().vr.nextEye();
+		drawInternal(eyeNum);
 	}
-	xapp().vr.endDraw();
 }
 
-void Billboard::drawInternal()
+void Billboard::drawInternal(int eyeNum)
 {
 	mutex_Billboard.lock();
 	int frameIndex = xapp().getCurrentBackBufferIndex();
-	preDraw();
+	preDraw(eyeNum);
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// update buffers for this text line:
 	//XMStoreFloat4x4(&cbv.wvp, wvp);

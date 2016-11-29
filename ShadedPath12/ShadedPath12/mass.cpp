@@ -1,8 +1,12 @@
 #include "stdafx.h"
 #include "mass.h"
 
-static int NUM_METEOR = 3000;
-static int NUM_THREADS = 2;
+#if defined(_DEBUG)
+static int NUM_METEOR = 500;
+#else
+static int NUM_METEOR = 10000;
+#endif
+static int NUM_THREADS = 4;
 
 MassTest::MassTest() : XAppBase()
 {
@@ -25,7 +29,7 @@ void MassTest::init()
 	linesEffect.init();
 	textEffect.init();
 	postEffect.init();
-	objectEffect.init(&xapp().objectStore, NUM_THREADS, NUM_METEOR + 10);
+	objectEffect.init(&xapp().objectStore, NUM_THREADS, NUM_METEOR + 18);
 
 	// initialize game time to real time:
 	gameTime.init(1);
@@ -47,17 +51,7 @@ void MassTest::init()
 	textEffect.addTextLine(XMFLOAT4(-5.0f, -5 * lineHeight, 0.0f, 0.0f), "Background music by Niklas Fehr", Linetext::XY);
 	fpsLine = textEffect.addTextLine(XMFLOAT4(-5.0f, -4 * lineHeight, 0.0f, 0.0f), "FPS", Linetext::XY);
 
-	xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
-	TextureInfo *GrassTex = xapp().textureStore.getTexture("grass");
 	xapp().lights.init();
-	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
-
-	xapp().objectStore.loadObject(L"shaded2.b", "Shaded");
-	xapp().objectStore.addObject(object, "Shaded", XMFLOAT3(0.0f, 0.0f, 00.0f), GrassTex);
-	//object.drawNormals = true;
-	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
-	object.material.specExp = 200.0f;       // no spec color 1 0 nothing
-	object.material.specIntensity = 1000.0f; // no spec color
 
 	CBVLights *lights = &xapp().lights.lights;
 	auto &lightControl = xapp().lights;
@@ -116,6 +110,9 @@ void MassTest::initMeteorField() {
 		w.get()->material.specExp = 1.0f;       // no spec color
 		w.get()->material.specIntensity = 0.0f; // no spec color
 		w.get()->material.ambient = XMFLOAT4(1, 1, 1, 1);
+		if (w.get()->objectNum == 100) {
+			w.get()->pos() = XMFLOAT3(1, 1, 1);
+		}
 	}
 }
 
@@ -136,7 +133,6 @@ void MassTest::update()
 	textEffect.changeTextLine(fpsLine, fps_str);
 	textEffect.update();
 
-	object.update();
 	auto grp = xapp().objectStore.getGroup("meteor");
 	// update worms position:
 	for (auto & w : *grp) {

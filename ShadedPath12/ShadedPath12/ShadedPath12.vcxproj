@@ -175,6 +175,7 @@
     <ClInclude Include="forward_structures.h" />
     <ClInclude Include="gametime.h" />
     <ClInclude Include="hangon.h" />
+    <ClInclude Include="hangonfull.h" />
     <ClInclude Include="lights.h" />
     <ClInclude Include="logo.h" />
     <ClInclude Include="mass.h" />
@@ -209,6 +210,7 @@
     <ClCompile Include="Effects\posteffect.cpp" />
     <ClCompile Include="gametime.cpp" />
     <ClCompile Include="hangon.cpp" />
+    <ClCompile Include="hangonfull.cpp" />
     <ClCompile Include="lights.cpp" />
     <ClCompile Include="logo.cpp" />
     <ClCompile Include="mass.cpp" />

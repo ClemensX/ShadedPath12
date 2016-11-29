@@ -30,9 +30,13 @@ VR::~VR() {
 void VR::init()
 {
 #if defined(_OVR_)
-	ovrResult result = ovr_Initialize(nullptr);
+	ovrInitParams initParams = { ovrInit_RequestVersion, OVR_MINOR_VERSION, NULL, 0, 0 };
+	ovrResult result = ovr_Initialize(&initParams);
 	if (OVR_FAILURE(result)) {
-		Error(L"ERROR: LibOVR failed to initialize.");
+		ovrErrorInfo errorInfo;
+		ovr_GetLastErrorInfo(&errorInfo);
+		Log(L"ovr_Initialize failed: " << errorInfo.ErrorString << endl);
+		Error(L"ovr_Initialize failed");
 		return;
 	}
 	Log("LibOVR initialized ok!" << endl);
@@ -65,6 +69,13 @@ void VR::init()
 	Sizei recommenedTex1Size = ovr_GetFovTextureSize(session, ovrEye_Right, desc.DefaultEyeFov[1], 1.0f);
 	buffersize_width = recommenedTex0Size.w + recommenedTex1Size.w;
 	buffersize_height = max(recommenedTex0Size.h, recommenedTex1Size.h);
+	result = ovr_RequestBoundaryVisible(session, ovrTrue);
+	if (OVR_FAILURE(result)) {
+		Log(L"Oculus Boundary system inactive.");
+	}
+	else {
+		Log(L"Oculus Boundary system activated!!");
+	}
 #endif
 }
 
@@ -171,6 +182,12 @@ void VR::initD3D()
 	layer.Viewport[1] = Recti(bufferSize.w / 2, 0, bufferSize.w / 2, bufferSize.h);
 	// ld.RenderPose and ld.SensorSampleTime are updated later per frame.
 #endif
+#if defined(_DEBUG)
+	// SetStablePowerState requires Win10 to be in developer mode:
+	// start settings app, then search for 'for developers settings', 
+	// then enable it under developer features, developer mode
+	//xapp->device->SetStablePowerState(true);
+#endif
 }
 
 void VR::initFrame()
@@ -225,9 +242,26 @@ void VR::endDraw() {
 	//xapp->camera.worldViewProjection();
 }
 
-void VR::adjustEyeMatrix(XMMATRIX &m) {
-	xapp->camera.projectionTransform();
-	m = xapp->camera.worldViewProjection();
+void VR_Eyes::adjustEyeMatrix(XMMATRIX & m, Camera * cam, int eyeNum, VR* vr)
+{
+	// get updated eye pos
+	//vr->nextTracking();
+	viewOVR[eyeNum] = vr->getOVRViewMatrixByIndex(eyeNum);
+	projOVR[eyeNum] = vr->getOVRProjectionMatrixByIndex(eyeNum);
+
+	// camera update
+	//cam->projectionTransform(this, eyeNum);
+	m = cam->worldViewProjection(projOVR[eyeNum], viewOVR[eyeNum]);
+}
+
+void VR::adjustEyeMatrix(XMMATRIX &m, Camera *cam) {
+	if (cam == nullptr) {
+		xapp->camera.projectionTransform();
+		m = xapp->camera.worldViewProjection();
+	} else {
+		cam->projectionTransform();
+		m = cam->worldViewProjection();
+	}
 	//Camera c2 = xapp->camera;
 	//if (curEye == EyeLeft) {
 	//	c2.pos.x = cam_pos.x - 0.5f;
@@ -282,12 +316,38 @@ void Matrix4fToXM(XMFLOAT4X4 &xm, Matrix4f &m) {
 
 void VR::nextTracking()
 {
+#if defined(_DEBUG)
+	// make sure we are only caled once per frame:
+	static vector<bool> called;
+	if (xapp->getFramenum() < 50000) {
+		size_t framenum = (size_t) xapp->getFramenum();
+		assert(called.size() <= framenum);
+		called.push_back(true);
+		assert(called.size() == framenum+1);
+	}
+#endif
+
 	// Get both eye poses simultaneously, with IPD offset already included. 
 	ovrVector3f useHmdToEyeViewOffset[2] = { eyeRenderDesc[0].HmdToEyeOffset, eyeRenderDesc[1].HmdToEyeOffset };
 	//ovrPosef temp_EyeRenderPose[2];
 	double displayMidpointSeconds = ovr_GetPredictedDisplayTime(session, 0);
 	ovrTrackingState ts = ovr_GetTrackingState(session, displayMidpointSeconds, false);
 	ovr_CalcEyePoses(ts.HeadPose.ThePose, useHmdToEyeViewOffset, layer.RenderPose);
+	ovrResult result;
+	ovrBoundaryTestResult btest;
+	ovrBool visible;
+	result = ovr_GetBoundaryVisible(session, &visible);
+	if (0) {
+		Log("visible = " << (visible == ovrTrue) << endl);
+
+		result = ovr_TestBoundary(session, ovrTrackedDevice_HMD, ovrBoundary_Outer, &btest);
+		if (OVR_SUCCESS(result)) {
+			//Log("boundary success");
+			if (result == ovrSuccess) Log("success" << endl);
+			if (result == ovrSuccess_BoundaryInvalid) Log("success boundary invalid" << endl);
+			if (result == ovrSuccess_DeviceUnavailable) Log("success device unavailable" << endl);
+		}
+	}
 	layer.Fov[0] = eyeRenderDesc[0].Fov;
 	layer.Fov[1] = eyeRenderDesc[1].Fov;
 
@@ -376,11 +436,20 @@ CD3DX12_CPU_DESCRIPTOR_HANDLE VR::getRTVHandle(int frameIndex) {
 	return rtvHandle;
 };
 
-XMFLOAT4X4 VR::getOVRViewMatrix() { 
+XMFLOAT4X4 VR::getOVRViewMatrix() {
 	return viewOVR[curEye];
+};
+XMFLOAT4X4 VR::getOVRViewMatrixByIndex(int eyeNum) {
+	return viewOVR[eyeNum];
+};
+
+
+// get projection matrix for current eye
+XMFLOAT4X4 VR::getOVRProjectionMatrix() {
+	return projOVR[curEye];
 };
 
 // get projection matrix for current eye
-XMFLOAT4X4 VR::getOVRProjectionMatrix() { 
-	return projOVR[curEye];
+XMFLOAT4X4 VR::getOVRProjectionMatrixByIndex(int eyeNum) {
+	return projOVR[eyeNum];
 };

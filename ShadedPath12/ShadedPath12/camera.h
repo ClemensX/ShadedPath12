@@ -6,11 +6,11 @@
 class Camera
 {
 public:
-	Camera(World& w);
+//	Camera(World& w);
+	Camera();
 	~Camera();
+	void init();
 	void lookAt(XMFLOAT4 pos, XMFLOAT4 target, XMFLOAT4 up);
-	World& getWorld();
-	void setWorld(World& w);
 	float getSpeed();
 	void setSpeed(float speed);
 	void walk(double dt);
@@ -46,6 +46,9 @@ public:
 	//XMFLOAT4X4 viewOVR[2], projOVR[2];
 	int activeEye = 0;
 	void recalcOVR(XApp &xapp);
+	int eyeNum;
+	bool eyeNumUse = false;
+
 
 	// projection to 2d
 	void projectionTransform();  // use current frustum and recalc projection matrix
@@ -53,30 +56,38 @@ public:
 
 	// world view projection transform - usually for passing to shaders
 	XMMATRIX worldViewProjection();  // use frustum and camera to recalc wvp matrix - no need to update view first, but projection is expected to be up-to-date
-
+	XMMATRIX worldViewProjection(XMFLOAT4X4 & proj_ovr, XMFLOAT4X4 & view_ovr);
 	// visibility:
 	int calculateVisibility(BoundingBox &box, XMMATRIX &toWorld);
+
+	// copy constructor
 	Camera& Camera::operator=(const Camera& other) {
-		pos = other.pos;
-		look = other.look;
-		up = other.up;
-		right = other.right;
-		look_straight = other.look_straight;
-		up_straight = other.up_straight;
-		right_straight = other.right_straight;
-		view = other.view;
-		fieldOfViewAngleY = other.fieldOfViewAngleY;
+		activeEye = other.activeEye;
 		aspectRatio = other.aspectRatio;
-		nearZ = other.nearZ;
+		eyeNum = other.eyeNum;
+		eyeNumUse = other.eyeNumUse;
 		farZ = other.farZ;
+		fieldOfViewAngleY = other.fieldOfViewAngleY;
+		look = other.look;
+		look_straight = other.look_straight;
+		nearZ = other.nearZ;
+		ovrCamera = other.ovrCamera;
 		pitch = other.pitch;
-		yaw = other.yaw;
+		pos = other.pos;
 		projection = other.projection;
+		right = other.right;
+		right_straight = other.right_straight;
 		speed = other.speed;
+		up = other.up;
+		up_straight = other.up_straight;
+		view = other.view;
+		//world = other.world;
+		yaw = other.yaw;
 		return *this;
 	}
+
 private:
-	World& world;
+	//World& world;
 	float speed;
 };
 

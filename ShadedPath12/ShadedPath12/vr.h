@@ -11,7 +11,30 @@ using namespace OVR;
 enum EyePos { EyeLeft, EyeRight };
 
 class XApp;
+class VR;
 
+// support class used in all effects (each effect has an instance)
+// viewports and scissorRects are set by EffectBase::prepareDraw(), they have to be used by both VR ind non-VR rendering
+class VR_Eyes {
+public:
+	void adjustEyeMatrix(XMMATRIX &m, Camera *cam, int eyeNum, VR* vr);
+	D3D12_VIEWPORT *getViewportByIndex(int eyeNum) { return &viewports[eyeNum]; };
+	D3D12_RECT *getScissorRectByIndex(int eyeNum) { return &scissorRects[eyeNum]; };
+
+	// adjust the MVP matrix according to current eye position
+	void adjustEyeMatrix(XMMATRIX &m, Camera *cam = nullptr);
+
+	// get view matrix for current eye
+	XMFLOAT4X4 getOVRViewMatrixByIndex(int eyeNum);
+	// get projection matrix for current eye
+	XMFLOAT4X4 getOVRProjectionMatrixByIndex(int eyeNum);
+
+	D3D12_VIEWPORT viewports[2];
+	D3D12_RECT scissorRects[2];
+	XMFLOAT4X4 viewOVR[2], projOVR[2];
+};
+
+// global class  - only one instance  - used for global VR data and initialization
 class VR {
 public:
 	VR(XApp *xapp);
@@ -28,6 +51,8 @@ public:
 	void prepareViews(D3D12_VIEWPORT &viewport, D3D12_RECT &scissorRect);
 	D3D12_VIEWPORT *getViewport() { return &viewports[curEye]; };
 	D3D12_RECT *getScissorRect() { return &scissorRects[curEye]; };
+	D3D12_VIEWPORT *getViewportByIndex(int eyeNum) { return &viewports[eyeNum]; };
+	D3D12_RECT *getScissorRectByIndex(int eyeNum) { return &scissorRects[eyeNum]; };
 	// getHeight and getWidth should only be called after init()
 	int getHeight() { return buffersize_height; };
 	int getWidth() { return buffersize_width; };
@@ -36,7 +61,7 @@ public:
 	// undo the chages to the camera made by prepareDraw
 	void endDraw();
 	// adjust the MVP matrix according to current eye position
-	void adjustEyeMatrix(XMMATRIX &m);
+	void adjustEyeMatrix(XMMATRIX &m, Camera *cam = nullptr);
 	// move to 2nd eye
 	void nextEye();
 	// return if this run is for the first eye - some initializations are not needed for 2nd eye
@@ -47,8 +72,10 @@ public:
 #if defined(_OVR_)
 	// get view matrix for current eye
 	XMFLOAT4X4 getOVRViewMatrix();
+	XMFLOAT4X4 getOVRViewMatrixByIndex(int eyeNum);
 	// get projection matrix for current eye
 	XMFLOAT4X4 getOVRProjectionMatrix();
+	XMFLOAT4X4 getOVRProjectionMatrixByIndex(int eyeNum);
 #else
 	// just return identity matrix if ovr not enabled
 	static XMFLOAT4X4 ident;

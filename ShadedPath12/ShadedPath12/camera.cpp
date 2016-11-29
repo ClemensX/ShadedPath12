@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-Camera::Camera(World& w) : world(w) {
+void Camera::init() {
 	// camera view
 	pos = XMFLOAT4(0.0f, 0.0f, -2.0f, 0.0f);
 	look = XMFLOAT4(0.0f, 0.0f, 1.0f, 0.0f);
@@ -22,6 +22,9 @@ Camera::Camera(World& w) : world(w) {
 Camera::~Camera() {
 }
 
+Camera::Camera() {
+}
+
 void Camera::lookAt(XMFLOAT4 posp, XMFLOAT4 targetp, XMFLOAT4 upp) {
 	posp.w = targetp.w = upp.w = 0.0f;
 	XMVECTOR p = XMLoadFloat4(&posp);
@@ -39,21 +42,14 @@ void Camera::lookAt(XMFLOAT4 posp, XMFLOAT4 targetp, XMFLOAT4 upp) {
 	XMStoreFloat4(&up_straight, u);
 }
 
-World& Camera::getWorld() {
-	return world;
-}
-
-void Camera::setWorld(World& w) {
-	world = w;
-}
-
-
-
 void Camera::viewTransform() {
 	XMMATRIX v = XMMatrixLookToLH(XMLoadFloat4(&pos), XMLoadFloat4(&look), XMLoadFloat4(&up));
 	XMStoreFloat4x4(&view, v);
 	if (ovrCamera) {
-		view = xapp().vr.getOVRViewMatrix();
+		if (eyeNumUse)
+			view = xapp().vr.getOVRViewMatrixByIndex(eyeNum);
+		else
+			view = xapp().vr.getOVRViewMatrix();
 	}
 }
 
@@ -62,7 +58,10 @@ void Camera::projectionTransform() {
 	XMMATRIX v = XMMatrixPerspectiveFovLH(fieldOfViewAngleY, aspectRatio, nearZ, farZ);
 	XMStoreFloat4x4(&projection, v);
 	if (ovrCamera) {
-		projection = xapp().vr.getOVRProjectionMatrix();
+		if (eyeNumUse)
+			projection = xapp().vr.getOVRProjectionMatrixByIndex(eyeNum);
+		else
+			projection = xapp().vr.getOVRProjectionMatrix();
 	}
 }
 
@@ -74,9 +73,22 @@ XMMATRIX Camera::worldViewProjection() {
 	//Log("  Look: " << pt2.x << " " << pt2.y << " " << pt2.z << endl);
 	XMMATRIX v = XMMatrixLookToLH(XMLoadFloat4(&pos), XMLoadFloat4(&look), XMLoadFloat4(&up));
 	if (ovrCamera) {
-		XMFLOAT4X4 vxm = xapp().vr.getOVRViewMatrix();
+		XMFLOAT4X4 vxm;
+		if (eyeNumUse)
+			vxm = xapp().vr.getOVRViewMatrixByIndex(eyeNum);
+		else
+			vxm = xapp().vr.getOVRViewMatrix();
 		v = XMLoadFloat4x4(&vxm);
 	}
+	XMMATRIX wvp = v*p;
+	return XMMatrixTranspose(wvp);
+}
+
+// called in OVR mode only:
+XMMATRIX Camera::worldViewProjection(XMFLOAT4X4 &proj_ovr, XMFLOAT4X4 &view_ovr) {
+	XMMATRIX p = XMLoadFloat4x4(&proj_ovr);
+	assert(ovrCamera);
+	XMMATRIX v = XMLoadFloat4x4(&view_ovr);
 	XMMATRIX wvp = v*p;
 	return XMMatrixTranspose(wvp);
 }

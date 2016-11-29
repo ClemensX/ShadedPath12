@@ -40,11 +40,11 @@ public:
 private:
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
-	void preDraw();
+	void preDraw(int eyeNum);
 	void postDraw();
 	CBV cbv;
 	mutex mutex_Billboard;
-	void drawInternal();
+	void drawInternal(int eyeNum = 0);
 	void updateTask();
 	vector<Vertex>& recreateVertexBufferContent();
 	void createBillbordVertexData(Vertex *cur_billboard, BillboardElement & bb);

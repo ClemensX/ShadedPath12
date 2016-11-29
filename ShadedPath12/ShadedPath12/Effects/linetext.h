@@ -46,11 +46,11 @@ public:
 private:
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
-	void preDraw();
+	void preDraw(int eyeNum);
 	void postDraw();
 	CBV cbv;
 	mutex mutex_Linetext;
-	void drawInternal();
+	void drawInternal(int eyeNum = 0);
 	void updateTask();
 	struct Line {
 		UINT rotIndex;
