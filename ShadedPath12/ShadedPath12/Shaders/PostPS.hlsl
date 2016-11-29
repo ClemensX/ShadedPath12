@@ -1,6 +1,6 @@
 #include "Post.hlsli"
 
-[RootSignature(PostRS)]
+[RootSignature(PostRS_1_0)]
 
 float4 main(PSInput input) : SV_TARGET
 {

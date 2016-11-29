@@ -2,7 +2,14 @@
 
 
 // root signature: only has CBV that will hold the MVP matrix
-#define PostRS "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
+#define PostRS_1_0 "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
+            "DescriptorTable(SRV(t0, space = 0)), " \
+            "StaticSampler(s0, filter=FILTER_MIN_MAG_MIP_LINEAR, "\
+			"addressU = TEXTURE_ADDRESS_WRAP, addressV = TEXTURE_ADDRESS_WRAP, addressW = TEXTURE_ADDRESS_CLAMP, " \
+			"minLOD = 0, maxLOD = 0, mipLODBias = 0, " \
+			"maxAnisotropy = 1, comparisonFunc = COMPARISON_NEVER " \
+			")"
+#define PostRS_1_1 "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
             "DescriptorTable(SRV(t0, space = 0, flags=DATA_VOLATILE)), " \
             "StaticSampler(s0, filter=FILTER_MIN_MAG_MIP_LINEAR, "\
 			"addressU = TEXTURE_ADDRESS_WRAP, addressV = TEXTURE_ADDRESS_WRAP, addressW = TEXTURE_ADDRESS_CLAMP, " \

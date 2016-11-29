@@ -1,6 +1,6 @@
 #include "Post.hlsli"
 
-[RootSignature(PostRS)]
+[RootSignature(PostRS_1_0)]
 
 PSInput main( VSInput input )
 {
