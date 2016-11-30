@@ -5,7 +5,11 @@
 #include "../../../OculusSDK/LibOVR/Include/OVR_CAPI_D3D.h"
 #include "../../../OculusSDK/LibOVR/Include/Extras/OVR_Math.h"
 using namespace OVR;
+#if defined(_DEBUG)
+#pragma comment(lib, "../../../OculusSDK/LibOVR/Lib/Windows/x64/Debug/VS2015/LibOVR.lib")
+#else
 #pragma comment(lib, "../../../OculusSDK/LibOVR/Lib/Windows/x64/Release/VS2015/LibOVR.lib")
+#endif
 #endif
 
 enum EyePos { EyeLeft, EyeRight };
