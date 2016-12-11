@@ -13,7 +13,7 @@ completely up to you.
 **Who is it for** The ideal consumer of this work is a C++ programmer wanting to write applications for the Oculus Rift. There are not too many examples out there of how to write DX12 code for the Rift. 
 You could use this framework as a starting point. Maybe throw away 90 % of the code and do your own thing. Or you might be interested in a single feature and copy only that into your own projects.
 If you just want to write applications and are not interested in game engine code please consider that this framework is still in it's early stages. While certainly you can alter the existing demo applications, 
-even add new one, the more you deviate from the existing demos the higher your chances are to run into issues. 
+even add new ones, the more you deviate from the existing demos the higher your chances are to run into issues. 
 It is my goal to have a framework you can use to write great Rift applications without needing to look into engine code. But I am simply not there yet.
 
 Most development is done in C++ and uses VisualStudio 2015 Community with Win 10 SDK.
@@ -30,7 +30,9 @@ That is under the MIT License which gives very widely usage rights.
 * I provide textures in pak file format. There are tools and code to put texture files into pak format, but not to extract them. This is by intention because I do not own all 
 the rights of the texture files. This means that you can use the textures I provide in your own projects, but you are not allowed to extract single textures from the pak file, 
 and sell them or provide as single texture files anywhere.
-* you are not allowed to restrict anyone elses rights to this code. Meaning you are allowed to rebundle everything here and sell it in parts or in its entirety, but you are not allowed to come back here and try
+* all the .wav files in data/sound are copyrighted. The Shaded_Path_Game_Music is copyrighted by Clemens Fehr and Niklas Fehr. The remaining files are from Oculus and were provided inside their 
+Audio Pack 1. All sound files are licensed under Creative Commons Attribution 4.0 License.
+* You are not allowed to restrict anyone elses rights to this code. Meaning you are allowed to rebundle everything here and sell it in parts or in its entirety, but you are not allowed to come back here and try
 to restrict others (and myself) from any usage. In other words: You cannot copyright what I have placed in public domain.
 
 # Versions
