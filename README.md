@@ -1,17 +1,40 @@
 # ShadedPath12
 DirectX 12 Framework and Applications
 
-**Update:** Now fully supporting Oculus SDK 1.3 with DirectX 12 render path.
+**Update:** Now supporting Oculus SDK 1.10 with DirectX 12 render path.
 
-Old info text:
+# General Info
 
-For the time being, this repo will be used to port my DX11/Oculus framework to DX12. Until it has at least limited public use the version will stay on 0.0.
+This framework is free to use for everybody! If you just run a precompiled example or copy the entire source code into your own project is 
+completely up to you.
+
+**This is for the C++ developers!** There are no plans to provide any other access layer to the engine framework. Writing an application requires you to subclass the application base class.
+
+**Who is it for** The ideal consumer of this work is a C++ programmer wanting to write applications for the Oculus Rift. There are not too many examples out there of how to write DX12 code for the Rift. 
+You could use this framework as a starting point. Maybe throw away 90 % of the code and do your own thing. Or you might be interested in a single feature and copy only that into your own projects.
+If you just want to write applications and are not interested in game engine code please consider that this framework is still in it's early stages. While certainly you can alter the existing demo applications, 
+even add new one, the more you deviate from the existing demos the higher your chances are to run into issues. 
+It is my goal to have a framework you can use to write great Rift applications without needing to look into engine code. But I am simply not there yet.
 
 Most development is done in C++ and uses VisualStudio 2015 Community with Win 10 SDK.
 Target Platform is Windows 10 (64 bit only).
 Some tools are Java based and use eclipse 4. This is mostly done for tools used in asset handling.
 
+# Legal
+I put this whole thing into Public Domain, with only slight exceptions. Meaning you can use almost everything in this project in any way you like. I took great care to provide code that is free of any copyrights from somebody else.
+
+**Exceptions from Public Domain**
+
+* The code I use to read texture files is from Microsoft. It is a version of the DDSTextureLoader that is used in many examples provided by Microsoft.
+That is under the MIT License which gives very widely usage rights.
+* I provide textures in pak file format. There are tools and code to put texture files into pak format, but not to extract them. This is by intention because I do not own all 
+the rights of the texture files. This means that you can use the textures I provide in your own projects, but you are not allowed to extract single textures from the pak file, 
+and sell them or provide as single texture files anywhere.
+* you are not allowed to restrict anyone elses rights to this code. Meaning you are allowed to rebundle everything here and sell it in parts or in its entirety, but you are not allowed to come back here and try
+to restrict others (and myself) from any usage. In other words: You cannot copyright what I have placed in public domain.
+
 # Versions
+* 0.1.2 - pak files, multi-thread rendering optimizations
 * 0.1.1 - mass rendering / mutli-thread support
 * 0.1.0 - lighting and sound
 * 0.0.5 - animation and collada import
@@ -21,15 +44,15 @@ Some tools are Java based and use eclipse 4. This is mostly done for tools used 
 * 0.0 - port / test / implement DX12 features. Expect drastic changes at any time. Will have very limited use to look at and may not even compile.
 
 # Installation
-clone https://github.com/ClemensX/ShadedPath12.git to local folder, e.g. F:\dev\dx12test
-you will now have a sub folder ShadedPath12, this is where all my code is located.
+clone or download the master branch from https://github.com/ClemensX/ShadedPath12.git to local folder, e.g. F:\dev\dx12test
+you will now have a sub folder ShadedPath12, this is where all my code is located. Download the data.zip file from the latest release on GitHub and extract to that folder. 
+F:\dev\dx12test\ShadedPath now has these subfolders: data, tools and (another) ShadedPath12.
 
-You need to copy / extract the Oculus SDK 1.3 to the same parent folder, so that you have the OculusSDK folder directly below dx12test, next to ShadedPath12
-Now start the solution file F:\dev\dx12test\ShadedPath12\ShadedPath12\ShadedPath12.sln
+You need to copy / extract the Oculus SDK 1.10.1 to the same parent folder, so that you have the OculusSDK folder directly below dx12test, next to ShadedPath12.
+There are some batch files to directly start some of the more intersting demos in folder ShadedPath/tools.
+To use in Visual Studio C++ start the solution file F:\dev\dx12test\ShadedPath12\ShadedPath12\ShadedPath12.sln
 
-If you now compile/run the sample will run only in a window. To render to the Rift, go to the configuration properties/Debugging/Command Arguments and add -vr
-
-Running Sample1 now should give you lots of lines to see inside the rift. 
+See below for command line switches. Use them in VC++ via right click on project, choose Properties then: Configuration Properties/Debugging/Command Arguments. Here you can use all the switches described.
 
 # Command Line Switches
 * **-app=Name** Select which app to start (see list below).
@@ -40,13 +63,22 @@ Running Sample1 now should give you lots of lines to see inside the rift.
 * **-disableDX11Debug** Used on systems that don't have DX11 Debug enabled. (Rarely used.)
 
 # Sample Apps
-* **HangOn**       Uses new mass rendering API to draw lots of small objects
+* **Logo**         The ShadedPath Logo as 3D text with some flying lights
+* **HangOn**       Uses mass rendering API to draw lots of small objects
 * **Soundtest**    Show use of background music and directional sound of 3D objects
 * **ObjectViewer** Display one of the predefined objects with animation and lighting
 * **TestTextures** Load 12 texture files and display each at 83.000 different world positions (a total of 1 Million billboards)
 * **TestDotcross** Draw an increasing number of crosses. Single Thread Example that will show system degredation for generating and transmitting large amounts of objects to the GPU
 * **TestLinetext** Optimized Multi Thread example of a geometry shader for drawing 3D text. Displays FPS, some engine info and 1000 lines of text. Should render with more than 300 FPS on any system supporting the Oculus Rift (in window mode)
 * **Sample1** Draw a lot of lines to mark the floor and ceiling of the world, some lines of text and a coordinate system at the origin point.
+
+# Features for 0.1.2
+
+* Pak files: For legal reasons I could not provide all the texture files for the demo apps in earlier releases. But inside a custom format pak file this is no longer a problem. All texture files except for the default texture
+are now loaded from the pak file. The default texture is used when a texture is not found. When you use your own textures you can either put them in a pak file yourself or just put the .dds files 
+inside the texture folder. To put dds files in a pak file I have provided a Java project under tools/texture
+
+* Optimizations for multi-thread rendering: The rendering code for objects has been changed a lot to remove most of the mutexes needed in earlier versions. 
 
 # Features for 0.1.1
 * Mass rendering: As a first step to support rendering of lots of small objects, thread support and a different approach to rendering objects was implemented. See classes WorldObjectEffect and WorldObject.
