@@ -1,5 +1,5 @@
 # ShadedPath12
-DirectX 12 Framework and Applications
+DirectX 12 Framework and Applications for Oculus Rift
 
 **Update:** Now supporting Oculus SDK 1.10 with DirectX 12 render path.
 
