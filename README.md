@@ -54,6 +54,16 @@ You need to copy / extract the Oculus SDK 1.10.1 to the same parent folder, so t
 There are some batch files to directly start some of the more intersting demos in folder ShadedPath/tools.
 To use in Visual Studio C++ start the solution file F:\dev\dx12test\ShadedPath12\ShadedPath12\ShadedPath12.sln
 
+If the build inside Visual Studio complains about wrong LibOVR, you have to rebuild LibOVR in the Oculus SDK folder. Project file is located 
+in folder OculusSDK\LibOVR\Projects\Windows\VS2015. Just open it with VisualStudio and do the following:
+* Change Target platform to Win 10 SDK in General Configuration Properties of project
+* switch to Release x64
+* change runtime lib generation: open project properties -> C/C++ -> Code Generation -> Runtime Library: Multi-threaded DLL (/MD)
+* switch to Debug x64
+* set Runtime Library: Multi-threaded Debug DLL (/MDd)
+
+Now the ShadedPath12 project should compile fine and be runnable
+
 See below for command line switches. Use them in VC++ via right click on project, choose Properties then: Configuration Properties/Debugging/Command Arguments. Here you can use all the switches described.
 
 # Command Line Switches
