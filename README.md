@@ -72,13 +72,13 @@ See below for command line switches. Use them in VC++ via right click on project
 * **-app=Name** Select which app to start (see list below).
 * **-w=100** Set window width to 100 pixel
 * **-h=80**  Set window height to 80 pixel
-* **-vr** Enable VR rendering to Oculus Rift (runtime version 8+)   
+* **-vr** Enable VR rendering to Oculus Rift (runtime version 10.1+)   
 * **-warp** Use Microsoft Warp SW driver instead of GPU vendor driver
 * **-disableDX11Debug** Used on systems that don't have DX11 Debug enabled. (Rarely used.)
 
 # Sample Apps
 * **Logo**         The ShadedPath Logo as 3D text with some flying lights
-* **HangOn**       Uses mass rendering API to draw lots of small objects
+* **HangOn**       Uses mass rendering API to draw lots of meteors. Mars approaching, sound enabled
 * **Soundtest**    Show use of background music and directional sound of 3D objects
 * **ObjectViewer** Display one of the predefined objects with animation and lighting
 * **TestTextures** Load 12 texture files and display each at 83.000 different world positions (a total of 1 Million billboards)
