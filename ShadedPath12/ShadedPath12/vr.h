@@ -4,7 +4,14 @@
 #include "../../../OculusSDK/LibOVR/Include/OVR_CAPI.h"
 #include "../../../OculusSDK/LibOVR/Include/OVR_CAPI_D3D.h"
 #include "../../../OculusSDK/LibOVR/Include/Extras/OVR_Math.h"
+#include "../../../OVRAvatarSDK/Include/OVR_Avatar.h"
+//#include "../../../OVRPlatformSDK/Include/OVR_Types.h"
+#define OVRPL_DISABLED
+// OVR_Types.h cannot be found: include folder of platform SDk has to be added in compiler options
+#include "OVR_Platform.h"
 using namespace OVR;
+#pragma comment(lib, "../../../OVRAvatarSDK/Windows/libovravatar.lib")
+#pragma comment(lib, "../../../OVRPlatformSDK/Windows/LibOVRPlatform64_1.lib")
 #if defined(_DEBUG)
 #pragma comment(lib, "../../../OculusSDK/LibOVR/Lib/Windows/x64/Debug/VS2015/LibOVR.lib")
 #else

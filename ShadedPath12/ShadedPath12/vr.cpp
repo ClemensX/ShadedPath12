@@ -76,6 +76,16 @@ void VR::init()
 	else {
 		Log(L"Oculus Boundary system activated!!");
 	}
+	// Initialization call
+	if (ovr_PlatformInitializeWindows("1197980730287980") != ovrPlatformInitialize_Success)
+	{
+		// Exit.  Initialization failed which means either the oculus service isn’t on the machine or they’ve hacked their DLL
+		ovrErrorInfo errorInfo;
+		ovr_GetLastErrorInfo(&errorInfo);
+		Log(L"ovr_PlatformInitializeWindows failed: " << errorInfo.ErrorString << endl);
+		Error(L"ovr_PlatformInitializeWindows failed");
+	}
+	ovr_Entitlement_GetIsViewerEntitled();
 #endif
 }
 
