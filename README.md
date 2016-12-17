@@ -58,9 +58,11 @@ If the build inside Visual Studio complains about wrong LibOVR, you have to rebu
 in folder OculusSDK\LibOVR\Projects\Windows\VS2015. Just open it with VisualStudio and do the following:
 * Change Target platform to Win 10 SDK in General Configuration Properties of project
 * switch to Release x64
+* build it
 * change runtime lib generation: open project properties -> C/C++ -> Code Generation -> Runtime Library: Multi-threaded DLL (/MD)
 * switch to Debug x64
 * set Runtime Library: Multi-threaded Debug DLL (/MDd)
+* build it
 
 Now the ShadedPath12 project should compile fine and be runnable
 
