@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "objectViewer.h"
 
+#define LOAD_AVATAR_DATAXXX
 
 ObjectViewer::ObjectViewer() : XAppBase()
 {
@@ -212,8 +213,26 @@ void ObjectViewer::init()
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"light1.b", "light1", 0.1f);
+		xapp().objectStore.addObject(object, "light1", XMFLOAT3(3.0f, -1.0f, 2.0f), WhiteTex);
+		//object.drawBoundingBox = true;
+		//object.drawNormals = true;
+		//object.pathDescMove->pathMode = Path_Reverse;
+		object.material.specExp = 1.0f;       // no spec color
+		object.material.specIntensity = 0.0f; // no spec color
+	}
+	if (true) {
+		//xapp().objectStore.loadObject(L"413fd8923c71e_557a26331850dbf.b", "light1", 1.0f);  // left controller
+		//xapp().objectStore.loadObject(L"413fd8923c71e_1274b22c61fc48a3.b", "light1", 1.0f);  // torso clothes
+		//xapp().objectStore.loadObject(L"413fd8923c71e_450d4eca9f73b9a1.b", "light1", 1.0f);  // glasses
+		//xapp().objectStore.loadObject(L"413fd8923c71e_47be498de8d01599.b", "light1", 1.0f);  // hair
+		//xapp().objectStore.loadObject(L"413fd8923c71e_6a4ae11446026286.b", "light1", 1.0f);  // left hand
+		//xapp().objectStore.loadObject(L"413fd8923c71e_6feb9283b780b5a3.b", "light1", 1.0f);  // right controller
+		//xapp().objectStore.loadObject(L"413fd8923c71e_7f1ca835aeb1b69e.b", "light1", 1.0f);  // large empty cone
+		//xapp().objectStore.loadObject(L"413fd8923c71e_8e78d539875b1886.b", "light1", 1.0f);  // open flat ring
+		//xapp().objectStore.loadObject(L"413fd8923c71e_af2fdac13313089c.b", "light1", 1.0f);  // face
+		xapp().objectStore.loadObject(L"413fd8923c71e_f82847a6b3ddf1a6.b", "light1", 1.0f);  // right hand
 		xapp().objectStore.addObject(object, "light1", XMFLOAT3(3.0f, -1.0f, 2.0f), WhiteTex);
 		//object.drawBoundingBox = true;
 		//object.drawNormals = true;
@@ -257,6 +276,10 @@ void ObjectViewer::init()
 	XMFLOAT3 x = XMFLOAT3(6.0f, 10.0f, 8.0f);
 	crossPoints.push_back(x);
 	dotcrossEffect.update(crossPoints);
+
+#if defined(LOAD_AVATAR_DATA)
+	xapp().vr.loadAvatar();
+#endif
 }
 
 void ObjectViewer::update()
@@ -313,6 +336,8 @@ void ObjectViewer::update()
 	lights->directionalLights[1].color = lightControl.factor(globalDirectionalLightLevel, dirColor2);
 	object.update();
 	//Log("obj pos " << object.pos().x << endl);
+
+	xapp().vr.handleOVRMessages();
 }
 
 void ObjectViewer::draw()

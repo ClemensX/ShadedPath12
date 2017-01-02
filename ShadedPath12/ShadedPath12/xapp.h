@@ -75,8 +75,10 @@ public:
 	void calcBackbufferSizeAndAspectRatio();
 	// asset handling
 	enum FileCategory { FX, TEXTURE, MESH, SOUND, TEXTUREPAK };
-	// find absolute filename for a name and category, defaults to display error dialog, returns empty filename if not found and errorIfNotFound is set to false
-	wstring findFile(wstring filename, FileCategory cat, bool errorIfNotFound = true);
+	// find absolute filename for a name and category, defaults to display error dialog, returns empty filename if not found and errorIfNotFound is set to false,
+	// returns full file path if generateFilenameMode == true (use to create files)
+	wstring findFile(wstring filename, FileCategory cat, bool errorIfNotFound = true, bool generateFilenameMode = false);
+	wstring findFileForCreation(wstring filename, FileCategory cat) { return findFile(filename, cat, false, true); };
 	void readFile(wstring filename, vector<byte>& buffer, FileCategory cat);
 	void readFile(PakEntry *pakEntry, vector<byte>& buffer, FileCategory cat);
 

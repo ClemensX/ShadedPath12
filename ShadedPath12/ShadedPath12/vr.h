@@ -80,6 +80,11 @@ public:
 	// read HMD position and generate view parameters for both eyes
 	void nextTracking();
 	void submitFrame();
+
+	// ovr message queue, has to be called from application update()
+	void handleOVRMessages();
+	// load avatar data (mesh, bones and textures) from Oculus
+	void loadAvatar();
 #if defined(_OVR_)
 	// get view matrix for current eye
 	XMFLOAT4X4 getOVRViewMatrix();
@@ -110,6 +115,8 @@ public:
 protected:
 	EyePos curEye = EyeLeft;
 private:
+	void handleAvatarMessages();
+	void writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarMeshAssetData *assetdata);
 	D3D12_VIEWPORT viewports[2];
 	D3D12_RECT scissorRects[2];
 	XApp* xapp;

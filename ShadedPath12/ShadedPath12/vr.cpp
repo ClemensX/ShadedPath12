@@ -428,7 +428,182 @@ void VR::submitFrame()
 	//Log
 }
 
+
+void VR::handleOVRMessages()
+{
+	handleAvatarMessages();
+	ovrMessage *message = ovr_PopMessage();
+	if (!message) {
+		return; // no new messages.
+	}
+	int messageType = ovr_Message_GetType(message);
+	Log("OVR message received: " << std::hex << messageType << " " << ovrMessageType_ToString((ovrMessageType)messageType) << endl);
+	if (messageType == ovrMessage_Entitlement_GetIsViewerEntitled) {
+	}
+	else if (messageType == ovrMessage_User_GetLoggedInUser) {
+		if (ovr_Message_IsError(message) != 0) {
+			// Network error or something.     
+		}
+		else {
+			auto user = ovr_Message_GetUser(message);
+			auto userId = ovr_User_GetID(user);
+			auto userName = ovr_User_GetOculusID(user);
+			Log("current user: " << userName << " ID == " << userId << endl);
+			ovrAvatar_RequestAvatarSpecification(userId);
+			auto anotherUserId = ovr_GetLoggedInUserID();
+			//Log("current user: " << userName << " ID == " << anotherUserId << endl);
+		}
+	}
+	else {
+		//  Handle other Platform SDK messages here.
+	}
+	ovr_FreeMessage(message);
+}
+
+void VR::handleAvatarMessages()
+{
+	static int loadingAssets = 0;
+	//static const ovrAvatarMessage_AvatarSpecification *spec;
+	static uint64_t userId;
+	ovrAvatarMessage *message = ovrAvatarMessage_Pop();
+	if (!message) {
+		return; // no new messages.
+	}
+	const ovrAvatarMessage_AvatarSpecification *spec;
+	auto messageType = ovrAvatarMessage_GetType(message);
+	if (messageType == ovrAvatarMessageType_AvatarSpecification) {
+		spec = ovrAvatarMessage_GetAvatarSpecification(message);
+		userId = spec->oculusUserID;
+		//Log("avatar spec: " << spec->avatarSpec << " ID == " << spec->oculusUserID << endl);
+		// see mirror.cpp l 838
+		// Create the avatar instance
+		auto avatar = ovrAvatar_Create(spec->avatarSpec, ovrAvatarCapability_All);
+
+		// Trigger load operations for all of the assets referenced by the avatar
+		uint32_t refCount = ovrAvatar_GetReferencedAssetCount(avatar);
+		for (uint32_t i = 0; i < refCount; ++i)
+		{
+			ovrAvatarAssetID id = ovrAvatar_GetReferencedAsset(avatar, i);
+			ovrAvatarAsset_BeginLoading(id);
+			++loadingAssets;
+		}
+		//Log("Loading " << loadingAssets << " assets..." << endl);
+	}
+	else if (messageType == ovrAvatarMessageType_AssetLoaded) {
+		auto assetmsg = ovrAvatarMessage_GetAssetLoaded(message);
+		// Determine the type of the asset that got loaded
+		ovrAvatarAssetType assetType = ovrAvatarAsset_GetType(assetmsg->asset);
+		void* data = nullptr;
+
+		// Call the appropriate loader function
+		switch (assetType)
+		{
+		case ovrAvatarAssetType_Mesh:
+			{
+				const ovrAvatarMeshAssetData* assetdata = ovrAvatarAsset_GetMeshData(assetmsg->asset);
+				//Log("vertices for " << assetmsg->assetID << " : " << assetdata->vertexCount << endl);
+				writeOVRMesh(userId, assetmsg, assetdata);
+			}
+			break;
+		case ovrAvatarAssetType_Texture:
+			//data = _loadTexture(ovrAvatarAsset_GetTextureData(assetmsg->asset));
+			break;
+		}
+
+		// Store the data that we loaded for the asset in the asset map
+		//_assetMap[message->assetID] = data;
+		--loadingAssets;
+		//Log("Loading " << loadingAssets << " assets..." << endl);
+	}
+	else {
+		//  Handle other Platform SDK messages here.
+	}
+	ovrAvatarMessage_Free(message);
+}
+
+void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded * assetmsg, const ovrAvatarMeshAssetData * assetdata)
+{
+	Log("write avatar mesh (user id / mesh id / vertex count): " << std::hex << userId << " / " << assetmsg->assetID << " / " << assetdata->vertexCount << endl);
+	MeshLoader loader;
+	wstringstream sss;
+	sss << std::hex << userId << "_" << assetmsg->assetID << ".b";
+	wstring binFile = xapp->findFileForCreation(sss.str(), XApp::MESH);
+	Log(binFile << endl);//ios::out | ios::app | ios::binary
+	ofstream bfile(binFile, ios::out | ios::trunc | ios::binary);  // create and delete old content
+	assert(bfile);
+	int mode = 0; // no bone data
+	bfile.write((char*)&mode, 4);
+	// vertices
+	const ovrAvatarMeshVertex_ *vbuf = assetdata->vertexBuffer;
+	int numVerts = assetdata->vertexCount;
+	numVerts *= 3;
+	bfile.write((char*)&numVerts, 4);
+	for (size_t i = 0; i < assetdata->vertexCount; i++) {
+		ovrAvatarMeshVertex_ v = vbuf[i];
+		bfile.write((char*)&v.x, 4);
+		bfile.write((char*)&v.y, 4);
+		bfile.write((char*)&v.z, 4);
+	}
+
+	// texture coords
+	//int numTex = (numVerts * 2) / 3;
+	for (size_t i = 0; i < assetdata->vertexCount; i++) {
+		ovrAvatarMeshVertex_ v = vbuf[i];
+		bfile.write((char*)&v.u, 4);
+		bfile.write((char*)&v.v, 4);
+	}
+
+	// normals
+	for (size_t i = 0; i < assetdata->vertexCount; i++) {
+		ovrAvatarMeshVertex_ v = vbuf[i];
+		bfile.write((char*)&v.nx, 4);
+		bfile.write((char*)&v.ny, 4);
+		bfile.write((char*)&v.nz, 4);
+	}
+
+	// TODO: read bones on mode == 1
+
+	// vertices index buffer
+	int numIndex = assetdata->indexCount;
+	bfile.write((char*)&numIndex, 4);
+	const uint16_t* ibuf = assetdata->indexBuffer;
+	for (size_t i = 0; i < assetdata->indexCount; i++) {
+		uint16_t n = ibuf[i];
+		int nl = n;
+		bfile.write((char*)&nl, 4);
+	}
+
+	// animations
+	int numAnimationNameLength = 0;
+	bfile.write((char*)&numAnimationNameLength, 4);
+	if (numAnimationNameLength != 0) {
+		// TODO
+	}
+
+	bfile.close();
+	Mesh mesh;
+	//meshes[id] = mesh;
+	//loader.loadBinaryAsset(binFile, &meshes[id], scale);
+	//meshes[id].createVertexAndIndexBuffer(this->objectEffect);
+}
+
+void VR::loadAvatar()
+{
+	ovrAvatar_Initialize("1197980730287980");
+	// get current user:
+	ovr_User_GetLoggedInUser();
+}
+
 #else
+
+void VR::handleOVRMessages()
+{
+}
+
+void VR::loadAvatar()
+{
+}
+
 void VR::nextTracking()
 {
 }
