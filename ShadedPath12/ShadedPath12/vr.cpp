@@ -396,8 +396,10 @@ void VR::nextTracking()
 		xapp->camera.look.y = finalForward.y;
 		xapp->camera.look.z = finalForward.z;
 
+		float nearz = xapp->camera.nearZ;
+		float farz = xapp->camera.farZ;
 		Matrix4f view = Matrix4f::LookAtLH(shiftedEyePos, shiftedEyePos + finalForward, finalUp);
-		Matrix4f projO = ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.2f, 2000.0f,  ovrProjection_LeftHanded);
+		Matrix4f projO = ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, nearz, farz,  ovrProjection_LeftHanded);
 		Matrix4fToXM(this->viewOVR[eye], view.Transposed());
 		Matrix4fToXM(this->projOVR[eye], projO.Transposed());
 	}

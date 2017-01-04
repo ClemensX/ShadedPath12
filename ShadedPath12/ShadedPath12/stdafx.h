@@ -30,8 +30,11 @@
 #include <mutex>
 #include <future>
 #include <condition_variable>
+#include <regex>
 //#include <new>
 using namespace std;
+#include <filesystem>
+using namespace std::tr2::sys;
 #include <assert.h>
 #include <typeinfo.h>
 

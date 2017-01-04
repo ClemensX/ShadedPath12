@@ -139,6 +139,9 @@
     <ClInclude Include="hangonfull.h">
       <Filter>Apps</Filter>
     </ClInclude>
+    <ClInclude Include="avatar.h">
+      <Filter>Apps</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -232,6 +235,9 @@
       <Filter>Apps</Filter>
     </ClCompile>
     <ClCompile Include="hangonfull.cpp">
+      <Filter>Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="avatar.cpp">
       <Filter>Apps</Filter>
     </ClCompile>
   </ItemGroup>

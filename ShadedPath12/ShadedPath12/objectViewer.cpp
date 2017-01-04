@@ -337,7 +337,7 @@ void ObjectViewer::update()
 	object.update();
 	//Log("obj pos " << object.pos().x << endl);
 
-	xapp().vr.handleOVRMessages();
+	if(xapp().ovrRendering)	xapp().vr.handleOVRMessages();
 }
 
 void ObjectViewer::draw()
