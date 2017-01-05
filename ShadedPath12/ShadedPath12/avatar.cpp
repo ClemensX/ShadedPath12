@@ -2,7 +2,7 @@
 #include "avatar.h"
 
 // un-comment to load mehes from oculus servers and store locally
-//#define LOAD_AVATAR_DATA
+#define LOAD_AVATAR_DATA
 
 // change to base name of meshes saved in data/mesh folder (part before _ )
 #define USERID L"413fd8923c71e"
@@ -58,8 +58,10 @@ void Avatar::loadLocalAvatarMeshes(wstring userId)
 	if (xapp().ovrRendering)	xapp().vr.handleOVRMessages();
 	auto grp = xapp().objectStore.getGroup("avatar");
 	for (auto & w : *grp) {
-		w.get()->material.specExp = 1.0f;       // no spec color
-		w.get()->material.specIntensity = 0.0f; // no spec color
+		//w.get()->material.specExp = 1.0f;       // no spec color
+		//w.get()->material.specIntensity = 0.0f; // no spec color
+		w.get()->material.specExp = 20.0f;
+		w.get()->material.specIntensity = 700.0f;
 		w.get()->material.ambient = XMFLOAT4(1, 1, 1, 1);
 	}
 
@@ -101,7 +103,9 @@ void Avatar::init()
 	xapp().world.drawCoordinateSystem(XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f), "Origin", textEffect, dotcrossEffect, textSize);
 
 	// textures
-	xapp().textureStore.loadTexture(L"white.dds", "white");
+	//xapp().textureStore.loadTexture(L"white.dds", "white");
+	//xapp().textureStore.loadTexture(L"sample.dds", "white");
+	xapp().textureStore.loadTexture(L"413fd8923c71e_1c0685581a5a8aa4.dds", "white");
 
 	TextureInfo *GrassTex, *HouseTex, *MetalTex, *WormTex, *PlanetTex, *Meteor1Tex, *AxistestTex;
 	TextureInfo *WhiteTex = xapp().textureStore.getTexture("white");
@@ -113,17 +117,18 @@ void Avatar::init()
 		//xapp().objectStore.loadObject(L"413fd8923c71e_450d4eca9f73b9a1.b", "light1", 1.0f);  // glasses
 		//xapp().objectStore.loadObject(L"413fd8923c71e_47be498de8d01599.b", "light1", 1.0f);  // hair
 		//xapp().objectStore.loadObject(L"413fd8923c71e_6a4ae11446026286.b", "light1", 1.0f);  // left hand
-		//xapp().objectStore.loadObject(L"413fd8923c71e_6feb9283b780b5a3.b", "light1", 1.0f);  // right controller
+		xapp().objectStore.loadObject(L"413fd8923c71e_6feb9283b780b5a3.b", "light1", 1.0f);  // right controller  LEFT!!!
 		//xapp().objectStore.loadObject(L"413fd8923c71e_7f1ca835aeb1b69e.b", "light1", 1.0f);  // large empty cone
 		//xapp().objectStore.loadObject(L"413fd8923c71e_8e78d539875b1886.b", "light1", 1.0f);  // open flat ring
 		//xapp().objectStore.loadObject(L"413fd8923c71e_af2fdac13313089c.b", "light1", 1.0f);  // face
-		xapp().objectStore.loadObject(L"413fd8923c71e_f82847a6b3ddf1a6.b", "light1", 1.0f);  // right hand
-		xapp().objectStore.addObject(object, "light1", XMFLOAT3(0.0f, 0.0f, 0.5f), WhiteTex);
+		//xapp().objectStore.loadObject(L"413fd8923c71e_f82847a6b3ddf1a6.b", "light1", 1.0f);  // right hand
+		//xapp().objectStore.loadObject(L"light1.b", "light1", 1.0f);  // right hand
+		xapp().objectStore.addObject(object, "light1", XMFLOAT3(0.0f, 0.0f, -0.5f), WhiteTex);
 		//object.drawBoundingBox = true;
 		//object.drawNormals = true;
 		//object.pathDescMove->pathMode = Path_Reverse;
-		object.material.specExp = 1.0f;       // no spec color
-		object.material.specIntensity = 0.0f; // no spec color
+		object.material.specExp = 20.0f;
+		object.material.specIntensity = 700.0f;
 	}
 	// draw lines for mesh:
 	Log(" object created ok, #vertices == " << object.mesh->vertices.size() << endl);
@@ -152,8 +157,8 @@ void Avatar::init()
 
 	// point lights:
 	lights->pointLights[0].color = dirColor1;
-	lights->pointLights[0].pos = XMFLOAT4(6.0f, 10.0f, 8.0f, 1.0f);
-	lights->pointLights[0].range_reciprocal = 1.0f / 30.0f;
+	lights->pointLights[0].pos = XMFLOAT4(7.0f, 10.0f, 8.0f, 1.0f);
+	lights->pointLights[0].range_reciprocal = 1.0f / 40.0f;
 	lights->pointLights[0].used = 1.0f;
 
 	vector<XMFLOAT3> crossPoints;

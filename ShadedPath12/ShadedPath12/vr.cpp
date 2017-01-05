@@ -479,7 +479,18 @@ void VR::handleAvatarMessages()
 		//Log("avatar spec: " << spec->avatarSpec << " ID == " << spec->oculusUserID << endl);
 		// see mirror.cpp l 838
 		// Create the avatar instance
-		auto avatar = ovrAvatar_Create(spec->avatarSpec, ovrAvatarCapability_All);
+		avatar = ovrAvatar_Create(spec->avatarSpec, ovrAvatarCapability_All);
+		auto avatarControllerComponent = ovrAvatarPose_GetLeftControllerComponent(avatar);
+		auto avatarComponent = avatarControllerComponent->renderComponent;
+		for (unsigned int i = 0; i < avatarComponent->renderPartCount; i++) {
+			auto part = avatarComponent->renderParts[i];
+			auto type = ovrAvatarRenderPart_GetType(part);
+			Log("leftcontroller render part type: " << type << endl);
+			assert(type == ovrAvatarRenderPartType_SkinnedMeshRenderPBS);
+			auto skinnedMeshRenderPBS = ovrAvatarRenderPart_GetSkinnedMeshRenderPBS(part);
+			if (skinnedMeshRenderPBS)
+				Log(" left controller mesh asset id: " <<std::hex << skinnedMeshRenderPBS->meshAssetID << endl);
+		}
 
 		// Trigger load operations for all of the assets referenced by the avatar
 		uint32_t refCount = ovrAvatar_GetReferencedAssetCount(avatar);
@@ -508,6 +519,11 @@ void VR::handleAvatarMessages()
 			}
 			break;
 		case ovrAvatarAssetType_Texture:
+			{
+				const ovrAvatarTextureAssetData* assetdata = ovrAvatarAsset_GetTextureData(assetmsg->asset);
+				//Log("vertices for " << assetmsg->assetID << " : " << assetdata->vertexCount << endl);
+				writeOVRTexture(userId, assetmsg, assetdata);
+			}
 			//data = _loadTexture(ovrAvatarAsset_GetTextureData(assetmsg->asset));
 			break;
 		}
@@ -516,6 +532,20 @@ void VR::handleAvatarMessages()
 		//_assetMap[message->assetID] = data;
 		--loadingAssets;
 		//Log("Loading " << loadingAssets << " assets..." << endl);
+		if (loadingAssets == 0) {
+			auto avatarControllerComponent = ovrAvatarPose_GetLeftControllerComponent(avatar);
+			auto avatarComponent = avatarControllerComponent->renderComponent;
+			for (unsigned int i = 0; i < avatarComponent->renderPartCount; i++) {
+				auto part = avatarComponent->renderParts[i];
+				auto type = ovrAvatarRenderPart_GetType(part);
+				Log("leftcontroller render part type: " << type << endl);
+				assert(type == ovrAvatarRenderPartType_SkinnedMeshRenderPBS);
+				auto skinnedMeshRenderPBS = ovrAvatarRenderPart_GetSkinnedMeshRenderPBS(part);
+				if (skinnedMeshRenderPBS)
+					Log(" left controller mesh asset id: " << skinnedMeshRenderPBS->meshAssetID << endl);
+			}
+
+		}
 	}
 	else {
 		//  Handle other Platform SDK messages here.
@@ -526,7 +556,6 @@ void VR::handleAvatarMessages()
 void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded * assetmsg, const ovrAvatarMeshAssetData * assetdata)
 {
 	Log("write avatar mesh (user id / mesh id / vertex count): " << std::hex << userId << " / " << assetmsg->assetID << " / " << assetdata->vertexCount << endl);
-	MeshLoader loader;
 	wstringstream sss;
 	sss << std::hex << userId << "_" << assetmsg->assetID << ".b";
 	wstring binFile = xapp->findFileForCreation(sss.str(), XApp::MESH);
@@ -536,12 +565,34 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 	int mode = 0; // no bone data
 	bfile.write((char*)&mode, 4);
 	// vertices
-	const ovrAvatarMeshVertex_ *vbuf = assetdata->vertexBuffer;
+	ovrAvatarMeshVertex_ *vbuf = (ovrAvatarMeshVertex_ *)assetdata->vertexBuffer;
+	uint16_t* ibuf = (uint16_t*)assetdata->indexBuffer;
 	int numVerts = assetdata->vertexCount;
+	if (true) {
+		// fix for left handed system
+		// TODO: pose matrices need to be converted too
+		// flip z coordinate on all vertices, change triangle ordering
+		for (size_t i = 0; i < assetdata->vertexCount; i++) {
+			ovrAvatarMeshVertex_ v = vbuf[i];
+			v.z *= -1.0f;
+			v.nz *= -1.0f;
+			v.tz *= -1.0f;
+			vbuf[i] = v;
+		}
+		for (size_t i = 0; i < assetdata->indexCount; i+=3) {
+			auto save = ibuf[i + 1];
+			ibuf[i + 1] = ibuf[i + 2];
+			ibuf[i + 2] = save;
+		}
+	}
 	numVerts *= 3;
 	bfile.write((char*)&numVerts, 4);
 	for (size_t i = 0; i < assetdata->vertexCount; i++) {
 		ovrAvatarMeshVertex_ v = vbuf[i];
+		//assert(v.u <= 1.0f);
+		//assert(v.u >= 0.0f);
+		//assert(v.v <= 1.0f);
+		//assert(v.v >= 0.0f);
 		bfile.write((char*)&v.x, 4);
 		bfile.write((char*)&v.y, 4);
 		bfile.write((char*)&v.z, 4);
@@ -551,6 +602,8 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 	//int numTex = (numVerts * 2) / 3;
 	for (size_t i = 0; i < assetdata->vertexCount; i++) {
 		ovrAvatarMeshVertex_ v = vbuf[i];
+		//v.u = 1.0f - v.u;
+		//v.v = 1.0f - v.v;
 		bfile.write((char*)&v.u, 4);
 		bfile.write((char*)&v.v, 4);
 	}
@@ -568,7 +621,7 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 	// vertices index buffer
 	int numIndex = assetdata->indexCount;
 	bfile.write((char*)&numIndex, 4);
-	const uint16_t* ibuf = assetdata->indexBuffer;
+	//const uint16_t* ibuf = assetdata->indexBuffer;
 	for (size_t i = 0; i < assetdata->indexCount; i++) {
 		uint16_t n = ibuf[i];
 		int nl = n;
@@ -587,6 +640,119 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 	//meshes[id] = mesh;
 	//loader.loadBinaryAsset(binFile, &meshes[id], scale);
 	//meshes[id].createVertexAndIndexBuffer(this->objectEffect);
+}
+
+#include "dds.h"
+void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoaded * assetmsg, const ovrAvatarTextureAssetData * data)
+{
+	// Load the image data
+	Log("texture " << assetmsg->assetID << " ");
+	wstringstream sss;
+	sss << std::hex << userId << "_" << assetmsg->assetID << ".dds";
+	wstring binFile = xapp->findFileForCreation(sss.str(), XApp::TEXTURE);
+	Log(binFile << endl);//ios::out | ios::app | ios::binary
+	ofstream bfile(binFile, ios::out | ios::trunc | ios::binary);  // create and delete old content
+	assert(bfile);
+	uint32_t dwMagicNumber = DDS_MAGIC;
+	bfile.write((const char*)&dwMagicNumber, 4);
+	DDS_HEADER header;
+	bool ok = false;
+
+	//bfile.write((char*)&mode, 4);
+	switch (data->format)
+	{
+
+		// Handle uncompressed image data
+	case ovrAvatarTextureFormat_RGB24:
+		Log("format RGB24 " << data->sizeX << " * " << data->sizeY << " (" << data->textureDataSize << " bytes)" << endl);
+		for (uint32_t level = 0, offset = 0, width = data->sizeX, height = data->sizeY; level < data->mipCount; ++level)
+		{
+			//glTexImage2D(GL_TEXTURE_2D, level, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data->textureData + offset);
+			offset += width * height * 3;
+			width /= 2;
+			height /= 2;
+		}
+		break;
+
+		// Handle compressed image data
+	case ovrAvatarTextureFormat_DXT1:
+	case ovrAvatarTextureFormat_DXT5:
+		//GLenum glFormat;
+		int blockSize;
+		if (data->format == ovrAvatarTextureFormat_DXT1)
+		{
+			blockSize = 8;
+			Log("format DXT1 " << data->sizeX << " * " << data->sizeY << " (" << data->textureDataSize << " bytes)" << endl);
+			//glFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+		}
+		else
+		{
+			blockSize = 16;
+			Log("format DXT5 " << std::hex << data->sizeX << " * " << data->sizeY << " (" << data->textureDataSize << " bytes)" << endl);
+			header.size = 0x7c;
+			header.flags = 0xa1007;
+			header.height = data->sizeY;
+			header.width = data->sizeX;
+			header.pitchOrLinearSize = max(1, ((header.width + 3) / 4)) * blockSize;//0x40000;
+			header.depth = 0;
+			header.mipMapCount = data->mipCount;
+			header.caps = 0x401008;
+			header.caps2 = 0;
+			header.caps3 = 0;
+			header.caps4 = 0;
+
+			header.reserved1[0] = 0;
+			header.reserved1[1] = 0;
+			header.reserved1[2] = 0;
+			header.reserved1[3] = 0;
+			header.reserved1[4] = 0;
+			header.reserved1[5] = 0;
+			header.reserved1[6] = 0;
+			header.reserved1[7] = 0;
+			header.reserved1[8] = 0;
+			header.reserved1[9] = 0;
+			header.reserved1[10] = 0;
+
+			header.ddspf.size = 0x20;
+			header.ddspf.flags = 0x04;
+			header.ddspf.fourCC = 0x35545844;
+			header.ddspf.ABitMask = 0;
+			header.ddspf.BBitMask = 0;
+			header.ddspf.GBitMask = 0;
+			header.ddspf.RBitMask = 0;
+			header.ddspf.RGBBitCount = 0;
+
+			header.reserved2 = 0;
+
+			bfile.write((const char*)&header, sizeof(header));
+			ok = true;
+			//glFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		}
+
+		Log(" sizes: ");
+		int total = 0;
+		for (uint32_t level = 0, offset = 0, width = data->sizeX, height = data->sizeY; level < data->mipCount; ++level)
+		{
+			//GLsizei levelSize = blockSize * (width / 4) * (height / 4);
+			//int levelSize = blockSize * (width / 4) * (height / 4);
+			int levelSize = blockSize * max(1, ((width + 3) / 4)) * max(1, ((height + 3) / 4));
+			Log(std::hex << levelSize << " ");
+			total += levelSize;
+			//glCompressedTexImage2D(GL_TEXTURE_2D, level, glFormat, width, height, 0, levelSize, data->textureData + offset);
+			const char *mem = ((const char*)data->textureData) + offset;
+			bfile.write(mem, levelSize);
+			offset += levelSize;
+			width /= 2;
+			height /= 2;
+		}
+		Log(endl << std::hex << "total: " << total << endl);
+		break;
+	}
+	bfile.close();
+	if (!ok) {
+		ofstream bfile(binFile, ios::out | ios::trunc | ios::binary);  // create and delete old content
+		bfile.close();
+	}
 }
 
 void VR::loadAvatar()

@@ -112,11 +112,14 @@ public:
 		ovr_GetTextureSwapChainCurrentIndex(session, textureSwapChain, &currentIndex);
 		return currentIndex;
 	};
+	ovrAvatar *avatar = nullptr;
 protected:
 	EyePos curEye = EyeLeft;
 private:
 	void handleAvatarMessages();
 	void writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarMeshAssetData *assetdata);
+	void writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarTextureAssetData *assetdata);
+	
 	D3D12_VIEWPORT viewports[2];
 	D3D12_RECT scissorRects[2];
 	XApp* xapp;
