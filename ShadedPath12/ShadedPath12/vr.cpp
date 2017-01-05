@@ -683,52 +683,53 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 		{
 			blockSize = 8;
 			Log("format DXT1 " << data->sizeX << " * " << data->sizeY << " (" << data->textureDataSize << " bytes)" << endl);
+			header.ddspf.fourCC = 0x31545844;
 			//glFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 		}
 		else
 		{
 			blockSize = 16;
 			Log("format DXT5 " << std::hex << data->sizeX << " * " << data->sizeY << " (" << data->textureDataSize << " bytes)" << endl);
-			header.size = 0x7c;
-			header.flags = 0xa1007;
-			header.height = data->sizeY;
-			header.width = data->sizeX;
-			header.pitchOrLinearSize = max(1, ((header.width + 3) / 4)) * blockSize;//0x40000;
-			header.depth = 0;
-			header.mipMapCount = data->mipCount;
-			header.caps = 0x401008;
-			header.caps2 = 0;
-			header.caps3 = 0;
-			header.caps4 = 0;
-
-			header.reserved1[0] = 0;
-			header.reserved1[1] = 0;
-			header.reserved1[2] = 0;
-			header.reserved1[3] = 0;
-			header.reserved1[4] = 0;
-			header.reserved1[5] = 0;
-			header.reserved1[6] = 0;
-			header.reserved1[7] = 0;
-			header.reserved1[8] = 0;
-			header.reserved1[9] = 0;
-			header.reserved1[10] = 0;
-
-			header.ddspf.size = 0x20;
-			header.ddspf.flags = 0x04;
 			header.ddspf.fourCC = 0x35545844;
-			header.ddspf.ABitMask = 0;
-			header.ddspf.BBitMask = 0;
-			header.ddspf.GBitMask = 0;
-			header.ddspf.RBitMask = 0;
-			header.ddspf.RGBBitCount = 0;
-
-			header.reserved2 = 0;
-
-			bfile.write((const char*)&header, sizeof(header));
-			ok = true;
-			//glFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 		}
 
+		header.size = 0x7c;
+		header.flags = 0xa1007;
+		header.height = data->sizeY;
+		header.width = data->sizeX;
+		header.pitchOrLinearSize = max(1, ((header.width + 3) / 4)) * blockSize;//0x40000;
+		header.depth = 0;
+		header.mipMapCount = data->mipCount;
+		header.caps = 0x401008;
+		header.caps2 = 0;
+		header.caps3 = 0;
+		header.caps4 = 0;
+
+		header.reserved1[0] = 0;
+		header.reserved1[1] = 0;
+		header.reserved1[2] = 0;
+		header.reserved1[3] = 0;
+		header.reserved1[4] = 0;
+		header.reserved1[5] = 0;
+		header.reserved1[6] = 0;
+		header.reserved1[7] = 0;
+		header.reserved1[8] = 0;
+		header.reserved1[9] = 0;
+		header.reserved1[10] = 0;
+
+		header.ddspf.size = 0x20;
+		header.ddspf.flags = 0x04;
+		header.ddspf.ABitMask = 0;
+		header.ddspf.BBitMask = 0;
+		header.ddspf.GBitMask = 0;
+		header.ddspf.RBitMask = 0;
+		header.ddspf.RGBBitCount = 0;
+
+		header.reserved2 = 0;
+
+		bfile.write((const char*)&header, sizeof(header));
+		ok = true;
+		//glFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 		Log(" sizes: ");
 		int total = 0;
 		for (uint32_t level = 0, offset = 0, width = data->sizeX, height = data->sizeY; level < data->mipCount; ++level)
