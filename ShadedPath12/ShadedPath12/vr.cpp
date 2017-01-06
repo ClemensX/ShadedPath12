@@ -480,16 +480,22 @@ void VR::handleAvatarMessages()
 		// see mirror.cpp l 838
 		// Create the avatar instance
 		avatar = ovrAvatar_Create(spec->avatarSpec, ovrAvatarCapability_All);
-		auto avatarControllerComponent = ovrAvatarPose_GetLeftControllerComponent(avatar);
+		auto avatarControllerComponent = ovrAvatarPose_GetLeftHandComponent(avatar);  //ControllerComponent(avatar);
 		auto avatarComponent = avatarControllerComponent->renderComponent;
 		for (unsigned int i = 0; i < avatarComponent->renderPartCount; i++) {
 			auto part = avatarComponent->renderParts[i];
 			auto type = ovrAvatarRenderPart_GetType(part);
 			Log("leftcontroller render part type: " << type << endl);
-			assert(type == ovrAvatarRenderPartType_SkinnedMeshRenderPBS);
-			auto skinnedMeshRenderPBS = ovrAvatarRenderPart_GetSkinnedMeshRenderPBS(part);
-			if (skinnedMeshRenderPBS)
-				Log(" left controller mesh asset id: " <<std::hex << skinnedMeshRenderPBS->meshAssetID << endl);
+			if (type == ovrAvatarRenderPartType_SkinnedMeshRenderPBS) {
+				auto skinnedMeshRenderPBS = ovrAvatarRenderPart_GetSkinnedMeshRenderPBS(part);
+				if (skinnedMeshRenderPBS)
+					Log(" left controller mesh asset id: " << std::hex << skinnedMeshRenderPBS->meshAssetID << endl);
+			}
+			if (type == ovrAvatarRenderPartType_SkinnedMeshRender) {
+				auto skinnedMeshRender = ovrAvatarRenderPart_GetSkinnedMeshRender(part);
+				if (skinnedMeshRender)
+					Log(" left controller mesh asset id: " << std::hex << skinnedMeshRender->meshAssetID << endl);
+			}
 		}
 
 		// Trigger load operations for all of the assets referenced by the avatar
@@ -665,9 +671,53 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 		// Handle uncompressed image data
 	case ovrAvatarTextureFormat_RGB24:
 		Log("format RGB24 " << data->sizeX << " * " << data->sizeY << " (" << data->textureDataSize << " bytes)" << endl);
+		header.size = 0x7c;
+		header.flags = 0x2100f;
+		header.height = data->sizeY;
+		header.width = data->sizeX;
+		//header.pitchOrLinearSize = max(1, ((header.width + 3) / 4)) * blockSize;//0x40000;
+		header.pitchOrLinearSize = header.width * 4;
+		header.depth = 1;
+		header.mipMapCount = data->mipCount;
+		header.caps = 0x401008;
+		header.caps2 = 0;
+		header.caps3 = 0;
+		header.caps4 = 0;
+
+		header.reserved1[0] = 0;
+		header.reserved1[1] = 0;
+		header.reserved1[2] = 0;
+		header.reserved1[3] = 0;
+		header.reserved1[4] = 0;
+		header.reserved1[5] = 0;
+		header.reserved1[6] = 0;
+		header.reserved1[7] = 0;
+		header.reserved1[8] = 0;
+		header.reserved1[9] = 0;
+		header.reserved1[10] = 0;
+
+		header.ddspf.size = 0x20;
+		header.ddspf.flags = 0x41;
+		header.ddspf.fourCC = 0x0;
+		header.ddspf.RGBBitCount = 0x20;
+		header.ddspf.RBitMask = 0x00ff0000;
+		header.ddspf.GBitMask = 0x0000ff00;
+		header.ddspf.BBitMask = 0x000000ff;
+		header.ddspf.ABitMask = 0xff000000;
+
+		header.reserved2 = 0;
+		bfile.write((const char*)&header, sizeof(header));
+		ok = true;
 		for (uint32_t level = 0, offset = 0, width = data->sizeX, height = data->sizeY; level < data->mipCount; ++level)
 		{
 			//glTexImage2D(GL_TEXTURE_2D, level, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data->textureData + offset);
+			//convert to rgb32 while saving:
+			const unsigned char alpha = 0xff;
+			for (uint32_t rgb_index = 0; rgb_index < width * height * 3; rgb_index += 3) {
+				const char *mem = ((const char*)data->textureData) + offset + rgb_index;
+				bfile.write(mem, 3);
+				bfile.write((const char*)&alpha, 1);
+			}
 			offset += width * height * 3;
 			width /= 2;
 			height /= 2;
