@@ -697,8 +697,9 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 		header.flags = 0xa1007;
 		header.height = data->sizeY;
 		header.width = data->sizeX;
-		header.pitchOrLinearSize = max(1, ((header.width + 3) / 4)) * blockSize;//0x40000;
-		header.depth = 0;
+		//header.pitchOrLinearSize = max(1, ((header.width + 3) / 4)) * blockSize;//0x40000;
+		header.pitchOrLinearSize = blockSize * max(1, ((header.width + 3) / 4)) * max(1, ((header.height + 3) / 4));
+		header.depth = 1;
 		header.mipMapCount = data->mipCount;
 		header.caps = 0x401008;
 		header.caps2 = 0;
