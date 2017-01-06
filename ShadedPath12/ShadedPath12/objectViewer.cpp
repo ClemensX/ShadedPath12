@@ -74,7 +74,7 @@ void ObjectViewer::init()
 	// textures
 	//xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
 	//xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
-	//xapp().textureStore.loadTexture(L"blue.dds", "metal");
+	xapp().textureStore.loadTexture(L"metal1.dds", "metal");
 	//xapp().textureStore.loadTexture(L"worm1.dds", "worm");
 	//xapp().textureStore.loadTexture(L"mars_6k_color.dds", "planet");
 	//xapp().textureStore.loadTexture(L"met1.dds", "meteor1");
@@ -96,6 +96,7 @@ void ObjectViewer::init()
 	//xapp->objectStore.addObject(pathObject, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GRASSDIRT8);
 
 	TextureInfo *GrassTex, *HouseTex, *MetalTex, *WormTex, *PlanetTex, *Meteor1Tex, *AxistestTex;
+	MetalTex = xapp().textureStore.getTexture("metal");
 	//TextureInfo *GrassTex = xapp().textureStore.getTexture("grass");
 	//TextureInfo *HouseTex = xapp().textureStore.getTexture("default");
 	//TextureInfo *MetalTex = xapp().textureStore.getTexture("metal");
@@ -128,7 +129,7 @@ void ObjectViewer::init()
 		object.material.specIntensity = 10.0f; // no spec color
 		//object.drawNormals = true;
 	}
-	if (false) {
+	if (true) {
 		xapp().objectStore.loadObject(L"joint5_anim.b", "Joint");
 		xapp().objectStore.addObject(object, "Joint", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
 		object.setAction("Armature");
@@ -222,7 +223,7 @@ void ObjectViewer::init()
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
 	}
-	if (true) {
+	if (false) {
 		//xapp().objectStore.loadObject(L"413fd8923c71e_557a26331850dbf.b", "light1", 1.0f);  // left controller
 		//xapp().objectStore.loadObject(L"413fd8923c71e_1274b22c61fc48a3.b", "light1", 1.0f);  // torso clothes
 		//xapp().objectStore.loadObject(L"413fd8923c71e_450d4eca9f73b9a1.b", "light1", 1.0f);  // glasses

@@ -300,9 +300,18 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		XMMATRIX wvp = calcWVP(toWorld, adjustedEyeMatrix);
 		XMStoreFloat4x4(&cbv->wvp, wvp);
 		cbv->world = di.world;
-		cbv->cameraPos.x = cam->pos.x;
-		cbv->cameraPos.y = cam->pos.y;
-		cbv->cameraPos.z = cam->pos.z;
+		//cbv->cameraPos.x = cam->pos.x;
+		//cbv->cameraPos.y = cam->pos.y;
+		//cbv->cameraPos.z = cam->pos.z;
+		cbv->cameraPos = threadLocal.vr_eyesm[eyeNum].adjustedEyePos[eyeNum];
+		//if (eyeNum == 0) {
+		//	Log(cbv->cameraPos.x);
+		//	Log(" (" << threadLocal.vr_eyesm[eyeNum].adjustedEyePos[eyeNum].x << ")");
+		//}
+		//else {
+		//	Log(" " << cbv->cameraPos.x);
+		//	Log(" (" << threadLocal.vr_eyesm[eyeNum].adjustedEyePos[eyeNum].x << ")" << endl);
+		//}
 		cbv->alpha = di.alpha;
 		//if (eyeNum == 1) di.objectNum += 12;//10010;
 		if (inBulkOperation) {

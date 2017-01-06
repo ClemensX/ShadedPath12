@@ -2,7 +2,7 @@
 #include "avatar.h"
 
 // un-comment to load mehes from oculus servers and store locally
-#define LOAD_AVATAR_DATA
+//#define LOAD_AVATAR_DATA
 
 // change to base name of meshes saved in data/mesh folder (part before _ )
 #define USERID L"413fd8923c71e"
@@ -105,8 +105,8 @@ void Avatar::init()
 	// textures
 	//xapp().textureStore.loadTexture(L"white.dds", "white");
 	//xapp().textureStore.loadTexture(L"sample2.dds", "white");
-	//xapp().textureStore.loadTexture(L"default.dds", "white");
-	xapp().textureStore.loadTexture(L"rgbtest4.dds", "white");
+	xapp().textureStore.loadTexture(L"touch_controller.dds", "white");
+	//xapp().textureStore.loadTexture(L"rgbtest4.dds", "white");
 	//xapp().textureStore.loadTexture(L"413fd8923c71e_1c0685581a5a8aa4.dds", "white");
 	//xapp().textureStore.loadTexture(L"413fd8923c71e_951f51e94248778a.dds", "white");
 	TextureInfo *GrassTex, *HouseTex, *MetalTex, *WormTex, *PlanetTex, *Meteor1Tex, *AxistestTex;

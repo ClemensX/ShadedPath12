@@ -43,6 +43,7 @@ public:
 	D3D12_VIEWPORT viewports[2];
 	D3D12_RECT scissorRects[2];
 	XMFLOAT4X4 viewOVR[2], projOVR[2];
+	XMFLOAT3 adjustedEyePos[2];
 };
 
 // global class  - only one instance  - used for global VR data and initialization
@@ -92,6 +93,7 @@ public:
 	// get projection matrix for current eye
 	XMFLOAT4X4 getOVRProjectionMatrix();
 	XMFLOAT4X4 getOVRProjectionMatrixByIndex(int eyeNum);
+	XMFLOAT3 getOVRAdjustedEyePosByIndex(int eyeNum);
 #else
 	// just return identity matrix if ovr not enabled
 	static XMFLOAT4X4 ident;
@@ -137,6 +139,7 @@ private:
 	ovrPosef         EyeRenderPose[2];     // Useful to remember where the rendered eye originated
 	float            YawAtRender[2];       // Useful to remember where the rendered eye originated
 	XMFLOAT4X4 viewOVR[2], projOVR[2];
+	XMFLOAT3 adjustedEyePos[2];            // store fixed camera pos for usage in effect (aka roomscale)
 	//ovrSwapTextureSet *      pTextureSet = 0;
 	ovrTextureSwapChain textureSwapChain = 0;
 	//std::vector<ID3D11RenderTargetView*> texRtv;

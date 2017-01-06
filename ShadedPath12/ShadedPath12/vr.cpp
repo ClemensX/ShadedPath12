@@ -258,6 +258,7 @@ void VR_Eyes::adjustEyeMatrix(XMMATRIX & m, Camera * cam, int eyeNum, VR* vr)
 	//vr->nextTracking();
 	viewOVR[eyeNum] = vr->getOVRViewMatrixByIndex(eyeNum);
 	projOVR[eyeNum] = vr->getOVRProjectionMatrixByIndex(eyeNum);
+	adjustedEyePos[eyeNum] = vr->getOVRAdjustedEyePosByIndex(eyeNum);
 
 	// camera update
 	//cam->projectionTransform(this, eyeNum);
@@ -343,6 +344,7 @@ void VR::nextTracking()
 	double displayMidpointSeconds = ovr_GetPredictedDisplayTime(session, 0);
 	ovrTrackingState ts = ovr_GetTrackingState(session, displayMidpointSeconds, false);
 	ovr_CalcEyePoses(ts.HeadPose.ThePose, useHmdToEyeViewOffset, layer.RenderPose);
+	//Log("eyePoses: " << layer.RenderPose[0].Position.x << " " << layer.RenderPose[1].Position.x << endl);
 	ovrResult result;
 	ovrBoundaryTestResult btest;
 	ovrBool visible;
@@ -402,6 +404,7 @@ void VR::nextTracking()
 		Matrix4f projO = ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, nearz, farz,  ovrProjection_LeftHanded);
 		Matrix4fToXM(this->viewOVR[eye], view.Transposed());
 		Matrix4fToXM(this->projOVR[eye], projO.Transposed());
+		this->adjustedEyePos[eye] = XMFLOAT3(shiftedEyePos.x, shiftedEyePos.y, shiftedEyePos.z);
 	}
 }
 
@@ -857,4 +860,8 @@ XMFLOAT4X4 VR::getOVRProjectionMatrix() {
 // get projection matrix for current eye
 XMFLOAT4X4 VR::getOVRProjectionMatrixByIndex(int eyeNum) {
 	return projOVR[eyeNum];
+};
+
+XMFLOAT3 VR::getOVRAdjustedEyePosByIndex(int eyeNum) {
+	return adjustedEyePos[eyeNum];
 };
