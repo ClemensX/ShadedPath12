@@ -659,12 +659,11 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 	wstringstream sss;
 	sss << std::hex << userId << "_" << assetmsg->assetID << ".dds";
 	wstring binFile = xapp->findFileForCreation(sss.str(), XApp::TEXTURE);
-	Log(binFile << endl);//ios::out | ios::app | ios::binary
 	ofstream bfile(binFile, ios::out | ios::trunc | ios::binary);  // create and delete old content
 	assert(bfile);
 	uint32_t dwMagicNumber = DDS_MAGIC;
 	bfile.write((const char*)&dwMagicNumber, 4);
-	DDS_HEADER header;
+	DDS_HEADER header = { 0 };
 	bool ok = false;
 
 	//bfile.write((char*)&mode, 4);
@@ -683,21 +682,6 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 		header.depth = 1;
 		header.mipMapCount = data->mipCount;
 		header.caps = 0x401008;
-		header.caps2 = 0;
-		header.caps3 = 0;
-		header.caps4 = 0;
-
-		header.reserved1[0] = 0;
-		header.reserved1[1] = 0;
-		header.reserved1[2] = 0;
-		header.reserved1[3] = 0;
-		header.reserved1[4] = 0;
-		header.reserved1[5] = 0;
-		header.reserved1[6] = 0;
-		header.reserved1[7] = 0;
-		header.reserved1[8] = 0;
-		header.reserved1[9] = 0;
-		header.reserved1[10] = 0;
 
 		header.ddspf.size = 0x20;
 		header.ddspf.flags = 0x41;
@@ -708,7 +692,6 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 		header.ddspf.BBitMask = 0x000000ff;
 		header.ddspf.ABitMask = 0xff000000;
 
-		header.reserved2 = 0;
 		bfile.write((const char*)&header, sizeof(header));
 		ok = true;
 		for (uint32_t level = 0, offset = 0, width = data->sizeX, height = data->sizeY; level < data->mipCount; ++level)
@@ -750,36 +733,13 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 		header.flags = 0xa1007;
 		header.height = data->sizeY;
 		header.width = data->sizeX;
-		//header.pitchOrLinearSize = max(1, ((header.width + 3) / 4)) * blockSize;//0x40000;
 		header.pitchOrLinearSize = blockSize * max(1, ((header.width + 3) / 4)) * max(1, ((header.height + 3) / 4));
 		header.depth = 1;
 		header.mipMapCount = data->mipCount;
 		header.caps = 0x401008;
-		header.caps2 = 0;
-		header.caps3 = 0;
-		header.caps4 = 0;
-
-		header.reserved1[0] = 0;
-		header.reserved1[1] = 0;
-		header.reserved1[2] = 0;
-		header.reserved1[3] = 0;
-		header.reserved1[4] = 0;
-		header.reserved1[5] = 0;
-		header.reserved1[6] = 0;
-		header.reserved1[7] = 0;
-		header.reserved1[8] = 0;
-		header.reserved1[9] = 0;
-		header.reserved1[10] = 0;
 
 		header.ddspf.size = 0x20;
 		header.ddspf.flags = 0x04;
-		header.ddspf.ABitMask = 0;
-		header.ddspf.BBitMask = 0;
-		header.ddspf.GBitMask = 0;
-		header.ddspf.RBitMask = 0;
-		header.ddspf.RGBBitCount = 0;
-
-		header.reserved2 = 0;
 
 		bfile.write((const char*)&header, sizeof(header));
 		ok = true;
@@ -788,12 +748,10 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 		int total = 0;
 		for (uint32_t level = 0, offset = 0, width = data->sizeX, height = data->sizeY; level < data->mipCount; ++level)
 		{
-			//GLsizei levelSize = blockSize * (width / 4) * (height / 4);
 			//int levelSize = blockSize * (width / 4) * (height / 4);
 			int levelSize = blockSize * max(1, ((width + 3) / 4)) * max(1, ((height + 3) / 4));
 			Log(std::hex << levelSize << " ");
 			total += levelSize;
-			//glCompressedTexImage2D(GL_TEXTURE_2D, level, glFormat, width, height, 0, levelSize, data->textureData + offset);
 			const char *mem = ((const char*)data->textureData) + offset;
 			bfile.write(mem, levelSize);
 			offset += levelSize;

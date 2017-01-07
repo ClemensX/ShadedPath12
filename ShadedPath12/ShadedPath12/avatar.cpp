@@ -2,7 +2,7 @@
 #include "avatar.h"
 
 // un-comment to load mehes from oculus servers and store locally
-//#define LOAD_AVATAR_DATA
+#define LOAD_AVATAR_DATA
 
 // change to base name of meshes saved in data/mesh folder (part before _ )
 #define USERID L"413fd8923c71e"
@@ -246,7 +246,7 @@ void Avatar::draw()
 	//dotcrossEffect.draw();
 	//textEffect.draw();
 	//billboardEffect.draw();
-	//object.draw();
+	object.draw();
 	auto grp = xapp().objectStore.getGroup("avatar");
 	for (auto & w : *grp) {
 		w->draw();
