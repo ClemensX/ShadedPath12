@@ -60,6 +60,8 @@ void VR::init()
 	eyeRenderDesc[0] = ovr_GetRenderDesc(session, ovrEye_Left, desc.DefaultEyeFov[0]);
 	eyeRenderDesc[1] = ovr_GetRenderDesc(session, ovrEye_Right, desc.DefaultEyeFov[1]);
 
+	//ovr_SetTrackingOriginType(session, ovrTrackingOrigin_FloorLevel);
+	//ovr_RecenterTrackingOrigin(session);
 	nextTracking();
 
 	// tracking setup complete, now init rendering:
@@ -363,6 +365,8 @@ void VR::nextTracking()
 	layer.Fov[0] = eyeRenderDesc[0].Fov;
 	layer.Fov[1] = eyeRenderDesc[1].Fov;
 
+	avatarInfo.trackingState = &ts;
+	updateAvatar();
 	// Render the two undistorted eye views into their render buffers.  
 	for (int eye = 0; eye < 2; eye++)
 	{
@@ -797,7 +801,7 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 		assert(ti);
 	}
 	xapp->objectStore.loadObject(avatarInfo.controllerLeftMeshFileName, avatarInfo.controllerLeftMeshId, 1.0f);
-	xapp->objectStore.addObject(avatarInfo.controllerLeft, avatarInfo.controllerLeftMeshId, XMFLOAT3(0.0f, 0.0f, -1.0f), ti);
+	xapp->objectStore.addObject(avatarInfo.controllerLeft, avatarInfo.controllerLeftMeshId, XMFLOAT3(0.0f, -0.4f, -0.2f), ti);
 	avatarInfo.controllerLeft.material.specExp = 20.0f;
 	avatarInfo.controllerLeft.material.specIntensity = 700.0f;
 	avatarInfo.readyToRender = true;
@@ -851,3 +855,91 @@ XMFLOAT4X4 VR::getOVRProjectionMatrixByIndex(int eyeNum) {
 XMFLOAT3 VR::getOVRAdjustedEyePosByIndex(int eyeNum) {
 	return adjustedEyePos[eyeNum];
 };
+
+
+// drawing
+static void _ovrAvatarHandInputStateFromOvr(const ovrAvatarTransform& transform, const ovrInputState& inputState, ovrHandType hand, ovrAvatarHandInputState* state)
+{
+	state->transform = transform;
+	state->buttonMask = 0;
+	state->touchMask = 0;
+	state->joystickX = inputState.Thumbstick[hand].x;
+	state->joystickY = inputState.Thumbstick[hand].y;
+	state->indexTrigger = inputState.IndexTrigger[hand];
+	state->handTrigger = inputState.HandTrigger[hand];
+	state->isActive = false;
+	if (hand == ovrHand_Left)
+	{
+		if (inputState.Buttons & ovrButton_X) state->buttonMask |= ovrAvatarButton_One;
+		if (inputState.Buttons & ovrButton_Y) state->buttonMask |= ovrAvatarButton_Two;
+		if (inputState.Buttons & ovrButton_Enter) state->buttonMask |= ovrAvatarButton_Three;
+		if (inputState.Buttons & ovrButton_LThumb) state->buttonMask |= ovrAvatarButton_Joystick;
+		if (inputState.Touches & ovrTouch_X) state->touchMask |= ovrAvatarTouch_One;
+		if (inputState.Touches & ovrTouch_Y) state->touchMask |= ovrAvatarTouch_Two;
+		if (inputState.Touches & ovrTouch_LThumb) state->touchMask |= ovrAvatarTouch_Joystick;
+		if (inputState.Touches & ovrTouch_LThumbRest) state->touchMask |= ovrAvatarTouch_ThumbRest;
+		if (inputState.Touches & ovrTouch_LIndexTrigger) state->touchMask |= ovrAvatarTouch_Index;
+		if (inputState.Touches & ovrTouch_LIndexPointing) state->touchMask |= ovrAvatarTouch_Pointing;
+		if (inputState.Touches & ovrTouch_LThumbUp) state->touchMask |= ovrAvatarTouch_ThumbUp;
+		state->isActive = (inputState.ControllerType & ovrControllerType_LTouch) != 0;
+	}
+	else if (hand == ovrHand_Right)
+	{
+		if (inputState.Buttons & ovrButton_A) state->buttonMask |= ovrAvatarButton_One;
+		if (inputState.Buttons & ovrButton_B) state->buttonMask |= ovrAvatarButton_Two;
+		if (inputState.Buttons & ovrButton_Home) state->buttonMask |= ovrAvatarButton_Three;
+		if (inputState.Buttons & ovrButton_RThumb) state->buttonMask |= ovrAvatarButton_Joystick;
+		if (inputState.Touches & ovrTouch_A) state->touchMask |= ovrAvatarTouch_One;
+		if (inputState.Touches & ovrTouch_B) state->touchMask |= ovrAvatarTouch_Two;
+		if (inputState.Touches & ovrTouch_RThumb) state->touchMask |= ovrAvatarTouch_Joystick;
+		if (inputState.Touches & ovrTouch_RThumbRest) state->touchMask |= ovrAvatarTouch_ThumbRest;
+		if (inputState.Touches & ovrTouch_RIndexTrigger) state->touchMask |= ovrAvatarTouch_Index;
+		if (inputState.Touches & ovrTouch_RIndexPointing) state->touchMask |= ovrAvatarTouch_Pointing;
+		if (inputState.Touches & ovrTouch_RThumbUp) state->touchMask |= ovrAvatarTouch_ThumbUp;
+		state->isActive = (inputState.ControllerType & ovrControllerType_RTouch) != 0;
+	}
+}
+
+static void _ovrAvatarTransformFromPOS(const ovrVector3f& position, const ovrQuatf& orientation, const ovrVector3f& scale, ovrAvatarTransform* target) {
+	target->position.x = position.x;
+	target->position.y = position.y;
+	target->position.z = position.z;
+	target->orientation.x = orientation.x;
+	target->orientation.y = orientation.y;
+	target->orientation.z = orientation.z;
+	target->orientation.w = orientation.w;
+	target->scale.x = scale.x;
+	target->scale.y = scale.y;
+	target->scale.z = scale.z;
+}
+
+void VR::updateAvatar()
+{
+	if (!avatarInfo.readyToRender) return;
+	ovrInputState touchState;
+	ovr_GetInputState(session, ovrControllerType_Active, &touchState);
+	ovrAvatarHandInputState inputStateLeft, inputStateRight;
+	ovrAvatarTransform left, right;
+	// left
+	auto leftP = avatarInfo.trackingState->HandPoses[ovrHand_Left].ThePose.Position;
+	auto leftQ = avatarInfo.trackingState->HandPoses[ovrHand_Left].ThePose.Orientation;
+	_ovrAvatarTransformFromPOS(leftP, leftQ, Vector3f(1.0f), &left);
+	_ovrAvatarHandInputStateFromOvr(left, touchState, ovrHand_Left, &inputStateLeft);
+	// right
+	auto rightP = avatarInfo.trackingState->HandPoses[ovrHand_Right].ThePose.Position;
+	auto rightQ = avatarInfo.trackingState->HandPoses[ovrHand_Right].ThePose.Orientation;
+	_ovrAvatarTransformFromPOS(rightP, rightQ, Vector3f(1.0f), &right);
+	_ovrAvatarHandInputStateFromOvr(right, touchState, ovrHand_Right, &inputStateRight);
+
+	ovrAvatarPose_UpdateHands(avatar, inputStateLeft, inputStateRight);
+	float deltaTimeInSeconds = (float)xapp->gametime.getDeltaTime();
+	ovrAvatarPose_Finalize(avatar, deltaTimeInSeconds);
+	//Log("L touch " << inputStateLeft.transform.position.x << " " << inputStateLeft.handTrigger << endl);
+	//Log(" leftp " << leftP.x << " " << leftP.y << " " << leftP.z << endl);
+}
+
+void VR::drawLeftController()
+{
+	if (!avatarInfo.readyToRender) return;
+	avatarInfo.controllerLeft.draw();
+}

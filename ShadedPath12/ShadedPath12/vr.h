@@ -31,6 +31,7 @@ public:
 	string controllerLeftMeshId;
 	string controllerLeftTextureId;
 	WorldObject controllerLeft;
+	ovrTrackingState *trackingState = nullptr;
 	bool readyToRender = false;
 };
 
@@ -96,6 +97,7 @@ public:
 	void handleOVRMessages();
 	// load avatar data (mesh, bones and textures) from Oculus
 	void loadAvatar();
+	void drawLeftController();
 	// if all assets of an avatar have been loaded, gather all the info needed for rendering:
 	void gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar *avatar);
 	wstring getTextureFileName(ovrAvatarAssetID id) {
@@ -151,6 +153,7 @@ public:
 protected:
 	EyePos curEye = EyeLeft;
 private:
+	void updateAvatar();
 	void handleAvatarMessages();
 	void writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarMeshAssetData *assetdata);
 	void writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarTextureAssetData *assetdata);

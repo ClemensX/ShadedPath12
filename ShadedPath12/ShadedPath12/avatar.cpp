@@ -248,11 +248,10 @@ void Avatar::draw()
 	//textEffect.draw();
 	//billboardEffect.draw();
 	//object.draw();
-	if (xapp().vr.avatarInfo.readyToRender)
-		xapp().vr.avatarInfo.controllerLeft.draw();
+	xapp().vr.drawLeftController();
 	auto grp = xapp().objectStore.getGroup("avatar");
 	for (auto & w : *grp) {
-		w->draw();
+		//w->draw();
 	}
 	postEffect.draw();
 }
