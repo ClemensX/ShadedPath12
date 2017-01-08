@@ -24,6 +24,16 @@ enum EyePos { EyeLeft, EyeRight };
 class XApp;
 class VR;
 
+class AvatarInfo {
+public:
+	wstring controllerLeftMeshFileName;
+	wstring controllerLeftTextureFileName;
+	string controllerLeftMeshId;
+	string controllerLeftTextureId;
+	WorldObject controllerLeft;
+	bool readyToRender = false;
+};
+
 // support class used in all effects (each effect has an instance)
 // viewports and scissorRects are set by EffectBase::prepareDraw(), they have to be used by both VR ind non-VR rendering
 class VR_Eyes {
@@ -86,6 +96,28 @@ public:
 	void handleOVRMessages();
 	// load avatar data (mesh, bones and textures) from Oculus
 	void loadAvatar();
+	// if all assets of an avatar have been loaded, gather all the info needed for rendering:
+	void gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar *avatar);
+	wstring getTextureFileName(ovrAvatarAssetID id) {
+		wstringstream sss;
+		sss << std::hex << "ovr_" << id << ".dds";
+		return sss.str();
+	}
+	string getTextureId(ovrAvatarAssetID id) {
+		stringstream sss;
+		sss << std::hex << id;
+		return sss.str();
+	}
+	wstring getMeshFileName(ovrAvatarAssetID id) {
+		wstringstream sss;
+		sss << std::hex << "ovr_" << id << ".b";
+		return sss.str();
+	}
+	string getMeshId(ovrAvatarAssetID id) {
+		stringstream sss;
+		sss << std::hex << id;
+		return sss.str();
+	}
 #if defined(_OVR_)
 	// get view matrix for current eye
 	XMFLOAT4X4 getOVRViewMatrix();
@@ -115,6 +147,7 @@ public:
 		return currentIndex;
 	};
 	ovrAvatar *avatar = nullptr;
+	AvatarInfo avatarInfo;
 protected:
 	EyePos curEye = EyeLeft;
 private:

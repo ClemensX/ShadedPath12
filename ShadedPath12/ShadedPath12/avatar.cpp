@@ -28,7 +28,7 @@ void Avatar::loadLocalAvatarMeshes(wstring userId)
 	avatarMeshesLoadStartet = true;
 	//string userId = w2s(userIdL);
 	// look for mesh files for this userId:
-	wstring basename = userId + L"_";
+	wstring basename = L"ovr_";
 	wstring path_string = xapp().findFileForCreation(L"", XApp::FileCategory::MESH);
 	//Log("path : " << path_string << endl);
 	auto bin_path = std::tr2::sys::path(path_string);
@@ -105,9 +105,8 @@ void Avatar::init()
 	// textures
 	//xapp().textureStore.loadTexture(L"white.dds", "white");
 	//xapp().textureStore.loadTexture(L"sample2.dds", "white");
-	xapp().textureStore.loadTexture(L"touch_controller.dds", "white");
 	//xapp().textureStore.loadTexture(L"rgbtest4.dds", "white");
-	//xapp().textureStore.loadTexture(L"413fd8923c71e_1c0685581a5a8aa4.dds", "white");
+	xapp().textureStore.loadTexture(L"ovr_1c0685581a5a8aa4.dds", "white");
 	//xapp().textureStore.loadTexture(L"413fd8923c71e_951f51e94248778a.dds", "white");
 	TextureInfo *GrassTex, *HouseTex, *MetalTex, *WormTex, *PlanetTex, *Meteor1Tex, *AxistestTex;
 	TextureInfo *WhiteTex = xapp().textureStore.getTexture("white");
@@ -119,12 +118,12 @@ void Avatar::init()
 		//xapp().objectStore.loadObject(L"413fd8923c71e_450d4eca9f73b9a1.b", "light1", 1.0f);  // glasses
 		//xapp().objectStore.loadObject(L"413fd8923c71e_47be498de8d01599.b", "light1", 1.0f);  // hair
 		//xapp().objectStore.loadObject(L"413fd8923c71e_6a4ae11446026286.b", "light1", 1.0f);  // left hand
-		xapp().objectStore.loadObject(L"413fd8923c71e_6feb9283b780b5a3.b", "light1", 1.0f);  // right controller  LEFT!!!
+		//xapp().objectStore.loadObject(L"413fd8923c71e_6feb9283b780b5a3.b", "light1", 1.0f);  // right controller  LEFT!!!
 		//xapp().objectStore.loadObject(L"413fd8923c71e_7f1ca835aeb1b69e.b", "light1", 1.0f);  // large empty cone
 		//xapp().objectStore.loadObject(L"413fd8923c71e_8e78d539875b1886.b", "light1", 1.0f);  // open flat ring
 		//xapp().objectStore.loadObject(L"413fd8923c71e_af2fdac13313089c.b", "light1", 1.0f);  // face
 		//xapp().objectStore.loadObject(L"413fd8923c71e_f82847a6b3ddf1a6.b", "light1", 1.0f);  // right hand
-		//xapp().objectStore.loadObject(L"light1.b", "light1", 1.0f);  // right hand
+		xapp().objectStore.loadObject(L"light1.b", "light1", 1.0f);  // right hand
 		xapp().objectStore.addObject(object, "light1", XMFLOAT3(0.0f, 0.0f, -0.5f), WhiteTex);
 		//object.drawBoundingBox = true;
 		//object.drawNormals = true;
@@ -172,6 +171,8 @@ void Avatar::init()
 #if defined(LOAD_AVATAR_DATA)
 	xapp().vr.loadAvatar();
 #endif
+	
+	//xapp().vr.gatherAvatarInfo(xapp().vr.avatarInfo, xapp().vr.avatar);
 }
 
 void Avatar::update()
@@ -246,7 +247,9 @@ void Avatar::draw()
 	//dotcrossEffect.draw();
 	//textEffect.draw();
 	//billboardEffect.draw();
-	object.draw();
+	//object.draw();
+	if (xapp().vr.avatarInfo.readyToRender)
+		xapp().vr.avatarInfo.controllerLeft.draw();
 	auto grp = xapp().objectStore.getGroup("avatar");
 	for (auto & w : *grp) {
 		w->draw();

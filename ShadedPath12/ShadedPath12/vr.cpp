@@ -442,7 +442,7 @@ void VR::handleOVRMessages()
 		return; // no new messages.
 	}
 	int messageType = ovr_Message_GetType(message);
-	Log("OVR message received: " << std::hex << messageType << " " << ovrMessageType_ToString((ovrMessageType)messageType) << endl);
+	//Log("OVR message received: " << std::hex << messageType << " " << ovrMessageType_ToString((ovrMessageType)messageType) << endl);
 	if (messageType == ovrMessage_Entitlement_GetIsViewerEntitled) {
 	}
 	else if (messageType == ovrMessage_User_GetLoggedInUser) {
@@ -542,18 +542,8 @@ void VR::handleAvatarMessages()
 		--loadingAssets;
 		//Log("Loading " << loadingAssets << " assets..." << endl);
 		if (loadingAssets == 0) {
-			auto avatarControllerComponent = ovrAvatarPose_GetLeftControllerComponent(avatar);
-			auto avatarComponent = avatarControllerComponent->renderComponent;
-			for (unsigned int i = 0; i < avatarComponent->renderPartCount; i++) {
-				auto part = avatarComponent->renderParts[i];
-				auto type = ovrAvatarRenderPart_GetType(part);
-				Log("leftcontroller render part type: " << type << endl);
-				assert(type == ovrAvatarRenderPartType_SkinnedMeshRenderPBS);
-				auto skinnedMeshRenderPBS = ovrAvatarRenderPart_GetSkinnedMeshRenderPBS(part);
-				if (skinnedMeshRenderPBS)
-					Log(" left controller mesh asset id: " << skinnedMeshRenderPBS->meshAssetID << endl);
-			}
-
+			// all is loaded: gather Avatar info
+			gatherAvatarInfo(avatarInfo, avatar);
 		}
 	}
 	else {
@@ -564,11 +554,9 @@ void VR::handleAvatarMessages()
 
 void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded * assetmsg, const ovrAvatarMeshAssetData * assetdata)
 {
-	Log("write avatar mesh (user id / mesh id / vertex count): " << std::hex << userId << " / " << assetmsg->assetID << " / " << assetdata->vertexCount << endl);
-	wstringstream sss;
-	sss << std::hex << userId << "_" << assetmsg->assetID << ".b";
-	wstring binFile = xapp->findFileForCreation(sss.str(), XApp::MESH);
-	Log(binFile << endl);//ios::out | ios::app | ios::binary
+	//Log("write avatar mesh (user id / mesh id / vertex count): " << std::hex << userId << " / " << assetmsg->assetID << " / " << assetdata->vertexCount << endl);
+	wstring filename = getMeshFileName(assetmsg->assetID);
+	wstring binFile = xapp->findFileForCreation(filename, XApp::MESH);
 	ofstream bfile(binFile, ios::out | ios::trunc | ios::binary);  // create and delete old content
 	assert(bfile);
 	int mode = 0; // no bone data
@@ -655,10 +643,8 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoaded * assetmsg, const ovrAvatarTextureAssetData * data)
 {
 	// Load the image data
-	Log("texture " << assetmsg->assetID << " ");
-	wstringstream sss;
-	sss << std::hex << userId << "_" << assetmsg->assetID << ".dds";
-	wstring binFile = xapp->findFileForCreation(sss.str(), XApp::TEXTURE);
+	wstring filename = getTextureFileName(assetmsg->assetID);
+	wstring binFile = xapp->findFileForCreation(filename, XApp::TEXTURE);
 	ofstream bfile(binFile, ios::out | ios::trunc | ios::binary);  // create and delete old content
 	assert(bfile);
 	uint32_t dwMagicNumber = DDS_MAGIC;
@@ -672,7 +658,7 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 
 		// Handle uncompressed image data
 	case ovrAvatarTextureFormat_RGB24:
-		Log("format RGB24 " << data->sizeX << " * " << data->sizeY << " (" << data->textureDataSize << " bytes)" << endl);
+		//Log("format RGB24 " << data->sizeX << " * " << data->sizeY << " (" << data->textureDataSize << " bytes)" << endl);
 		header.size = 0x7c;
 		header.flags = 0x2100f;
 		header.height = data->sizeY;
@@ -718,14 +704,14 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 		if (data->format == ovrAvatarTextureFormat_DXT1)
 		{
 			blockSize = 8;
-			Log("format DXT1 " << data->sizeX << " * " << data->sizeY << " (" << data->textureDataSize << " bytes)" << endl);
+			//Log("format DXT1 " << data->sizeX << " * " << data->sizeY << " (" << data->textureDataSize << " bytes)" << endl);
 			header.ddspf.fourCC = 0x31545844;
 			//glFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 		}
 		else
 		{
 			blockSize = 16;
-			Log("format DXT5 " << std::hex << data->sizeX << " * " << data->sizeY << " (" << data->textureDataSize << " bytes)" << endl);
+			//Log("format DXT5 " << std::hex << data->sizeX << " * " << data->sizeY << " (" << data->textureDataSize << " bytes)" << endl);
 			header.ddspf.fourCC = 0x35545844;
 		}
 
@@ -744,13 +730,13 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 		bfile.write((const char*)&header, sizeof(header));
 		ok = true;
 		//glFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-		Log(" sizes: ");
+		//Log(" sizes: ");
 		int total = 0;
 		for (uint32_t level = 0, offset = 0, width = data->sizeX, height = data->sizeY; level < data->mipCount; ++level)
 		{
 			//int levelSize = blockSize * (width / 4) * (height / 4);
 			int levelSize = blockSize * max(1, ((width + 3) / 4)) * max(1, ((height + 3) / 4));
-			Log(std::hex << levelSize << " ");
+			//Log(std::hex << levelSize << " ");
 			total += levelSize;
 			const char *mem = ((const char*)data->textureData) + offset;
 			bfile.write(mem, levelSize);
@@ -758,7 +744,7 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 			width /= 2;
 			height /= 2;
 		}
-		Log(endl << std::hex << "total: " << total << endl);
+		//Log(endl << std::hex << "total: " << total << endl);
 		break;
 	}
 	bfile.close();
@@ -773,6 +759,48 @@ void VR::loadAvatar()
 	ovrAvatar_Initialize("1197980730287980");
 	// get current user:
 	ovr_User_GetLoggedInUser();
+}
+
+void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
+{
+	auto avatarControllerComponent = ovrAvatarPose_GetLeftControllerComponent(avatar); // LeftHandComponent(avatar);
+	auto avatarComponent = avatarControllerComponent->renderComponent;
+	Log("controller has " << avatarComponent->renderPartCount << " render parts" << endl);
+	for (unsigned int i = 0; i < avatarComponent->renderPartCount; i++) {
+		auto part = avatarComponent->renderParts[i];
+		auto type = ovrAvatarRenderPart_GetType(part);
+		//Log("leftcontroller render part type: " << type << endl);
+		if (type == ovrAvatarRenderPartType_SkinnedMeshRenderPBS) {
+			auto skinnedMeshRenderPBS = ovrAvatarRenderPart_GetSkinnedMeshRenderPBS(part);
+			if (skinnedMeshRenderPBS) {
+				Log("skinnedMeshRenderPBS left controller mesh asset id: " << std::hex << skinnedMeshRenderPBS->meshAssetID << endl);
+				Log("surface texture: " << std::hex << skinnedMeshRenderPBS->surfaceTextureAssetID << endl);
+				Log("albedo texture: " << std::hex << skinnedMeshRenderPBS->albedoTextureAssetID << endl);
+				avatarInfo.controllerLeftTextureFileName = getTextureFileName(skinnedMeshRenderPBS->albedoTextureAssetID);
+				avatarInfo.controllerLeftMeshFileName = getMeshFileName(skinnedMeshRenderPBS->meshAssetID);
+				avatarInfo.controllerLeftTextureId = getTextureId(skinnedMeshRenderPBS->albedoTextureAssetID);
+				avatarInfo.controllerLeftMeshId = getMeshId(skinnedMeshRenderPBS->meshAssetID);
+			}
+		}
+		if (type == ovrAvatarRenderPartType_SkinnedMeshRender) {
+			auto skinnedMeshRender = ovrAvatarRenderPart_GetSkinnedMeshRender(part);
+			if (skinnedMeshRender) {
+				Log("skinnedMeshRender left controller mesh asset id: " << std::hex << skinnedMeshRender->meshAssetID << endl);
+			}
+		}
+	}
+	// prepare assets:
+	TextureInfo *ti = xapp->textureStore.getTexture(avatarInfo.controllerLeftTextureId);
+	if (ti->id.length() == 0) {
+		xapp->textureStore.loadTexture(avatarInfo.controllerLeftTextureFileName, avatarInfo.controllerLeftTextureId);
+		ti = xapp->textureStore.getTexture(avatarInfo.controllerLeftTextureId);
+		assert(ti);
+	}
+	xapp->objectStore.loadObject(avatarInfo.controllerLeftMeshFileName, avatarInfo.controllerLeftMeshId, 1.0f);
+	xapp->objectStore.addObject(avatarInfo.controllerLeft, avatarInfo.controllerLeftMeshId, XMFLOAT3(0.0f, 0.0f, -1.0f), ti);
+	avatarInfo.controllerLeft.material.specExp = 20.0f;
+	avatarInfo.controllerLeft.material.specIntensity = 700.0f;
+	avatarInfo.readyToRender = true;
 }
 
 #else
