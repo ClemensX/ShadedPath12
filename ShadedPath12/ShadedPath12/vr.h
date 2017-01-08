@@ -29,8 +29,10 @@ public:
 	wstring controllerLeftMeshFileName;
 	wstring controllerLeftTextureFileName;
 	string controllerLeftMeshId;
+	ovrAvatarAssetID controllerLeftOvrMeshId;
 	string controllerLeftTextureId;
 	WorldObject controllerLeft;
+	const ovrAvatarRenderPart_SkinnedMeshRenderPBS *controllerLeftRenderPart;
 	ovrTrackingState *trackingState = nullptr;
 	bool readyToRender = false;
 };

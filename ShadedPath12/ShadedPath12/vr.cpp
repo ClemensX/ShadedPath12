@@ -784,6 +784,8 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 				avatarInfo.controllerLeftMeshFileName = getMeshFileName(skinnedMeshRenderPBS->meshAssetID);
 				avatarInfo.controllerLeftTextureId = getTextureId(skinnedMeshRenderPBS->albedoTextureAssetID);
 				avatarInfo.controllerLeftMeshId = getMeshId(skinnedMeshRenderPBS->meshAssetID);
+				avatarInfo.controllerLeftOvrMeshId = skinnedMeshRenderPBS->meshAssetID;
+				avatarInfo.controllerLeftRenderPart = skinnedMeshRenderPBS;
 			}
 		}
 		if (type == ovrAvatarRenderPartType_SkinnedMeshRender) {
@@ -941,5 +943,50 @@ void VR::updateAvatar()
 void VR::drawLeftController()
 {
 	if (!avatarInfo.readyToRender) return;
+
+	const ovrAvatarRenderPart_SkinnedMeshRenderPBS *mesh, *temp_mesh;
+	// Traverse over all components on the avatar
+	uint32_t componentCount = ovrAvatarComponent_Count(avatar);
+	for (uint32_t i = 0; i < componentCount; ++i)
+	{
+		const ovrAvatarComponent* component = ovrAvatarComponent_Get(avatar, i);
+
+		// Compute the transform for this component
+		//glm::mat4 world;
+		//_glmFromOvrAvatarTransform(component->transform, &world);
+
+		// Render each rebder part attached to the component
+		for (uint32_t j = 0; j < component->renderPartCount; ++j)
+		{
+			const ovrAvatarRenderPart* renderPart = component->renderParts[j];
+			ovrAvatarRenderPartType type = ovrAvatarRenderPart_GetType(renderPart);
+			switch (type)
+			{
+			case ovrAvatarRenderPartType_SkinnedMeshRender:
+				//_renderSkinnedMeshPart(ovrAvatarRenderPart_GetSkinnedMeshRender(renderPart), visibilityMask, world, view, proj, viewPos, renderJoints);
+				break;
+			case ovrAvatarRenderPartType_SkinnedMeshRenderPBS:
+					temp_mesh = ovrAvatarRenderPart_GetSkinnedMeshRenderPBS(renderPart);
+					if (temp_mesh->meshAssetID == avatarInfo.controllerLeftOvrMeshId) {
+						mesh = temp_mesh;
+					}
+				//_renderSkinnedMeshPartPBS(ovrAvatarRenderPart_GetSkinnedMeshRenderPBS(renderPart), visibilityMask, world, view, proj, viewPos, renderJoints);
+				break;
+			case ovrAvatarRenderPartType_ProjectorRender:
+				//_renderProjector(ovrAvatarRenderPart_GetProjectorRender(renderPart), avatar, visibilityMask, world, view, proj, viewPos);
+				break;
+			}
+		}
+	}
+
+	//mesh = avatarInfo.controllerLeftRenderPart;
+
+	Log(mesh->skinnedPose.jointNames[1]);
+	Log(" " << mesh->skinnedPose.jointTransform[1].position.x);
+	Log(" " << mesh->skinnedPose.jointTransform[1].position.y);
+	Log(" " << mesh->skinnedPose.jointTransform[1].position.z << endl);
+
+
+
 	avatarInfo.controllerLeft.draw();
 }
