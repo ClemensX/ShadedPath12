@@ -564,7 +564,22 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 	ofstream bfile(binFile, ios::out | ios::trunc | ios::binary);  // create and delete old content
 	assert(bfile);
 	int mode = 0; // no bone data
+	// change to bone mode if joints are found:
+	if (assetdata->skinnedBindPose.jointCount > 0) mode = 1;
 	bfile.write((char*)&mode, 4);
+	if (mode == 1) {
+		int numAniClips = 1;  // only one fake clip for ovr mode
+		bfile.write((char*)&numAniClips, 4);
+		//aniClips = new AnimationClip[numAniClips];
+		for (int i = 0; i < numAniClips; i++) {
+			string clip_name("non_keyframe");
+			int numAnimationNameLength = clip_name.length();
+			bfile.write((char*)&numAnimationNameLength, 4);
+			bfile.write(clip_name.c_str(), numAnimationNameLength;
+			int zero = 0;
+			bfile.write((char*)&zero, 1);
+		}
+	}
 	// vertices
 	ovrAvatarMeshVertex_ *vbuf = (ovrAvatarMeshVertex_ *)assetdata->vertexBuffer;
 	uint16_t* ibuf = (uint16_t*)assetdata->indexBuffer;
