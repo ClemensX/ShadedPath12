@@ -159,7 +159,9 @@ private:
 	void handleAvatarMessages();
 	void writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarMeshAssetData *assetdata);
 	void writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarTextureAssetData *assetdata);
-	
+	void calculateInverseBindMatrix(const ovrAvatarTransform *t, XMFLOAT4X4 *inv);
+	unsigned int pack(const uint8_t *blend_indices);
+
 	D3D12_VIEWPORT viewports[2];
 	D3D12_RECT scissorRects[2];
 	XApp* xapp;

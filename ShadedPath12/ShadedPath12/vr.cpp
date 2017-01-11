@@ -308,6 +308,17 @@ bool VR::isFirstEye() {
 }
 
 #if defined(_OVR_)
+
+unsigned int VR::pack(const uint8_t * blend_indices)
+{
+	int pack = 0;
+	for (int i = 3; i >= 0; i--) {
+		pack <<= 8;
+		pack |= (blend_indices[i]) & 0xff;
+	}
+	return pack;
+}
+
 void Matrix4fToXM(XMFLOAT4X4 &xm, Matrix4f &m) {
 	xm._11 = m.M[0][0];
 	xm._12 = m.M[0][1];
@@ -325,6 +336,25 @@ void Matrix4fToXM(XMFLOAT4X4 &xm, Matrix4f &m) {
 	xm._42 = m.M[3][1];
 	xm._43 = m.M[3][2];
 	xm._44 = m.M[3][3];
+}
+
+void XMFLOAT4x4ToFloatArray(XMFLOAT4X4 &xm, float *m) {
+	m[0] = xm._11;
+	m[1] = xm._12;
+	m[2] = xm._13;
+	m[3] = xm._14;
+	m[4] = xm._21;
+	m[5] = xm._22;
+	m[6] = xm._23;
+	m[7] = xm._24;
+	m[8] = xm._31;
+	m[9] = xm._32;
+	m[10] = xm._33;
+	m[11] = xm._34;
+	m[12] = xm._41;
+	m[13] = xm._42;
+	m[14] = xm._43;
+	m[15] = xm._44;
 }
 
 void VR::nextTracking()
@@ -556,6 +586,26 @@ void VR::handleAvatarMessages()
 	ovrAvatarMessage_Free(message);
 }
 
+void VR::calculateInverseBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * inv)
+{
+	//XMMATRIX xmIdent = XMMatrixIdentity();
+	//XMStoreFloat4x4(inv, xmIdent);
+
+	XMVECTOR zeroRotationOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+	XMVECTOR scale, rotationQuaternion, translation;
+	assert(t->scale.x == t->scale.y);
+	assert(t->scale.y == t->scale.z);
+	//scale = XMVectorScale(scale, t->scale.x);
+	XMFLOAT3 scaleF = XMFLOAT3(t->scale.x, t->scale.y, t->scale.z);
+	scale = XMLoadFloat3(&scaleF);
+	rotationQuaternion = XMVectorSet(t->orientation.x, t->orientation.y, t->orientation.z, t->orientation.w);
+	translation = XMVectorSet(t->position.x, t->position.y, t->position.z, 0.0f);
+	XMMATRIX bind = XMMatrixAffineTransformation(scale, zeroRotationOrigin, rotationQuaternion, translation);
+	XMVECTOR determinant = XMMatrixDeterminant(bind);
+	XMMATRIX inverse = XMMatrixInverse(&determinant, bind);
+	XMStoreFloat4x4(inv, inverse);
+}
+
 void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded * assetmsg, const ovrAvatarMeshAssetData * assetdata)
 {
 	//Log("write avatar mesh (user id / mesh id / vertex count): " << std::hex << userId << " / " << assetmsg->assetID << " / " << assetdata->vertexCount << endl);
@@ -573,11 +623,29 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 		//aniClips = new AnimationClip[numAniClips];
 		for (int i = 0; i < numAniClips; i++) {
 			string clip_name("non_keyframe");
-			int numAnimationNameLength = clip_name.length();
+			int numAnimationNameLength = (int) clip_name.length();
 			bfile.write((char*)&numAnimationNameLength, 4);
-			bfile.write(clip_name.c_str(), numAnimationNameLength;
+			bfile.write(clip_name.c_str(), numAnimationNameLength);
 			int zero = 0;
 			bfile.write((char*)&zero, 1);
+			int numJoints = assetdata->skinnedBindPose.jointCount;
+			bfile.write((char*)&numJoints, 4);
+			for (int j = 0; j < numJoints; j++) {
+				// parent:
+				int parentId = assetdata->skinnedBindPose.jointParents[j];
+				bfile.write((char*)&parentId, 4);
+				// inverse bind matrices:
+				XMFLOAT4X4 inv;
+				calculateInverseBindMatrix(&assetdata->skinnedBindPose.jointTransform[j], &inv);
+				float f[16];
+				XMFLOAT4x4ToFloatArray(inv, f);
+				for (int n = 0; n < 16; n++) {
+					bfile.write((char*)&f[n], 4);
+				}
+				// zero keyframes:
+				int keyframes = 0;
+				bfile.write((char*)&keyframes, 4);
+			}
 		}
 	}
 	// vertices
@@ -632,8 +700,24 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 		bfile.write((char*)&v.nz, 4);
 	}
 
-	// TODO: read bones on mode == 1
-
+	if (mode == 1) {
+		// we have skinned animation weights
+		// for all vertices we have one int packed with the indices of the 4 bones influencing it
+		for (size_t i = 0; i < assetdata->vertexCount; i++) {
+			ovrAvatarMeshVertex_ v = vbuf[i];
+			unsigned int packed = pack(&v.blendIndices[0]);
+			bfile.write((char*)&packed, 4);
+		}
+		// for each bonePack we have the 4 weights:
+		for (size_t i = 0; i < assetdata->vertexCount; i++) {
+			ovrAvatarMeshVertex_ v = vbuf[i];
+			unsigned int packed = pack(&v.blendIndices[0]);
+			bfile.write((char*)&v.blendWeights[0], 4);
+			bfile.write((char*)&v.blendWeights[1], 4);
+			bfile.write((char*)&v.blendWeights[2], 4);
+			bfile.write((char*)&v.blendWeights[3], 4);
+		}
+	}
 	// vertices index buffer
 	int numIndex = assetdata->indexCount;
 	bfile.write((char*)&numIndex, 4);
