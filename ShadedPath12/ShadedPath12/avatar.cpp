@@ -248,7 +248,7 @@ void Avatar::draw()
 	//dotcrossEffect.draw();
 	//textEffect.draw();
 	//billboardEffect.draw();
-	object.draw();
+	//object.draw();
 	xapp().vr.drawLeftController();
 	auto grp = xapp().objectStore.getGroup("avatar");
 	for (auto & w : *grp) {

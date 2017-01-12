@@ -593,8 +593,9 @@ void VR::calculateInverseBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * i
 
 	XMVECTOR zeroRotationOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 	XMVECTOR scale, rotationQuaternion, translation;
-	assert(t->scale.x == t->scale.y);
-	assert(t->scale.y == t->scale.z);
+	if (t->scale.x != t->scale.y || t->scale.y != t->scale.z) {
+		Log("WARNING: non-uniform scale encountered!!" << endl);
+	}
 	//scale = XMVectorScale(scale, t->scale.x);
 	XMFLOAT3 scaleF = XMFLOAT3(t->scale.x, t->scale.y, t->scale.z);
 	scale = XMLoadFloat3(&scaleF);
@@ -614,7 +615,7 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 	ofstream bfile(binFile, ios::out | ios::trunc | ios::binary);  // create and delete old content
 	assert(bfile);
 	int mode = 0; // no bone data
-	// change to bone mode if joints are found:
+				  // change to bone mode if joints are found:
 	if (assetdata->skinnedBindPose.jointCount > 0) mode = 1;
 	bfile.write((char*)&mode, 4);
 	if (mode == 1) {
@@ -623,11 +624,11 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 		//aniClips = new AnimationClip[numAniClips];
 		for (int i = 0; i < numAniClips; i++) {
 			string clip_name("non_keyframe");
-			int numAnimationNameLength = (int) clip_name.length();
+			int numAnimationNameLength = (int)clip_name.length();
 			bfile.write((char*)&numAnimationNameLength, 4);
 			bfile.write(clip_name.c_str(), numAnimationNameLength);
-			int zero = 0;
-			bfile.write((char*)&zero, 1);
+			//int zero = 0;
+			//bfile.write((char*)&zero, 1);
 			int numJoints = assetdata->skinnedBindPose.jointCount;
 			bfile.write((char*)&numJoints, 4);
 			for (int j = 0; j < numJoints; j++) {
