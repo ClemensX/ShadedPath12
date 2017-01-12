@@ -114,7 +114,9 @@ public:
 	};
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE getRTVHandle(int frameIndex) {
+#if defined(_OVR_)
 		if (ovrRendering) return vr.getRTVHandle(frameIndex);
+#endif
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescriptorSize);
 		return rtvHandle;
 	};

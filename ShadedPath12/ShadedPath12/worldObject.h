@@ -64,6 +64,7 @@ public:
 	Action *boneAction; // action involving bone calcualtions
 	PathDesc* pathDescMove;  // moving object
 	PathDesc* pathDescBone;  // animating object
+	bool isNonKeyframeAnimated = false; // signal that poses are not interpoalted by Path, but computed outside and set in update()
 							 //std::vector<Mtrl> mtrls;
 							 //std::vector<IDirect3DTexture9*> textures;
 	int visible; // visible in current view frustrum: 0 == no, 1 == intersection, 2 == completely visible

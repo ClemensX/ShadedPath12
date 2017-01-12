@@ -583,7 +583,41 @@ XMVECTOR rotate(XMMATRIX m, XMVECTOR v) {
 	return XMVector3Rotate(v, rotation_quaternion);
 }
 
-//XMVECTOR Path::skin(const Vertex::Skinned *v, const std::vector<XMFLOAT4X4> *ibms, const std::vector<Curve> *curves, int segment, float scale, float percentage)
+void  Path::skinNonKeyframe(XMVECTOR &pos, XMVECTOR &norm, const WorldObjectVertex::VertexSkinned *v, PathDesc *pd)
+{
+	XMVECTOR vskin = XMVectorZero();
+	XMVECTOR normskin = XMVectorZero();
+	for (int i = 0; i < 4; i++) {
+		BYTE boneIndex = v->BoneIndices[i];
+		float weight;
+		switch (i) {
+		case 0: weight = v->Weights.x; break;
+		case 1: weight = v->Weights.y; break;
+		case 2: weight = v->Weights.z; break;
+		case 3: weight = v->Weights.w; break;
+		}
+		if (boneIndex == 0xff || weight == 0.0f) continue;
+		XMMATRIX ibm = XMLoadFloat4x4(&pd->clip->invBindMatrices[boneIndex]);
+		ibm = XMMatrixTranspose(ibm);
+		XMVECTOR r = XMLoadFloat3(&v->Pos);
+		XMVECTOR n = XMLoadFloat3(&v->Normal);
+		//r = XMVector3Transform(r, ibm);
+		//n = rotate(ibm, n);
+		//XMMATRIX m(XMLoadFloat4x4(&pd->interpolationMatricesChained[boneIndex]));
+		XMMATRIX imc = getInterpolationMatrixChained(boneIndex, pd);
+		r = XMVector3Transform(r, imc);
+		n = rotate(imc, n);
+		r = r * weight;
+		n = n * weight;
+		vskin += r;
+		normskin += n;
+	}
+	pos = vskin;
+	norm = XMVector3Normalize(normskin); //XMLoadFloat3(&v->Normal);
+										 //float len = XMVectorGetX(XMVector3Length(norm));
+										 //Log("normal length = " << len << endl);
+}
+
 void  Path::skin(XMVECTOR &pos, XMVECTOR &norm, const WorldObjectVertex::VertexSkinned *v, PathDesc *pd)
 {
 	XMVECTOR vskin = XMVectorZero();
@@ -725,6 +759,10 @@ void Path::calculateInterpolationChain(const AnimationClip *clip, PathDesc *pd)
 
 void::Path::updateScene(PathDesc *pathDesc, WorldObject *wo, double time)
 {
+	if (wo->isNonKeyframeAnimated) {
+		recalculateBoneAnimation(wo);
+		return;
+	}
 	// currently only animation clips are updated here, path moving should be too...
 	if (wo->boneAction == 0) {
 		return;
@@ -734,6 +772,20 @@ void::Path::updateScene(PathDesc *pathDesc, WorldObject *wo, double time)
 		recalculateBoneAnimation(pathDesc, wo, pathDesc->percentage);
 		//Log(" percentage " << pathDesc->percentage << " pathDesc " << pathDesc << "\n");
 	}
+}
+
+// non-keyframe animation
+void Path::recalculateBoneAnimation(WorldObject *wo)
+{
+	const AnimationClip *clip = wo->pathDescBone->clip;
+	PathDesc *pathDesc = wo->pathDescBone;
+	int numBones = (int)clip->invBindMatrices.size();
+	for (int i = numBones - 1; i >= 0; i--) {
+		const XMFLOAT4X4 *xmm4 = &clip->invBindMatrices[i];
+		XMMATRIX xmm = XMLoadFloat4x4(xmm4);
+		saveInterpolationMatrix(i, pathDesc, &xmm);
+	}
+	calculateInterpolationChain(clip, pathDesc);
 }
 
 void Path::recalculateBoneAnimation(PathDesc *pathDesc, WorldObject *wo, double percentage) 

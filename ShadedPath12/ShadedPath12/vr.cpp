@@ -908,25 +908,6 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 	avatarInfo.readyToRender = true;
 }
 
-#else
-
-void VR::handleOVRMessages()
-{
-}
-
-void VR::loadAvatar()
-{
-}
-
-void VR::nextTracking()
-{
-}
-
-void VR::submitFrame()
-{
-}
-
-#endif
 
 CD3DX12_CPU_DESCRIPTOR_HANDLE VR::getRTVHandle(int frameIndex) {
 	UINT rtvDescriptorSize;
@@ -1089,3 +1070,29 @@ void VR::drawLeftController()
 
 	avatarInfo.controllerLeft.draw();
 }
+
+#else
+
+void VR::handleOVRMessages()
+{
+}
+
+void VR::loadAvatar()
+{
+}
+
+void VR::nextTracking()
+{
+}
+
+void VR::submitFrame()
+{
+}
+
+int VR::getCurrentFrameBufferIndex() {
+	return xapp->getCurrentBackBufferIndex();
+};
+void VR::drawLeftController()
+{
+}
+#endif

@@ -76,8 +76,12 @@ public:
 	XMFLOAT3& getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second);
 	void getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot);
 	void updateTime(WorldObject *o, double nowf);
+	// bone animation via pre-defined keyframe movement
 	void recalculateBoneAnimation(PathDesc *pathDesc, WorldObject *wo, double time);
+	// bone animation via externally defined bind matrices:
+	void recalculateBoneAnimation(WorldObject * wo);
 	void skin(XMVECTOR &pos, XMVECTOR &norm, const WorldObjectVertex::VertexSkinned *v, PathDesc *pd);
+	void skinNonKeyframe(XMVECTOR &pos, XMVECTOR &norm, const WorldObjectVertex::VertexSkinned *v, PathDesc *pd);
 	void updateScene(PathDesc *pathDesc, WorldObject *wo, double time);
 	void addRandomNPC(WorldObject *wo, char *name);
 	PathDesc *createNpcPath(char *name);

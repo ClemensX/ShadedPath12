@@ -397,7 +397,8 @@ void WorldObject::draw() {
 				for (int skV = 0; skV < (int)mesh->skinnedVertices.size(); skV++) {
 					WorldObjectVertex::VertexSkinned *v = &mesh->skinnedVertices[skV];
 					XMVECTOR vfinal, normfinal;
-					xapp().world.path.skin(vfinal, normfinal, v, pathDescBone);
+					if (isNonKeyframeAnimated) xapp().world.path.skinNonKeyframe(vfinal, normfinal, v, pathDescBone);
+					else xapp().world.path.skin(vfinal, normfinal, v, pathDescBone);
 					// TODO handle cpu calculated normals after animation/skinning here
 					XMFLOAT3 vfinal_flo;
 					XMStoreFloat3(&vfinal_flo, vfinal);
@@ -422,6 +423,12 @@ void WorldObject::setAction(string name) {
 	Action *action = &mesh->actions[name];
 	Log(" action == " << action << endl);
 	assert(action->name.compare(name) == 0); // assert that action was found
+	if (action->name.compare("non_keyframe") == 0) {
+		this->isNonKeyframeAnimated = true;
+		this->pathDescBone = new PathDesc();
+		this->pathDescBone->clip = &mesh->clips["non_keyframe"];
+		return;
+	}
 	Log(" action...isbone == " << action->curves[0].bezTriples[0].isBoneAnimation << endl);
 	Log(" action..curves.size == " << action->curves.size() << endl);
 	PathDesc* d;

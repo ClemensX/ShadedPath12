@@ -29,12 +29,14 @@ public:
 	wstring controllerLeftMeshFileName;
 	wstring controllerLeftTextureFileName;
 	string controllerLeftMeshId;
-	ovrAvatarAssetID controllerLeftOvrMeshId;
 	string controllerLeftTextureId;
 	WorldObject controllerLeft;
+	bool readyToRender = false;
+#if defined(_OVR_)
+	ovrAvatarAssetID controllerLeftOvrMeshId;
 	const ovrAvatarRenderPart_SkinnedMeshRenderPBS *controllerLeftRenderPart;
 	ovrTrackingState *trackingState = nullptr;
-	bool readyToRender = false;
+#endif
 };
 
 // support class used in all effects (each effect has an instance)
@@ -101,6 +103,7 @@ public:
 	void loadAvatar();
 	void drawLeftController();
 	// if all assets of an avatar have been loaded, gather all the info needed for rendering:
+#if defined(_OVR_)
 	void gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar *avatar);
 	wstring getTextureFileName(ovrAvatarAssetID id) {
 		wstringstream sss;
@@ -122,7 +125,6 @@ public:
 		sss << std::hex << id;
 		return sss.str();
 	}
-#if defined(_OVR_)
 	// get view matrix for current eye
 	XMFLOAT4X4 getOVRViewMatrix();
 	XMFLOAT4X4 getOVRViewMatrixByIndex(int eyeNum);
@@ -130,6 +132,12 @@ public:
 	XMFLOAT4X4 getOVRProjectionMatrix();
 	XMFLOAT4X4 getOVRProjectionMatrixByIndex(int eyeNum);
 	XMFLOAT3 getOVRAdjustedEyePosByIndex(int eyeNum);
+	int getCurrentFrameBufferIndex() {
+		int currentIndex;
+		ovr_GetTextureSwapChainCurrentIndex(session, textureSwapChain, &currentIndex);
+		return currentIndex;
+	};
+	ovrAvatar *avatar = nullptr;
 #else
 	// just return identity matrix if ovr not enabled
 	static XMFLOAT4X4 ident;
@@ -137,6 +145,10 @@ public:
 	XMFLOAT4X4 getOVRViewMatrix() { return ident; };
 	// get projection matrix for current eye
 	XMFLOAT4X4 getOVRProjectionMatrix() { return ident; };
+	XMFLOAT4X4 getOVRViewMatrixByIndex(int eyeNum) { return ident; };
+	XMFLOAT4X4 getOVRProjectionMatrixByIndex(int eyeNum) { return ident; };
+	XMFLOAT3 getOVRAdjustedEyePosByIndex(int eyeNum) { return XMFLOAT3(0,0,0); };
+	int getCurrentFrameBufferIndex();
 #endif
 
 	bool enabled = false;  // default: VR is off, switch on by command line option -vr
@@ -145,21 +157,12 @@ public:
 	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texRtv;
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE getRTVHandle(int frameIndex);
-	int getCurrentFrameBufferIndex() {
-		int currentIndex;
-		ovr_GetTextureSwapChainCurrentIndex(session, textureSwapChain, &currentIndex);
-		return currentIndex;
-	};
-	ovrAvatar *avatar = nullptr;
 	AvatarInfo avatarInfo;
 protected:
 	EyePos curEye = EyeLeft;
 private:
 	void updateAvatar();
 	void handleAvatarMessages();
-	void writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarMeshAssetData *assetdata);
-	void writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarTextureAssetData *assetdata);
-	void calculateInverseBindMatrix(const ovrAvatarTransform *t, XMFLOAT4X4 *inv);
 	unsigned int pack(const uint8_t *blend_indices);
 
 	D3D12_VIEWPORT viewports[2];
@@ -171,6 +174,9 @@ private:
 	int buffersize_height = 0;
 
 #if defined(_OVR_)
+	void writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarMeshAssetData *assetdata);
+	void writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarTextureAssetData *assetdata);
+	void calculateInverseBindMatrix(const ovrAvatarTransform *t, XMFLOAT4X4 *inv);
 	ovrHmdDesc desc;
 	ovrSizei resolution;
 	ovrSession session;
