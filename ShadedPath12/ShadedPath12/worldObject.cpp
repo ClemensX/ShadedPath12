@@ -4,6 +4,20 @@
 static const bool debug_basic = false;
 static const bool debug_uv = false;
 
+XMFLOAT4X4 toLeft(XMFLOAT4X4 r) {
+//	return r;
+	XMFLOAT4X4 l = r;
+	l._31 *= -1.0f;
+	l._32 *= -1.0f;
+	//l._33 *= -1.0f;
+	//l._34 *= -1.0f;
+
+	l._13 *= -1.0f;
+	l._23 *= -1.0f;
+	//l._33 *= -1.0f;
+	l._43 *= -1.0f;
+	return l;
+}
 void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
 	ifstream bfile(filename.c_str(), ios::in | ios::binary);
 	if (debug_basic) Log("file opened: " << filename.c_str() << "\n");
@@ -48,7 +62,7 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
 				}
 				XMFLOAT4X4 m = XMFLOAT4X4(f);
 				//XMMATRIX m4 = XMLoadFloat4x4(&m);
-				clip.invBindMatrices.push_back(m);
+				clip.invBindMatrices.push_back(toLeft(m));
 				int keyframes;
 				bfile.read((char*)&keyframes, 4);
 				for (int m = 0; m < keyframes; m++) {
