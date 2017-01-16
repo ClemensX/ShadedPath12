@@ -176,6 +176,7 @@ private:
 #if defined(_OVR_)
 	void writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarMeshAssetData *assetdata);
 	void writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarTextureAssetData *assetdata);
+	void calculateBindMatrix(const ovrAvatarTransform *t, XMFLOAT4X4 *inv);
 	void calculateInverseBindMatrix(const ovrAvatarTransform *t, XMFLOAT4X4 *inv);
 	ovrHmdDesc desc;
 	ovrSizei resolution;

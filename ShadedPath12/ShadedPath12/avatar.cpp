@@ -2,7 +2,7 @@
 #include "avatar.h"
 
 // un-comment to load mehes from oculus servers and store locally
-//#define LOAD_AVATAR_DATA
+#define LOAD_AVATAR_DATA
 
 // change to base name of meshes saved in data/mesh folder (part before _ )
 #define USERID L"413fd8923c71e"
@@ -237,7 +237,7 @@ void Avatar::update()
 	if(xapp().ovrRendering)	xapp().vr.handleOVRMessages();
 	auto grp = xapp().objectStore.getGroup("avatar");
 	for (auto & w : *grp) {
-		w->update();
+		//w->update();
 	}
 
 }
@@ -252,7 +252,7 @@ void Avatar::draw()
 	xapp().vr.drawLeftController();
 	auto grp = xapp().objectStore.getGroup("avatar");
 	for (auto & w : *grp) {
-		w->draw();
+		//w->draw();
 	}
 	postEffect.draw();
 }

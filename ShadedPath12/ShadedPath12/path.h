@@ -95,6 +95,8 @@ public:
 	// ctrlPoints define the control points in world coords. w holds the frame number/fraction (always 25 fps assumed)
 	// rot defines rotation for each control point, may be left out for no rotation
 	void defineAction(char *name, WorldObject &wo, vector<XMFLOAT4> &ctrlPoints, vector<XMFLOAT3> *rot = nullptr);
+	// for non-keyframe animation set bind pose from outside:
+	void updateBindPose(int i, PathDesc *pd, XMMATRIX *m);
 private:
 	XMMATRIX getInterpolationMatrix(int i, PathDesc *pd);
 	void saveInterpolationMatrix(int i, PathDesc *pd, XMMATRIX *m);

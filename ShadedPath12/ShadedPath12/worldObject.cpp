@@ -5,16 +5,16 @@ static const bool debug_basic = false;
 static const bool debug_uv = false;
 
 XMFLOAT4X4 toLeft(XMFLOAT4X4 r) {
-//	return r;
+	return r;
 	XMFLOAT4X4 l = r;
 	l._31 *= -1.0f;
 	l._32 *= -1.0f;
-	//l._33 *= -1.0f;
-	//l._34 *= -1.0f;
+	l._33 *= -1.0f;
+	l._34 *= -1.0f;
 
 	l._13 *= -1.0f;
 	l._23 *= -1.0f;
-	//l._33 *= -1.0f;
+	l._33 *= -1.0f;
 	l._43 *= -1.0f;
 	return l;
 }

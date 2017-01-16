@@ -588,23 +588,66 @@ void VR::handleAvatarMessages()
 
 void VR::calculateInverseBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * inv)
 {
+	XMMATRIX bind;// = XMMatrixAffineTransformation(scale, zeroRotationOrigin, rotationQuaternion, translation);
+	XMFLOAT4X4 bind4;
+	calculateBindMatrix(t, &bind4);
+	bind = XMLoadFloat4x4(&bind4);
+	XMVECTOR determinant = XMMatrixDeterminant(bind);
+	XMMATRIX inverse = XMMatrixInverse(&determinant, bind);
+	XMStoreFloat4x4(inv, inverse);
+}
+
+void VR::calculateBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * bind4)
+{
 	//XMMATRIX xmIdent = XMMatrixIdentity();
 	//XMStoreFloat4x4(inv, xmIdent);
 
-	XMVECTOR zeroRotationOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+	XMVECTOR zeroRotationOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR scale, rotationQuaternion, translation;
 	if (t->scale.x != t->scale.y || t->scale.y != t->scale.z) {
-		Log("WARNING: non-uniform scale encountered!!" << endl);
+		//Log("WARNING: non-uniform scale encountered!!" << endl);
 	}
 	//scale = XMVectorScale(scale, t->scale.x);
 	XMFLOAT3 scaleF = XMFLOAT3(t->scale.x, t->scale.y, t->scale.z);
 	scale = XMLoadFloat3(&scaleF);
-	rotationQuaternion = XMVectorSet(t->orientation.x, t->orientation.y, t->orientation.z, t->orientation.w);
+	//rotationQuaternion = XMVectorSet(t->orientation.x, t->orientation.y, t->orientation.z, t->orientation.w); // --> -z
+	rotationQuaternion = XMVectorSet(t->orientation.y, t->orientation.x, t->orientation.z, t->orientation.w); // --> -z
+
+	//rotationQuaternion = XMVectorSet(-t->orientation.x, -t->orientation.y, t->orientation.z, t->orientation.w); // --> -z
+	//rotationQuaternion = XMVectorSet(t->orientation.w, t->orientation.x, t->orientation.y, t->orientation.z); // --> +x +z
+	//rotationQuaternion = XMVectorSet(t->orientation.x, t->orientation.y, -t->orientation.z, t->orientation.w); // --> +x +z
+	//rotationQuaternion = XMVectorSet(-t->orientation.x, -t->orientation.y, t->orientation.z, t->orientation.w); // --> 
+	//rotationQuaternion = XMVectorSet(t->orientation.w , -t->orientation.x, -t->orientation.y, t->orientation.z); // --> 
+	//rotationQuaternion = XMVectorSet(t->orientation.z, t->orientation.y, t->orientation.x, t->orientation.w); // --> -z
 	translation = XMVectorSet(t->position.x, t->position.y, t->position.z, 0.0f);
 	XMMATRIX bind = XMMatrixAffineTransformation(scale, zeroRotationOrigin, rotationQuaternion, translation);
-	XMVECTOR determinant = XMMatrixDeterminant(bind);
-	XMMATRIX inverse = XMMatrixInverse(&determinant, bind);
-	XMStoreFloat4x4(inv, inverse);
+	//bind = XMMatrixTranspose(bind);
+/*
+// fix finalRollPitchYaw for LH coordinate system:
+Matrix4f s = Matrix4f::Scaling(1.0f, -1.0f, -1.0f);  // 1 1 -1
+finalRollPitchYaw = s * finalRollPitchYaw * s;
+*/
+	// button move:
+	// 1 1 1: --> -z
+	// 1 -1 1: same
+	// 1 -1 -1:
+	XMMATRIX fixScale = XMMatrixScaling(1.0f, 1.0f, 1.0f);
+	//bind = fixScale * bind * fixScale;
+	XMStoreFloat4x4(bind4, bind);
+	float f = bind4->_12;
+	bind4->_12 = bind4->_21;
+	bind4->_21 = f;
+	f = bind4->_13;
+	bind4->_13 = bind4->_31;
+	bind4->_31 = f;
+	f = bind4->_23;
+	bind4->_23 = bind4->_32;
+	bind4->_32 = f;
+	//bind4->_11 *= -1.f;
+	//bind4->_12 *= -1.f;
+	//bind4->_21 *= -1.f;
+	//bind4->_22 *= -1.f;
+	bind4->_43 *= -1.f;
 }
 
 void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded * assetmsg, const ovrAvatarMeshAssetData * assetdata)
@@ -906,6 +949,8 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 	xapp->objectStore.addObject(avatarInfo.controllerLeft, avatarInfo.controllerLeftMeshId, XMFLOAT3(0.0f, -0.4f, -0.2f), ti);
 	avatarInfo.controllerLeft.material.specExp = 20.0f;
 	avatarInfo.controllerLeft.material.specIntensity = 700.0f;
+	avatarInfo.controllerLeft.material.ambient = XMFLOAT4(1, 1, 1, 1);
+	avatarInfo.controllerLeft.setAction("non_keyframe");
 	avatarInfo.readyToRender = true;
 }
 
@@ -1062,13 +1107,24 @@ void VR::drawLeftController()
 
 	//mesh = avatarInfo.controllerLeftRenderPart;
 
-	Log(mesh->skinnedPose.jointNames[1]);
-	Log(" " << mesh->skinnedPose.jointTransform[1].position.x);
-	Log(" " << mesh->skinnedPose.jointTransform[1].position.y);
-	Log(" " << mesh->skinnedPose.jointTransform[1].position.z << endl);
+	//Log(mesh->skinnedPose.jointNames[1]);
+	//Log(" " << mesh->skinnedPose.jointTransform[1].position.x);
+	//Log(" " << mesh->skinnedPose.jointTransform[1].position.y);
+	//Log(" " << mesh->skinnedPose.jointTransform[1].position.z << endl);
 
 
-
+	for (int i = 0; i < mesh->skinnedPose.jointCount; i++) {
+		XMFLOAT4X4 bindPose4;
+		ovrAvatarTransform trans = mesh->skinnedPose.jointTransform[i];
+		//trans.position.z *= -1.0f;
+		calculateBindMatrix(&trans, &bindPose4);
+		XMMATRIX bindPose = XMLoadFloat4x4(&bindPose4);
+		xapp->world.path.updateBindPose(i, avatarInfo.controllerLeft.pathDescBone, &bindPose);
+		
+	}
+	avatarInfo.controllerLeft.pos() = XMFLOAT3(0.1f, -0.1f, 0.1f);
+	avatarInfo.controllerLeft.rot() = XMFLOAT3(0.2f, 0.1f, 0.3f);
+	avatarInfo.controllerLeft.update();
 	avatarInfo.controllerLeft.draw();
 }
 

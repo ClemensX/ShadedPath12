@@ -716,6 +716,11 @@ XMVECTOR Path::skin(const Vertex::Skinned *v, const AnimationClip *clip, const s
 	return vskin;
 }
 */
+void Path::updateBindPose(int i, PathDesc * pd, XMMATRIX * m)
+{
+	saveInterpolationMatrix(i, pd, m);
+}
+
 XMMATRIX Path::getInterpolationMatrix(int i, PathDesc *pd) {
 	return XMLoadFloat4x4(&pd->interpolationMatrices[i]);
 }
@@ -783,6 +788,7 @@ void Path::recalculateBoneAnimation(WorldObject *wo)
 	for (int i = numBones - 1; i >= 0; i--) {
 		const XMFLOAT4X4 *xmm4 = &clip->invBindMatrices[i];
 		XMMATRIX xmm = XMLoadFloat4x4(xmm4);
+		xmm = getInterpolationMatrix(i, pathDesc) * xmm;
 		saveInterpolationMatrix(i, pathDesc, &xmm);
 	}
 	calculateInterpolationChain(clip, pathDesc);
