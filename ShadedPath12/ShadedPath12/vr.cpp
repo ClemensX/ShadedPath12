@@ -603,6 +603,8 @@ void VR::calculateBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * bind4)
 	//XMStoreFloat4x4(inv, xmIdent);
 
 	XMVECTOR zeroRotationOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	//XMVECTOR zeroRotationOrigin = XMVectorSet(0.1f, 0.1f, 0.1f, 0.0f);
+	
 	XMVECTOR scale, rotationQuaternion, translation;
 	if (t->scale.x != t->scale.y || t->scale.y != t->scale.z) {
 		//Log("WARNING: non-uniform scale encountered!!" << endl);
@@ -620,6 +622,7 @@ void VR::calculateBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * bind4)
 	//rotationQuaternion = XMVectorSet(t->orientation.w , -t->orientation.x, -t->orientation.y, t->orientation.z); // --> 
 	//rotationQuaternion = XMVectorSet(t->orientation.w, t->orientation.z, t->orientation.y, t->orientation.x); // --> -z
 	translation = XMVectorSet(-t->position.x, -t->position.y, -t->position.z, 0.0f);
+	rotationQuaternion = XMQuaternionNormalize(rotationQuaternion);
 	XMMATRIX bind = XMMatrixAffineTransformation(scale, zeroRotationOrigin, rotationQuaternion, translation);
 	//bind = XMMatrixTranspose(bind);
 /*
@@ -1137,8 +1140,8 @@ void VR::drawLeftController()
 		xapp->world.path.updateBindPose(i, avatarInfo.controllerLeft.pathDescBone, &bindPose);
 		
 	}
-	avatarInfo.controllerLeft.pos() = XMFLOAT3(0.1f, -0.1f, 0.1f);
-	avatarInfo.controllerLeft.rot() = XMFLOAT3(0.2f, 0.1f, 0.3f);
+	avatarInfo.controllerLeft.pos() = XMFLOAT3(1.1f, -1.1f, 1.1f);
+	avatarInfo.controllerLeft.rot() = XMFLOAT3(0.4f, 0.3f, 0.2f);
 	avatarInfo.controllerLeft.update();
 	avatarInfo.controllerLeft.draw();
 }
