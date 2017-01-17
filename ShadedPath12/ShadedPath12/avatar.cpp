@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "avatar.h"
 
+#include <filesystem>  // moved here from stdafx.h due to strange header compile error
+using namespace std::tr2::sys;
+
 // un-comment to load mehes from oculus servers and store locally
 #define LOAD_AVATAR_DATA
 
