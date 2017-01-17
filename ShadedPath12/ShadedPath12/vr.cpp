@@ -610,16 +610,16 @@ void VR::calculateBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * bind4)
 	//scale = XMVectorScale(scale, t->scale.x);
 	XMFLOAT3 scaleF = XMFLOAT3(t->scale.x, t->scale.y, t->scale.z);
 	scale = XMLoadFloat3(&scaleF);
-	//rotationQuaternion = XMVectorSet(t->orientation.x, t->orientation.y, t->orientation.z, t->orientation.w); // --> -z
-	rotationQuaternion = XMVectorSet(t->orientation.y, t->orientation.x, t->orientation.z, t->orientation.w); // --> -z
+	rotationQuaternion = XMVectorSet(t->orientation.x, t->orientation.y, t->orientation.z, t->orientation.w); // --> -z
+	//rotationQuaternion = XMVectorSet(t->orientation.y, t->orientation.x, t->orientation.z, t->orientation.w); // --> -z
 
 	//rotationQuaternion = XMVectorSet(-t->orientation.x, -t->orientation.y, t->orientation.z, t->orientation.w); // --> -z
 	//rotationQuaternion = XMVectorSet(t->orientation.w, t->orientation.x, t->orientation.y, t->orientation.z); // --> +x +z
 	//rotationQuaternion = XMVectorSet(t->orientation.x, t->orientation.y, -t->orientation.z, t->orientation.w); // --> +x +z
 	//rotationQuaternion = XMVectorSet(-t->orientation.x, -t->orientation.y, t->orientation.z, t->orientation.w); // --> 
 	//rotationQuaternion = XMVectorSet(t->orientation.w , -t->orientation.x, -t->orientation.y, t->orientation.z); // --> 
-	//rotationQuaternion = XMVectorSet(t->orientation.z, t->orientation.y, t->orientation.x, t->orientation.w); // --> -z
-	translation = XMVectorSet(t->position.x, t->position.y, t->position.z, 0.0f);
+	//rotationQuaternion = XMVectorSet(t->orientation.w, t->orientation.z, t->orientation.y, t->orientation.x); // --> -z
+	translation = XMVectorSet(-t->position.x, -t->position.y, -t->position.z, 0.0f);
 	XMMATRIX bind = XMMatrixAffineTransformation(scale, zeroRotationOrigin, rotationQuaternion, translation);
 	//bind = XMMatrixTranspose(bind);
 /*
@@ -634,20 +634,35 @@ finalRollPitchYaw = s * finalRollPitchYaw * s;
 	XMMATRIX fixScale = XMMatrixScaling(1.0f, 1.0f, 1.0f);
 	//bind = fixScale * bind * fixScale;
 	XMStoreFloat4x4(bind4, bind);
-	float f = bind4->_12;
-	bind4->_12 = bind4->_21;
-	bind4->_21 = f;
-	f = bind4->_13;
-	bind4->_13 = bind4->_31;
-	bind4->_31 = f;
-	f = bind4->_23;
-	bind4->_23 = bind4->_32;
-	bind4->_32 = f;
-	//bind4->_11 *= -1.f;
-	//bind4->_12 *= -1.f;
-	//bind4->_21 *= -1.f;
-	//bind4->_22 *= -1.f;
-	bind4->_43 *= -1.f;
+	//float f = bind4->_12;
+	//bind4->_12 = bind4->_21;
+	//bind4->_21 = f;
+	//f = bind4->_13;
+	//bind4->_13 = bind4->_31;
+	//bind4->_31 = f;
+	//f = bind4->_23;
+	//bind4->_23 = bind4->_32;
+	//bind4->_32 = f;
+
+	//bind4->_31 *= -1.f;
+	//bind4->_32 *= -1.f;
+	//bind4->_34 *= -1.f;
+	//bind4->_13 *= -1.f;
+	//bind4->_23 *= -1.f;
+	//bind4->_43 *= -1.f;
+
+	XMFLOAT4X4 b = *bind4;
+	bind4->_12 = b._13;
+	bind4->_13 = b._12;
+	bind4->_21 = b._31;
+	bind4->_22 = b._33;
+	bind4->_23 = b._32;
+	bind4->_31 = b._21;
+	bind4->_32 = b._23;
+	bind4->_33 = b._22;
+	bind4->_42 = b._43;
+	bind4->_43 = b._42;
+
 }
 
 void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded * assetmsg, const ovrAvatarMeshAssetData * assetdata)
