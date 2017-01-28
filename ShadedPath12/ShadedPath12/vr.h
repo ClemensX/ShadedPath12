@@ -183,8 +183,11 @@ private:
 #if defined(_OVR_)
 	void writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarMeshAssetData *assetdata);
 	void writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarTextureAssetData *assetdata);
+	// calculate bind matrix from oculus avatar transform, including transition from OpenGL right hand bind matrices to DirectX left hand system
 	void calculateBindMatrix(const ovrAvatarTransform *t, XMFLOAT4X4 *inv);
-	void calculateInverseBindMatrix(const ovrAvatarTransform *t, XMFLOAT4X4 *inv);
+	// compute 'world' pose from current pose matrices and stored inverse bind matrices.
+	// inverse matrices are from the mesh binary file
+	// world actually means zero position and no rotation, vertices still have to be applied to WVP projection
 	void computeWorldPose(const ovrAvatarSkinnedMeshPose& localPose, XMMATRIX worldPose[]);
 	bool debugComponent = false; // set to true for specific components only (like left hand) for easier debugging/logging
 	ovrHmdDesc desc;

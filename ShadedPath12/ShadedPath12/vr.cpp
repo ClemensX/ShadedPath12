@@ -468,7 +468,6 @@ void VR::submitFrame()
 	ovrLayerHeader* layers = &layer.Header;
 	ovrResult       result = ovr_SubmitFrame(session, 0, nullptr, &layers, 1);
 	bool isVisible = (result == ovrSuccess);
-	//Log
 }
 
 
@@ -605,99 +604,30 @@ void VR::computeWorldPose(const ovrAvatarSkinnedMeshPose & localPose, XMMATRIX w
 		else
 		{
 			worldPose[i] = local * worldPose[parentIndex]/* * local*/;
-			if (i == 4 && debugComponent) // left hhand
-			{
-				Log("C");
-				//print_transform("transform", localPose.jointTransform[i]);
-				//print_matrix("hold", &local);
-				//print_matrix("hold trans", &worldPose[i]);
-				//printf("parent index = %d\n", parentIndex);
-				//print_matrix("parent pose", &worldPose[parentIndex]);
-			}
+			//if (i == 4 && debugComponent) // left hand
+			//{
+			//	//Log("C");
+			//}
 		}
 	}
 }
 
-void VR::calculateInverseBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * inv)
-{
-	XMMATRIX bind;// = XMMatrixAffineTransformation(scale, zeroRotationOrigin, rotationQuaternion, translation);
-	XMFLOAT4X4 bind4;
-	calculateBindMatrix(t, &bind4);
-	bind = XMLoadFloat4x4(&bind4);
-	XMVECTOR determinant = XMMatrixDeterminant(bind);
-	XMMATRIX inverse = XMMatrixInverse(&determinant, bind);
-	XMStoreFloat4x4(inv, inverse);
-}
-
 void VR::calculateBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * bind4)
 {
-	//XMMATRIX xmIdent = XMMatrixIdentity();
-	//XMStoreFloat4x4(inv, xmIdent);
-
 	XMVECTOR zeroRotationOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	//XMVECTOR zeroRotationOrigin = XMVectorSet(0.1f, 0.1f, 0.1f, 0.0f);
-
 	XMVECTOR scale, rotationQuaternion, translation;
 	if (t->scale.x != t->scale.y || t->scale.y != t->scale.z) {
 		//Log("WARNING: non-uniform scale encountered!!" << endl);
 	}
-	//scale = XMVectorScale(scale, t->scale.x);
 	XMFLOAT3 scaleF = XMFLOAT3(t->scale.x, t->scale.y, t->scale.z);
 	scale = XMLoadFloat3(&scaleF);
-	rotationQuaternion = XMVectorSet(t->orientation.x, t->orientation.y, t->orientation.z, t->orientation.w); // --> -z
-	//rotationQuaternion = XMVectorSet(t->orientation.y, t->orientation.x, t->orientation.z, t->orientation.w); // --> -z
-
-	//rotationQuaternion = XMVectorSet(-t->orientation.x, -t->orientation.y, t->orientation.z, t->orientation.w); // --> -z
-	//rotationQuaternion = XMVectorSet(t->orientation.w, t->orientation.x, t->orientation.y, t->orientation.z); // --> +x +z
-	//rotationQuaternion = XMVectorSet(t->orientation.x, t->orientation.y, -t->orientation.z, t->orientation.w); // --> +x +z
-	//rotationQuaternion = XMVectorSet(-t->orientation.x, -t->orientation.y, t->orientation.z, t->orientation.w); // --> 
-	//rotationQuaternion = XMVectorSet(t->orientation.w , -t->orientation.x, -t->orientation.y, t->orientation.z); // --> 
-	//rotationQuaternion = XMVectorSet(t->orientation.w, t->orientation.z, t->orientation.y, t->orientation.x); // --> -z
+	rotationQuaternion = XMVectorSet(t->orientation.x, t->orientation.y, t->orientation.z, t->orientation.w);
 	translation = XMVectorSet(t->position.x, t->position.y, t->position.z, 0.0f);
 	rotationQuaternion = XMQuaternionNormalize(rotationQuaternion);
 	XMMATRIX bind = XMMatrixAffineTransformation(scale, zeroRotationOrigin, rotationQuaternion, translation);
-	//bind = XMMatrixTranspose(bind);
-	/*
-	// fix finalRollPitchYaw for LH coordinate system:
-	Matrix4f s = Matrix4f::Scaling(1.0f, -1.0f, -1.0f);  // 1 1 -1
-	finalRollPitchYaw = s * finalRollPitchYaw * s;
-	*/
-	// button move:
-	// 1 1 1: --> -z
-	// 1 -1 1: same
-	// 1 -1 -1:
-	XMMATRIX fixScale = XMMatrixScaling(1.0f, 1.0f, 1.0f);
-	//bind = fixScale * bind * fixScale;
+	XMMATRIX fixScale = XMMatrixScaling(1.0f, 1.0f, -1.0f);
+	bind = fixScale * bind * fixScale;
 	XMStoreFloat4x4(bind4, bind);
-	//float f = bind4->_12;
-	//bind4->_12 = bind4->_21;
-	//bind4->_21 = f;
-	//f = bind4->_13;
-	//bind4->_13 = bind4->_31;
-	//bind4->_31 = f;
-	//f = bind4->_23;
-	//bind4->_23 = bind4->_32;
-	//bind4->_32 = f;
-
-	//bind4->_31 *= -1.f;
-	//bind4->_32 *= -1.f;
-	//bind4->_34 *= -1.f;
-	//bind4->_13 *= -1.f;
-	//bind4->_23 *= -1.f;
-	//bind4->_43 *= -1.f;
-
-	//XMFLOAT4X4 b = *bind4;
-	//bind4->_12 = b._13;
-	//bind4->_13 = b._12;
-	//bind4->_21 = b._31;
-	//bind4->_22 = b._33;
-	//bind4->_23 = b._32;
-	//bind4->_31 = b._21;
-	//bind4->_32 = b._23;
-	//bind4->_33 = b._22;
-	//bind4->_42 = b._43;
-	//bind4->_43 = b._42;
-
 }
 
 void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded * assetmsg, const ovrAvatarMeshAssetData * assetdata)
@@ -723,7 +653,7 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 			//int zero = 0;
 			//bfile.write((char*)&zero, 1);
 			int numJoints = assetdata->skinnedBindPose.jointCount;
-			debugComponent = std::string(assetdata->skinnedBindPose.jointNames[0]).compare("hands:l_hand_world") ? false : true;
+			//debugComponent = std::string(assetdata->skinnedBindPose.jointNames[0]).compare("hands:l_hand_world") ? false : true;
 			bfile.write((char*)&numJoints, 4);
 			XMMATRIX worldPose[MAX_BONES];  // actually the bind pose, used to calc inverse bind pose matrices
 			computeWorldPose(assetdata->skinnedBindPose, &worldPose[0]);
@@ -731,9 +661,8 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 				// parent:
 				int parentId = assetdata->skinnedBindPose.jointParents[j];
 				bfile.write((char*)&parentId, 4);
-				//// inverse bind matrices:
-				//XMFLOAT4X4 inv;
-				//calculateInverseBindMatrix(&assetdata->skinnedBindPose.jointTransform[j], &inv);
+				// calculate inverse bind matrices:
+				// inverses are stored exactly like in OpenGL
 				XMMATRIX bind = worldPose[j];
 				XMVECTOR determinant = XMMatrixDeterminant(bind);
 				XMMATRIX inverse = XMMatrixInverse(&determinant, bind);
@@ -754,10 +683,11 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 	ovrAvatarMeshVertex_ *vbuf = (ovrAvatarMeshVertex_ *)assetdata->vertexBuffer;
 	uint16_t* ibuf = (uint16_t*)assetdata->indexBuffer;
 	int numVerts = assetdata->vertexCount;
-	if (false) {
+	if (true) {
 		// fix for left handed system
-		// TODO: pose matrices need to be converted too
 		// flip z coordinate on all vertices, change triangle ordering
+		// pose matrices are converted during rendering/update, see VR.calculateBindMatrix()
+
 		for (size_t i = 0; i < assetdata->vertexCount; i++) {
 			ovrAvatarMeshVertex_ v = vbuf[i];
 			v.z *= -1.0f;

@@ -738,10 +738,7 @@ void Path::saveInterpolationMatrixChained(int i, PathDesc *pd, XMMATRIX *m) {
 	XMStoreFloat4x4(&pd->interpolationMatricesChained[i], *m);
 }
 
-
-//void copyMatrix(XMMATRIX to, XMMATRIX from) {
-//}
-
+// only for left handed system
 void Path::calculateInterpolationChain(const AnimationClip *clip, PathDesc *pd)
 {
 	//for (int i = 0; i < 2; i++) {
@@ -756,10 +753,9 @@ void Path::calculateInterpolationChain(const AnimationClip *clip, PathDesc *pd)
 			saveInterpolationMatrixChained(i, pd, &getInterpolationMatrix(i, pd));
 			//pd->interpolationMatricesChained[i] = pd->interpolationMatrices[i];
 		} else {
-			//XMMATRIX m = getInterpolationMatrix(i, pd) * getInterpolationMatrixChained(parentofThisBone, pd);
-			XMMATRIX m = getInterpolationMatrixChained(parentofThisBone, pd) * getInterpolationMatrix(i, pd);
+			XMMATRIX m = getInterpolationMatrix(i, pd) * getInterpolationMatrixChained(parentofThisBone, pd);
+			//XMMATRIX m = getInterpolationMatrixChained(parentofThisBone, pd) * getInterpolationMatrix(i, pd); use this line for right handed system
 			saveInterpolationMatrixChained(i, pd, &m);
-			//pd->interpolationMatricesChained[i] = pd->interpolationMatrices[i] * pd->interpolationMatricesChained[parentofThisBone];
 		}
 	}
 }
