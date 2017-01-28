@@ -11,6 +11,8 @@ VR::VR(XApp *xapp) {
 XMFLOAT4X4 VR::ident;
 #endif
 
+#define MAX_BONES 64
+
 VR::~VR() {
 	if (!this->xapp->ovrRendering) return;
 #if defined(_OVR_)
@@ -51,9 +53,9 @@ void VR::init()
 	desc = ovr_GetHmdDesc(session);
 	resolution = desc.Resolution;
 	// Start the sensor which provides the Rift’s pose and motion.
-/*	result = ovr_ConfigureTracking(session, ovrTrackingCap_Orientation |
-		ovrTrackingCap_MagYawCorrection |
-		ovrTrackingCap_Position, 0);
+	/*	result = ovr_ConfigureTracking(session, ovrTrackingCap_Orientation |
+	ovrTrackingCap_MagYawCorrection |
+	ovrTrackingCap_Position, 0);
 	if (OVR_FAILURE(result)) Error(L"Could not enable Oculus Rift Tracking. Cannot run in OVR mode without Oculus Rift tracking.");
 	*/
 	// Setup VR components, filling out description
@@ -127,7 +129,7 @@ void VR::initD3D()
 	dsDesc.MiscFlags = ovrTextureMisc_DX_Typeless;//ovrTextureMisc_None;
 	dsDesc.BindFlags = ovrTextureBind_DX_RenderTarget;
 
-/*	D3D11_TEXTURE2D_DESC dsDesc;
+	/*	D3D11_TEXTURE2D_DESC dsDesc;
 	dsDesc.Width = bufferSize.w;
 	dsDesc.Height = bufferSize.h;
 	dsDesc.MipLevels = 1;
@@ -222,7 +224,8 @@ void VR::prepareViews(D3D12_VIEWPORT &viewport, D3D12_RECT &scissorRect)
 		scissorRects[EyeLeft] = scissorRect;
 		viewports[EyeRight] = viewport;
 		scissorRects[EyeRight] = scissorRect;
-	} else {
+	}
+	else {
 		//orig_viewport = viewport;
 		//orig_scissorRect = scissorRect;
 		viewports[EyeLeft] = viewport;
@@ -271,7 +274,8 @@ void VR::adjustEyeMatrix(XMMATRIX &m, Camera *cam) {
 	if (cam == nullptr) {
 		xapp->camera.projectionTransform();
 		m = xapp->camera.worldViewProjection();
-	} else {
+	}
+	else {
 		cam->projectionTransform();
 		m = cam->worldViewProjection();
 	}
@@ -363,10 +367,10 @@ void VR::nextTracking()
 	// make sure we are only caled once per frame:
 	static vector<bool> called;
 	if (xapp->getFramenum() < 50000) {
-		size_t framenum = (size_t) xapp->getFramenum();
+		size_t framenum = (size_t)xapp->getFramenum();
 		assert(called.size() <= framenum);
 		called.push_back(true);
-		assert(called.size() == framenum+1);
+		assert(called.size() == framenum + 1);
 	}
 #endif
 
@@ -435,7 +439,7 @@ void VR::nextTracking()
 		float nearz = xapp->camera.nearZ;
 		float farz = xapp->camera.farZ;
 		Matrix4f view = Matrix4f::LookAtLH(shiftedEyePos, shiftedEyePos + finalForward, finalUp);
-		Matrix4f projO = ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, nearz, farz,  ovrProjection_LeftHanded);
+		Matrix4f projO = ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, nearz, farz, ovrProjection_LeftHanded);
 		Matrix4fToXM(this->viewOVR[eye], view.Transposed());
 		Matrix4fToXM(this->projOVR[eye], projO.Transposed());
 		this->adjustedEyePos[eye] = XMFLOAT3(shiftedEyePos.x, shiftedEyePos.y, shiftedEyePos.z);
@@ -459,11 +463,11 @@ void VR::submitFrame()
 	//ovr_CommitTextureSwapChain(session, textureSwapChain);
 	ovr_CommitTextureSwapChain(session, textureSwapChain);
 	/*	pTextureSet->CurrentIndex = (pTextureSet->CurrentIndex + 1) % pTextureSet->TextureCount;
-*/
+	*/
 	// Submit frame with one layer we have.
 	ovrLayerHeader* layers = &layer.Header;
 	ovrResult       result = ovr_SubmitFrame(session, 0, nullptr, &layers, 1);
-	bool isVisible = (result == ovrSuccess); 
+	bool isVisible = (result == ovrSuccess);
 	//Log
 }
 
@@ -555,20 +559,20 @@ void VR::handleAvatarMessages()
 		switch (assetType)
 		{
 		case ovrAvatarAssetType_Mesh:
-			{
-				const ovrAvatarMeshAssetData* assetdata = ovrAvatarAsset_GetMeshData(assetmsg->asset);
-				//Log("vertices for " << assetmsg->assetID << " : " << assetdata->vertexCount << endl);
-				writeOVRMesh(userId, assetmsg, assetdata);
-			}
-			break;
+		{
+			const ovrAvatarMeshAssetData* assetdata = ovrAvatarAsset_GetMeshData(assetmsg->asset);
+			//Log("vertices for " << assetmsg->assetID << " : " << assetdata->vertexCount << endl);
+			writeOVRMesh(userId, assetmsg, assetdata);
+		}
+		break;
 		case ovrAvatarAssetType_Texture:
-			{
-				const ovrAvatarTextureAssetData* assetdata = ovrAvatarAsset_GetTextureData(assetmsg->asset);
-				//Log("vertices for " << assetmsg->assetID << " : " << assetdata->vertexCount << endl);
-				writeOVRTexture(userId, assetmsg, assetdata);
-			}
-			//data = _loadTexture(ovrAvatarAsset_GetTextureData(assetmsg->asset));
-			break;
+		{
+			const ovrAvatarTextureAssetData* assetdata = ovrAvatarAsset_GetTextureData(assetmsg->asset);
+			//Log("vertices for " << assetmsg->assetID << " : " << assetdata->vertexCount << endl);
+			writeOVRTexture(userId, assetmsg, assetdata);
+		}
+		//data = _loadTexture(ovrAvatarAsset_GetTextureData(assetmsg->asset));
+		break;
 		}
 
 		// Store the data that we loaded for the asset in the asset map
@@ -584,6 +588,34 @@ void VR::handleAvatarMessages()
 		//  Handle other Platform SDK messages here.
 	}
 	ovrAvatarMessage_Free(message);
+}
+
+void VR::computeWorldPose(const ovrAvatarSkinnedMeshPose & localPose, XMMATRIX worldPose[])
+{
+	for (int i = 0; i < localPose.jointCount; ++i)
+	{
+		XMFLOAT4X4 local4;
+		calculateBindMatrix(&localPose.jointTransform[i], &local4);
+		XMMATRIX local = XMLoadFloat4x4(&local4);
+		int parentIndex = localPose.jointParents[i];
+		if (parentIndex < 0)
+		{
+			worldPose[i] = local;
+		}
+		else
+		{
+			worldPose[i] = local * worldPose[parentIndex]/* * local*/;
+			if (i == 4 && debugComponent) // left hhand
+			{
+				Log("C");
+				//print_transform("transform", localPose.jointTransform[i]);
+				//print_matrix("hold", &local);
+				//print_matrix("hold trans", &worldPose[i]);
+				//printf("parent index = %d\n", parentIndex);
+				//print_matrix("parent pose", &worldPose[parentIndex]);
+			}
+		}
+	}
 }
 
 void VR::calculateInverseBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * inv)
@@ -604,7 +636,7 @@ void VR::calculateBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * bind4)
 
 	XMVECTOR zeroRotationOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	//XMVECTOR zeroRotationOrigin = XMVectorSet(0.1f, 0.1f, 0.1f, 0.0f);
-	
+
 	XMVECTOR scale, rotationQuaternion, translation;
 	if (t->scale.x != t->scale.y || t->scale.y != t->scale.z) {
 		//Log("WARNING: non-uniform scale encountered!!" << endl);
@@ -613,7 +645,6 @@ void VR::calculateBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * bind4)
 	XMFLOAT3 scaleF = XMFLOAT3(t->scale.x, t->scale.y, t->scale.z);
 	scale = XMLoadFloat3(&scaleF);
 	rotationQuaternion = XMVectorSet(t->orientation.x, t->orientation.y, t->orientation.z, t->orientation.w); // --> -z
-	//rotationQuaternion = XMVectorSet(t->orientation.x, t->orientation.y, t->orientation.z, t->orientation.w); // --> -z
 	//rotationQuaternion = XMVectorSet(t->orientation.y, t->orientation.x, t->orientation.z, t->orientation.w); // --> -z
 
 	//rotationQuaternion = XMVectorSet(-t->orientation.x, -t->orientation.y, t->orientation.z, t->orientation.w); // --> -z
@@ -626,17 +657,17 @@ void VR::calculateBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * bind4)
 	rotationQuaternion = XMQuaternionNormalize(rotationQuaternion);
 	XMMATRIX bind = XMMatrixAffineTransformation(scale, zeroRotationOrigin, rotationQuaternion, translation);
 	//bind = XMMatrixTranspose(bind);
-/*
-// fix finalRollPitchYaw for LH coordinate system:
-Matrix4f s = Matrix4f::Scaling(1.0f, -1.0f, -1.0f);  // 1 1 -1
-finalRollPitchYaw = s * finalRollPitchYaw * s;
-*/
+	/*
+	// fix finalRollPitchYaw for LH coordinate system:
+	Matrix4f s = Matrix4f::Scaling(1.0f, -1.0f, -1.0f);  // 1 1 -1
+	finalRollPitchYaw = s * finalRollPitchYaw * s;
+	*/
 	// button move:
 	// 1 1 1: --> -z
 	// 1 -1 1: same
 	// 1 -1 -1:
-	XMMATRIX fixScale = XMMatrixScaling(1.0f, 1.0f, -1.0f);
-	bind = fixScale * bind * fixScale;
+	XMMATRIX fixScale = XMMatrixScaling(1.0f, 1.0f, 1.0f);
+	//bind = fixScale * bind * fixScale;
 	XMStoreFloat4x4(bind4, bind);
 	//float f = bind4->_12;
 	//bind4->_12 = bind4->_21;
@@ -692,18 +723,22 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 			//int zero = 0;
 			//bfile.write((char*)&zero, 1);
 			int numJoints = assetdata->skinnedBindPose.jointCount;
+			debugComponent = std::string(assetdata->skinnedBindPose.jointNames[0]).compare("hands:l_hand_world") ? false : true;
 			bfile.write((char*)&numJoints, 4);
+			XMMATRIX worldPose[MAX_BONES];  // actually the bind pose, used to calc inverse bind pose matrices
+			computeWorldPose(assetdata->skinnedBindPose, &worldPose[0]);
 			for (int j = 0; j < numJoints; j++) {
 				// parent:
 				int parentId = assetdata->skinnedBindPose.jointParents[j];
 				bfile.write((char*)&parentId, 4);
-				// inverse bind matrices:
+				//// inverse bind matrices:
+				//XMFLOAT4X4 inv;
+				//calculateInverseBindMatrix(&assetdata->skinnedBindPose.jointTransform[j], &inv);
+				XMMATRIX bind = worldPose[j];
+				XMVECTOR determinant = XMMatrixDeterminant(bind);
+				XMMATRIX inverse = XMMatrixInverse(&determinant, bind);
 				XMFLOAT4X4 inv;
-				bool debugComponent = std::string(assetdata->skinnedBindPose.jointNames[0]).compare("lctrl:left_touch_controller_world") ? false : true;
-				if (debugComponent && j == 4) {
-					Log("yeah ");
-				}
-				calculateInverseBindMatrix(&assetdata->skinnedBindPose.jointTransform[j], &inv);
+				XMStoreFloat4x4(&inv, inverse);
 				float f[16];
 				XMFLOAT4x4ToFloatArray(inv, f);
 				for (int n = 0; n < 16; n++) {
@@ -719,7 +754,7 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 	ovrAvatarMeshVertex_ *vbuf = (ovrAvatarMeshVertex_ *)assetdata->vertexBuffer;
 	uint16_t* ibuf = (uint16_t*)assetdata->indexBuffer;
 	int numVerts = assetdata->vertexCount;
-	if (true) {
+	if (false) {
 		// fix for left handed system
 		// TODO: pose matrices need to be converted too
 		// flip z coordinate on all vertices, change triangle ordering
@@ -730,7 +765,7 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 			v.tz *= -1.0f;
 			vbuf[i] = v;
 		}
-		for (size_t i = 0; i < assetdata->indexCount; i+=3) {
+		for (size_t i = 0; i < assetdata->indexCount; i += 3) {
 			auto save = ibuf[i + 1];
 			ibuf[i + 1] = ibuf[i + 2];
 			ibuf[i + 2] = save;
@@ -933,7 +968,8 @@ void VR::loadAvatar()
 
 void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 {
-	auto avatarControllerComponent = ovrAvatarPose_GetLeftControllerComponent(avatar); // LeftHandComponent(avatar);
+	//auto avatarControllerComponent = ovrAvatarPose_GetLeftControllerComponent(avatar); // LeftHandComponent(avatar);
+	auto avatarControllerComponent = ovrAvatarPose_GetLeftHandComponent(avatar);
 	auto avatarComponent = avatarControllerComponent->renderComponent;
 	Log("controller has " << avatarComponent->renderPartCount << " render parts" << endl);
 	for (unsigned int i = 0; i < avatarComponent->renderPartCount; i++) {
@@ -951,13 +987,21 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 				avatarInfo.controllerLeftTextureId = getTextureId(skinnedMeshRenderPBS->albedoTextureAssetID);
 				avatarInfo.controllerLeftMeshId = getMeshId(skinnedMeshRenderPBS->meshAssetID);
 				avatarInfo.controllerLeftOvrMeshId = skinnedMeshRenderPBS->meshAssetID;
-				avatarInfo.controllerLeftRenderPart = skinnedMeshRenderPBS;
+				//avatarInfo.controllerLeftRenderPart = skinnedMeshRenderPBS;
 			}
 		}
 		if (type == ovrAvatarRenderPartType_SkinnedMeshRender) {
 			auto skinnedMeshRender = ovrAvatarRenderPart_GetSkinnedMeshRender(part);
 			if (skinnedMeshRender) {
 				Log("skinnedMeshRender left controller mesh asset id: " << std::hex << skinnedMeshRender->meshAssetID << endl);
+				//Log("surface texture: " << std::hex << skinnedMeshRender->surfaceTextureAssetID << endl);
+				//Log("albedo texture: " << std::hex << skinnedMeshRenderPBS->albedoTextureAssetID << endl);
+				avatarInfo.controllerLeftTextureFileName = L"white.dds";//getTextureFileName(skinnedMeshRenderPBS->albedoTextureAssetID);
+				avatarInfo.controllerLeftMeshFileName = getMeshFileName(skinnedMeshRender->meshAssetID);
+				avatarInfo.controllerLeftTextureId = "white";//getTextureId(skinnedMeshRenderPBS->albedoTextureAssetID);
+				avatarInfo.controllerLeftMeshId = getMeshId(skinnedMeshRender->meshAssetID);
+				avatarInfo.controllerLeftOvrMeshId = skinnedMeshRender->meshAssetID;
+				avatarInfo.controllerLeftRenderPart = skinnedMeshRender;
 			}
 		}
 	}
@@ -1093,7 +1137,7 @@ void VR::drawLeftController()
 {
 	if (!avatarInfo.readyToRender) return;
 
-	const ovrAvatarRenderPart_SkinnedMeshRenderPBS *mesh, *temp_mesh;
+	const ovrAvatarRenderPart_SkinnedMeshRender/*PBS*/ *mesh, *temp_mesh;
 	// Traverse over all components on the avatar
 	uint32_t componentCount = ovrAvatarComponent_Count(avatar);
 	for (uint32_t i = 0; i < componentCount; ++i)
@@ -1111,14 +1155,14 @@ void VR::drawLeftController()
 			ovrAvatarRenderPartType type = ovrAvatarRenderPart_GetType(renderPart);
 			switch (type)
 			{
-			case ovrAvatarRenderPartType_SkinnedMeshRender:
+			case ovrAvatarRenderPartType_SkinnedMeshRenderPBS:
 				//_renderSkinnedMeshPart(ovrAvatarRenderPart_GetSkinnedMeshRender(renderPart), visibilityMask, world, view, proj, viewPos, renderJoints);
 				break;
-			case ovrAvatarRenderPartType_SkinnedMeshRenderPBS:
-					temp_mesh = ovrAvatarRenderPart_GetSkinnedMeshRenderPBS(renderPart);
-					if (temp_mesh->meshAssetID == avatarInfo.controllerLeftOvrMeshId) {
-						mesh = temp_mesh;
-					}
+			case ovrAvatarRenderPartType_SkinnedMeshRender:
+				temp_mesh = ovrAvatarRenderPart_GetSkinnedMeshRender/*PBS*/(renderPart);
+				if (temp_mesh->meshAssetID == avatarInfo.controllerLeftOvrMeshId) {
+					mesh = temp_mesh;
+				}
 				//_renderSkinnedMeshPartPBS(ovrAvatarRenderPart_GetSkinnedMeshRenderPBS(renderPart), visibilityMask, world, view, proj, viewPos, renderJoints);
 				break;
 			case ovrAvatarRenderPartType_ProjectorRender:
@@ -1135,20 +1179,28 @@ void VR::drawLeftController()
 	//Log(" " << mesh->skinnedPose.jointTransform[1].position.y);
 	//Log(" " << mesh->skinnedPose.jointTransform[1].position.z << endl);
 
-
-	for (int i = 0; i < mesh->skinnedPose.jointCount; i++) {
-		XMFLOAT4X4 bindPose4;
-		ovrAvatarTransform trans = mesh->skinnedPose.jointTransform[i];
-		//trans.position.z *= -1.0f;
-		if (i == 4) {
-			// hold
-			Log("Hold");
-		}
-		calculateBindMatrix(&trans, &bindPose4);
-		XMMATRIX bindPose = XMLoadFloat4x4(&bindPose4);
-		xapp->world.path.updateBindPose(i, avatarInfo.controllerLeft.pathDescBone, &bindPose);
-		
+	XMMATRIX skinnedPoses[MAX_BONES];  // current world pose matrices
+	computeWorldPose(mesh->skinnedPose, skinnedPoses);
+	for (int i = 0; i < mesh->skinnedPose.jointCount; ++i)
+	{
+		xapp->world.path.updateBindPose(i, avatarInfo.controllerLeft.pathDescBone, &skinnedPoses[i]);
+		// inv * pose will be done later
+		//skinnedPoses[i] = skinnedPoses[i] * data->inverseBindPose[i];
+		//if (debugComponent && i == 4) {
+		//	print_matrix("invBindPose", (glm::mat4 *)&data->inverseBindPose[i]);
+		//	print_matrix("skinnedPose", &skinnedPoses[i]);
+		//}
 	}
+
+	//for (int i = 0; i < mesh->skinnedPose.jointCount; i++) {
+	//	XMFLOAT4X4 bindPose4;
+	//	ovrAvatarTransform trans = mesh->skinnedPose.jointTransform[i];
+	//	//trans.position.z *= -1.0f;
+	//	calculateBindMatrix(&trans, &bindPose4);
+	//	XMMATRIX bindPose = XMLoadFloat4x4(&bindPose4);
+	//	xapp->world.path.updateBindPose(i, avatarInfo.controllerLeft.pathDescBone, &bindPose);
+
+	//}
 	avatarInfo.controllerLeft.pos() = XMFLOAT3(1.1f, -1.1f, 1.1f);
 	avatarInfo.controllerLeft.rot() = XMFLOAT3(0.4f, 0.3f, 0.2f);
 	avatarInfo.controllerLeft.update();

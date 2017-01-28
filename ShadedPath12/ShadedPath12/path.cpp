@@ -605,6 +605,7 @@ void  Path::skinNonKeyframe(XMVECTOR &pos, XMVECTOR &norm, const WorldObjectVert
 		//n = rotate(ibm, n);
 		//XMMATRIX m(XMLoadFloat4x4(&pd->interpolationMatricesChained[boneIndex]));
 		XMMATRIX imc = getInterpolationMatrixChained(boneIndex, pd);
+		//XMMATRIX imc = getInterpolationMatrix(boneIndex, pd);
 		r = XMVector3Transform(r, imc);
 		n = rotate(imc, n);
 		r = r * weight;
@@ -755,7 +756,8 @@ void Path::calculateInterpolationChain(const AnimationClip *clip, PathDesc *pd)
 			saveInterpolationMatrixChained(i, pd, &getInterpolationMatrix(i, pd));
 			//pd->interpolationMatricesChained[i] = pd->interpolationMatrices[i];
 		} else {
-			XMMATRIX m = getInterpolationMatrix(i, pd) * getInterpolationMatrixChained(parentofThisBone, pd);
+			//XMMATRIX m = getInterpolationMatrix(i, pd) * getInterpolationMatrixChained(parentofThisBone, pd);
+			XMMATRIX m = getInterpolationMatrixChained(parentofThisBone, pd) * getInterpolationMatrix(i, pd);
 			saveInterpolationMatrixChained(i, pd, &m);
 			//pd->interpolationMatricesChained[i] = pd->interpolationMatrices[i] * pd->interpolationMatricesChained[parentofThisBone];
 		}
@@ -793,9 +795,10 @@ void Path::recalculateBoneAnimation(WorldObject *wo)
 		}
 		//xmm = getInterpolationMatrix(i, pathDesc) * xmm;
 		xmm = xmm * getInterpolationMatrix(i, pathDesc);
-		saveInterpolationMatrix(i, pathDesc, &xmm);
+		//saveInterpolationMatrix(i, pathDesc, &xmm);
+		saveInterpolationMatrixChained(i, pathDesc, &xmm);
 	}
-	calculateInterpolationChain(clip, pathDesc);
+	//calculateInterpolationChain(clip, pathDesc);
 }
 
 void Path::recalculateBoneAnimation(PathDesc *pathDesc, WorldObject *wo, double percentage) 

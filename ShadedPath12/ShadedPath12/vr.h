@@ -31,10 +31,17 @@ public:
 	string controllerLeftMeshId;
 	string controllerLeftTextureId;
 	WorldObject controllerLeft;
+	wstring handLeftMeshFileName;
+	wstring handLeftTextureFileName;
+	string handLeftMeshId;
+	string handLeftTextureId;
+	WorldObject handLeft;
 	bool readyToRender = false;
 #if defined(_OVR_)
 	ovrAvatarAssetID controllerLeftOvrMeshId;
-	const ovrAvatarRenderPart_SkinnedMeshRenderPBS *controllerLeftRenderPart;
+	const ovrAvatarRenderPart_SkinnedMeshRender/*PBS*/ *controllerLeftRenderPart;
+	ovrAvatarAssetID HandLeftOvrMeshId;
+	const ovrAvatarRenderPart_SkinnedMeshRenderPBS *handLeftRenderPart;
 	ovrTrackingState *trackingState = nullptr;
 #endif
 };
@@ -147,7 +154,7 @@ public:
 	XMFLOAT4X4 getOVRProjectionMatrix() { return ident; };
 	XMFLOAT4X4 getOVRViewMatrixByIndex(int eyeNum) { return ident; };
 	XMFLOAT4X4 getOVRProjectionMatrixByIndex(int eyeNum) { return ident; };
-	XMFLOAT3 getOVRAdjustedEyePosByIndex(int eyeNum) { return XMFLOAT3(0,0,0); };
+	XMFLOAT3 getOVRAdjustedEyePosByIndex(int eyeNum) { return XMFLOAT3(0, 0, 0); };
 	int getCurrentFrameBufferIndex();
 #endif
 
@@ -178,6 +185,8 @@ private:
 	void writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarTextureAssetData *assetdata);
 	void calculateBindMatrix(const ovrAvatarTransform *t, XMFLOAT4X4 *inv);
 	void calculateInverseBindMatrix(const ovrAvatarTransform *t, XMFLOAT4X4 *inv);
+	void computeWorldPose(const ovrAvatarSkinnedMeshPose& localPose, XMMATRIX worldPose[]);
+	bool debugComponent = false; // set to true for specific components only (like left hand) for easier debugging/logging
 	ovrHmdDesc desc;
 	ovrSizei resolution;
 	ovrSession session;
@@ -187,7 +196,7 @@ private:
 	float            YawAtRender[2];       // Useful to remember where the rendered eye originated
 	XMFLOAT4X4 viewOVR[2], projOVR[2];
 	XMFLOAT3 adjustedEyePos[2];            // store fixed camera pos for usage in effect (aka roomscale)
-	//ovrSwapTextureSet *      pTextureSet = 0;
+										   //ovrSwapTextureSet *      pTextureSet = 0;
 	ovrTextureSwapChain textureSwapChain = 0;
 	//std::vector<ID3D11RenderTargetView*> texRtv;
 	ovrLayerEyeFov layer;
