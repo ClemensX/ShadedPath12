@@ -299,6 +299,9 @@ XMMATRIX WorldObject::calcToWorld() {
 	XMVECTOR q_origin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMMATRIX rotateM = XMMatrixRotationRollPitchYaw(rot().y, rot().x, rot().z);
 	q = XMQuaternionRotationMatrix(rotateM);
+	if (useQuaternionRotation) {
+		q = XMLoadFloat4(&quaternion);
+	}
 	q = XMQuaternionNormalize(q);
 	// scalar
 	XMVECTOR s = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);

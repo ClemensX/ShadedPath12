@@ -55,6 +55,8 @@ public:
 	//XMFLOAT4 pos;
 	XMFLOAT3& pos();
 	XMFLOAT3& rot();
+	XMFLOAT4 quaternion;
+	bool useQuaternionRotation = false;
 	void update(); // only relevant for bone objects
 	void draw();
 	Mesh *mesh;

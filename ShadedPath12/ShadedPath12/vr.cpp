@@ -1061,6 +1061,37 @@ void VR::updateAvatar()
 	ovrAvatarPose_Finalize(avatar, deltaTimeInSeconds);
 	//Log("L touch " << inputStateLeft.transform.position.x << " " << inputStateLeft.handTrigger << endl);
 	//Log(" leftp " << leftP.x << " " << leftP.y << " " << leftP.z << endl);
+	ovrAvatarTransform finalPose = left;
+	finalPose.position.x += xapp->camera.pos.x;
+	finalPose.position.y += xapp->camera.pos.y;
+	finalPose.position.z = xapp->camera.pos.z - left.position.z;
+	avatarInfo.controllerLeft.pos() = XMFLOAT3(finalPose.position.x, finalPose.position.y, finalPose.position.z);
+	//get bind matrix:
+	XMFLOAT4X4 finalBind4;
+	calculateBindMatrix(&finalPose, &finalBind4);
+	XMMATRIX finalBind = XMLoadFloat4x4(&finalBind4);
+	// extract rotation part:
+	XMVECTOR scale, quat, trans;
+	XMMatrixDecompose(&scale, &quat, &trans, finalBind);
+	// now rotate a +z vector:
+	XMVECTOR z = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	XMVECTOR y = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	quat = XMQuaternionNormalize(quat);
+	z = XMVector3Rotate(z, quat);
+	XMFLOAT3 r;
+	XMStoreFloat3(&r, z);
+	r.y *= -1.0f;
+	avatarInfo.controllerLeft.rot() = r;
+	y = XMVector3Rotate(y, quat);
+	XMStoreFloat4(&avatarInfo.controllerLeft.quaternion, quat);
+	avatarInfo.controllerLeft.useQuaternionRotation = true;
+	//r.
+
+	//XMQuaternionToAxisAngle()
+	//avatarInfo.controllerLeft.pos() = XMFLOAT3(
+	//	xapp->camera.pos.x + leftP.x,
+	//	xapp->camera.pos.y + leftP.y,
+	//	xapp->camera.pos.z - leftP.z);
 }
 
 void VR::drawLeftController()
@@ -1131,8 +1162,8 @@ void VR::drawLeftController()
 	//	xapp->world.path.updateBindPose(i, avatarInfo.controllerLeft.pathDescBone, &bindPose);
 
 	//}
-	avatarInfo.controllerLeft.pos() = XMFLOAT3(1.1f, -1.1f, 1.1f);
-	avatarInfo.controllerLeft.rot() = XMFLOAT3(0.4f, 0.3f, 0.2f);
+	//avatarInfo.controllerLeft.pos() = XMFLOAT3(1.1f, -1.1f, 1.1f);
+	//avatarInfo.controllerLeft.rot() = XMFLOAT3(0.4f, 0.3f, 0.2f);
 	avatarInfo.controllerLeft.update();
 	avatarInfo.controllerLeft.draw();
 }
