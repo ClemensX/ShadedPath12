@@ -1066,32 +1066,12 @@ void VR::updateAvatar()
 	finalPose.position.y += xapp->camera.pos.y;
 	finalPose.position.z = xapp->camera.pos.z - left.position.z;
 	avatarInfo.controllerLeft.pos() = XMFLOAT3(finalPose.position.x, finalPose.position.y, finalPose.position.z);
-	//get bind matrix:
-	XMFLOAT4X4 finalBind4;
-	calculateBindMatrix(&finalPose, &finalBind4);
-	XMMATRIX finalBind = XMLoadFloat4x4(&finalBind4);
-	// extract rotation part:
-	XMVECTOR scale, quat, trans;
-	XMMatrixDecompose(&scale, &quat, &trans, finalBind);
-	// now rotate a +z vector:
-	XMVECTOR z = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-	XMVECTOR y = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	quat = XMQuaternionNormalize(quat);
-	z = XMVector3Rotate(z, quat);
-	XMFLOAT3 r;
-	XMStoreFloat3(&r, z);
-	r.y *= -1.0f;
-	avatarInfo.controllerLeft.rot() = r;
-	y = XMVector3Rotate(y, quat);
-	XMStoreFloat4(&avatarInfo.controllerLeft.quaternion, quat);
+	// save quaternion and do correction for left handed system:
+	avatarInfo.controllerLeft.quaternion.x = -finalPose.orientation.x;
+	avatarInfo.controllerLeft.quaternion.y = -finalPose.orientation.y;
+	avatarInfo.controllerLeft.quaternion.z = finalPose.orientation.z;
+	avatarInfo.controllerLeft.quaternion.w = finalPose.orientation.w;
 	avatarInfo.controllerLeft.useQuaternionRotation = true;
-	//r.
-
-	//XMQuaternionToAxisAngle()
-	//avatarInfo.controllerLeft.pos() = XMFLOAT3(
-	//	xapp->camera.pos.x + leftP.x,
-	//	xapp->camera.pos.y + leftP.y,
-	//	xapp->camera.pos.z - leftP.z);
 }
 
 void VR::drawLeftController()
