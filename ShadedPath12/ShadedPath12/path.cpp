@@ -786,9 +786,6 @@ void Path::recalculateBoneAnimation(WorldObject *wo)
 	for (int i = numBones - 1; i >= 0; i--) {
 		const XMFLOAT4X4 *xmm4 = &clip->invBindMatrices[i];
 		XMMATRIX xmm = XMLoadFloat4x4(xmm4);
-		if (i == 4) {
-			Log("4");
-		}
 		//xmm = getInterpolationMatrix(i, pathDesc) * xmm;
 		xmm = xmm * getInterpolationMatrix(i, pathDesc);
 		//saveInterpolationMatrix(i, pathDesc, &xmm);
