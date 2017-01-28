@@ -63,8 +63,12 @@ void Avatar::loadLocalAvatarMeshes(wstring userId)
 	for (auto & w : *grp) {
 		//w.get()->material.specExp = 1.0f;       // no spec color
 		//w.get()->material.specIntensity = 0.0f; // no spec color
+		// controller, shiny:
 		w.get()->material.specExp = 20.0f;
 		w.get()->material.specIntensity = 700.0f;
+		// hands:
+		w.get()->material.specExp = 10.0f;
+		w.get()->material.specIntensity = 3.0f;
 		w.get()->material.ambient = XMFLOAT4(1, 1, 1, 1);
 		w.get()->setAction("non_keyframe");
 	}
@@ -110,7 +114,10 @@ void Avatar::init()
 	//xapp().textureStore.loadTexture(L"white.dds", "white");
 	//xapp().textureStore.loadTexture(L"sample2.dds", "white");
 	//xapp().textureStore.loadTexture(L"rgbtest4.dds", "white");
+	// for controller:
 	xapp().textureStore.loadTexture(L"ovr_1c0685581a5a8aa4.dds", "white");
+	// for hands:
+	xapp().textureStore.loadTexture(L"hand_color.dds", "white");
 	//xapp().textureStore.loadTexture(L"413fd8923c71e_951f51e94248778a.dds", "white");
 	TextureInfo *GrassTex, *HouseTex, *MetalTex, *WormTex, *PlanetTex, *Meteor1Tex, *AxistestTex;
 	TextureInfo *WhiteTex = xapp().textureStore.getTexture("white");
@@ -132,8 +139,12 @@ void Avatar::init()
 		//object.drawBoundingBox = true;
 		//object.drawNormals = true;
 		//object.pathDescMove->pathMode = Path_Reverse;
+		// controller, shiny:
 		object.material.specExp = 20.0f;
 		object.material.specIntensity = 700.0f;
+		// hands:
+		object.material.specExp = 10.0f;
+		object.material.specIntensity = 3.0f;
 	}
 	// draw lines for mesh:
 	Log(" object created ok, #vertices == " << object.mesh->vertices.size() << endl);

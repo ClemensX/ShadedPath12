@@ -926,7 +926,7 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 				Log("skinnedMeshRender left controller mesh asset id: " << std::hex << skinnedMeshRender->meshAssetID << endl);
 				//Log("surface texture: " << std::hex << skinnedMeshRender->surfaceTextureAssetID << endl);
 				//Log("albedo texture: " << std::hex << skinnedMeshRenderPBS->albedoTextureAssetID << endl);
-				avatarInfo.controllerLeftTextureFileName = L"white.dds";//getTextureFileName(skinnedMeshRenderPBS->albedoTextureAssetID);
+				avatarInfo.controllerLeftTextureFileName = L"hand_color.dds";//getTextureFileName(skinnedMeshRenderPBS->albedoTextureAssetID);
 				avatarInfo.controllerLeftMeshFileName = getMeshFileName(skinnedMeshRender->meshAssetID);
 				avatarInfo.controllerLeftTextureId = "white";//getTextureId(skinnedMeshRenderPBS->albedoTextureAssetID);
 				avatarInfo.controllerLeftMeshId = getMeshId(skinnedMeshRender->meshAssetID);
@@ -944,9 +944,13 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 	}
 	xapp->objectStore.loadObject(avatarInfo.controllerLeftMeshFileName, avatarInfo.controllerLeftMeshId, 1.0f);
 	xapp->objectStore.addObject(avatarInfo.controllerLeft, avatarInfo.controllerLeftMeshId, XMFLOAT3(0.0f, -0.4f, -0.2f), ti);
+	avatarInfo.controllerLeft.material.ambient = XMFLOAT4(1, 1, 1, 1);
+	// controller, shiny:
 	avatarInfo.controllerLeft.material.specExp = 20.0f;
 	avatarInfo.controllerLeft.material.specIntensity = 700.0f;
-	avatarInfo.controllerLeft.material.ambient = XMFLOAT4(1, 1, 1, 1);
+	// hands:
+	avatarInfo.controllerLeft.material.specExp = 10.0f;
+	avatarInfo.controllerLeft.material.specIntensity = 70.0f;
 	avatarInfo.controllerLeft.setAction("non_keyframe");
 	avatarInfo.readyToRender = true;
 }
