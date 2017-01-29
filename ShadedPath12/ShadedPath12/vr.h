@@ -24,24 +24,26 @@ enum EyePos { EyeLeft, EyeRight };
 class XApp;
 class VR;
 
+class AvatarPartInfo {
+public:
+	wstring meshFileName;
+	wstring textureFileName;
+	string meshId;
+	string textureId;
+	WorldObject o;
+#if defined(_OVR_)
+	ovrAvatarAssetID ovrMeshId;
+	const ovrAvatarRenderPart_SkinnedMeshRenderPBS *renderPartPBS;
+	const ovrAvatarRenderPart_SkinnedMeshRender *renderPart;
+#endif
+};
+
 class AvatarInfo {
 public:
-	wstring controllerLeftMeshFileName;
-	wstring controllerLeftTextureFileName;
-	string controllerLeftMeshId;
-	string controllerLeftTextureId;
-	WorldObject controllerLeft;
-	wstring handLeftMeshFileName;
-	wstring handLeftTextureFileName;
-	string handLeftMeshId;
-	string handLeftTextureId;
-	WorldObject handLeft;
+	AvatarPartInfo controllerLeft;
+	AvatarPartInfo handLeft;
 	bool readyToRender = false;
 #if defined(_OVR_)
-	ovrAvatarAssetID controllerLeftOvrMeshId;
-	const ovrAvatarRenderPart_SkinnedMeshRender/*PBS*/ *controllerLeftRenderPart;
-	ovrAvatarAssetID HandLeftOvrMeshId;
-	const ovrAvatarRenderPart_SkinnedMeshRenderPBS *handLeftRenderPart;
 	ovrTrackingState *trackingState = nullptr;
 #endif
 };
@@ -107,7 +109,8 @@ public:
 	// ovr message queue, has to be called from application update()
 	void handleOVRMessages();
 	// load avatar data (mesh, bones and textures) from Oculus
-	void loadAvatar();
+	void loadAvatarFromOculus(bool reloadAssets = true);
+	void loadAvatarDefault();
 	void drawLeftController();
 	// if all assets of an avatar have been loaded, gather all the info needed for rendering:
 #if defined(_OVR_)
@@ -168,6 +171,7 @@ public:
 protected:
 	EyePos curEye = EyeLeft;
 private:
+	bool loadAvatarAssetsFromOculus = false; // true triggers loading all meshes and texures and saving to local files
 	void updateAvatar();
 	void handleAvatarMessages();
 	unsigned int pack(const uint8_t *blend_indices);

@@ -4,9 +4,6 @@
 #include <filesystem>  // moved here from stdafx.h due to strange header compile error
 using namespace std::tr2::sys;
 
-// un-comment to load mehes from oculus servers and store locally
-#define LOAD_AVATAR_DATA
-
 // change to base name of meshes saved in data/mesh folder (part before _ )
 #define USERID L"413fd8923c71e"
 
@@ -183,10 +180,11 @@ void Avatar::init()
 	crossPoints.push_back(x);
 	dotcrossEffect.update(crossPoints);
 
-#if defined(LOAD_AVATAR_DATA)
-	xapp().vr.loadAvatar();
-#endif
-	
+	if (loadAvatarAssetsFromOculus)
+		xapp().vr.loadAvatarFromOculus();
+	else
+		xapp().vr.loadAvatarDefault();
+
 	//xapp().vr.gatherAvatarInfo(xapp().vr.avatarInfo, xapp().vr.avatar);
 }
 

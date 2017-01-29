@@ -34,5 +34,6 @@ private:
 	void loadLocalAvatarMeshes(wstring userId);
 	bool avatarMeshesLoadFinished = false;
 	bool avatarMeshesLoadStartet = false;
+	bool loadAvatarAssetsFromOculus = false; // true triggers loading all meshes and texures and saving to local files
 };
 

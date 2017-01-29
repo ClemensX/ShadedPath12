@@ -538,15 +538,20 @@ void VR::handleAvatarMessages()
 			}
 		}
 
-		// Trigger load operations for all of the assets referenced by the avatar
-		uint32_t refCount = ovrAvatar_GetReferencedAssetCount(avatar);
-		for (uint32_t i = 0; i < refCount; ++i)
-		{
-			ovrAvatarAssetID id = ovrAvatar_GetReferencedAsset(avatar, i);
-			ovrAvatarAsset_BeginLoading(id);
-			++loadingAssets;
+		if (loadAvatarAssetsFromOculus) {
+			// Trigger load operations for all of the assets referenced by the avatar
+			uint32_t refCount = ovrAvatar_GetReferencedAssetCount(avatar);
+			for (uint32_t i = 0; i < refCount; ++i)
+			{
+				ovrAvatarAssetID id = ovrAvatar_GetReferencedAsset(avatar, i);
+				ovrAvatarAsset_BeginLoading(id);
+				++loadingAssets;
+			}
+			//Log("Loading " << loadingAssets << " assets..." << endl);
 		}
-		//Log("Loading " << loadingAssets << " assets..." << endl);
+		else {
+			gatherAvatarInfo(avatarInfo, avatar);
+		}
 	}
 	else if (messageType == ovrAvatarMessageType_AssetLoaded) {
 		auto assetmsg = ovrAvatarMessage_GetAssetLoaded(message);
@@ -889,17 +894,23 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 	}
 }
 
-void VR::loadAvatar()
+void VR::loadAvatarFromOculus(bool reloadAssets)
 {
+	this->loadAvatarAssetsFromOculus = reloadAssets;
 	ovrAvatar_Initialize("1197980730287980");
 	// get current user:
 	ovr_User_GetLoggedInUser();
 }
 
+void VR::loadAvatarDefault()
+{
+	loadAvatarFromOculus(false);
+}
+
 void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 {
-	//auto avatarControllerComponent = ovrAvatarPose_GetLeftControllerComponent(avatar); // LeftHandComponent(avatar);
-	auto avatarControllerComponent = ovrAvatarPose_GetLeftHandComponent(avatar);
+	auto avatarControllerComponent = ovrAvatarPose_GetLeftControllerComponent(avatar); // LeftHandComponent(avatar);
+	//auto avatarControllerComponent = ovrAvatarPose_GetLeftHandComponent(avatar);
 	auto avatarComponent = avatarControllerComponent->renderComponent;
 	Log("controller has " << avatarComponent->renderPartCount << " render parts" << endl);
 	for (unsigned int i = 0; i < avatarComponent->renderPartCount; i++) {
@@ -912,12 +923,12 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 				Log("skinnedMeshRenderPBS left controller mesh asset id: " << std::hex << skinnedMeshRenderPBS->meshAssetID << endl);
 				Log("surface texture: " << std::hex << skinnedMeshRenderPBS->surfaceTextureAssetID << endl);
 				Log("albedo texture: " << std::hex << skinnedMeshRenderPBS->albedoTextureAssetID << endl);
-				avatarInfo.controllerLeftTextureFileName = getTextureFileName(skinnedMeshRenderPBS->albedoTextureAssetID);
-				avatarInfo.controllerLeftMeshFileName = getMeshFileName(skinnedMeshRenderPBS->meshAssetID);
-				avatarInfo.controllerLeftTextureId = getTextureId(skinnedMeshRenderPBS->albedoTextureAssetID);
-				avatarInfo.controllerLeftMeshId = getMeshId(skinnedMeshRenderPBS->meshAssetID);
-				avatarInfo.controllerLeftOvrMeshId = skinnedMeshRenderPBS->meshAssetID;
-				//avatarInfo.controllerLeftRenderPart = skinnedMeshRenderPBS;
+				avatarInfo.controllerLeft.textureFileName = getTextureFileName(skinnedMeshRenderPBS->albedoTextureAssetID);
+				avatarInfo.controllerLeft.meshFileName = getMeshFileName(skinnedMeshRenderPBS->meshAssetID);
+				avatarInfo.controllerLeft.textureId = getTextureId(skinnedMeshRenderPBS->albedoTextureAssetID);
+				avatarInfo.controllerLeft.meshId = getMeshId(skinnedMeshRenderPBS->meshAssetID);
+				avatarInfo.controllerLeft.ovrMeshId = skinnedMeshRenderPBS->meshAssetID;
+				avatarInfo.controllerLeft.renderPartPBS = skinnedMeshRenderPBS;
 			}
 		}
 		if (type == ovrAvatarRenderPartType_SkinnedMeshRender) {
@@ -926,32 +937,32 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 				Log("skinnedMeshRender left controller mesh asset id: " << std::hex << skinnedMeshRender->meshAssetID << endl);
 				//Log("surface texture: " << std::hex << skinnedMeshRender->surfaceTextureAssetID << endl);
 				//Log("albedo texture: " << std::hex << skinnedMeshRenderPBS->albedoTextureAssetID << endl);
-				avatarInfo.controllerLeftTextureFileName = L"hand_color.dds";//getTextureFileName(skinnedMeshRenderPBS->albedoTextureAssetID);
-				avatarInfo.controllerLeftMeshFileName = getMeshFileName(skinnedMeshRender->meshAssetID);
-				avatarInfo.controllerLeftTextureId = "white";//getTextureId(skinnedMeshRenderPBS->albedoTextureAssetID);
-				avatarInfo.controllerLeftMeshId = getMeshId(skinnedMeshRender->meshAssetID);
-				avatarInfo.controllerLeftOvrMeshId = skinnedMeshRender->meshAssetID;
-				avatarInfo.controllerLeftRenderPart = skinnedMeshRender;
+				avatarInfo.handLeft.textureFileName = L"hand_color.dds";//getTextureFileName(skinnedMeshRenderPBS->albedoTextureAssetID);
+				avatarInfo.handLeft.meshFileName = getMeshFileName(skinnedMeshRender->meshAssetID);
+				avatarInfo.handLeft.textureId = "white";//getTextureId(skinnedMeshRenderPBS->albedoTextureAssetID);
+				avatarInfo.handLeft.meshId = getMeshId(skinnedMeshRender->meshAssetID);
+				avatarInfo.handLeft.ovrMeshId = skinnedMeshRender->meshAssetID;
+				avatarInfo.handLeft.renderPart = skinnedMeshRender;
 			}
 		}
 	}
 	// prepare assets:
-	TextureInfo *ti = xapp->textureStore.getTexture(avatarInfo.controllerLeftTextureId);
+	TextureInfo *ti = xapp->textureStore.getTexture(avatarInfo.controllerLeft.textureId);
 	if (ti->id.length() == 0) {
-		xapp->textureStore.loadTexture(avatarInfo.controllerLeftTextureFileName, avatarInfo.controllerLeftTextureId);
-		ti = xapp->textureStore.getTexture(avatarInfo.controllerLeftTextureId);
+		xapp->textureStore.loadTexture(avatarInfo.controllerLeft.textureFileName, avatarInfo.controllerLeft.textureId);
+		ti = xapp->textureStore.getTexture(avatarInfo.controllerLeft.textureId);
 		assert(ti);
 	}
-	xapp->objectStore.loadObject(avatarInfo.controllerLeftMeshFileName, avatarInfo.controllerLeftMeshId, 1.0f);
-	xapp->objectStore.addObject(avatarInfo.controllerLeft, avatarInfo.controllerLeftMeshId, XMFLOAT3(0.0f, -0.4f, -0.2f), ti);
-	avatarInfo.controllerLeft.material.ambient = XMFLOAT4(1, 1, 1, 1);
+	xapp->objectStore.loadObject(avatarInfo.controllerLeft.meshFileName, avatarInfo.controllerLeft.meshId, 1.0f);
+	xapp->objectStore.addObject(avatarInfo.controllerLeft.o, avatarInfo.controllerLeft.meshId, XMFLOAT3(0.0f, -0.4f, -0.2f), ti);
+	avatarInfo.controllerLeft.o.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	// controller, shiny:
-	avatarInfo.controllerLeft.material.specExp = 20.0f;
-	avatarInfo.controllerLeft.material.specIntensity = 700.0f;
+	avatarInfo.controllerLeft.o.material.specExp = 20.0f;
+	avatarInfo.controllerLeft.o.material.specIntensity = 700.0f;
 	// hands:
-	avatarInfo.controllerLeft.material.specExp = 10.0f;
-	avatarInfo.controllerLeft.material.specIntensity = 70.0f;
-	avatarInfo.controllerLeft.setAction("non_keyframe");
+	avatarInfo.controllerLeft.o.material.specExp = 10.0f;
+	avatarInfo.controllerLeft.o.material.specIntensity = 70.0f;
+	avatarInfo.controllerLeft.o.setAction("non_keyframe");
 	avatarInfo.readyToRender = true;
 }
 
@@ -1069,87 +1080,30 @@ void VR::updateAvatar()
 	finalPose.position.x += xapp->camera.pos.x;
 	finalPose.position.y += xapp->camera.pos.y;
 	finalPose.position.z = xapp->camera.pos.z - left.position.z;
-	avatarInfo.controllerLeft.pos() = XMFLOAT3(finalPose.position.x, finalPose.position.y, finalPose.position.z);
+	avatarInfo.controllerLeft.o.pos() = XMFLOAT3(finalPose.position.x, finalPose.position.y, finalPose.position.z);
 	// save quaternion and do correction for left handed system:
-	avatarInfo.controllerLeft.quaternion.x = -finalPose.orientation.x;
-	avatarInfo.controllerLeft.quaternion.y = -finalPose.orientation.y;
-	avatarInfo.controllerLeft.quaternion.z = finalPose.orientation.z;
-	avatarInfo.controllerLeft.quaternion.w = finalPose.orientation.w;
-	avatarInfo.controllerLeft.useQuaternionRotation = true;
+	avatarInfo.controllerLeft.o.quaternion.x = -finalPose.orientation.x;
+	avatarInfo.controllerLeft.o.quaternion.y = -finalPose.orientation.y;
+	avatarInfo.controllerLeft.o.quaternion.z = finalPose.orientation.z;
+	avatarInfo.controllerLeft.o.quaternion.w = finalPose.orientation.w;
+	avatarInfo.controllerLeft.o.useQuaternionRotation = true;
 }
 
 void VR::drawLeftController()
 {
 	if (!avatarInfo.readyToRender) return;
 
-	const ovrAvatarRenderPart_SkinnedMeshRender/*PBS*/ *mesh, *temp_mesh;
-	// Traverse over all components on the avatar
-	uint32_t componentCount = ovrAvatarComponent_Count(avatar);
-	for (uint32_t i = 0; i < componentCount; ++i)
-	{
-		const ovrAvatarComponent* component = ovrAvatarComponent_Get(avatar, i);
-
-		// Compute the transform for this component
-		//glm::mat4 world;
-		//_glmFromOvrAvatarTransform(component->transform, &world);
-
-		// Render each rebder part attached to the component
-		for (uint32_t j = 0; j < component->renderPartCount; ++j)
-		{
-			const ovrAvatarRenderPart* renderPart = component->renderParts[j];
-			ovrAvatarRenderPartType type = ovrAvatarRenderPart_GetType(renderPart);
-			switch (type)
-			{
-			case ovrAvatarRenderPartType_SkinnedMeshRenderPBS:
-				//_renderSkinnedMeshPart(ovrAvatarRenderPart_GetSkinnedMeshRender(renderPart), visibilityMask, world, view, proj, viewPos, renderJoints);
-				break;
-			case ovrAvatarRenderPartType_SkinnedMeshRender:
-				temp_mesh = ovrAvatarRenderPart_GetSkinnedMeshRender/*PBS*/(renderPart);
-				if (temp_mesh->meshAssetID == avatarInfo.controllerLeftOvrMeshId) {
-					mesh = temp_mesh;
-				}
-				//_renderSkinnedMeshPartPBS(ovrAvatarRenderPart_GetSkinnedMeshRenderPBS(renderPart), visibilityMask, world, view, proj, viewPos, renderJoints);
-				break;
-			case ovrAvatarRenderPartType_ProjectorRender:
-				//_renderProjector(ovrAvatarRenderPart_GetProjectorRender(renderPart), avatar, visibilityMask, world, view, proj, viewPos);
-				break;
-			}
-		}
-	}
-
-	//mesh = avatarInfo.controllerLeftRenderPart;
-
-	//Log(mesh->skinnedPose.jointNames[1]);
-	//Log(" " << mesh->skinnedPose.jointTransform[1].position.x);
-	//Log(" " << mesh->skinnedPose.jointTransform[1].position.y);
-	//Log(" " << mesh->skinnedPose.jointTransform[1].position.z << endl);
-
+	auto *mesh = avatarInfo.controllerLeft.renderPartPBS;
+	assert(mesh);
 	XMMATRIX skinnedPoses[MAX_BONES];  // current world pose matrices
 	computeWorldPose(mesh->skinnedPose, skinnedPoses);
 	for (int i = 0; i < mesh->skinnedPose.jointCount; ++i)
 	{
-		xapp->world.path.updateBindPose(i, avatarInfo.controllerLeft.pathDescBone, &skinnedPoses[i]);
+		xapp->world.path.updateBindPose(i, avatarInfo.controllerLeft.o.pathDescBone, &skinnedPoses[i]);
 		// inv * pose will be done later
-		//skinnedPoses[i] = skinnedPoses[i] * data->inverseBindPose[i];
-		//if (debugComponent && i == 4) {
-		//	print_matrix("invBindPose", (glm::mat4 *)&data->inverseBindPose[i]);
-		//	print_matrix("skinnedPose", &skinnedPoses[i]);
-		//}
 	}
-
-	//for (int i = 0; i < mesh->skinnedPose.jointCount; i++) {
-	//	XMFLOAT4X4 bindPose4;
-	//	ovrAvatarTransform trans = mesh->skinnedPose.jointTransform[i];
-	//	//trans.position.z *= -1.0f;
-	//	calculateBindMatrix(&trans, &bindPose4);
-	//	XMMATRIX bindPose = XMLoadFloat4x4(&bindPose4);
-	//	xapp->world.path.updateBindPose(i, avatarInfo.controllerLeft.pathDescBone, &bindPose);
-
-	//}
-	//avatarInfo.controllerLeft.pos() = XMFLOAT3(1.1f, -1.1f, 1.1f);
-	//avatarInfo.controllerLeft.rot() = XMFLOAT3(0.4f, 0.3f, 0.2f);
-	avatarInfo.controllerLeft.update();
-	avatarInfo.controllerLeft.draw();
+	avatarInfo.controllerLeft.o.update();
+	avatarInfo.controllerLeft.o.draw();
 }
 
 #else
