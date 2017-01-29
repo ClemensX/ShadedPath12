@@ -262,6 +262,7 @@ void Avatar::draw()
 	//billboardEffect.draw();
 	//object.draw();
 	xapp().vr.drawLeftController();
+	xapp().vr.drawLeftHand();
 	auto grp = xapp().objectStore.getGroup("avatar");
 	for (auto & w : *grp) {
 		//w->draw();

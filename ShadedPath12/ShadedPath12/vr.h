@@ -112,8 +112,11 @@ public:
 	void loadAvatarFromOculus(bool reloadAssets = true);
 	void loadAvatarDefault();
 	void drawLeftController();
+	void drawLeftHand();
 	// if all assets of an avatar have been loaded, gather all the info needed for rendering:
 #if defined(_OVR_)
+	void gatherAvatarComponentInfo(AvatarPartInfo &avatarPartInfo, const ovrAvatarControllerComponent *component);
+	void gatherAvatarComponentInfo(AvatarPartInfo &avatarPartInfo, const ovrAvatarHandComponent *component);
 	void gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar *avatar);
 	wstring getTextureFileName(ovrAvatarAssetID id) {
 		wstringstream sss;
