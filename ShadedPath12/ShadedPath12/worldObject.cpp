@@ -410,7 +410,7 @@ void WorldObject::draw() {
 			this->rot() = rot;
 		}
 		else {
-			if (mesh->skinnedVertices.size() > 0) {
+			if (mesh->skinnedVertices.size() > 0 && !disableSkinning) {
 				for (int skV = 0; skV < (int)mesh->skinnedVertices.size(); skV++) {
 					WorldObjectVertex::VertexSkinned *v = &mesh->skinnedVertices[skV];
 					XMVECTOR vfinal, normfinal;

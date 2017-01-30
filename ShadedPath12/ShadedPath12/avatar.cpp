@@ -244,31 +244,17 @@ void Avatar::update()
 	//Log("obj pos " << object.pos().x << endl);
 
 	if (avatarMeshesLoadStartet == false) {
-		loadLocalAvatarMeshes(USERID);
+		//loadLocalAvatarMeshes(USERID);
 	}
 	if(xapp().ovrRendering)	xapp().vr.handleOVRMessages();
-	auto grp = xapp().objectStore.getGroup("avatar");
-	for (auto & w : *grp) {
-		//w->update();
-	}
-
 }
 
 void Avatar::draw()
 {
-	//linesEffect.draw();
-	//dotcrossEffect.draw();
-	//textEffect.draw();
-	//billboardEffect.draw();
-	//object.draw();
 	xapp().vr.drawController(true);
 	xapp().vr.drawHand(true);
 	xapp().vr.drawController(false);
 	xapp().vr.drawHand(false);
-	auto grp = xapp().objectStore.getGroup("avatar");
-	for (auto & w : *grp) {
-		//w->draw();
-	}
 	postEffect.draw();
 }
 

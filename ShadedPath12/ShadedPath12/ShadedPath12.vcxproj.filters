@@ -142,6 +142,9 @@
     <ClInclude Include="avatar.h">
       <Filter>Apps</Filter>
     </ClInclude>
+    <ClInclude Include="touchOdyssey.h">
+      <Filter>Apps</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -238,6 +241,9 @@
       <Filter>Apps</Filter>
     </ClCompile>
     <ClCompile Include="avatar.cpp">
+      <Filter>Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="touchOdyssey.cpp">
       <Filter>Apps</Filter>
     </ClCompile>
   </ItemGroup>

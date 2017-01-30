@@ -191,6 +191,7 @@
     <ClInclude Include="testLinetext.h" />
     <ClInclude Include="testTextures.h" />
     <ClInclude Include="texture.h" />
+    <ClInclude Include="touchOdyssey.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="vr.h" />
     <ClInclude Include="winmain.h" />
@@ -226,6 +227,7 @@
     <ClCompile Include="testLinetext.cpp" />
     <ClCompile Include="testTextures.cpp" />
     <ClCompile Include="texture.cpp" />
+    <ClCompile Include="touchOdyssey.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="vr.cpp" />
     <ClCompile Include="winmain.cpp" />

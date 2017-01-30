@@ -66,9 +66,10 @@ public:
 	Action *boneAction; // action involving bone calcualtions
 	PathDesc* pathDescMove;  // moving object
 	PathDesc* pathDescBone;  // animating object
+	bool disableSkinning = false; // set to true for animated object to use as static meshes
 	bool isNonKeyframeAnimated = false; // signal that poses are not interpoalted by Path, but computed outside and set in update()
-							 //std::vector<Mtrl> mtrls;
-							 //std::vector<IDirect3DTexture9*> textures;
+	//std::vector<Mtrl> mtrls;
+	//std::vector<IDirect3DTexture9*> textures;
 	int visible; // visible in current view frustrum: 0 == no, 1 == intersection, 2 == completely visible
 	void setAction(string name);
 	// return current bounding box by scanning all vertices, used for bone animated objects
