@@ -961,9 +961,15 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 	// left controller:
 	auto avatarControllerComponent = ovrAvatarPose_GetLeftControllerComponent(avatar);
 	gatherAvatarComponentInfo(avatarInfo.controllerLeft, avatarControllerComponent);
+	// right controller:
+	avatarControllerComponent = ovrAvatarPose_GetRightControllerComponent(avatar);
+	gatherAvatarComponentInfo(avatarInfo.controllerRight, avatarControllerComponent);
 	// left hand:
 	auto avatarHandComponent = ovrAvatarPose_GetLeftHandComponent(avatar);
 	gatherAvatarComponentInfo(avatarInfo.handLeft, avatarHandComponent);
+	// right hand:
+	avatarHandComponent = ovrAvatarPose_GetRightHandComponent(avatar);
+	gatherAvatarComponentInfo(avatarInfo.handRight, avatarHandComponent);
 
 	// prepare assets:
 	TextureInfo *ti = xapp->textureStore.getTexture(avatarInfo.controllerLeft.textureId);
@@ -975,6 +981,16 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 	xapp->objectStore.loadObject(avatarInfo.controllerLeft.meshFileName, avatarInfo.controllerLeft.meshId, 1.0f);
 	xapp->objectStore.addObject(avatarInfo.controllerLeft.o, avatarInfo.controllerLeft.meshId, XMFLOAT3(0.0f, -0.4f, -0.2f), ti);
 
+	ti = xapp->textureStore.getTexture(avatarInfo.controllerRight.textureId);
+	if (ti->id.length() == 0) {
+		xapp->textureStore.loadTexture(avatarInfo.controllerRight.textureFileName, avatarInfo.controllerRight.textureId);
+		ti = xapp->textureStore.getTexture(avatarInfo.controllerRight.textureId);
+		assert(ti);
+	}
+	xapp->objectStore.loadObject(avatarInfo.controllerRight.meshFileName, avatarInfo.controllerRight.meshId, 1.0f);
+	xapp->objectStore.addObject(avatarInfo.controllerRight.o, avatarInfo.controllerRight.meshId, XMFLOAT3(0.4f, -0.4f, -0.2f), ti);
+
+
 	ti = xapp->textureStore.getTexture(avatarInfo.handLeft.textureId);
 	if (ti->id.length() == 0) {
 		xapp->textureStore.loadTexture(avatarInfo.handLeft.textureFileName, avatarInfo.handLeft.textureId);
@@ -984,20 +1000,42 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 	xapp->objectStore.loadObject(avatarInfo.handLeft.meshFileName, avatarInfo.handLeft.meshId, 1.0f);
 	xapp->objectStore.addObject(avatarInfo.handLeft.o, avatarInfo.handLeft.meshId, XMFLOAT3(0.0f, -0.4f, -0.2f), ti);
 
+	ti = xapp->textureStore.getTexture(avatarInfo.handRight.textureId);
+	if (ti->id.length() == 0) {
+		xapp->textureStore.loadTexture(avatarInfo.handRight.textureFileName, avatarInfo.handRight.textureId);
+		ti = xapp->textureStore.getTexture(avatarInfo.handRight.textureId);
+		assert(ti);
+	}
+	xapp->objectStore.loadObject(avatarInfo.handRight.meshFileName, avatarInfo.handRight.meshId, 1.0f);
+	xapp->objectStore.addObject(avatarInfo.handRight.o, avatarInfo.handRight.meshId, XMFLOAT3(0.4f, -0.4f, -0.2f), ti);
+
 	avatarInfo.controllerLeft.o.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	// controller, shiny:
-	avatarInfo.controllerLeft.o.material.specExp = 20.0f;
-	avatarInfo.controllerLeft.o.material.specIntensity = 700.0f;
+	//avatarInfo.controllerLeft.o.material.specExp = 20.0f;
+	//avatarInfo.controllerLeft.o.material.specIntensity = 700.0f;
 	// hands:
 	avatarInfo.controllerLeft.o.material.specExp = 10.0f;
 	avatarInfo.controllerLeft.o.material.specIntensity = 70.0f;
 	avatarInfo.controllerLeft.o.setAction("non_keyframe");
+
+	avatarInfo.controllerRight.o.material.ambient = XMFLOAT4(1, 1, 1, 1);
+	// hands:
+	avatarInfo.controllerRight.o.material.specExp = 10.0f;
+	avatarInfo.controllerRight.o.material.specIntensity = 70.0f;
+	avatarInfo.controllerRight.o.setAction("non_keyframe");
 
 	avatarInfo.handLeft.o.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	// hands:
 	avatarInfo.handLeft.o.material.specExp = 10.0f;
 	avatarInfo.handLeft.o.material.specIntensity = 70.0f;
 	avatarInfo.handLeft.o.setAction("non_keyframe");
+	avatarInfo.readyToRender = true;
+
+	avatarInfo.handRight.o.material.ambient = XMFLOAT4(1, 1, 1, 1);
+	// hands:
+	avatarInfo.handRight.o.material.specExp = 10.0f;
+	avatarInfo.handRight.o.material.specIntensity = 70.0f;
+	avatarInfo.handRight.o.setAction("non_keyframe");
 	avatarInfo.readyToRender = true;
 }
 
@@ -1130,40 +1168,76 @@ void VR::updateAvatar()
 	avatarInfo.handLeft.o.quaternion.z = finalPose.orientation.z;
 	avatarInfo.handLeft.o.quaternion.w = finalPose.orientation.w;
 	avatarInfo.handLeft.o.useQuaternionRotation = true;
+
+	finalPose = right;
+	finalPose.position.x += xapp->camera.pos.x;
+	finalPose.position.y += xapp->camera.pos.y;
+	finalPose.position.z = xapp->camera.pos.z - right.position.z;
+	avatarInfo.controllerRight.o.pos() = XMFLOAT3(finalPose.position.x, finalPose.position.y, finalPose.position.z);
+	// save quaternion and do correction for left handed system:
+	avatarInfo.controllerRight.o.quaternion.x = -finalPose.orientation.x;
+	avatarInfo.controllerRight.o.quaternion.y = -finalPose.orientation.y;
+	avatarInfo.controllerRight.o.quaternion.z = finalPose.orientation.z;
+	avatarInfo.controllerRight.o.quaternion.w = finalPose.orientation.w;
+	avatarInfo.controllerRight.o.useQuaternionRotation = true;
+
+	avatarInfo.handRight.o.pos() = XMFLOAT3(finalPose.position.x, finalPose.position.y, finalPose.position.z);
+	// save quaternion and do correction for left handed system:
+	avatarInfo.handRight.o.quaternion.x = -finalPose.orientation.x;
+	avatarInfo.handRight.o.quaternion.y = -finalPose.orientation.y;
+	avatarInfo.handRight.o.quaternion.z = finalPose.orientation.z;
+	avatarInfo.handRight.o.quaternion.w = finalPose.orientation.w;
+	avatarInfo.handRight.o.useQuaternionRotation = true;
 }
 
-void VR::drawLeftController()
+void VR::drawController(bool isLeft)
 {
 	if (!avatarInfo.readyToRender) return;
 
-	auto *mesh = avatarInfo.controllerLeft.renderPartPBS;
+	auto *mesh = isLeft ? avatarInfo.controllerLeft.renderPartPBS : avatarInfo.controllerRight.renderPartPBS;
 	assert(mesh);
 	XMMATRIX skinnedPoses[MAX_BONES];  // current world pose matrices
 	computeWorldPose(mesh->skinnedPose, skinnedPoses);
 	for (int i = 0; i < mesh->skinnedPose.jointCount; ++i)
 	{
-		xapp->world.path.updateBindPose(i, avatarInfo.controllerLeft.o.pathDescBone, &skinnedPoses[i]);
+		if (isLeft)
+			xapp->world.path.updateBindPose(i, avatarInfo.controllerLeft.o.pathDescBone, &skinnedPoses[i]);
+		else
+			xapp->world.path.updateBindPose(i, avatarInfo.controllerRight.o.pathDescBone, &skinnedPoses[i]);
 		// inv * pose will be done later
 	}
-	avatarInfo.controllerLeft.o.update();
-	avatarInfo.controllerLeft.o.draw();
+	if (isLeft) {
+		avatarInfo.controllerLeft.o.update();
+		avatarInfo.controllerLeft.o.draw();
+	} else {
+		avatarInfo.controllerRight.o.update();
+		avatarInfo.controllerRight.o.draw();
+	}
 }
 
-void VR::drawLeftHand()
+void VR::drawHand(bool isLeft)
 {
 	if (!avatarInfo.readyToRender) return;
 
-	auto *mesh = avatarInfo.handLeft.renderPart;
+	auto *mesh = isLeft ? avatarInfo.handLeft.renderPart : avatarInfo.handRight.renderPart;
 	assert(mesh);
 	XMMATRIX skinnedPoses[MAX_BONES];  // current world pose matrices
 	computeWorldPose(mesh->skinnedPose, skinnedPoses);
 	for (int i = 0; i < mesh->skinnedPose.jointCount; ++i)
 	{
-		xapp->world.path.updateBindPose(i, avatarInfo.handLeft.o.pathDescBone, &skinnedPoses[i]);
+		if (isLeft)
+			xapp->world.path.updateBindPose(i, avatarInfo.handLeft.o.pathDescBone, &skinnedPoses[i]);
+		else
+			xapp->world.path.updateBindPose(i, avatarInfo.handRight.o.pathDescBone, &skinnedPoses[i]);
 		// inv * pose will be done later
 	}
-	avatarInfo.handLeft.o.update();
-	avatarInfo.handLeft.o.draw();
+	if (isLeft) {
+		avatarInfo.handLeft.o.update();
+		avatarInfo.handLeft.o.draw();
+	} else {
+		avatarInfo.handRight.o.update();
+		avatarInfo.handRight.o.draw();
+	}
 }
 
 #else

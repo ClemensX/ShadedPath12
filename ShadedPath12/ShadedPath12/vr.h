@@ -42,6 +42,8 @@ class AvatarInfo {
 public:
 	AvatarPartInfo controllerLeft;
 	AvatarPartInfo handLeft;
+	AvatarPartInfo controllerRight;
+	AvatarPartInfo handRight;
 	bool readyToRender = false;
 #if defined(_OVR_)
 	ovrTrackingState *trackingState = nullptr;
@@ -111,8 +113,8 @@ public:
 	// load avatar data (mesh, bones and textures) from Oculus
 	void loadAvatarFromOculus(bool reloadAssets = true);
 	void loadAvatarDefault();
-	void drawLeftController();
-	void drawLeftHand();
+	void drawController(bool isLeft);
+	void drawHand(bool isLeft);
 	// if all assets of an avatar have been loaded, gather all the info needed for rendering:
 #if defined(_OVR_)
 	void gatherAvatarComponentInfo(AvatarPartInfo &avatarPartInfo, const ovrAvatarControllerComponent *component);

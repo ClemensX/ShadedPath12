@@ -261,8 +261,10 @@ void Avatar::draw()
 	//textEffect.draw();
 	//billboardEffect.draw();
 	//object.draw();
-	xapp().vr.drawLeftController();
-	xapp().vr.drawLeftHand();
+	xapp().vr.drawController(true);
+	xapp().vr.drawHand(true);
+	xapp().vr.drawController(false);
+	xapp().vr.drawHand(false);
 	auto grp = xapp().objectStore.getGroup("avatar");
 	for (auto & w : *grp) {
 		//w->draw();
