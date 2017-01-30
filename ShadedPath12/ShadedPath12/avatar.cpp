@@ -217,8 +217,8 @@ void Avatar::update()
 	if (globalDirectionalLightLevel > 1.0f) globalDirectionalLightLevel = 1.0f;
 
 	xapp().lights.update();
-	linesEffect.update();
-	dotcrossEffect.update();
+	//linesEffect.update();
+	//dotcrossEffect.update();
 	// update info text:
 	string fr("Frame ");
 	stringstream ss;
