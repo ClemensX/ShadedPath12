@@ -1246,7 +1246,11 @@ void VR::handleOVRMessages()
 {
 }
 
-void VR::loadAvatar()
+void VR::loadAvatarDefault()
+{
+}
+
+void VR::loadAvatarFromOculus(bool reloadAssets)
 {
 }
 
@@ -1261,7 +1265,12 @@ void VR::submitFrame()
 int VR::getCurrentFrameBufferIndex() {
 	return xapp->getCurrentBackBufferIndex();
 };
-void VR::drawLeftController()
+
+void VR::drawController(bool isLeft)
+{
+}
+
+void VR::drawHand(bool isLeft)
 {
 }
 #endif
