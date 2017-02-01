@@ -18,7 +18,7 @@ XMFLOAT4X4 toLeft(XMFLOAT4X4 r) {
 	l._43 *= -1.0f;
 	return l;
 }
-void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
+void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale, XMFLOAT3 *displacement) {
 	ifstream bfile(filename.c_str(), ios::in | ios::binary);
 	if (debug_basic) Log("file opened: " << filename.c_str() << "\n");
 
@@ -173,6 +173,11 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
 		vertex.Pos.x = verts[i * 3] * scale;
 		vertex.Pos.y = verts[i * 3 + 1] * scale;
 		vertex.Pos.z = verts[i * 3 + 2] * scale;
+		if (displacement != nullptr) {
+			vertex.Pos.x += displacement->x;
+			vertex.Pos.y += displacement->y;
+			vertex.Pos.z += displacement->z;
+		}
 		mesh->addToBoundingBox(vertex.Pos);
 		vertex.Normal.x = norm[i * 3];
 		vertex.Normal.y = norm[i * 3 + 1];
@@ -510,12 +515,12 @@ WorldObject::~WorldObject() {
 }
 
 // object store:
-void WorldObjectStore::loadObject(wstring filename, string id, float scale) {
+void WorldObjectStore::loadObject(wstring filename, string id, float scale, XMFLOAT3 *displacement) {
 	MeshLoader loader;
 	wstring binFile = xapp().findFile(filename.c_str(), XApp::MESH);
 	Mesh mesh;
 	meshes[id] = mesh;
-	loader.loadBinaryAsset(binFile, &meshes[id], scale);
+	loader.loadBinaryAsset(binFile, &meshes[id], scale, displacement);
 	meshes[id].createVertexAndIndexBuffer(this->objectEffect);
 }
 

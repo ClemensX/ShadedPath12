@@ -23,7 +23,8 @@ private:
 	LONGLONG startTime;
 	int framenumLine, fpsLine;  // indexes into the text array for Linetext effect
 	bool textureFullFrameTest = false;
-	WorldObject bigRC;  // bir right controller (static - not animated)
+	WorldObject bigRC;  // big right controller (static - not animated)
+	WorldObject spinRC, spinLC;  // small left and right controller (static - not animated)
 	float globalAmbientLightLevel;
 	float globalDirectionalLightLevel;
 	XMFLOAT4 dirColor1, dirColor2;

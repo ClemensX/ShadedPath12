@@ -64,7 +64,7 @@ void TouchOdyssey::init()
 	xapp().lights.init();
 	bigRC.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	if (true) {
-		xapp().objectStore.loadObject(L"ovr_557a26331850dbf.b", "rightController", 30.0f);  // right hand
+		xapp().objectStore.loadObject(L"ovr_557a26331850dbf.b", "rightController", 30.0f);
 		xapp().objectStore.addObject(bigRC, "rightController", XMFLOAT3(0.0f, -2.0f, 0.0f), RightContollerTex);
 		bigRC.rot().x = XM_PIDIV2;
 		// controller, shiny:
@@ -73,8 +73,16 @@ void TouchOdyssey::init()
 		bigRC.material.specIntensity = 700.0f; //70
  		bigRC.disableSkinning = true;
 	}
-	// draw lines for mesh:
-	Log(" object created ok, #vertices == " << bigRC.mesh->vertices.size() << endl);
+	// load controller mesh with correction to mesh data to allow smooth spinning
+	XMFLOAT3 displacement(0.0f, 0.04f, 0.0f);
+	xapp().objectStore.loadObject(L"ovr_557a26331850dbf.b", "rightSpinController", 1.0f, &displacement);
+	xapp().objectStore.addObject(spinRC, "rightSpinController", XMFLOAT3(-1.0f, 1.0f, 0.0f), RightContollerTex);
+	spinRC.rot().x = XM_PIDIV2;
+	// controller, shiny:
+	spinRC.material.ambient = XMFLOAT4(1, 1, 1, 1);
+	spinRC.material.specExp = 10.0f;
+	spinRC.material.specIntensity = 70.0f;
+	spinRC.disableSkinning = true;
 
 	CBVLights *lights = &xapp().lights.lights;
 
@@ -114,6 +122,7 @@ void TouchOdyssey::update()
 {
 	gameTime.advanceTime();
 	LONGLONG now = gameTime.getRealTime();
+	double nowf = gameTime.getTimeAbsSeconds();
 	static bool done = false;
 	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
 	}
@@ -166,6 +175,13 @@ void TouchOdyssey::update()
 	//Log("obj pos " << bigRC.pos().x << endl);
 
 	if(xapp().ovrRendering)	xapp().vr.handleOVRMessages();
+
+	double fullturn_sec = 5.0;
+	double turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
+	spinRC.rot().z = turnfrac * XM_2PI;
+	//fullturn_sec *= 2.0; // half rotation speed vertically
+	//turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
+	//mars.rot().y = turnfrac * XM_2PI;
 }
 
 void TouchOdyssey::draw()
@@ -175,6 +191,7 @@ void TouchOdyssey::draw()
 	//xapp().vr.drawController(false);
 	xapp().vr.drawHand(false);
 	bigRC.draw();
+	spinRC.draw();
 	postEffect.draw();
 }
 
