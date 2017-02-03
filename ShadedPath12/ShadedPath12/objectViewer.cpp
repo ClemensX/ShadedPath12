@@ -129,7 +129,7 @@ void ObjectViewer::init()
 		object.material.specIntensity = 10.0f; // no spec color
 		//object.drawNormals = true;
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"joint5_anim.b", "Joint");
 		xapp().objectStore.addObject(object, "Joint", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
 		object.setAction("Armature");
@@ -241,6 +241,19 @@ void ObjectViewer::init()
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
 	}
+	if (true) {
+		//XMFLOAT3 displacement(0.02f, 0.033f, 0.0f);
+		XMFLOAT3 displacement(-0.017f, 0.032f, 0.0f);
+		xapp().objectStore.loadObject(L"ovr_557a26331850dbf.b", "rightSpinController", 1.0f, &displacement);
+		xapp().objectStore.addObject(object, "rightSpinController", XMFLOAT3(0.0f, 0.0f, 0.0f), WhiteTex);
+		object.rot().x = XM_PIDIV2;
+		// controller, shiny:
+		object.material.ambient = XMFLOAT4(1, 1, 1, 1);
+		object.material.specExp = 10.0f;
+		object.material.specIntensity = 70.0f;
+		object.disableSkinning = true;
+		object.drawBoundingBox = true;
+	}
 	// draw lines for mesh:
 	Log(" object created ok, #vertices == " << object.mesh->vertices.size() << endl);
 
@@ -287,6 +300,7 @@ void ObjectViewer::update()
 {
 	gameTime.advanceTime();
 	LONGLONG now = gameTime.getRealTime();
+	double nowf = gameTime.getTimeAbsSeconds();
 	static bool done = false;
 	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
 	}
@@ -335,7 +349,14 @@ void ObjectViewer::update()
 	lights->ambientLights[0].ambient = XMFLOAT4(f,f,f,1);
 	lights->directionalLights[0].color = lightControl.factor(globalDirectionalLightLevel, dirColor1);
 	lights->directionalLights[1].color = lightControl.factor(globalDirectionalLightLevel, dirColor2);
+
 	object.update();
+
+	// disable for no spinning:
+	double fullturn_sec = 5.0;
+	double turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
+	object.rot().z = turnfrac * XM_2PI;
+
 	//Log("obj pos " << object.pos().x << endl);
 
 	if(xapp().ovrRendering)	xapp().vr.handleOVRMessages();

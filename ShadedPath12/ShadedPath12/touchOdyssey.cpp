@@ -36,6 +36,10 @@ void TouchOdyssey::init()
 	gameTime.init(1);
 	startTime = gameTime.getRealTime();
 
+	xapp().setBackgroundColor(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
+	//xapp().setBackgroundColor(Colors::Silver);
+	//xapp().setBackgroundColor(XMFLOAT4(0.0021973f, 0.0021973f, 0.0021973f, 1.0f));   // prevent strange smearing effect for total black pixels (only in HMD)
+
 	float textSize = 0.5f;
 	float lineHeight = 2 * textSize;
 	xapp().camera.nearZ = 0.02f;
@@ -74,10 +78,11 @@ void TouchOdyssey::init()
  		bigRC.disableSkinning = true;
 	}
 	// load controller mesh with correction to mesh data to allow smooth spinning
-	XMFLOAT3 displacement(0.0f, 0.04f, 0.0f);
+	//XMFLOAT3 displacement(0.02f, 0.033f, 0.0f);
+	XMFLOAT3 displacement(-0.017f, 0.032f, 0.0f);
 	xapp().objectStore.loadObject(L"ovr_557a26331850dbf.b", "rightSpinController", 1.0f, &displacement);
-	xapp().objectStore.addObject(spinRC, "rightSpinController", XMFLOAT3(-1.0f, 1.0f, 0.0f), RightContollerTex);
-	spinRC.rot().x = XM_PIDIV2;
+	xapp().objectStore.addObject(spinRC, "rightSpinController", XMFLOAT3(-0.4f, -0.3f, 1.9f), RightContollerTex);
+	spinRC.rot().x = XM_PI - 0.6f;
 	// controller, shiny:
 	spinRC.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	spinRC.material.specExp = 10.0f;
@@ -172,6 +177,7 @@ void TouchOdyssey::update()
 	lights->directionalLights[0].color = lightControl.factor(globalDirectionalLightLevel, dirColor1);
 	lights->directionalLights[1].color = lightControl.factor(globalDirectionalLightLevel, dirColor2);
 	bigRC.update();
+	spinRC.update();
 	//Log("obj pos " << bigRC.pos().x << endl);
 
 	if(xapp().ovrRendering)	xapp().vr.handleOVRMessages();

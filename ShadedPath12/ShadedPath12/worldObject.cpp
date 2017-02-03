@@ -194,6 +194,11 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale, XMFL
 			vertex.Pos.x = verts[i * 3] * scale;
 			vertex.Pos.y = verts[i * 3 + 1] * scale;
 			vertex.Pos.z = verts[i * 3 + 2] * scale;
+			if (displacement != nullptr) {
+				vertex.Pos.x += displacement->x;
+				vertex.Pos.y += displacement->y;
+				vertex.Pos.z += displacement->z;
+			}
 			mesh->addToBoundingBox(vertex.Pos);
 			vertex.Tex.x = tex[i * 2];
 			vertex.Tex.y = tex[i * 2 + 1];
