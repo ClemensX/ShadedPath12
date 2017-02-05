@@ -218,7 +218,8 @@ void TouchOdyssey::update()
 	if (o) {
 		XMVECTOR r2 = XMLoadFloat4(&o->quaternion); //XMQuaternionRotationRollPitchYaw(rot().y, rot().x, rot().z);
 		// rotate point
-		XMVECTOR p = XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f);
+		//XMVECTOR p = XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f);
+		XMVECTOR p = XMVectorSet(-1.0f, -0.2f, -0.1f, 0.0f);
 		XMVECTOR rotP = XMVector3Rotate(p, r2);
 		XMVECTOR t = XMLoadFloat3(&o->pos());
 		rotP = rotP + t;
@@ -229,10 +230,19 @@ void TouchOdyssey::update()
 		LineDef line;
 		line.color = Colors::Red;
 		line.start = o->pos();
+		//line.start.y -= 0.06f;
 		//line.end = XMFLOAT3(line.start.x + 1.0f, line.start.y + 1.0f, line.start.z + 1.0f);
 		line.end = XMFLOAT3(f.x, f.y, f.z);
 		lines.push_back(line);
 		xapp().world.linesEffect->addOneTime(lines);
+
+		// distance
+		XMVECTOR lp1, lp2, refp;
+		lp1 = XMLoadFloat3(&o->pos());
+		lp2 = rotP;
+		refp = XMLoadFloat3(&spinRC.pos());
+		float dist = XMVectorGetX(XMVector3LinePointDistance(lp1, lp2, refp));
+		Log("dist: " << dist << endl);
 	}
 }
 
