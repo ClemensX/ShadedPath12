@@ -1029,13 +1029,13 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 	avatarInfo.handLeft.o.material.specExp = 10.0f;
 	avatarInfo.handLeft.o.material.specIntensity = 70.0f;
 	avatarInfo.handLeft.o.setAction("non_keyframe");
-	avatarInfo.readyToRender = true;
 
 	avatarInfo.handRight.o.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	// hands:
 	avatarInfo.handRight.o.material.specExp = 10.0f;
 	avatarInfo.handRight.o.material.specIntensity = 70.0f;
 	avatarInfo.handRight.o.setAction("non_keyframe");
+	//avatarInfo.handRight.o.drawNormals = true;
 	avatarInfo.readyToRender = true;
 }
 

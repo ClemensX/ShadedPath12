@@ -16,15 +16,17 @@ private:
 	// Engine classes:
 	GameTime gameTime;
 	// used effects:
+	LinesEffect linesEffect;
 	Linetext textEffect;
 	WorldObjectEffect objectEffect;
 	PostEffect postEffect;
 	// other:
 	LONGLONG startTime;
-	int framenumLine, fpsLine;  // indexes into the text array for Linetext effect
+	int framenumLine, fpsLine;     // indexes into the text array for Linetext effect
 	bool textureFullFrameTest = false;
-	WorldObject bigRC;  // big right controller (static - not animated)
-	WorldObject spinRC, spinLC;  // small left and right controller (static - not animated)
+	WorldObject bigRC;             // big right controller (static - not animated)
+	WorldObject spinRC, spinLC;    // small left and right controller (static - not animated)
+	WorldObject ghostRC, ghostLC;  // ghost images of controllers to indicate bond point with hands
 	float globalAmbientLightLevel;
 	float globalDirectionalLightLevel;
 	XMFLOAT4 dirColor1, dirColor2;

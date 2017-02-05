@@ -27,6 +27,8 @@ string TouchOdyssey::getWindowTitle() {
 void TouchOdyssey::init()
 {
 	postEffect.init();
+	linesEffect.init();
+	xapp().world.linesEffect = &linesEffect;
 	textEffect.init();
 	//billboardEffect.init();
 	objectEffect.init(&xapp().objectStore, 1);
@@ -58,6 +60,7 @@ void TouchOdyssey::init()
 
 	// textures
 	// for controller:
+	xapp().textureStore.loadTexture(L"ovr_1c4a32f0d1f4dbb1.dds", "leftController");
 	xapp().textureStore.loadTexture(L"ovr_1c0685581a5a8aa4.dds", "rightController");
 	// for hands:
 	//xapp().textureStore.loadTexture(L"hand_color.dds", "white");
@@ -65,6 +68,8 @@ void TouchOdyssey::init()
 	TextureInfo *GrassTex, *HouseTex, *MetalTex, *WormTex, *PlanetTex, *Meteor1Tex, *AxistestTex;
 	TextureInfo *RightContollerTex = xapp().textureStore.getTexture("rightController");
 	assert(RightContollerTex != nullptr && !RightContollerTex->filename.empty());
+	TextureInfo *LeftContollerTex = xapp().textureStore.getTexture("leftController");
+	assert(LeftContollerTex != nullptr && !LeftContollerTex->filename.empty());
 	xapp().lights.init();
 	bigRC.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	if (true) {
@@ -88,6 +93,22 @@ void TouchOdyssey::init()
 	spinRC.material.specExp = 10.0f;
 	spinRC.material.specIntensity = 70.0f;
 	spinRC.disableSkinning = true;
+	spinRC.alpha = 1.0f;
+	// ghost images, indicate where the controllers should be moved to for bonding with hands:
+	xapp().objectStore.loadObject(L"ovr_6feb9283b780b5a3.b", "leftSpinController", 1.0f, &displacement);
+	xapp().objectStore.addObject(ghostLC, "leftSpinController", XMFLOAT3(-0.4f, -0.2f, 0.55f), LeftContollerTex);
+	ghostLC.material.ambient = XMFLOAT4(1, 1, 1, 1);
+	ghostLC.material.specExp = 10.0f;
+	ghostLC.material.specIntensity = 70.0f;
+	ghostLC.disableSkinning = true;
+	ghostLC.alpha = 0.1f;
+	xapp().objectStore.addObject(ghostRC, "rightSpinController", XMFLOAT3(-0.1f, -0.2f, 0.55f), RightContollerTex);
+	ghostRC.material.ambient = XMFLOAT4(1, 1, 1, 1);
+	ghostRC.material.specExp = 10.0f;
+	ghostRC.material.specIntensity = 70.0f;
+	ghostRC.disableSkinning = true;
+	ghostRC.alpha = 0.1f;
+
 
 	CBVLights *lights = &xapp().lights.lights;
 
@@ -168,6 +189,7 @@ void TouchOdyssey::update()
 	fps_str.append(sss.str());
 	textEffect.changeTextLine(fpsLine, fps_str);
 	textEffect.update();
+	linesEffect.update();
 	//billboardEffect.update();
 
 	CBVLights *lights = &xapp().lights.lights;
@@ -178,16 +200,40 @@ void TouchOdyssey::update()
 	lights->directionalLights[1].color = lightControl.factor(globalDirectionalLightLevel, dirColor2);
 	bigRC.update();
 	spinRC.update();
+	ghostLC.update();
+	ghostRC.update();
 	//Log("obj pos " << bigRC.pos().x << endl);
 
 	if(xapp().ovrRendering)	xapp().vr.handleOVRMessages();
 
 	double fullturn_sec = 5.0;
 	double turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
-	spinRC.rot().z = turnfrac * XM_2PI;
+	spinRC.rot().z = (float) (turnfrac * XM_2PI);
 	//fullturn_sec *= 2.0; // half rotation speed vertically
 	//turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
 	//mars.rot().y = turnfrac * XM_2PI;
+
+	// debug lines:
+	WorldObject *o = &xapp().vr.avatarInfo.handRight.o;
+	if (o) {
+		XMVECTOR r2 = XMLoadFloat4(&o->quaternion); //XMQuaternionRotationRollPitchYaw(rot().y, rot().x, rot().z);
+		// rotate point
+		XMVECTOR p = XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f);
+		XMVECTOR rotP = XMVector3Rotate(p, r2);
+		XMVECTOR t = XMLoadFloat3(&o->pos());
+		rotP = rotP + t;
+		XMFLOAT3 f;
+		XMStoreFloat3(&f, rotP);
+
+		vector<LineDef> lines;
+		LineDef line;
+		line.color = Colors::Red;
+		line.start = o->pos();
+		//line.end = XMFLOAT3(line.start.x + 1.0f, line.start.y + 1.0f, line.start.z + 1.0f);
+		line.end = XMFLOAT3(f.x, f.y, f.z);
+		lines.push_back(line);
+		xapp().world.linesEffect->addOneTime(lines);
+	}
 }
 
 void TouchOdyssey::draw()
@@ -198,6 +244,9 @@ void TouchOdyssey::draw()
 	xapp().vr.drawHand(false);
 	bigRC.draw();
 	spinRC.draw();
+	ghostLC.draw();
+	ghostRC.draw();
+	linesEffect.draw();
 	postEffect.draw();
 }
 
