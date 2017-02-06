@@ -243,6 +243,15 @@ void TouchOdyssey::update()
 		refp = XMLoadFloat3(&spinRC.pos());
 		float dist = XMVectorGetX(XMVector3LinePointDistance(lp1, lp2, refp));
 		Log("dist: " << dist << endl);
+		// make same calc using Util methods:
+		XMVECTOR start = XMVectorZero();
+		XMVECTOR end = XMVectorSet(-1.0f, -0.2f, -0.1f, 0.0f);
+		XMVECTOR point = XMLoadFloat3(&spinRC.pos());
+		Util::calcBeamFromObject(&lp1, &lp2, o, start, end);
+		float dist2 = Util::distancePoint2Beam(lp1, lp2, point);
+		Log("dist2: " << dist2 << endl);
+		bool hit = Util::isTargetHit(o, start, end, &spinRC);
+		if (hit) Log("HIT!" << endl);
 	}
 }
 

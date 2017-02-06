@@ -78,3 +78,25 @@ public:
 };
 
 extern VectorHelper vectorHelper;
+
+class Util {
+public:
+
+	// calculate distance from point to line, first point is considered starting point of beam, that goes indefinitely long
+	// though 2nd point.
+	// returns -1 if beam does not reach point at all (pointing to wrong side)
+	static float distancePoint2Beam(XMVECTOR beamStart, XMVECTOR beamPoint2, XMVECTOR p);
+
+	// calculate beam pointing away from an object by providing two pints in model coordinates: 
+	// a start point and a 2nd point
+	// the object's current rotation is applied to both points and object pos is added to get world coordinates for the beam
+	// returned beam is in world coordinates
+	// used WorldObjectmust have rotation specified with a quaternion
+	static void calcBeamFromObject(XMVECTOR *beamStart, XMVECTOR *beampoint2, WorldObject *o, XMVECTOR beamStartModelPose, XMVECTOR beamPoint2ModelPose);
+
+	// decide if a beam emitting from source worldObject is hitting a target Object
+	// using calcBeamFromObject(), see there for details
+	// hitting distance is how far the beam can miss (center of) target to be considered a hit.
+	// hitting distance defaults to 10 cm.
+	static bool isTargetHit(WorldObject *source, XMVECTOR beamStartModelPose, XMVECTOR beamPoint2ModelPose, WorldObject *target, float hittingDist = 0.1f);
+};
