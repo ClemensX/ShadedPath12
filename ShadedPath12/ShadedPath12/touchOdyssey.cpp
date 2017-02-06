@@ -90,8 +90,8 @@ void TouchOdyssey::init()
 	spinRC.rot().x = XM_PI - 0.6f;
 	// controller, shiny:
 	spinRC.material.ambient = XMFLOAT4(1, 1, 1, 1);
-	spinRC.material.specExp = 10.0f;
-	spinRC.material.specIntensity = 70.0f;
+	spinRC.material.specExp = 20.0f; // 10
+	spinRC.material.specIntensity = 700.0f; //70
 	spinRC.disableSkinning = true;
 	spinRC.alpha = 1.0f;
 	// ghost images, indicate where the controllers should be moved to for bonding with hands:
@@ -138,10 +138,26 @@ void TouchOdyssey::init()
 	lights->pointLights[0].range_reciprocal = 1.0f / 40.0f;
 	lights->pointLights[0].used = 1.0f;
 
+	lights->pointLights[1].color = Colors::White;
+	lights->pointLights[1].pos = XMFLOAT4(7.0f, 10.0f, 8.0f, 1.0f);
+	lights->pointLights[1].range_reciprocal = 1.0f / 0.3f;//40.0f;
+	lights->pointLights[1].used = 0.0f;
+
 	if (loadAvatarAssetsFromOculus)
 		xapp().vr.loadAvatarFromOculus();
 	else
 		xapp().vr.loadAvatarDefault();
+}
+
+void TouchOdyssey::enableSpinLight(bool enable, WorldObject * o)
+{
+	CBVLights *lights = &xapp().lights.lights;
+	if (!enable) {
+		lights->pointLights[1].used = 0.0f;
+	} else {
+		lights->pointLights[1].pos = XMFLOAT4(o->pos().x, o->pos().y, o->pos().z-0.03f, 1.0f);
+		lights->pointLights[1].used = 1.0f;
+	}
 }
 
 void TouchOdyssey::update()
@@ -173,7 +189,6 @@ void TouchOdyssey::update()
 	if (globalDirectionalLightLevel < 0.0f) globalDirectionalLightLevel = 0.0f;
 	if (globalDirectionalLightLevel > 1.0f) globalDirectionalLightLevel = 1.0f;
 
-	xapp().lights.update();
 	//linesEffect.update();
 	//dotcrossEffect.update();
 	// update info text:
@@ -205,6 +220,7 @@ void TouchOdyssey::update()
 	//Log("obj pos " << bigRC.pos().x << endl);
 
 	if(xapp().ovrRendering)	xapp().vr.handleOVRMessages();
+	if (!&xapp().vr.avatarInfo.readyToRender) return;
 
 	double fullturn_sec = 5.0;
 	double turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
@@ -215,44 +231,30 @@ void TouchOdyssey::update()
 
 	// debug lines:
 	WorldObject *o = &xapp().vr.avatarInfo.handRight.o;
-	if (o) {
-		XMVECTOR r2 = XMLoadFloat4(&o->quaternion); //XMQuaternionRotationRollPitchYaw(rot().y, rot().x, rot().z);
-		// rotate point
-		//XMVECTOR p = XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f);
-		XMVECTOR p = XMVectorSet(-1.0f, -0.2f, -0.1f, 0.0f);
-		XMVECTOR rotP = XMVector3Rotate(p, r2);
-		XMVECTOR t = XMLoadFloat3(&o->pos());
-		rotP = rotP + t;
-		XMFLOAT3 f;
-		XMStoreFloat3(&f, rotP);
-
-		vector<LineDef> lines;
-		LineDef line;
-		line.color = Colors::Red;
-		line.start = o->pos();
-		//line.start.y -= 0.06f;
-		//line.end = XMFLOAT3(line.start.x + 1.0f, line.start.y + 1.0f, line.start.z + 1.0f);
-		line.end = XMFLOAT3(f.x, f.y, f.z);
-		lines.push_back(line);
-		xapp().world.linesEffect->addOneTime(lines);
+	if (o && o->useQuaternionRotation) {
 
 		// distance
-		XMVECTOR lp1, lp2, refp;
-		lp1 = XMLoadFloat3(&o->pos());
-		lp2 = rotP;
-		refp = XMLoadFloat3(&spinRC.pos());
-		float dist = XMVectorGetX(XMVector3LinePointDistance(lp1, lp2, refp));
-		Log("dist: " << dist << endl);
 		// make same calc using Util methods:
+		XMVECTOR lp1, lp2;
 		XMVECTOR start = XMVectorZero();
 		XMVECTOR end = XMVectorSet(-1.0f, -0.2f, -0.1f, 0.0f);
 		XMVECTOR point = XMLoadFloat3(&spinRC.pos());
 		Util::calcBeamFromObject(&lp1, &lp2, o, start, end);
 		float dist2 = Util::distancePoint2Beam(lp1, lp2, point);
-		Log("dist2: " << dist2 << endl);
+		//Log("dist2: " << dist2 << endl);
 		bool hit = Util::isTargetHit(o, start, end, &spinRC);
-		if (hit) Log("HIT!" << endl);
+		//if (hit) Log("HIT!" << endl);
+		enableSpinLight(hit, &spinRC);
+
+		vector<LineDef> lines;
+		LineDef line;
+		line.color = Colors::Red;
+		XMStoreFloat3(&line.start, lp1);
+		XMStoreFloat3(&line.end, lp2);
+		lines.push_back(line);
+		xapp().world.linesEffect->addOneTime(lines);
 	}
+	xapp().lights.update();
 }
 
 void TouchOdyssey::draw()

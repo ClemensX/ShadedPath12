@@ -11,6 +11,7 @@ public:
 	void draw();
 	void destroy();
 	string getWindowTitle();
+	void enableSpinLight(bool enable, WorldObject *o);
 
 private:
 	// Engine classes:
