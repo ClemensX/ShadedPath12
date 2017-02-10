@@ -99,4 +99,9 @@ public:
 	// hitting distance is how far the beam can miss (center of) target to be considered a hit.
 	// hitting distance defaults to 10 cm.
 	static bool isTargetHit(WorldObject *source, XMVECTOR beamStartModelPose, XMVECTOR beamPoint2ModelPose, WorldObject *target, float hittingDist = 0.1f);
+
+	// move control point to specific distance to start point along line formed by the two
+	// If you consider a beam starting from 1st point going through the second you will have the same beam afterwards, but the second crontrol 
+	// point is at a specific distance to the start point
+	static XMVECTOR movePointToDistance(XMVECTOR start, XMVECTOR controlPoint, float dist);
 };

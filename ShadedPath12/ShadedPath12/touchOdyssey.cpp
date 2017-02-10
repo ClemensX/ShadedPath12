@@ -241,6 +241,15 @@ void TouchOdyssey::update()
 	//turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
 	//mars.rot().y = turnfrac * XM_2PI;
 
+	// tests:
+	{
+		XMVECTOR start = XMVectorSet(-2.0f, -0.6f, -0.56f, 0.0f);
+		XMVECTOR end = XMVectorSet(-1.0f, -0.2f, -0.1f, 0.0f);
+		XMVECTOR np = Util::movePointToDistance(start, end, 0.01f); // 1 cm
+		Log("np = " << XMVectorGetX(np) << endl);
+		XMVECTOR point = XMLoadFloat3(&spinRC.pos());
+	}
+
 	// debug lines:
 	WorldObject *o = &xapp().vr.avatarInfo.handRight.o;
 	if (o && o->useQuaternionRotation) {
