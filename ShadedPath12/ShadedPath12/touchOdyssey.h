@@ -25,7 +25,7 @@ private:
 	LONGLONG startTime;
 	int framenumLine, fpsLine;     // indexes into the text array for Linetext effect
 	bool textureFullFrameTest = false;
-	WorldObject bigRC;             // big right controller (static - not animated)
+	WorldObject bigRC;             // big right controller (static - not animated, stand-on plattform)
 	WorldObject spinRC, spinLC;    // small left and right controller (static - not animated)
 	WorldObject ghostRC, ghostLC;  // ghost images of controllers to indicate bond point with hands
 	float globalAmbientLightLevel;

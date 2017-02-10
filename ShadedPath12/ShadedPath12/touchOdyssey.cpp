@@ -94,8 +94,18 @@ void TouchOdyssey::init()
 	spinRC.material.specIntensity = 700.0f; //70
 	spinRC.disableSkinning = true;
 	spinRC.alpha = 1.0f;
+
+	XMFLOAT3 displacement2( 0.017f, 0.032f, 0.0f);
+	xapp().objectStore.loadObject(L"ovr_6feb9283b780b5a3.b", "leftSpinController", 1.0f, &displacement2);
+	xapp().objectStore.addObject(spinLC, "leftSpinController", XMFLOAT3(-0.75f, -0.3f, 1.9f), LeftContollerTex);
+	spinLC.rot().x = XM_PI - 0.6f;
+	// controller, shiny:
+	spinLC.material.ambient = XMFLOAT4(1, 1, 1, 1);
+	spinLC.material.specExp = 20.0f; // 10
+	spinLC.material.specIntensity = 700.0f; //70
+	spinLC.disableSkinning = true;
+	spinLC.alpha = 1.0f;
 	// ghost images, indicate where the controllers should be moved to for bonding with hands:
-	xapp().objectStore.loadObject(L"ovr_6feb9283b780b5a3.b", "leftSpinController", 1.0f, &displacement);
 	xapp().objectStore.addObject(ghostLC, "leftSpinController", XMFLOAT3(-0.4f, -0.2f, 0.55f), LeftContollerTex);
 	ghostLC.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	ghostLC.material.specExp = 10.0f;
@@ -215,6 +225,7 @@ void TouchOdyssey::update()
 	lights->directionalLights[1].color = lightControl.factor(globalDirectionalLightLevel, dirColor2);
 	bigRC.update();
 	spinRC.update();
+	spinLC.update();
 	ghostLC.update();
 	ghostRC.update();
 	//Log("obj pos " << bigRC.pos().x << endl);
@@ -224,7 +235,8 @@ void TouchOdyssey::update()
 
 	double fullturn_sec = 5.0;
 	double turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
-	spinRC.rot().z = (float) (turnfrac * XM_2PI);
+	spinRC.rot().z = (float)(turnfrac * XM_2PI);
+	spinLC.rot().z = (float)(turnfrac * XM_2PI);
 	//fullturn_sec *= 2.0; // half rotation speed vertically
 	//turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
 	//mars.rot().y = turnfrac * XM_2PI;
@@ -265,6 +277,7 @@ void TouchOdyssey::draw()
 	xapp().vr.drawHand(false);
 	bigRC.draw();
 	spinRC.draw();
+	spinLC.draw();
 	ghostLC.draw();
 	ghostRC.draw();
 	linesEffect.draw();
