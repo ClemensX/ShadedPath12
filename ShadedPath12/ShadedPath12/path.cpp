@@ -181,7 +181,7 @@ bool Path::isSlopeForPathOK(float maxSlope, XMVECTOR *start, XMVECTOR *normalize
 */	return true;
 }
 
-XMFLOAT3& Path::getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second) {
+/*XMFLOAT3& Path::getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second) {
 	PathDesc *pd = &paths[pathID];
 	if (pd->curSegment == -1 || pd->curSegment >= pd->numSegments)
 	    return pd->pos[pd->numSegments];
@@ -197,6 +197,9 @@ XMFLOAT3& Path::getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second) {
 	float len = XMVectorGetX(XMVector3Length(segment));
 	float num_ticks = len / pd->speed * 100000;
 	LONGLONG passed = now - pd->starttime;
+	if (pd->pathMode == Path_Stopped) {
+		return pd->currentPos;
+	}
 
 	if (passed > num_ticks) {
 		// advanced past next segment start
@@ -207,13 +210,11 @@ XMFLOAT3& Path::getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second) {
 		return getPos(pathID, now, (LONGLONG)num_ticks);
 	}
 
-	/*
-	WCHAR infoLine[256];
-	WCHAR* pInfoLine = infoLine;
-	StringCchPrintf(pInfoLine, 256, L"p0 = (%.2f,%.2f,%.2f) p1 = (%.2f,%.2f,%.2f) scale %.2f %I64d\n",
-		p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, passed/num_ticks, now);
-	OutputDebugString(pInfoLine);
-	*/
+	//WCHAR infoLine[256];
+	//WCHAR* pInfoLine = infoLine;
+	//StringCchPrintf(pInfoLine, 256, L"p0 = (%.2f,%.2f,%.2f) p1 = (%.2f,%.2f,%.2f) scale %.2f %I64d\n",
+	//	p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, passed/num_ticks, now);
+	//OutputDebugString(pInfoLine);
 	if (passed / num_ticks < 0) {
 		throw "wrong!!!!"; // should never happen
 	}
@@ -221,7 +222,7 @@ XMFLOAT3& Path::getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second) {
 	currentPos = p0 + currentPos;
 	XMStoreFloat3(&pd->currentPos, currentPos);
 	return pd->currentPos;
-}
+}*/
 
 UINT getFramePosOfSegmentStart(WorldObject &o, UINT n, PathDesc *pd) {
 	BezTriple bz;
@@ -362,6 +363,12 @@ void Path::getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
 	PathDesc *pd = o.pathDescMove;
 	if (pd->segments == NULL) {
 		initSegments(o, pd);
+	}
+	if (pd->pathMode == Path_Stopped) {
+		rot = o.rot();
+		pos = o.pos();
+		//pd->starttime_f += xapp().gametime.getDeltaTime();
+		return;
 	}
 	double backnowf = nowf;
 	// adjust time by subtracting start time of this action:
@@ -928,6 +935,29 @@ void Path::adjustTimings(vector<XMFLOAT4> &p, float totalTime) {
 	float totalFPSTime = p[0].w;
 	for (int i = 1; i < p.size(); i++) {
 		float segmentTime = p[i].w * speedfactor;
+		p[i].w = (segmentTime * 25.0f) + totalFPSTime; // FPS
+		totalFPSTime += segmentTime * 25.0f;
+	}
+}
+
+void Path::adjustTimingsConst(vector<XMFLOAT4>& p, float speed)
+{
+	float totalLen = 0.0f;
+	for (int i = 1; i < p.size(); i++) {
+		// store length of segment 
+		XMFLOAT3 p1p = XMFLOAT3(p[i - 1].x, p[i - 1].y, p[i - 1].z);
+		XMFLOAT3 p2p = XMFLOAT3(p[i].x, p[i].y, p[i].z);
+		XMVECTOR p1 = XMLoadFloat3(&p1p);
+		XMVECTOR p2 = XMLoadFloat3(&p2p);
+		float len = XMVectorGetX(XMVector3Length(p2 - p1));
+		totalLen += len;
+		p[i].w = len;  // temporary store len
+	}
+	//float speedfactor = totalTime / totalLen;
+	float totalTime = speed * totalLen;
+	float totalFPSTime = p[0].w;
+	for (int i = 1; i < p.size(); i++) {
+		float segmentTime = p[i].w * speed;
 		p[i].w = (segmentTime * 25.0f) + totalFPSTime; // FPS
 		totalFPSTime += segmentTime * 25.0f;
 	}

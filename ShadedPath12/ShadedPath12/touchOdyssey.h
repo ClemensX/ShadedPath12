@@ -12,6 +12,7 @@ public:
 	void destroy();
 	string getWindowTitle();
 	void enableSpinLight(bool enable, WorldObject *o);
+	void enableMovement(bool enable, WorldObject *o, double nowf);
 
 private:
 	// Engine classes:
@@ -32,5 +33,8 @@ private:
 	float globalDirectionalLightLevel;
 	XMFLOAT4 dirColor1, dirColor2;
 	bool loadAvatarAssetsFromOculus = false; // true triggers loading all meshes and texures and saving to local files
+	bool isMovingRC = false;
+	bool movementStarted = false;
+	void startMovement(double nowf);
 };
 

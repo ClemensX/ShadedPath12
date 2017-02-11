@@ -119,7 +119,6 @@ void TouchOdyssey::init()
 	ghostRC.disableSkinning = true;
 	ghostRC.alpha = 0.1f;
 
-
 	CBVLights *lights = &xapp().lights.lights;
 
 	// ambient light
@@ -159,6 +158,45 @@ void TouchOdyssey::init()
 		xapp().vr.loadAvatarDefault();
 }
 
+void TouchOdyssey::enableMovement(bool enable, WorldObject * o, double nowf)
+{
+	if (enable && !movementStarted) {
+		movementStarted = true;
+		// movement path for RC:
+		vector<XMFLOAT4> points;
+		points.push_back(XMFLOAT4(spinRC.pos().x, spinRC.pos().y, spinRC.pos().z, 1.0)); // start
+		points.push_back(XMFLOAT4(ghostRC.pos().x, ghostRC.pos().y, ghostRC.pos().z, 400)); // end
+        //points.push_back(XMFLOAT4(ghostRC.pos().x, ghostRC.pos().y, ghostRC.pos().z, 200)); // end
+		spinRC.pos() = XMFLOAT3(0, 0, 0);
+		spinRC.objectStartPos = spinRC.pos();
+		//points.push_back(XMFLOAT4(0, 0, -2.5, 200)); // end
+		vector<XMFLOAT3> rotations;
+		rotations.push_back(XMFLOAT3(0, 0, 0)); // start
+		rotations.push_back(XMFLOAT3(XM_PIDIV2, 0, 0)); // end
+		rotations.push_back(XMFLOAT3(XM_PIDIV4, 0.5f, 0)); // end
+		auto &path = xapp().world.path;
+		path.adjustTimingsConst(points, 10.0f);
+		path.defineAction("moveRC", spinRC, points, nullptr);//&rotations);
+		spinRC.setAction("moveRC");
+		spinRC.pathDescMove->pathMode = Path_SimpleMode;
+		spinRC.pathDescMove->starttime_f = nowf;
+		spinRC.pathDescMove->handleRotation = false;
+	}
+	else if (!enable && movementStarted) {
+		// stop movement:
+		spinRC.pathDescMove->pathMode = Path_Stopped;
+	}
+	else if (enable && movementStarted && spinRC.pathDescMove->pathMode == Path_Stopped) {
+		// re-enable movement:
+		movementStarted = false;
+	}
+}
+
+void TouchOdyssey::startMovement(double nowf)
+{
+	if (movementStarted) return;
+}
+
 void TouchOdyssey::enableSpinLight(bool enable, WorldObject * o)
 {
 	CBVLights *lights = &xapp().lights.lights;
@@ -178,6 +216,7 @@ void TouchOdyssey::update()
 	static bool done = false;
 	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
 	}
+	//startMovement(nowf);
 
 	// ambient light level
 	if (xapp().keyDown(VK_F1)) {
@@ -246,7 +285,7 @@ void TouchOdyssey::update()
 		XMVECTOR start = XMVectorSet(-2.0f, -0.6f, -0.56f, 0.0f);
 		XMVECTOR end = XMVectorSet(-1.0f, -0.2f, -0.1f, 0.0f);
 		XMVECTOR np = Util::movePointToDistance(start, end, 0.01f); // 1 cm
-		Log("np = " << XMVectorGetX(np) << endl);
+		//Log("np = " << XMVectorGetX(np) << endl);
 		XMVECTOR point = XMLoadFloat3(&spinRC.pos());
 	}
 
@@ -266,6 +305,8 @@ void TouchOdyssey::update()
 		bool hit = Util::isTargetHit(o, start, end, &spinRC);
 		//if (hit) Log("HIT!" << endl);
 		enableSpinLight(hit, &spinRC);
+		enableMovement(hit, &spinRC, nowf);
+		//if (hit) startMovement(nowf);
 
 		vector<LineDef> lines;
 		LineDef line;
@@ -273,7 +314,7 @@ void TouchOdyssey::update()
 		XMStoreFloat3(&line.start, lp1);
 		XMStoreFloat3(&line.end, lp2);
 		lines.push_back(line);
-		xapp().world.linesEffect->addOneTime(lines);
+		//xapp().world.linesEffect->addOneTime(lines);
 	}
 	xapp().lights.update();
 }
