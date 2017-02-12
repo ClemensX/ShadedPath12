@@ -101,18 +101,18 @@ void TouchOdyssey::init()
 	spinLC.rot().x = XM_PI - 0.6f;
 	// controller, shiny:
 	spinLC.material.ambient = XMFLOAT4(1, 1, 1, 1);
-	spinLC.material.specExp = 20.0f; // 10
-	spinLC.material.specIntensity = 700.0f; //70
+	spinLC.material.specExp = 10.0f; // 10
+	spinLC.material.specIntensity = 70.0f; //70
 	spinLC.disableSkinning = true;
 	spinLC.alpha = 1.0f;
 	// ghost images, indicate where the controllers should be moved to for bonding with hands:
-	xapp().objectStore.addObject(ghostLC, "leftSpinController", XMFLOAT3(-0.4f, -0.2f, 0.55f), LeftContollerTex);
+	xapp().objectStore.addObject(ghostLC, "leftSpinController", XMFLOAT3(-0.4f, -0.4f, 0.35f), LeftContollerTex);
 	ghostLC.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	ghostLC.material.specExp = 10.0f;
 	ghostLC.material.specIntensity = 70.0f;
 	ghostLC.disableSkinning = true;
 	ghostLC.alpha = 0.1f;
-	xapp().objectStore.addObject(ghostRC, "rightSpinController", XMFLOAT3(-0.1f, -0.2f, 0.55f), RightContollerTex);
+	xapp().objectStore.addObject(ghostRC, "rightSpinController", XMFLOAT3(-0.1f, -0.4f, 0.35f), RightContollerTex);
 	ghostRC.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	ghostRC.material.specExp = 10.0f;
 	ghostRC.material.specIntensity = 70.0f;
@@ -143,8 +143,9 @@ void TouchOdyssey::init()
 
 	// point lights:
 	lights->pointLights[0].color = dirColor1;
-	lights->pointLights[0].pos = XMFLOAT4(7.0f, 10.0f, 8.0f, 1.0f);
-	lights->pointLights[0].range_reciprocal = 1.0f / 40.0f;
+	//lights->pointLights[0].pos = XMFLOAT4(7.0f, 10.0f, 8.0f, 1.0f);
+	lights->pointLights[0].pos = XMFLOAT4(-1.0f, -0.5f, -0.5f, 1.0f);
+	lights->pointLights[0].range_reciprocal = 1.0f / 3.0f;//40.0f;
 	lights->pointLights[0].used = 1.0f;
 
 	lights->pointLights[1].color = Colors::White;
@@ -167,7 +168,6 @@ void TouchOdyssey::enableMovement(bool enable, WorldObject * o, double nowf)
 			vector<XMFLOAT4> points;
 			points.push_back(XMFLOAT4(spinRC.pos().x, spinRC.pos().y, spinRC.pos().z, 1.0)); // start
 			points.push_back(XMFLOAT4(ghostRC.pos().x, ghostRC.pos().y, ghostRC.pos().z, 400)); // end
-			//points.push_back(XMFLOAT4(ghostRC.pos().x, ghostRC.pos().y, ghostRC.pos().z, 200)); // end
 			spinRC.pos() = XMFLOAT3(0, 0, 0);
 			spinRC.objectStartPos = spinRC.pos();
 			//points.push_back(XMFLOAT4(0, 0, -2.5, 200)); // end
@@ -176,13 +176,13 @@ void TouchOdyssey::enableMovement(bool enable, WorldObject * o, double nowf)
 			rotations.push_back(XMFLOAT3(XM_PIDIV2, 0, 0)); // end
 			rotations.push_back(XMFLOAT3(XM_PIDIV4, 0.5f, 0)); // end
 			auto &path = xapp().world.path;
-			path.adjustTimingsConst(points, 10.0f);
+			path.adjustTimingsConst(points, 10.0f);//10.0f);
 			path.defineAction("moveRC", spinRC, points, nullptr);//&rotations);
 			spinRC.setAction("moveRC");
 			spinRC.pathDescMove->pathMode = Path_SimpleMode;
 			spinRC.pathDescMove->starttime_f = nowf;
 			spinRC.pathDescMove->handleRotation = false;
-			spinRC.pos() = XMFLOAT3(points[0].x, points[0].y, points[0].z);
+			spinRC.pos() = XMFLOAT3(points[0].x, points[0].y, points[0].z); // reset pos to prevent wrong redraw bug 
 		}
 		else if (!enable && isMovingRC) {
 			// stop movement:
@@ -195,6 +195,7 @@ void TouchOdyssey::enableMovement(bool enable, WorldObject * o, double nowf)
 		else if (enable && isMovingRC) {
 			if (spinRC.pathDescMove->isLastPos) {
 				isMovingRCFinished = true;
+				spinRC.pathDescMove->handleRotation = false;
 			}
 		}
 	}
@@ -211,7 +212,7 @@ void TouchOdyssey::enableMovement(bool enable, WorldObject * o, double nowf)
 			vector<XMFLOAT3> rotations;
 			rotations.push_back(XMFLOAT3(spinRC.rot().y, -spinRC.rot().x, spinRC.rot().z)); // start
 			rotations.push_back(XMFLOAT3(ghostRC.rot().x, ghostRC.rot().y, ghostRC.rot().z)); // end
-			spinRC.rot() = XMFLOAT3(0, 0, 0);
+			//spinRC.rot() = XMFLOAT3(0, 0, 0);
 			auto &path = xapp().world.path;
 			//path.adjustTimingsConst(points, 10.0f);
 			spinRC.pathDescMove->isLastPos = false;
@@ -220,7 +221,9 @@ void TouchOdyssey::enableMovement(bool enable, WorldObject * o, double nowf)
 			spinRC.pathDescMove->pathMode = Path_SimpleMode;
 			spinRC.pathDescMove->starttime_f = nowf;
 			spinRC.pathDescMove->handleRotation = true;
-			spinRC.pos() = XMFLOAT3(points[0].x, points[0].y, points[0].z);
+			spinRC.pos() = XMFLOAT3(points[0].x, points[0].y, points[0].z); // reset pos to prevent wrong redraw bug 
+			//spinRC.rot() = XMFLOAT3(rotations[0].x, rotations[0].y, rotations[0].z); // reset pos to prevent wrong redraw bug 
+			//spinRC.rot() = XMFLOAT3(rotations[0].y, -rotations[0].x, rotations[0].z); // reset pos to prevent wrong redraw bug 
 		}
 		else if (isTurningRC) {
 			if (spinRC.pathDescMove->isLastPos) {
@@ -298,6 +301,9 @@ void TouchOdyssey::update()
 	bigRC.update();
 	ghostLC.update();
 	ghostRC.update();
+	spinRC.update();
+	//Log("spinRC rot x y z " << spinRC.rot().x << " " << spinRC.rot().y << " " << spinRC.rot().z << endl);
+	spinLC.update();
 	//Log("obj pos " << bigRC.pos().x << endl);
 
 	if(xapp().ovrRendering)	xapp().vr.handleOVRMessages();
@@ -306,7 +312,8 @@ void TouchOdyssey::update()
 	// simple spin until we reach automated last turning step
 	double fullturn_sec = 5.0;
 	double turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
-	if (!isTurningRC && !isTurningRCFinished) {
+	float d = Util::distance3(&spinRC.pos(), &ghostRC.pos());
+	if (!isTurningRC && !isTurningRCFinished && d > 0.2f) {
 		spinRC.rot().z = (float)(turnfrac * XM_2PI);
 		//Log("turn z " << spinRC.rot().z << endl);
 	}
@@ -321,7 +328,6 @@ void TouchOdyssey::update()
 		XMVECTOR point = XMLoadFloat3(&spinRC.pos());
 	}
 
-	// debug lines:
 	WorldObject *o = &xapp().vr.avatarInfo.handRight.o;
 	if (isTurningRCFinished && ! isBondedRC) {
 		float d = Util::distance3(&spinRC.pos(), &o->pos());
@@ -346,6 +352,7 @@ void TouchOdyssey::update()
 		enableMovement(hit, &spinRC, nowf);
 		//if (hit) startMovement(nowf);
 
+		// debug lines:
 		vector<LineDef> lines;
 		LineDef line;
 		line.color = Colors::Red;
@@ -354,9 +361,6 @@ void TouchOdyssey::update()
 		lines.push_back(line);
 		//xapp().world.linesEffect->addOneTime(lines);
 	}
-	spinRC.update();
-	//Log("spinRC rot x y z " << spinRC.rot().x << " " << spinRC.rot().y << " " << spinRC.rot().z << endl);
-	spinLC.update();
 	xapp().lights.update();
 }
 
@@ -371,6 +375,8 @@ void TouchOdyssey::draw()
 	xapp().vr.drawHand(false);
 	bigRC.draw();
 	spinLC.draw();
+	//Log("spinRC rot x y z " << spinRC.rot().x << " " << spinRC.rot().y << " " << spinRC.rot().z << endl);
+	//Log("spinRC pos x y z " << spinRC.pos().x << " " << spinRC.pos().y << " " << spinRC.pos().z << endl);
 	ghostLC.draw();
 	if (!isTurningRCFinished)
 		ghostRC.draw();
