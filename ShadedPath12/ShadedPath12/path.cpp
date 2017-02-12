@@ -300,6 +300,7 @@ void Path::updateTime(WorldObject *o, double nowf) {
 	while (nowf < 0.0f) // TODO strange...
 		nowf = fabs(nowf);
 		//nowf += (total_path_length * 200);
+	//Log("nowf " << nowf << ", pathlen " << total_path_length << endl);
 	if (nowf > total_path_length) {
 		if (pd->pathMode == Path_SimpleMode) {
 			// return last pos

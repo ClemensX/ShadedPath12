@@ -160,41 +160,74 @@ void TouchOdyssey::init()
 
 void TouchOdyssey::enableMovement(bool enable, WorldObject * o, double nowf)
 {
-	if (enable && !movementStarted) {
-		movementStarted = true;
-		// movement path for RC:
-		vector<XMFLOAT4> points;
-		points.push_back(XMFLOAT4(spinRC.pos().x, spinRC.pos().y, spinRC.pos().z, 1.0)); // start
-		points.push_back(XMFLOAT4(ghostRC.pos().x, ghostRC.pos().y, ghostRC.pos().z, 400)); // end
-        //points.push_back(XMFLOAT4(ghostRC.pos().x, ghostRC.pos().y, ghostRC.pos().z, 200)); // end
-		spinRC.pos() = XMFLOAT3(0, 0, 0);
-		spinRC.objectStartPos = spinRC.pos();
-		//points.push_back(XMFLOAT4(0, 0, -2.5, 200)); // end
-		vector<XMFLOAT3> rotations;
-		rotations.push_back(XMFLOAT3(0, 0, 0)); // start
-		rotations.push_back(XMFLOAT3(XM_PIDIV2, 0, 0)); // end
-		rotations.push_back(XMFLOAT3(XM_PIDIV4, 0.5f, 0)); // end
-		auto &path = xapp().world.path;
-		path.adjustTimingsConst(points, 10.0f);
-		path.defineAction("moveRC", spinRC, points, nullptr);//&rotations);
-		spinRC.setAction("moveRC");
-		spinRC.pathDescMove->pathMode = Path_SimpleMode;
-		spinRC.pathDescMove->starttime_f = nowf;
-		spinRC.pathDescMove->handleRotation = false;
+	if (!isMovingRCFinished) {
+		if (enable && !isMovingRC) {
+			isMovingRC = true;
+			// movement path for RC:
+			vector<XMFLOAT4> points;
+			points.push_back(XMFLOAT4(spinRC.pos().x, spinRC.pos().y, spinRC.pos().z, 1.0)); // start
+			points.push_back(XMFLOAT4(ghostRC.pos().x, ghostRC.pos().y, ghostRC.pos().z, 400)); // end
+			//points.push_back(XMFLOAT4(ghostRC.pos().x, ghostRC.pos().y, ghostRC.pos().z, 200)); // end
+			spinRC.pos() = XMFLOAT3(0, 0, 0);
+			spinRC.objectStartPos = spinRC.pos();
+			//points.push_back(XMFLOAT4(0, 0, -2.5, 200)); // end
+			vector<XMFLOAT3> rotations;
+			rotations.push_back(XMFLOAT3(0, 0, 0)); // start
+			rotations.push_back(XMFLOAT3(XM_PIDIV2, 0, 0)); // end
+			rotations.push_back(XMFLOAT3(XM_PIDIV4, 0.5f, 0)); // end
+			auto &path = xapp().world.path;
+			path.adjustTimingsConst(points, 10.0f);
+			path.defineAction("moveRC", spinRC, points, nullptr);//&rotations);
+			spinRC.setAction("moveRC");
+			spinRC.pathDescMove->pathMode = Path_SimpleMode;
+			spinRC.pathDescMove->starttime_f = nowf;
+			spinRC.pathDescMove->handleRotation = false;
+			spinRC.pos() = XMFLOAT3(points[0].x, points[0].y, points[0].z);
+		}
+		else if (!enable && isMovingRC) {
+			// stop movement:
+			spinRC.pathDescMove->pathMode = Path_Stopped;
+		}
+		else if (enable && isMovingRC && spinRC.pathDescMove->pathMode == Path_Stopped) {
+			// re-enable movement:
+			isMovingRC = false;
+		}
+		else if (enable && isMovingRC) {
+			if (spinRC.pathDescMove->isLastPos) {
+				isMovingRCFinished = true;
+			}
+		}
 	}
-	else if (!enable && movementStarted) {
-		// stop movement:
-		spinRC.pathDescMove->pathMode = Path_Stopped;
+	else if (isMovingRCFinished) {
+		if (!isTurningRC) {
+			isTurningRC = true;
+			// movement path for RC:
+			vector<XMFLOAT4> points;
+			points.push_back(XMFLOAT4(spinRC.pos().x, spinRC.pos().y, spinRC.pos().z, 1.0)); // start
+			points.push_back(XMFLOAT4(spinRC.pos().x, spinRC.pos().y, spinRC.pos().z, 100.0)); // == end
+			spinRC.pos() = XMFLOAT3(0, 0, 0);
+			spinRC.objectStartPos = spinRC.pos();
+			//points.push_back(XMFLOAT4(0, 0, -2.5, 200)); // end
+			vector<XMFLOAT3> rotations;
+			rotations.push_back(XMFLOAT3(spinRC.rot().y, -spinRC.rot().x, spinRC.rot().z)); // start
+			rotations.push_back(XMFLOAT3(ghostRC.rot().x, ghostRC.rot().y, ghostRC.rot().z)); // end
+			spinRC.rot() = XMFLOAT3(0, 0, 0);
+			auto &path = xapp().world.path;
+			//path.adjustTimingsConst(points, 10.0f);
+			spinRC.pathDescMove->isLastPos = false;
+			path.defineAction("moveRC", spinRC, points, &rotations);
+			spinRC.setAction("moveRC");
+			spinRC.pathDescMove->pathMode = Path_SimpleMode;
+			spinRC.pathDescMove->starttime_f = nowf;
+			spinRC.pathDescMove->handleRotation = true;
+			spinRC.pos() = XMFLOAT3(points[0].x, points[0].y, points[0].z);
+		}
+		else if (isTurningRC) {
+			if (spinRC.pathDescMove->isLastPos) {
+				isTurningRCFinished = true;
+			}
+		}
 	}
-	else if (enable && movementStarted && spinRC.pathDescMove->pathMode == Path_Stopped) {
-		// re-enable movement:
-		movementStarted = false;
-	}
-}
-
-void TouchOdyssey::startMovement(double nowf)
-{
-	if (movementStarted) return;
 }
 
 void TouchOdyssey::enableSpinLight(bool enable, WorldObject * o)
@@ -263,8 +296,6 @@ void TouchOdyssey::update()
 	lights->directionalLights[0].color = lightControl.factor(globalDirectionalLightLevel, dirColor1);
 	lights->directionalLights[1].color = lightControl.factor(globalDirectionalLightLevel, dirColor2);
 	bigRC.update();
-	spinRC.update();
-	spinLC.update();
 	ghostLC.update();
 	ghostRC.update();
 	//Log("obj pos " << bigRC.pos().x << endl);
@@ -272,13 +303,14 @@ void TouchOdyssey::update()
 	if(xapp().ovrRendering)	xapp().vr.handleOVRMessages();
 	if (!&xapp().vr.avatarInfo.readyToRender) return;
 
+	// simple spin until we reach automated last turning step
 	double fullturn_sec = 5.0;
 	double turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
-	spinRC.rot().z = (float)(turnfrac * XM_2PI);
+	if (!isTurningRC && !isTurningRCFinished) {
+		spinRC.rot().z = (float)(turnfrac * XM_2PI);
+		//Log("turn z " << spinRC.rot().z << endl);
+	}
 	spinLC.rot().z = (float)(turnfrac * XM_2PI);
-	//fullturn_sec *= 2.0; // half rotation speed vertically
-	//turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
-	//mars.rot().y = turnfrac * XM_2PI;
 
 	// tests:
 	{
@@ -291,6 +323,12 @@ void TouchOdyssey::update()
 
 	// debug lines:
 	WorldObject *o = &xapp().vr.avatarInfo.handRight.o;
+	if (isTurningRCFinished && ! isBondedRC) {
+		float d = Util::distance3(&spinRC.pos(), &o->pos());
+		if (d < 0.045f) {
+			isBondedRC = true;
+		}
+	}
 	if (o && o->useQuaternionRotation) {
 
 		// distance
@@ -302,7 +340,7 @@ void TouchOdyssey::update()
 		Util::calcBeamFromObject(&lp1, &lp2, o, start, end);
 		float dist2 = Util::distancePoint2Beam(lp1, lp2, point);
 		//Log("dist2: " << dist2 << endl);
-		bool hit = Util::isTargetHit(o, start, end, &spinRC);
+		bool hit = Util::isTargetHit(o, start, end, &spinRC, 0.27f);
 		//if (hit) Log("HIT!" << endl);
 		enableSpinLight(hit, &spinRC);
 		enableMovement(hit, &spinRC, nowf);
@@ -316,6 +354,9 @@ void TouchOdyssey::update()
 		lines.push_back(line);
 		//xapp().world.linesEffect->addOneTime(lines);
 	}
+	spinRC.update();
+	//Log("spinRC rot x y z " << spinRC.rot().x << " " << spinRC.rot().y << " " << spinRC.rot().z << endl);
+	spinLC.update();
 	xapp().lights.update();
 }
 
@@ -323,13 +364,16 @@ void TouchOdyssey::draw()
 {
 	//xapp().vr.drawController(true);
 	xapp().vr.drawHand(true);
-	//xapp().vr.drawController(false);
+	if (isBondedRC)
+		xapp().vr.drawController(false);
+	else
+		spinRC.draw();
 	xapp().vr.drawHand(false);
 	bigRC.draw();
-	spinRC.draw();
 	spinLC.draw();
 	ghostLC.draw();
-	ghostRC.draw();
+	if (!isTurningRCFinished)
+		ghostRC.draw();
 	linesEffect.draw();
 	postEffect.draw();
 }

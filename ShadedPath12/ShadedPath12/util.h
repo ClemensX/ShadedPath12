@@ -104,4 +104,10 @@ public:
 	// If you consider a beam starting from 1st point going through the second you will have the same beam afterwards, but the second crontrol 
 	// point is at a specific distance to the start point
 	static XMVECTOR movePointToDistance(XMVECTOR start, XMVECTOR controlPoint, float dist);
+
+	static float distance3(XMFLOAT3 *a, XMFLOAT3 *b) {
+		XMVECTOR av = XMLoadFloat3(a);
+		XMVECTOR bv = XMLoadFloat3(b);
+		return XMVectorGetX(XMVector3Length(bv - av));
+	};
 };

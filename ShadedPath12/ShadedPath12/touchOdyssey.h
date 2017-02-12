@@ -34,7 +34,9 @@ private:
 	XMFLOAT4 dirColor1, dirColor2;
 	bool loadAvatarAssetsFromOculus = false; // true triggers loading all meshes and texures and saving to local files
 	bool isMovingRC = false;
-	bool movementStarted = false;
-	void startMovement(double nowf);
+	bool isMovingRCFinished = false;
+	bool isTurningRC = false;
+	bool isTurningRCFinished = false;
+	bool isBondedRC = false;
 };
 
