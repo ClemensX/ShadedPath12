@@ -50,7 +50,8 @@ clone or download the master branch from https://github.com/ClemensX/ShadedPath1
 you will now have a sub folder ShadedPath12, this is where all my code is located. Download the data.zip file from the latest release on GitHub and extract to that folder. 
 F:\dev\dx12test\ShadedPath now has these subfolders: data, tools and (another) ShadedPath12.
 
-You need to copy / extract the Oculus SDK 1.10.1 to the same parent folder, so that you have the OculusSDK folder directly below dx12test, next to ShadedPath12.
+You need these libraries from Oculus: OculusSDK, OVRAvatarSDK and OVRPlatformSDK. Download and extract to the same parent folder, so that you have the OculusSDK folder directly below dx12test, next to ShadedPath12. Same for OVRAvatarSDK. Pay attention to OVRPlatformSDK - this does not contain a top folder where everything else is in. Carefully extract to OVRPlatformSDK folder.
+
 There are some batch files to directly start some of the more intersting demos in folder ShadedPath/tools.
 To use in Visual Studio C++ start the solution file F:\dev\dx12test\ShadedPath12\ShadedPath12\ShadedPath12.sln
 
