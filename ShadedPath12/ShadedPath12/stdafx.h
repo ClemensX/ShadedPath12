@@ -30,8 +30,11 @@
 #include <mutex>
 #include <future>
 #include <condition_variable>
+#include <regex>
 //#include <new>
 using namespace std;
+//#include <filesystem>  // moved to class containinf filesystem code due to strange header compile error
+//using namespace std::tr2::sys;
 #include <assert.h>
 #include <typeinfo.h>
 
@@ -152,8 +155,8 @@ inline void ErrorExt(wstring msg, const char* file, DWORD line)
 #include "path.h"
 #include "world.h"
 #include "camera.h"
-#include "vr.h"
 #include "worldObject.h"
+#include "vr.h"
 #include "xapp.h"
 #include "Effects\effectbase.h"
 #include "Effects\lines.h"

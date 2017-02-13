@@ -4,7 +4,14 @@
 #include "../../../OculusSDK/LibOVR/Include/OVR_CAPI.h"
 #include "../../../OculusSDK/LibOVR/Include/OVR_CAPI_D3D.h"
 #include "../../../OculusSDK/LibOVR/Include/Extras/OVR_Math.h"
+#include "../../../OVRAvatarSDK/Include/OVR_Avatar.h"
+//#include "../../../OVRPlatformSDK/Include/OVR_Types.h"
+#define OVRPL_DISABLED
+// OVR_Types.h cannot be found: include folder of platform SDk has to be added in compiler options
+#include "OVR_Platform.h"
 using namespace OVR;
+#pragma comment(lib, "../../../OVRAvatarSDK/Windows/libovravatar.lib")
+#pragma comment(lib, "../../../OVRPlatformSDK/Windows/LibOVRPlatform64_1.lib")
 #if defined(_DEBUG)
 #pragma comment(lib, "../../../OculusSDK/LibOVR/Lib/Windows/x64/Debug/VS2015/LibOVR.lib")
 #else
@@ -16,6 +23,32 @@ enum EyePos { EyeLeft, EyeRight };
 
 class XApp;
 class VR;
+
+class AvatarPartInfo {
+public:
+	wstring meshFileName;
+	wstring textureFileName;
+	string meshId;
+	string textureId;
+	WorldObject o;
+#if defined(_OVR_)
+	ovrAvatarAssetID ovrMeshId;
+	const ovrAvatarRenderPart_SkinnedMeshRenderPBS *renderPartPBS;
+	const ovrAvatarRenderPart_SkinnedMeshRender *renderPart;
+#endif
+};
+
+class AvatarInfo {
+public:
+	AvatarPartInfo controllerLeft;
+	AvatarPartInfo handLeft;
+	AvatarPartInfo controllerRight;
+	AvatarPartInfo handRight;
+	bool readyToRender = false;
+#if defined(_OVR_)
+	ovrTrackingState *trackingState = nullptr;
+#endif
+};
 
 // support class used in all effects (each effect has an instance)
 // viewports and scissorRects are set by EffectBase::prepareDraw(), they have to be used by both VR ind non-VR rendering
@@ -36,6 +69,7 @@ public:
 	D3D12_VIEWPORT viewports[2];
 	D3D12_RECT scissorRects[2];
 	XMFLOAT4X4 viewOVR[2], projOVR[2];
+	XMFLOAT3 adjustedEyePos[2];
 };
 
 // global class  - only one instance  - used for global VR data and initialization
@@ -73,13 +107,52 @@ public:
 	// read HMD position and generate view parameters for both eyes
 	void nextTracking();
 	void submitFrame();
+
+	// ovr message queue, has to be called from application update()
+	void handleOVRMessages();
+	// load avatar data (mesh, bones and textures) from Oculus
+	void loadAvatarFromOculus(bool reloadAssets = true);
+	void loadAvatarDefault();
+	void drawController(bool isLeft);
+	void drawHand(bool isLeft);
+	// if all assets of an avatar have been loaded, gather all the info needed for rendering:
 #if defined(_OVR_)
+	void gatherAvatarComponentInfo(AvatarPartInfo &avatarPartInfo, const ovrAvatarControllerComponent *component);
+	void gatherAvatarComponentInfo(AvatarPartInfo &avatarPartInfo, const ovrAvatarHandComponent *component);
+	void gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar *avatar);
+	wstring getTextureFileName(ovrAvatarAssetID id) {
+		wstringstream sss;
+		sss << std::hex << "ovr_" << id << ".dds";
+		return sss.str();
+	}
+	string getTextureId(ovrAvatarAssetID id) {
+		stringstream sss;
+		sss << std::hex << id;
+		return sss.str();
+	}
+	wstring getMeshFileName(ovrAvatarAssetID id) {
+		wstringstream sss;
+		sss << std::hex << "ovr_" << id << ".b";
+		return sss.str();
+	}
+	string getMeshId(ovrAvatarAssetID id) {
+		stringstream sss;
+		sss << std::hex << id;
+		return sss.str();
+	}
 	// get view matrix for current eye
 	XMFLOAT4X4 getOVRViewMatrix();
 	XMFLOAT4X4 getOVRViewMatrixByIndex(int eyeNum);
 	// get projection matrix for current eye
 	XMFLOAT4X4 getOVRProjectionMatrix();
 	XMFLOAT4X4 getOVRProjectionMatrixByIndex(int eyeNum);
+	XMFLOAT3 getOVRAdjustedEyePosByIndex(int eyeNum);
+	int getCurrentFrameBufferIndex() {
+		int currentIndex;
+		ovr_GetTextureSwapChainCurrentIndex(session, textureSwapChain, &currentIndex);
+		return currentIndex;
+	};
+	ovrAvatar *avatar = nullptr;
 #else
 	// just return identity matrix if ovr not enabled
 	static XMFLOAT4X4 ident;
@@ -87,6 +160,10 @@ public:
 	XMFLOAT4X4 getOVRViewMatrix() { return ident; };
 	// get projection matrix for current eye
 	XMFLOAT4X4 getOVRProjectionMatrix() { return ident; };
+	XMFLOAT4X4 getOVRViewMatrixByIndex(int eyeNum) { return ident; };
+	XMFLOAT4X4 getOVRProjectionMatrixByIndex(int eyeNum) { return ident; };
+	XMFLOAT3 getOVRAdjustedEyePosByIndex(int eyeNum) { return XMFLOAT3(0, 0, 0); };
+	int getCurrentFrameBufferIndex();
 #endif
 
 	bool enabled = false;  // default: VR is off, switch on by command line option -vr
@@ -95,14 +172,15 @@ public:
 	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texRtv;
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE getRTVHandle(int frameIndex);
-	int getCurrentFrameBufferIndex() {
-		int currentIndex;
-		ovr_GetTextureSwapChainCurrentIndex(session, textureSwapChain, &currentIndex);
-		return currentIndex;
-	};
+	AvatarInfo avatarInfo;
 protected:
 	EyePos curEye = EyeLeft;
 private:
+	bool loadAvatarAssetsFromOculus = false; // true triggers loading all meshes and texures and saving to local files
+	void updateAvatar();
+	void handleAvatarMessages();
+	unsigned int pack(const uint8_t *blend_indices);
+
 	D3D12_VIEWPORT viewports[2];
 	D3D12_RECT scissorRects[2];
 	XApp* xapp;
@@ -112,6 +190,15 @@ private:
 	int buffersize_height = 0;
 
 #if defined(_OVR_)
+	void writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarMeshAssetData *assetdata);
+	void writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarTextureAssetData *assetdata);
+	// calculate bind matrix from oculus avatar transform, including transition from OpenGL right hand bind matrices to DirectX left hand system
+	void calculateBindMatrix(const ovrAvatarTransform *t, XMFLOAT4X4 *inv);
+	// compute 'world' pose from current pose matrices and stored inverse bind matrices.
+	// inverse matrices are from the mesh binary file
+	// world actually means zero position and no rotation, vertices still have to be applied to WVP projection
+	void computeWorldPose(const ovrAvatarSkinnedMeshPose& localPose, XMMATRIX worldPose[]);
+	bool debugComponent = false; // set to true for specific components only (like left hand) for easier debugging/logging
 	ovrHmdDesc desc;
 	ovrSizei resolution;
 	ovrSession session;
@@ -120,7 +207,8 @@ private:
 	ovrPosef         EyeRenderPose[2];     // Useful to remember where the rendered eye originated
 	float            YawAtRender[2];       // Useful to remember where the rendered eye originated
 	XMFLOAT4X4 viewOVR[2], projOVR[2];
-	//ovrSwapTextureSet *      pTextureSet = 0;
+	XMFLOAT3 adjustedEyePos[2];            // store fixed camera pos for usage in effect (aka roomscale)
+										   //ovrSwapTextureSet *      pTextureSet = 0;
 	ovrTextureSwapChain textureSwapChain = 0;
 	//std::vector<ID3D11RenderTargetView*> texRtv;
 	ovrLayerEyeFov layer;

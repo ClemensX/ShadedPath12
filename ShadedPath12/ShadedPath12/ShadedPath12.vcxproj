@@ -74,14 +74,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\$(Platform)\$(Configuration)\Output\$(ProjectName)</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);D:\msvc\dev\repos\SP12\OVRPlatformSDK\Include;C:\dev\repos\OVRPlatformSDK\Include;$(ProjectDir)\$(Platform)\$(Configuration)\Output\$(ProjectName)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\$(Platform)\$(Configuration)\Output\$(ProjectName)</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\$(Platform)\$(Configuration)\Output\$(ProjectName);C:\dev\repos\OVRPlatformSDK\Include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -162,6 +162,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="avatar.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="dds.h" />
@@ -190,6 +191,7 @@
     <ClInclude Include="testLinetext.h" />
     <ClInclude Include="testTextures.h" />
     <ClInclude Include="texture.h" />
+    <ClInclude Include="touchOdyssey.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="vr.h" />
     <ClInclude Include="winmain.h" />
@@ -200,6 +202,7 @@
     <ClInclude Include="xapp.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="avatar.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="Effects\billboard.cpp" />
@@ -224,6 +227,7 @@
     <ClCompile Include="testLinetext.cpp" />
     <ClCompile Include="testTextures.cpp" />
     <ClCompile Include="texture.cpp" />
+    <ClCompile Include="touchOdyssey.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="vr.cpp" />
     <ClCompile Include="winmain.cpp" />

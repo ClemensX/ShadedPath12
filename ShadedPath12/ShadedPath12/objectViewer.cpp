@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "objectViewer.h"
 
+#define LOAD_AVATAR_DATAXXX
 
 ObjectViewer::ObjectViewer() : XAppBase()
 {
@@ -73,7 +74,7 @@ void ObjectViewer::init()
 	// textures
 	//xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
 	//xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
-	//xapp().textureStore.loadTexture(L"blue.dds", "metal");
+	xapp().textureStore.loadTexture(L"metal1.dds", "metal");
 	//xapp().textureStore.loadTexture(L"worm1.dds", "worm");
 	//xapp().textureStore.loadTexture(L"mars_6k_color.dds", "planet");
 	//xapp().textureStore.loadTexture(L"met1.dds", "meteor1");
@@ -95,6 +96,7 @@ void ObjectViewer::init()
 	//xapp->objectStore.addObject(pathObject, "Shaded", XMFLOAT3(10.0f, 5.0f, 10.0f), GRASSDIRT8);
 
 	TextureInfo *GrassTex, *HouseTex, *MetalTex, *WormTex, *PlanetTex, *Meteor1Tex, *AxistestTex;
+	MetalTex = xapp().textureStore.getTexture("metal");
 	//TextureInfo *GrassTex = xapp().textureStore.getTexture("grass");
 	//TextureInfo *HouseTex = xapp().textureStore.getTexture("default");
 	//TextureInfo *MetalTex = xapp().textureStore.getTexture("metal");
@@ -212,7 +214,7 @@ void ObjectViewer::init()
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
 	}
-	if (true) {
+	if (false) {
 		xapp().objectStore.loadObject(L"light1.b", "light1", 0.1f);
 		xapp().objectStore.addObject(object, "light1", XMFLOAT3(3.0f, -1.0f, 2.0f), WhiteTex);
 		//object.drawBoundingBox = true;
@@ -220,6 +222,37 @@ void ObjectViewer::init()
 		//object.pathDescMove->pathMode = Path_Reverse;
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
+	}
+	if (false) {
+		//xapp().objectStore.loadObject(L"413fd8923c71e_557a26331850dbf.b", "light1", 1.0f);  // left controller
+		//xapp().objectStore.loadObject(L"413fd8923c71e_1274b22c61fc48a3.b", "light1", 1.0f);  // torso clothes
+		//xapp().objectStore.loadObject(L"413fd8923c71e_450d4eca9f73b9a1.b", "light1", 1.0f);  // glasses
+		//xapp().objectStore.loadObject(L"413fd8923c71e_47be498de8d01599.b", "light1", 1.0f);  // hair
+		//xapp().objectStore.loadObject(L"413fd8923c71e_6a4ae11446026286.b", "light1", 1.0f);  // left hand
+		//xapp().objectStore.loadObject(L"413fd8923c71e_6feb9283b780b5a3.b", "light1", 1.0f);  // right controller
+		//xapp().objectStore.loadObject(L"413fd8923c71e_7f1ca835aeb1b69e.b", "light1", 1.0f);  // large empty cone
+		//xapp().objectStore.loadObject(L"413fd8923c71e_8e78d539875b1886.b", "light1", 1.0f);  // open flat ring
+		//xapp().objectStore.loadObject(L"413fd8923c71e_af2fdac13313089c.b", "light1", 1.0f);  // face
+		xapp().objectStore.loadObject(L"413fd8923c71e_f82847a6b3ddf1a6.b", "light1", 1.0f);  // right hand
+		xapp().objectStore.addObject(object, "light1", XMFLOAT3(3.0f, -1.0f, 2.0f), WhiteTex);
+		//object.drawBoundingBox = true;
+		//object.drawNormals = true;
+		//object.pathDescMove->pathMode = Path_Reverse;
+		object.material.specExp = 1.0f;       // no spec color
+		object.material.specIntensity = 0.0f; // no spec color
+	}
+	if (true) {
+		//XMFLOAT3 displacement(0.02f, 0.033f, 0.0f);
+		XMFLOAT3 displacement(-0.017f, 0.032f, 0.0f);
+		xapp().objectStore.loadObject(L"ovr_557a26331850dbf.b", "rightSpinController", 1.0f, &displacement);
+		xapp().objectStore.addObject(object, "rightSpinController", XMFLOAT3(0.0f, 0.0f, 0.0f), WhiteTex);
+		object.rot().x = XM_PIDIV2;
+		// controller, shiny:
+		object.material.ambient = XMFLOAT4(1, 1, 1, 1);
+		object.material.specExp = 10.0f;
+		object.material.specIntensity = 70.0f;
+		object.disableSkinning = true;
+		object.drawBoundingBox = true;
 	}
 	// draw lines for mesh:
 	Log(" object created ok, #vertices == " << object.mesh->vertices.size() << endl);
@@ -257,12 +290,17 @@ void ObjectViewer::init()
 	XMFLOAT3 x = XMFLOAT3(6.0f, 10.0f, 8.0f);
 	crossPoints.push_back(x);
 	dotcrossEffect.update(crossPoints);
+
+#if defined(LOAD_AVATAR_DATA)
+	xapp().vr.loadAvatar();
+#endif
 }
 
 void ObjectViewer::update()
 {
 	gameTime.advanceTime();
 	LONGLONG now = gameTime.getRealTime();
+	double nowf = gameTime.getTimeAbsSeconds();
 	static bool done = false;
 	if (!done && gameTime.getSecondsBetween(startTime, now) > 3) {
 	}
@@ -311,8 +349,17 @@ void ObjectViewer::update()
 	lights->ambientLights[0].ambient = XMFLOAT4(f,f,f,1);
 	lights->directionalLights[0].color = lightControl.factor(globalDirectionalLightLevel, dirColor1);
 	lights->directionalLights[1].color = lightControl.factor(globalDirectionalLightLevel, dirColor2);
+
 	object.update();
+
+	// disable for no spinning:
+	double fullturn_sec = 5.0;
+	double turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
+	object.rot().z = turnfrac * XM_2PI;
+
 	//Log("obj pos " << object.pos().x << endl);
+
+	if(xapp().ovrRendering)	xapp().vr.handleOVRMessages();
 }
 
 void ObjectViewer::draw()

@@ -43,7 +43,7 @@ private:
 class MeshLoader {
 public:
 	// load asset from full path/filename
-	void loadBinaryAsset(wstring filename, Mesh *mesh, float scale = 1.0f);
+	void loadBinaryAsset(wstring filename, Mesh *mesh, float scale = 1.0f, XMFLOAT3 *displacement = nullptr);
 };
 
 
@@ -55,6 +55,8 @@ public:
 	//XMFLOAT4 pos;
 	XMFLOAT3& pos();
 	XMFLOAT3& rot();
+	XMFLOAT4 quaternion;
+	bool useQuaternionRotation = false;
 	void update(); // only relevant for bone objects
 	void draw();
 	Mesh *mesh;
@@ -64,8 +66,10 @@ public:
 	Action *boneAction; // action involving bone calcualtions
 	PathDesc* pathDescMove;  // moving object
 	PathDesc* pathDescBone;  // animating object
-							 //std::vector<Mtrl> mtrls;
-							 //std::vector<IDirect3DTexture9*> textures;
+	bool disableSkinning = false; // set to true for animated object to use as static meshes
+	bool isNonKeyframeAnimated = false; // signal that poses are not interpoalted by Path, but computed outside and set in update()
+	//std::vector<Mtrl> mtrls;
+	//std::vector<IDirect3DTexture9*> textures;
 	int visible; // visible in current view frustrum: 0 == no, 1 == intersection, 2 == completely visible
 	void setAction(string name);
 	// return current bounding box by scanning all vertices, used for bone animated objects
@@ -108,7 +112,7 @@ class WorldObjectStore {
 public:
 	// objects
 	// load object definition from .b file, save under given hash name
-	void loadObject(wstring filename, string id, float scale = 1.0f);
+	void loadObject(wstring filename, string id, float scale = 1.0f, XMFLOAT3 *displacement = nullptr);
 	// add loaded object to scene
 	void addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid = 0);
 	void addObject(WorldObject &w, string id, XMFLOAT3 pos, TextureID tid = 0);

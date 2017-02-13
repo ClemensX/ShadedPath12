@@ -4,7 +4,21 @@
 static const bool debug_basic = false;
 static const bool debug_uv = false;
 
-void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
+XMFLOAT4X4 toLeft(XMFLOAT4X4 r) {
+	return r;
+	XMFLOAT4X4 l = r;
+	l._31 *= -1.0f;
+	l._32 *= -1.0f;
+	l._33 *= -1.0f;
+	l._34 *= -1.0f;
+
+	l._13 *= -1.0f;
+	l._23 *= -1.0f;
+	l._33 *= -1.0f;
+	l._43 *= -1.0f;
+	return l;
+}
+void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale, XMFLOAT3 *displacement) {
 	ifstream bfile(filename.c_str(), ios::in | ios::binary);
 	if (debug_basic) Log("file opened: " << filename.c_str() << "\n");
 
@@ -48,7 +62,7 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
 				}
 				XMFLOAT4X4 m = XMFLOAT4X4(f);
 				//XMMATRIX m4 = XMLoadFloat4x4(&m);
-				clip.invBindMatrices.push_back(m);
+				clip.invBindMatrices.push_back(toLeft(m));
 				int keyframes;
 				bfile.read((char*)&keyframes, 4);
 				for (int m = 0; m < keyframes; m++) {
@@ -159,6 +173,11 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
 		vertex.Pos.x = verts[i * 3] * scale;
 		vertex.Pos.y = verts[i * 3 + 1] * scale;
 		vertex.Pos.z = verts[i * 3 + 2] * scale;
+		if (displacement != nullptr) {
+			vertex.Pos.x += displacement->x;
+			vertex.Pos.y += displacement->y;
+			vertex.Pos.z += displacement->z;
+		}
 		mesh->addToBoundingBox(vertex.Pos);
 		vertex.Normal.x = norm[i * 3];
 		vertex.Normal.y = norm[i * 3 + 1];
@@ -175,6 +194,11 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale) {
 			vertex.Pos.x = verts[i * 3] * scale;
 			vertex.Pos.y = verts[i * 3 + 1] * scale;
 			vertex.Pos.z = verts[i * 3 + 2] * scale;
+			if (displacement != nullptr) {
+				vertex.Pos.x += displacement->x;
+				vertex.Pos.y += displacement->y;
+				vertex.Pos.z += displacement->z;
+			}
 			mesh->addToBoundingBox(vertex.Pos);
 			vertex.Tex.x = tex[i * 2];
 			vertex.Tex.y = tex[i * 2 + 1];
@@ -285,6 +309,9 @@ XMMATRIX WorldObject::calcToWorld() {
 	XMVECTOR q_origin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMMATRIX rotateM = XMMatrixRotationRollPitchYaw(rot().y, rot().x, rot().z);
 	q = XMQuaternionRotationMatrix(rotateM);
+	if (useQuaternionRotation) {
+		q = XMLoadFloat4(&quaternion);
+	}
 	q = XMQuaternionNormalize(q);
 	// scalar
 	XMVECTOR s = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
@@ -393,11 +420,12 @@ void WorldObject::draw() {
 			this->rot() = rot;
 		}
 		else {
-			if (mesh->skinnedVertices.size() > 0) {
+			if (mesh->skinnedVertices.size() > 0 && !disableSkinning) {
 				for (int skV = 0; skV < (int)mesh->skinnedVertices.size(); skV++) {
 					WorldObjectVertex::VertexSkinned *v = &mesh->skinnedVertices[skV];
 					XMVECTOR vfinal, normfinal;
-					xapp().world.path.skin(vfinal, normfinal, v, pathDescBone);
+					if (isNonKeyframeAnimated) xapp().world.path.skinNonKeyframe(vfinal, normfinal, v, pathDescBone);
+					else xapp().world.path.skin(vfinal, normfinal, v, pathDescBone);
 					// TODO handle cpu calculated normals after animation/skinning here
 					XMFLOAT3 vfinal_flo;
 					XMStoreFloat3(&vfinal_flo, vfinal);
@@ -422,6 +450,12 @@ void WorldObject::setAction(string name) {
 	Action *action = &mesh->actions[name];
 	Log(" action == " << action << endl);
 	assert(action->name.compare(name) == 0); // assert that action was found
+	if (action->name.compare("non_keyframe") == 0) {
+		this->isNonKeyframeAnimated = true;
+		this->pathDescBone = new PathDesc();
+		this->pathDescBone->clip = &mesh->clips["non_keyframe"];
+		return;
+	}
 	Log(" action...isbone == " << action->curves[0].bezTriples[0].isBoneAnimation << endl);
 	Log(" action..curves.size == " << action->curves.size() << endl);
 	PathDesc* d;
@@ -486,12 +520,12 @@ WorldObject::~WorldObject() {
 }
 
 // object store:
-void WorldObjectStore::loadObject(wstring filename, string id, float scale) {
+void WorldObjectStore::loadObject(wstring filename, string id, float scale, XMFLOAT3 *displacement) {
 	MeshLoader loader;
 	wstring binFile = xapp().findFile(filename.c_str(), XApp::MESH);
 	Mesh mesh;
 	meshes[id] = mesh;
-	loader.loadBinaryAsset(binFile, &meshes[id], scale);
+	loader.loadBinaryAsset(binFile, &meshes[id], scale, displacement);
 	meshes[id].createVertexAndIndexBuffer(this->objectEffect);
 }
 

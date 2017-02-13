@@ -181,7 +181,7 @@ bool Path::isSlopeForPathOK(float maxSlope, XMVECTOR *start, XMVECTOR *normalize
 */	return true;
 }
 
-XMFLOAT3& Path::getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second) {
+/*XMFLOAT3& Path::getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second) {
 	PathDesc *pd = &paths[pathID];
 	if (pd->curSegment == -1 || pd->curSegment >= pd->numSegments)
 	    return pd->pos[pd->numSegments];
@@ -197,6 +197,9 @@ XMFLOAT3& Path::getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second) {
 	float len = XMVectorGetX(XMVector3Length(segment));
 	float num_ticks = len / pd->speed * 100000;
 	LONGLONG passed = now - pd->starttime;
+	if (pd->pathMode == Path_Stopped) {
+		return pd->currentPos;
+	}
 
 	if (passed > num_ticks) {
 		// advanced past next segment start
@@ -207,13 +210,11 @@ XMFLOAT3& Path::getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second) {
 		return getPos(pathID, now, (LONGLONG)num_ticks);
 	}
 
-	/*
-	WCHAR infoLine[256];
-	WCHAR* pInfoLine = infoLine;
-	StringCchPrintf(pInfoLine, 256, L"p0 = (%.2f,%.2f,%.2f) p1 = (%.2f,%.2f,%.2f) scale %.2f %I64d\n",
-		p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, passed/num_ticks, now);
-	OutputDebugString(pInfoLine);
-	*/
+	//WCHAR infoLine[256];
+	//WCHAR* pInfoLine = infoLine;
+	//StringCchPrintf(pInfoLine, 256, L"p0 = (%.2f,%.2f,%.2f) p1 = (%.2f,%.2f,%.2f) scale %.2f %I64d\n",
+	//	p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, passed/num_ticks, now);
+	//OutputDebugString(pInfoLine);
 	if (passed / num_ticks < 0) {
 		throw "wrong!!!!"; // should never happen
 	}
@@ -221,7 +222,7 @@ XMFLOAT3& Path::getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second) {
 	currentPos = p0 + currentPos;
 	XMStoreFloat3(&pd->currentPos, currentPos);
 	return pd->currentPos;
-}
+}*/
 
 UINT getFramePosOfSegmentStart(WorldObject &o, UINT n, PathDesc *pd) {
 	BezTriple bz;
@@ -299,6 +300,7 @@ void Path::updateTime(WorldObject *o, double nowf) {
 	while (nowf < 0.0f) // TODO strange...
 		nowf = fabs(nowf);
 		//nowf += (total_path_length * 200);
+	//Log("nowf " << nowf << ", pathlen " << total_path_length << endl);
 	if (nowf > total_path_length) {
 		if (pd->pathMode == Path_SimpleMode) {
 			// return last pos
@@ -362,6 +364,12 @@ void Path::getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
 	PathDesc *pd = o.pathDescMove;
 	if (pd->segments == NULL) {
 		initSegments(o, pd);
+	}
+	if (pd->pathMode == Path_Stopped) {
+		rot = o.rot();
+		pos = o.pos();
+		//pd->starttime_f += xapp().gametime.getDeltaTime();
+		return;
 	}
 	double backnowf = nowf;
 	// adjust time by subtracting start time of this action:
@@ -583,7 +591,42 @@ XMVECTOR rotate(XMMATRIX m, XMVECTOR v) {
 	return XMVector3Rotate(v, rotation_quaternion);
 }
 
-//XMVECTOR Path::skin(const Vertex::Skinned *v, const std::vector<XMFLOAT4X4> *ibms, const std::vector<Curve> *curves, int segment, float scale, float percentage)
+void  Path::skinNonKeyframe(XMVECTOR &pos, XMVECTOR &norm, const WorldObjectVertex::VertexSkinned *v, PathDesc *pd)
+{
+	XMVECTOR vskin = XMVectorZero();
+	XMVECTOR normskin = XMVectorZero();
+	for (int i = 0; i < 4; i++) {
+		BYTE boneIndex = v->BoneIndices[i];
+		float weight;
+		switch (i) {
+		case 0: weight = v->Weights.x; break;
+		case 1: weight = v->Weights.y; break;
+		case 2: weight = v->Weights.z; break;
+		case 3: weight = v->Weights.w; break;
+		}
+		if (boneIndex == 0xff || weight == 0.0f) continue;
+		XMMATRIX ibm = XMLoadFloat4x4(&pd->clip->invBindMatrices[boneIndex]);
+		ibm = XMMatrixTranspose(ibm);
+		XMVECTOR r = XMLoadFloat3(&v->Pos);
+		XMVECTOR n = XMLoadFloat3(&v->Normal);
+		//r = XMVector3Transform(r, ibm);
+		//n = rotate(ibm, n);
+		//XMMATRIX m(XMLoadFloat4x4(&pd->interpolationMatricesChained[boneIndex]));
+		XMMATRIX imc = getInterpolationMatrixChained(boneIndex, pd);
+		//XMMATRIX imc = getInterpolationMatrix(boneIndex, pd);
+		r = XMVector3Transform(r, imc);
+		n = rotate(imc, n);
+		r = r * weight;
+		n = n * weight;
+		vskin += r;
+		normskin += n;
+	}
+	pos = vskin;
+	norm = XMVector3Normalize(normskin); //XMLoadFloat3(&v->Normal);
+										 //float len = XMVectorGetX(XMVector3Length(norm));
+										 //Log("normal length = " << len << endl);
+}
+
 void  Path::skin(XMVECTOR &pos, XMVECTOR &norm, const WorldObjectVertex::VertexSkinned *v, PathDesc *pd)
 {
 	XMVECTOR vskin = XMVectorZero();
@@ -682,6 +725,11 @@ XMVECTOR Path::skin(const Vertex::Skinned *v, const AnimationClip *clip, const s
 	return vskin;
 }
 */
+void Path::updateBindPose(int i, PathDesc * pd, XMMATRIX * m)
+{
+	saveInterpolationMatrix(i, pd, m);
+}
+
 XMMATRIX Path::getInterpolationMatrix(int i, PathDesc *pd) {
 	return XMLoadFloat4x4(&pd->interpolationMatrices[i]);
 }
@@ -698,10 +746,7 @@ void Path::saveInterpolationMatrixChained(int i, PathDesc *pd, XMMATRIX *m) {
 	XMStoreFloat4x4(&pd->interpolationMatricesChained[i], *m);
 }
 
-
-//void copyMatrix(XMMATRIX to, XMMATRIX from) {
-//}
-
+// only for left handed system
 void Path::calculateInterpolationChain(const AnimationClip *clip, PathDesc *pd)
 {
 	//for (int i = 0; i < 2; i++) {
@@ -717,14 +762,18 @@ void Path::calculateInterpolationChain(const AnimationClip *clip, PathDesc *pd)
 			//pd->interpolationMatricesChained[i] = pd->interpolationMatrices[i];
 		} else {
 			XMMATRIX m = getInterpolationMatrix(i, pd) * getInterpolationMatrixChained(parentofThisBone, pd);
+			//XMMATRIX m = getInterpolationMatrixChained(parentofThisBone, pd) * getInterpolationMatrix(i, pd); use this line for right handed system
 			saveInterpolationMatrixChained(i, pd, &m);
-			//pd->interpolationMatricesChained[i] = pd->interpolationMatrices[i] * pd->interpolationMatricesChained[parentofThisBone];
 		}
 	}
 }
 
 void::Path::updateScene(PathDesc *pathDesc, WorldObject *wo, double time)
 {
+	if (wo->isNonKeyframeAnimated) {
+		recalculateBoneAnimation(wo);
+		return;
+	}
 	// currently only animation clips are updated here, path moving should be too...
 	if (wo->boneAction == 0) {
 		return;
@@ -734,6 +783,23 @@ void::Path::updateScene(PathDesc *pathDesc, WorldObject *wo, double time)
 		recalculateBoneAnimation(pathDesc, wo, pathDesc->percentage);
 		//Log(" percentage " << pathDesc->percentage << " pathDesc " << pathDesc << "\n");
 	}
+}
+
+// non-keyframe animation
+void Path::recalculateBoneAnimation(WorldObject *wo)
+{
+	const AnimationClip *clip = wo->pathDescBone->clip;
+	PathDesc *pathDesc = wo->pathDescBone;
+	int numBones = (int)clip->invBindMatrices.size();
+	for (int i = numBones - 1; i >= 0; i--) {
+		const XMFLOAT4X4 *xmm4 = &clip->invBindMatrices[i];
+		XMMATRIX xmm = XMLoadFloat4x4(xmm4);
+		//xmm = getInterpolationMatrix(i, pathDesc) * xmm;
+		xmm = xmm * getInterpolationMatrix(i, pathDesc);
+		//saveInterpolationMatrix(i, pathDesc, &xmm);
+		saveInterpolationMatrixChained(i, pathDesc, &xmm);
+	}
+	//calculateInterpolationChain(clip, pathDesc);
 }
 
 void Path::recalculateBoneAnimation(PathDesc *pathDesc, WorldObject *wo, double percentage) 
@@ -870,6 +936,29 @@ void Path::adjustTimings(vector<XMFLOAT4> &p, float totalTime) {
 	float totalFPSTime = p[0].w;
 	for (int i = 1; i < p.size(); i++) {
 		float segmentTime = p[i].w * speedfactor;
+		p[i].w = (segmentTime * 25.0f) + totalFPSTime; // FPS
+		totalFPSTime += segmentTime * 25.0f;
+	}
+}
+
+void Path::adjustTimingsConst(vector<XMFLOAT4>& p, float speed)
+{
+	float totalLen = 0.0f;
+	for (int i = 1; i < p.size(); i++) {
+		// store length of segment 
+		XMFLOAT3 p1p = XMFLOAT3(p[i - 1].x, p[i - 1].y, p[i - 1].z);
+		XMFLOAT3 p2p = XMFLOAT3(p[i].x, p[i].y, p[i].z);
+		XMVECTOR p1 = XMLoadFloat3(&p1p);
+		XMVECTOR p2 = XMLoadFloat3(&p2p);
+		float len = XMVectorGetX(XMVector3Length(p2 - p1));
+		totalLen += len;
+		p[i].w = len;  // temporary store len
+	}
+	//float speedfactor = totalTime / totalLen;
+	float totalTime = speed * totalLen;
+	float totalFPSTime = p[0].w;
+	for (int i = 1; i < p.size(); i++) {
+		float segmentTime = p[i].w * speed;
 		p[i].w = (segmentTime * 25.0f) + totalFPSTime; // FPS
 		totalFPSTime += segmentTime * 25.0f;
 	}

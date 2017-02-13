@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-* Left handed camera system
+* Left handed camera system (positive Z goes away from you - thumb / index are x / y)
 */
 class Camera
 {

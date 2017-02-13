@@ -19,7 +19,8 @@ enum PathMode
 	Path_Reverse,		// reverse path once end reached, play back and forth
 	Path_Closure,		// move from last pos to start pos and start again
 	Path_Loop,			// use path as is but jump to start pos after reaching end pos and play again
-	Path_Random			// NPC pathing: move freely in defined area
+	Path_Random,		// NPC pathing: move freely in defined area
+	Path_Stopped        // temporarily stop movement - continue by setting another path mode
 };
 
 enum AnimationState
@@ -73,11 +74,15 @@ public:
 	static const int PATHID_CAM_INTRO = 1;
 	Path(void);
 	~Path(void);
-	XMFLOAT3& getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second);
+	//XMFLOAT3& getPos(int pathID, LONGLONG now, LONGLONG ticks_per_second);
 	void getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot);
 	void updateTime(WorldObject *o, double nowf);
+	// bone animation via pre-defined keyframe movement
 	void recalculateBoneAnimation(PathDesc *pathDesc, WorldObject *wo, double time);
+	// bone animation via externally defined bind matrices:
+	void recalculateBoneAnimation(WorldObject * wo);
 	void skin(XMVECTOR &pos, XMVECTOR &norm, const WorldObjectVertex::VertexSkinned *v, PathDesc *pd);
+	void skinNonKeyframe(XMVECTOR &pos, XMVECTOR &norm, const WorldObjectVertex::VertexSkinned *v, PathDesc *pd);
 	void updateScene(PathDesc *pathDesc, WorldObject *wo, double time);
 	void addRandomNPC(WorldObject *wo, char *name);
 	PathDesc *createNpcPath(char *name);
@@ -86,11 +91,16 @@ public:
 	// calculate the timing component w of control points in a xmfloat4 vector.
 	// Path takes totalTime seconds at constant speed to move from start to end pos
 	void adjustTimings(vector<XMFLOAT4>& p, float totalTime);
+	// calculate the timing component w of control points in a xmfloat4 vector.
+	// Path is followed at constant speed to move from start to end pos
+	void adjustTimingsConst(vector<XMFLOAT4>& p, float speed);
 
 	// define movement path on-the-fly instead from blender/.b file
 	// ctrlPoints define the control points in world coords. w holds the frame number/fraction (always 25 fps assumed)
 	// rot defines rotation for each control point, may be left out for no rotation
 	void defineAction(char *name, WorldObject &wo, vector<XMFLOAT4> &ctrlPoints, vector<XMFLOAT3> *rot = nullptr);
+	// for non-keyframe animation set bind pose from outside:
+	void updateBindPose(int i, PathDesc *pd, XMMATRIX *m);
 private:
 	XMMATRIX getInterpolationMatrix(int i, PathDesc *pd);
 	void saveInterpolationMatrix(int i, PathDesc *pd, XMMATRIX *m);

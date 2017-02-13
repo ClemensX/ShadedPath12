@@ -556,7 +556,7 @@ void XApp::calcBackbufferSizeAndAspectRatio()
 #define MESH_PATH L"..\\..\\data\\mesh\\"
 #define SOUND_PATH L"..\\..\\data\\sound\\"
 
-wstring XApp::findFile(wstring filename, FileCategory cat, bool errorIfNotFound) {
+wstring XApp::findFile(wstring filename, FileCategory cat, bool errorIfNotFound, bool generateFilenameMode) {
 	// try without path:
 	ifstream bfile(filename.c_str(), ios::in | ios::binary);
 	if (!bfile) {
@@ -575,6 +575,9 @@ wstring XApp::findFile(wstring filename, FileCategory cat, bool errorIfNotFound)
 		case SOUND:
 			filename = SOUND_PATH + filename;
 			break;
+		}
+		if (generateFilenameMode) {
+			return filename.c_str();
 		}
 		bfile.open(filename.c_str(), ios::in | ios::binary);
 		if (!bfile && cat == TEXTURE) {
