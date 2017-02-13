@@ -1,7 +1,7 @@
 # ShadedPath12
 DirectX 12 Framework and Applications for Oculus Rift
 
-** Latest Update:** Touch support.
+**Latest Update:** Touch support.
 
 # General Info
 
