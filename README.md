@@ -1,7 +1,7 @@
 # ShadedPath12
 DirectX 12 Framework and Applications for Oculus Rift
 
-**Update:** Now supporting Oculus SDK 1.10 with DirectX 12 render path.
+** Latest Update:** Touch support.
 
 # General Info
 
@@ -30,12 +30,12 @@ That is under the MIT License which gives very widely usage rights.
 * I provide textures in pak file format. There are tools and code to put texture files into pak format, but not to extract them. This is by intention because I do not own all 
 the rights of the texture files. This means that you can use the textures I provide in your own projects, but you are not allowed to extract single textures from the pak file, 
 and sell them or provide as single texture files anywhere.
-* all the .wav files in data/sound are copyrighted. The Shaded_Path_Game_Music is copyrighted by Clemens Fehr and Niklas Fehr. The remaining files are from Oculus and were provided inside their 
-Audio Pack 1. All sound files are licensed under Creative Commons Attribution 4.0 License.
+* all the .wav files in data/sound are copyrighted. Please see the license.txt file in the sound folder.
 * You are not allowed to restrict anyone elses rights to this code. Meaning you are allowed to rebundle everything here and sell it in parts or in its entirety, but you are not allowed to come back here and try
 to restrict others (and myself) from any usage. In other words: You cannot copyright what I have placed in public domain.
 
 # Versions
+* 0.1.3 - Touch Support
 * 0.1.2 - pak files, multi-thread rendering optimizations
 * 0.1.1 - mass rendering / mutli-thread support
 * 0.1.0 - lighting and sound
@@ -77,6 +77,8 @@ See below for command line switches. Use them in VC++ via right click on project
 * **-disableDX11Debug** Used on systems that don't have DX11 Debug enabled. (Rarely used.)
 
 # Sample Apps
+* **TouchOdyssey** Touch demo: Select the right spinning controller by pointing at with your right palm. You will hear sound and see a brighter light if selected ok. Once it is selected it will begin moving towards you until it reaches its final position, indicated by the ghost image in front of you. Once the controller is at its final position you can attach it to your hand by moving the right hand close enough. Full demo with music and sound effects.
+* **Avatar**       Allows testing and/or downloading avatar assets, including hand/controller assets.
 * **Logo**         The ShadedPath Logo as 3D text with some flying lights
 * **HangOn**       Uses mass rendering API to draw lots of meteors. Mars approaching, sound enabled
 * **Soundtest**    Show use of background music and directional sound of 3D objects
@@ -85,6 +87,12 @@ See below for command line switches. Use them in VC++ via right click on project
 * **TestDotcross** Draw an increasing number of crosses. Single Thread Example that will show system degredation for generating and transmitting large amounts of objects to the GPU
 * **TestLinetext** Optimized Multi Thread example of a geometry shader for drawing 3D text. Displays FPS, some engine info and 1000 lines of text. Should render with more than 300 FPS on any system supporting the Oculus Rift (in window mode)
 * **Sample1** Draw a lot of lines to mark the floor and ceiling of the world, some lines of text and a coordinate system at the origin point.
+
+# Features for 0.1.3
+
+This version enables touch support. See apps TouchOdyssey and Avatar. Extended documentation is available in wiki page https://github.com/ClemensX/ShadedPath12/wiki/Developing-Touch-and-Avatar-support-with-DirectX
+You can either use the pre generated assets provided in the current binary distributon or download all assets belonging to an avatar.
+Please acknowledge that ShadedPath still uses CPU bound skinning for animated objects. Using hands and/or controllers will cost a lot of performance. In debug mode you will see a lot of stuttering, but you should be fine in release mode.
 
 # Features for 0.1.2
 

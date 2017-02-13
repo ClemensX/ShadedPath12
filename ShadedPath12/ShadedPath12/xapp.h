@@ -63,7 +63,7 @@ public:
 	XApp();
 	~XApp();
 
-	string buildInfo = "Shaded Path 12 Engine V 0.1.2"; // version text
+	string buildInfo = "Shaded Path 12 Engine V 0.1.3"; // version text
 
 	void init();
 	void initPakFiles();
