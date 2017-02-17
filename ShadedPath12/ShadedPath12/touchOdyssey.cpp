@@ -80,7 +80,7 @@ void TouchOdyssey::init()
 		bigRC.material.ambient = XMFLOAT4(1, 1, 1, 1);
 		bigRC.material.specExp = 20.0f; // 10
 		bigRC.material.specIntensity = 700.0f; //70
- 		bigRC.disableSkinning = true;
+		bigRC.disableSkinning = true;
 	}
 	// load controller mesh with correction to mesh data to allow smooth spinning
 	//XMFLOAT3 displacement(0.02f, 0.033f, 0.0f);
@@ -95,7 +95,7 @@ void TouchOdyssey::init()
 	spinRC.disableSkinning = true;
 	spinRC.alpha = 1.0f;
 
-	XMFLOAT3 displacement2( 0.017f, 0.032f, 0.0f);
+	XMFLOAT3 displacement2(0.017f, 0.032f, 0.0f);
 	xapp().objectStore.loadObject(L"ovr_6feb9283b780b5a3.b", "leftSpinController", 1.0f, &displacement2);
 	xapp().objectStore.addObject(spinLC, "leftSpinController", XMFLOAT3(-0.75f, -0.3f, 1.9f), LeftContollerTex);
 	spinLC.rot().x = XM_PI - 0.6f;
@@ -157,6 +157,13 @@ void TouchOdyssey::init()
 		xapp().vr.loadAvatarFromOculus();
 	else
 		xapp().vr.loadAvatarDefault();
+
+	// mono game sound from world object
+	xapp().sound.openSoundFile(L"Blue_Danube_by_Strauss.wav", "music", true);
+	xapp().sound.playSound("music", SoundCategory::MUSIC);
+	//xapp().sound.lowBackgroundMusicVolume();
+	xapp().sound.openSoundFile(L"interaction_whoosh_small_01.wav", "target_aquired", false);
+	xapp().sound.openSoundFile(L"interaction_magic_spell_02.wav", "bonded", false);
 }
 
 void TouchOdyssey::enableMovement(bool enable, WorldObject * o, double nowf)
@@ -183,6 +190,13 @@ void TouchOdyssey::enableMovement(bool enable, WorldObject * o, double nowf)
 			spinRC.pathDescMove->starttime_f = nowf;
 			spinRC.pathDescMove->handleRotation = false;
 			spinRC.pos() = XMFLOAT3(points[0].x, points[0].y, points[0].z); // reset pos to prevent wrong redraw bug 
+			WorldObject *o = &xapp().vr.avatarInfo.handRight.o;
+			if (o && o->useQuaternionRotation) {
+				xapp().sound.playSound("target_aquired");
+				o->soundDef = &xapp().sound.sounds["target_aquired"];
+				o->maxListeningDistance = 20.0f;
+				xapp().sound.addWorldObject(o, nullptr);
+			}
 		}
 		else if (!enable && isMovingRC) {
 			// stop movement:
@@ -212,7 +226,7 @@ void TouchOdyssey::enableMovement(bool enable, WorldObject * o, double nowf)
 			vector<XMFLOAT3> rotations;
 			rotations.push_back(XMFLOAT3(spinRC.rot().y, -spinRC.rot().x, spinRC.rot().z)); // start
 			rotations.push_back(XMFLOAT3(ghostRC.rot().x, ghostRC.rot().y, ghostRC.rot().z)); // end
-			//spinRC.rot() = XMFLOAT3(0, 0, 0);
+																							  //spinRC.rot() = XMFLOAT3(0, 0, 0);
 			auto &path = xapp().world.path;
 			//path.adjustTimingsConst(points, 10.0f);
 			spinRC.pathDescMove->isLastPos = false;
@@ -222,8 +236,8 @@ void TouchOdyssey::enableMovement(bool enable, WorldObject * o, double nowf)
 			spinRC.pathDescMove->starttime_f = nowf;
 			spinRC.pathDescMove->handleRotation = true;
 			spinRC.pos() = XMFLOAT3(points[0].x, points[0].y, points[0].z); // reset pos to prevent wrong redraw bug 
-			//spinRC.rot() = XMFLOAT3(rotations[0].x, rotations[0].y, rotations[0].z); // reset pos to prevent wrong redraw bug 
-			//spinRC.rot() = XMFLOAT3(rotations[0].y, -rotations[0].x, rotations[0].z); // reset pos to prevent wrong redraw bug 
+																			//spinRC.rot() = XMFLOAT3(rotations[0].x, rotations[0].y, rotations[0].z); // reset pos to prevent wrong redraw bug 
+																			//spinRC.rot() = XMFLOAT3(rotations[0].y, -rotations[0].x, rotations[0].z); // reset pos to prevent wrong redraw bug 
 		}
 		else if (isTurningRC) {
 			if (spinRC.pathDescMove->isLastPos) {
@@ -238,8 +252,9 @@ void TouchOdyssey::enableSpinLight(bool enable, WorldObject * o)
 	CBVLights *lights = &xapp().lights.lights;
 	if (!enable) {
 		lights->pointLights[1].used = 0.0f;
-	} else {
-		lights->pointLights[1].pos = XMFLOAT4(o->pos().x, o->pos().y, o->pos().z-0.03f, 1.0f);
+	}
+	else {
+		lights->pointLights[1].pos = XMFLOAT4(o->pos().x, o->pos().y, o->pos().z - 0.03f, 1.0f);
 		lights->pointLights[1].used = 1.0f;
 	}
 }
@@ -295,7 +310,7 @@ void TouchOdyssey::update()
 	CBVLights *lights = &xapp().lights.lights;
 	auto &lightControl = xapp().lights;
 	float f = globalAmbientLightLevel;
-	lights->ambientLights[0].ambient = XMFLOAT4(f,f,f,1);
+	lights->ambientLights[0].ambient = XMFLOAT4(f, f, f, 1);
 	lights->directionalLights[0].color = lightControl.factor(globalDirectionalLightLevel, dirColor1);
 	lights->directionalLights[1].color = lightControl.factor(globalDirectionalLightLevel, dirColor2);
 	bigRC.update();
@@ -306,7 +321,7 @@ void TouchOdyssey::update()
 	spinLC.update();
 	//Log("obj pos " << bigRC.pos().x << endl);
 
-	if(xapp().ovrRendering)	xapp().vr.handleOVRMessages();
+	if (xapp().ovrRendering)	xapp().vr.handleOVRMessages();
 	if (!&xapp().vr.avatarInfo.readyToRender) return;
 
 	// simple spin until we reach automated last turning step
@@ -324,15 +339,20 @@ void TouchOdyssey::update()
 		XMVECTOR start = XMVectorSet(-2.0f, -0.6f, -0.56f, 0.0f);
 		XMVECTOR end = XMVectorSet(-1.0f, -0.2f, -0.1f, 0.0f);
 		XMVECTOR np = Util::movePointToDistance(start, end, 0.01f); // 1 cm
-		//Log("np = " << XMVectorGetX(np) << endl);
+																	//Log("np = " << XMVectorGetX(np) << endl);
 		XMVECTOR point = XMLoadFloat3(&spinRC.pos());
 	}
 
 	WorldObject *o = &xapp().vr.avatarInfo.handRight.o;
-	if (isTurningRCFinished && ! isBondedRC) {
+	if (isTurningRCFinished && !isBondedRC) {
 		float d = Util::distance3(&spinRC.pos(), &o->pos());
 		if (d < 0.045f) {
 			isBondedRC = true;
+			xapp().sound.playSound("bonded");
+			o->soundDef = &xapp().sound.sounds["bonded"];
+			o->maxListeningDistance = 20.0f;
+			xapp().sound.addWorldObject(o, nullptr);
+
 		}
 	}
 	if (o && o->useQuaternionRotation) {
@@ -362,6 +382,7 @@ void TouchOdyssey::update()
 		//xapp().world.linesEffect->addOneTime(lines);
 	}
 	xapp().lights.update();
+	xapp().sound.Update();
 }
 
 void TouchOdyssey::draw()
