@@ -160,7 +160,7 @@ void TouchOdyssey::init()
 
 	// mono game sound from world object
 	xapp().sound.openSoundFile(L"Blue_Danube_by_Strauss.wav", "music", true);
-	xapp().sound.playSound("music", SoundCategory::MUSIC);
+	xapp().sound.playSound("music", SoundCategory::MUSIC, 1.0f);
 	//xapp().sound.lowBackgroundMusicVolume();
 	xapp().sound.openSoundFile(L"interaction_whoosh_small_01.wav", "target_aquired", false);
 	xapp().sound.openSoundFile(L"interaction_magic_spell_02.wav", "bonded", false);

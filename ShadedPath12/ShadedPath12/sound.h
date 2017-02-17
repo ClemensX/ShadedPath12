@@ -50,6 +50,6 @@ private:
 public:
 	void Update();
 	void openSoundFile(wstring soundFileName, string id, bool loop = false);
-	void playSound(string id, SoundCategory category = EFFECT);
+	void playSound(string id, SoundCategory category = EFFECT, float volume = 1.0f);
 	void lowBackgroundMusicVolume(bool volumeDown = true);
 };

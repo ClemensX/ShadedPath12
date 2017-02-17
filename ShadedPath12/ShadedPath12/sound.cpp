@@ -308,7 +308,7 @@ VOID Sound::openSoundFile(wstring fileName, string id, bool loop)
 	return;
 }
 
-void Sound::playSound(string id, SoundCategory category) {
+void Sound::playSound(string id, SoundCategory category, float volume) {
 	HRESULT hr;
 	assert(sounds.count(id) > 0);
 	SoundDef *sound = &sounds[id];
@@ -318,11 +318,12 @@ void Sound::playSound(string id, SoundCategory category) {
 	ThrowIfFailed(hr);
 	hr = sound->voice->SubmitSourceBuffer(&sound->buffer);
 	ThrowIfFailed(hr);
+	sound->voice->SetVolume(volume); // TODO cleanup
 	hr = sound->voice->Start(0);
 	float current_volume;
 	sound->voice->GetVolume(&current_volume);
 	if (category == MUSIC) {
-		sound->voice->SetVolume(current_volume/15.0f); // TODO cleanup
+		//sound->voice->SetVolume(current_volume/15.0f); // TODO cleanup
 	}
 	ThrowIfFailed(hr);
 }
