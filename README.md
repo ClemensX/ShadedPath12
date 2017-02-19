@@ -95,6 +95,8 @@ This version enables touch support. See apps TouchOdyssey and Avatar. Extended d
 You can either use the pre generated assets provided in the current binary distributon or download all assets belonging to an avatar.
 Please acknowledge that ShadedPath still uses CPU bound skinning for animated objects. Using hands and/or controllers will cost a lot of performance. In debug mode you will see a lot of stuttering, but you should be fine in release mode.
 
+Better sound volume control: Specify volume when calling PlaySound(). Default is 1.0. Higher float values increase volume, lower values (between 0 and 1) decrease volume.
+
 # Features for 0.1.2
 
 * Pak files: For legal reasons I could not provide all the texture files for the demo apps in earlier releases. But inside a custom format pak file this is no longer a problem. All texture files except for the default texture
