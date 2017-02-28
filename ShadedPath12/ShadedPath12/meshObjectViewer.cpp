@@ -89,6 +89,16 @@ void MeshObjectViewer::init()
 	//object.material.ambient = XMFLOAT4(1, 1, 1, 1);
 
 	// object creation:
+	if (true) {
+		//xapp().objectStore.loadObject(L"house4_anim.b", "House");
+		//xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
+		object.drawBoundingBox = true;
+		object.drawNormals = true;
+		//object.setAction("Cube");
+		//object.pathDescMove->pathMode = Path_Reverse;
+		object.material.specExp = 1.0f;       // no spec color
+		object.material.specIntensity = 0.0f; // no spec color
+	}
 
 	// draw lines for mesh:
 	//Log(" object created ok, #vertices == " << object.mesh->vertices.size() << endl);
