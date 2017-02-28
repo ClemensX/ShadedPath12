@@ -145,6 +145,9 @@
     <ClInclude Include="touchOdyssey.h">
       <Filter>Apps</Filter>
     </ClInclude>
+    <ClInclude Include="meshObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -246,6 +249,9 @@
     <ClCompile Include="touchOdyssey.cpp">
       <Filter>Apps</Filter>
     </ClCompile>
+    <ClCompile Include="meshObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ShadedPath.rc">
@@ -331,5 +337,6 @@
     <None Include="Shaders\lights.hlsi">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>
