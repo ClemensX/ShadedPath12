@@ -148,6 +148,9 @@
     <ClInclude Include="meshObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="meshObjectViewer.h">
+      <Filter>Apps</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -251,6 +254,9 @@
     </ClCompile>
     <ClCompile Include="meshObject.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="meshObjectViewer.cpp">
+      <Filter>Apps</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -156,6 +156,7 @@ inline void ErrorExt(wstring msg, const char* file, DWORD line)
 #include "world.h"
 #include "camera.h"
 #include "worldObject.h"
+#include "meshObject.h"
 #include "vr.h"
 #include "xapp.h"
 #include "Effects\effectbase.h"

@@ -182,6 +182,7 @@
     <ClInclude Include="logo.h" />
     <ClInclude Include="mass.h" />
     <ClInclude Include="meshObject.h" />
+    <ClInclude Include="meshObjectViewer.h" />
     <ClInclude Include="objectViewer.h" />
     <ClInclude Include="path.h" />
     <ClInclude Include="Resource.h" />
@@ -220,6 +221,7 @@
     <ClCompile Include="logo.cpp" />
     <ClCompile Include="mass.cpp" />
     <ClCompile Include="meshObject.cpp" />
+    <ClCompile Include="meshObjectViewer.cpp" />
     <ClCompile Include="objectViewer.cpp" />
     <ClCompile Include="path.cpp" />
     <ClCompile Include="sample1.cpp" />
