@@ -7,6 +7,7 @@ MeshObjectViewer::MeshObjectViewer()
 {
 	myClass = string(typeid(*this).name());
 	xapp().registerApp(myClass, this);
+	objStore = MeshObjectStore::getStore();
 }
 
 MeshObjectViewer::~MeshObjectViewer()
@@ -90,7 +91,7 @@ void MeshObjectViewer::init()
 
 	// object creation:
 	if (true) {
-		//xapp().objectStore.loadObject(L"house4_anim.b", "House");
+		objStore->loadObject(L"house4_anim.b", "House");
 		//xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
 		object.drawBoundingBox = true;
 		object.drawNormals = true;

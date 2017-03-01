@@ -30,5 +30,6 @@ private:
 	float globalAmbientLightLevel;
 	float globalDirectionalLightLevel;
 	XMFLOAT4 dirColor1, dirColor2;
+	MeshObjectStore *objStore = nullptr;
 };
 
