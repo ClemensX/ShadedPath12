@@ -355,7 +355,7 @@ void ObjectViewer::update()
 	// disable for no spinning:
 	double fullturn_sec = 5.0;
 	double turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
-	object.rot().z = turnfrac * XM_2PI;
+	object.rot().z = (float)(turnfrac * XM_2PI);
 
 	//Log("obj pos " << object.pos().x << endl);
 

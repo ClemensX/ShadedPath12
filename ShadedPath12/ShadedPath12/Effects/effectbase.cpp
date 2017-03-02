@@ -55,7 +55,7 @@ void EffectBase::setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wc
 	// allocate const buffer for all frames and possibly OVR:
 	UINT totalSize = slotSize * maxObjects;
 	if (xapp().ovrRendering) totalSize *= 2; // TODO: really needed?
-	for (int i = 0; i < XApp::FrameCount*maxThreads; i++) {
+	for (unsigned int i = 0; i < XApp::FrameCount*maxThreads; i++) {
 		ComPtr<ID3D12Resource> t;
 		singleCBVResources.push_back(move(t));
 		UINT8 * gpud;

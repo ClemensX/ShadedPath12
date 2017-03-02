@@ -71,7 +71,7 @@ void Logo::init()
 	CBVLights *lights = &xapp().lights.lights;
 
 	// ambient light
-	lights->ambientLights[0].ambient = XMFLOAT4(0.1, 0.1, 0.1, 1);
+	lights->ambientLights[0].ambient = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
 	assert(0 < MAX_AMBIENT);
 
 	// directional lights:
@@ -126,55 +126,55 @@ void Logo::update()
 			//pointsL.push_back(XMFLOAT4(-4.6, 2, -7.5, 1.0)); // start
 			//pointsL.push_back(XMFLOAT4(-4.5, 2, -7.5, 50)); // end
 
-			pointsL.push_back(XMFLOAT4(-3.94999, 0.3105, -4.57103, 1));
-			pointsL.push_back(XMFLOAT4(-1.75236, 0.183313, -3.70876, 20));
-			pointsL.push_back(XMFLOAT4(-1.24807, 0.105603, -3.43801, 20));
-			pointsL.push_back(XMFLOAT4(-1.02751, 0.14676, -3.2325, 20));
-			pointsL.push_back(XMFLOAT4(-0.705992, 0.351725, -2.84486, 20));
-			pointsL.push_back(XMFLOAT4(-0.545172, 0.37157, -2.71474, 20));
-			pointsL.push_back(XMFLOAT4(-0.463309, 0.323662, -2.62874, 20));
-			pointsL.push_back(XMFLOAT4(-0.409953, 0.141652, -2.40447, 20));
-			pointsL.push_back(XMFLOAT4(0.722906, -0.073686, -1.92322, 20));
-			pointsL.push_back(XMFLOAT4(1.39551, 0.230524, -1.99702, 20));
-			pointsL.push_back(XMFLOAT4(4.13389, 0.195271, -0.354313, 20));
+			pointsL.push_back(XMFLOAT4(-3.94999f, 0.3105f, -4.57103f, 1.0f));
+			pointsL.push_back(XMFLOAT4(-1.75236f, 0.183313f, -3.70876f, 20.0f));
+			pointsL.push_back(XMFLOAT4(-1.24807f, 0.105603f, -3.43801f, 20.0f));
+			pointsL.push_back(XMFLOAT4(-1.02751f, 0.14676f, -3.2325f, 20.0f));
+			pointsL.push_back(XMFLOAT4(-0.705992f, 0.351725f, -2.84486f, 20.0f));
+			pointsL.push_back(XMFLOAT4(-0.545172f, 0.37157f, -2.71474f, 20.0f));
+			pointsL.push_back(XMFLOAT4(-0.463309f, 0.323662f, -2.62874f, 20.0f));
+			pointsL.push_back(XMFLOAT4(-0.409953f, 0.141652f, -2.40447f, 20.0f));
+			pointsL.push_back(XMFLOAT4(0.722906f, -0.073686f, -1.92322f, 20.0f));
+			pointsL.push_back(XMFLOAT4(1.39551f, 0.230524f, -1.99702f, 20.0f));
+			pointsL.push_back(XMFLOAT4(4.13389f, 0.195271f, -0.354313f, 20.0f));
 
-			path.adjustTimings(pointsL, 4.0);
+			path.adjustTimings(pointsL, 4.0f);
 			path.defineAction("movelight", woLights[0], pointsL);
 			woLights[0].setAction("movelight");
 			woLights[0].pathDescMove->pathMode = Path_Loop;
 			woLights[0].pathDescMove->starttime_f = nowf;
 			woLights[0].pathDescMove->handleRotation = false;
 
-			pointsL[2].y += 0.01;
-			pointsL[2].z += 0.01;
-			path.adjustTimings(pointsL, 5.19);
+			pointsL[2].y += 0.01f;
+			pointsL[2].z += 0.01f;
+			path.adjustTimings(pointsL, 5.19f);
 			path.defineAction("movelight1", woLights[1], pointsL);
 			woLights[1].setAction("movelight1");
 			woLights[1].pathDescMove->pathMode = Path_Loop;
 			woLights[1].pathDescMove->starttime_f = nowf;
 			woLights[1].pathDescMove->handleRotation = false;
 
-			pointsL[2].y += 0.01;
-			pointsL[2].z += 0.01;
-			path.adjustTimings(pointsL, 6.46);
+			pointsL[2].y += 0.01f;
+			pointsL[2].z += 0.01f;
+			path.adjustTimings(pointsL, 6.46f);
 			path.defineAction("movelight2", woLights[2], pointsL);
 			woLights[2].setAction("movelight2");
 			woLights[2].pathDescMove->pathMode = Path_Loop;
 			woLights[2].pathDescMove->starttime_f = nowf;
 			woLights[2].pathDescMove->handleRotation = false;
 
-			pointsL[2].y += 0.01;
-			pointsL[2].z += 0.01;
-			path.adjustTimings(pointsL, 7.13);
+			pointsL[2].y += 0.01f;
+			pointsL[2].z += 0.01f;
+			path.adjustTimings(pointsL, 7.13f);
 			path.defineAction("movelight3", woLights[3], pointsL);
 			woLights[3].setAction("movelight3");
 			woLights[3].pathDescMove->pathMode = Path_Loop;
 			woLights[3].pathDescMove->starttime_f = nowf;
 			woLights[3].pathDescMove->handleRotation = false;
 
-			pointsL[2].y += 0.01;
-			pointsL[2].z += 0.01;
-			path.adjustTimings(pointsL, 7.44);
+			pointsL[2].y += 0.01f;
+			pointsL[2].z += 0.01f;
+			path.adjustTimings(pointsL, 7.44f);
 			path.defineAction("movelight4", woLights[4], pointsL);
 			woLights[4].setAction("movelight4");
 			woLights[4].pathDescMove->pathMode = Path_Loop;

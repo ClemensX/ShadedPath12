@@ -65,7 +65,9 @@ void TouchOdyssey::init()
 	// for hands:
 	//xapp().textureStore.loadTexture(L"hand_color.dds", "white");
 	//xapp().textureStore.loadTexture(L"413fd8923c71e_951f51e94248778a.dds", "RightContollerTex");
+#pragma warning( disable : 4101 )
 	TextureInfo *GrassTex, *HouseTex, *MetalTex, *WormTex, *PlanetTex, *Meteor1Tex, *AxistestTex;
+#pragma warning( default : 4101 )
 	TextureInfo *RightContollerTex = xapp().textureStore.getTexture("rightController");
 	assert(RightContollerTex != nullptr && !RightContollerTex->filename.empty());
 	TextureInfo *LeftContollerTex = xapp().textureStore.getTexture("leftController");
@@ -194,7 +196,7 @@ void TouchOdyssey::enableMovement(bool enable, WorldObject * o, double nowf)
 			if (o && o->useQuaternionRotation) {
 				xapp().sound.playSound("target_aquired");
 				o->soundDef = &xapp().sound.sounds["target_aquired"];
-				o->maxListeningDistance = 20.0f;
+				o->maxListeningDistance = 20;
 				xapp().sound.addWorldObject(o, nullptr);
 			}
 		}
@@ -350,7 +352,7 @@ void TouchOdyssey::update()
 			isBondedRC = true;
 			xapp().sound.playSound("bonded");
 			o->soundDef = &xapp().sound.sounds["bonded"];
-			o->maxListeningDistance = 20.0f;
+			o->maxListeningDistance = 20;
 			xapp().sound.addWorldObject(o, nullptr);
 
 		}

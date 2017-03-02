@@ -75,7 +75,9 @@ void MeshObjectViewer::init()
 	//xapp().textureStore.loadTexture(L"axistest.dds", "axistest");
 	xapp().textureStore.loadTexture(L"white.dds", "white");
 
+	#pragma warning( disable : 4101 )
 	TextureInfo *GrassTex, *HouseTex, *MetalTex, *WormTex, *PlanetTex, *Meteor1Tex, *AxistestTex;
+	#pragma warning( default : 4101 )
 	MetalTex = xapp().textureStore.getTexture("metal");
 	//TextureInfo *GrassTex = xapp().textureStore.getTexture("grass");
 	//TextureInfo *HouseTex = xapp().textureStore.getTexture("default");
@@ -89,6 +91,7 @@ void MeshObjectViewer::init()
 	xapp().lights.init();
 	//object.material.ambient = XMFLOAT4(1, 1, 1, 1);
 
+	objStore->gpuUploadPhaseStart();
 	// object creation:
 	if (true) {
 		objStore->loadObject(L"house4_anim.b", "House");
@@ -132,6 +135,7 @@ void MeshObjectViewer::init()
 	lights->pointLights[0].range_reciprocal = 1.0f / 30.0f;
 	lights->pointLights[0].used = 1.0f;
 
+	objStore->gpuUploadPhaseEnd();
 }
 
 void MeshObjectViewer::update()

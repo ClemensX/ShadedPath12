@@ -295,10 +295,10 @@ void HangOn::update()
 	}
 	double fullturn_sec = 1000.0;
 	double turnfrac = fmod(nowf, fullturn_sec)/fullturn_sec;  // 0.0 .. 1.0
-	mars.rot().x = turnfrac * XM_2PI;
+	mars.rot().x = (float)(turnfrac * XM_2PI);
 	fullturn_sec *= 2.0; // half rotation speed vertically
 	turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
-	mars.rot().y = turnfrac * XM_2PI;
+	mars.rot().y = (float)(turnfrac * XM_2PI);
 	xapp().sound.Update();
 }
 /*

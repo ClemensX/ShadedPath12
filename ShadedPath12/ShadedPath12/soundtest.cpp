@@ -104,7 +104,7 @@ void Soundtest::init()
 	xapp().sound.openSoundFile(L"worm_move.wav", "worm_move", true);
 	xapp().sound.playSound("worm_move");
 	object.soundDef = &xapp().sound.sounds["worm_move"];
-	object.maxListeningDistance = 20.0f;
+	object.maxListeningDistance = 20;
 	xapp().sound.addWorldObject(&object, nullptr);
 }
 

@@ -115,7 +115,7 @@ void TestTextures::init()
 			texName = string("vac").append(to_string(tex_number));
 		//Log(elvec.first.c_str() << endl);
 		auto *tex = xapp().textureStore.getTexture(texName);
-		for (int i = 0; i < billboards_per_texture; i++) {
+		for (unsigned long i = 0; i < billboards_per_texture; i++) {
 			XMFLOAT3 rnd = xapp().world.getRandomPos();
 			b.pos.x = rnd.x;
 			b.pos.y = rnd.y;

@@ -12,14 +12,19 @@ public:
 };
 
 
-// WorldObject Store:
-class MeshObjectStore{
+// MeshObject Store:
+class MeshObjectStore : public EffectBase {
 public:
 	//singleton:
 	static MeshObjectStore *getStore() {
 		static MeshObjectStore singleton;
 		return &singleton;
 	};
+
+	// uploading mesh data to GPU can only be done in GpuUploadPhase
+	// this prevents unnecessary waits between upload requests
+	void gpuUploadPhaseStart() { inGpuUploadPhase = true; };
+	void gpuUploadPhaseEnd();
 
 	// objects
 	// load object definition from .b file, save under given hash name
@@ -43,4 +48,6 @@ private:
 	MeshObjectStore() {};									// prevent creation outside this class
 	MeshObjectStore(const MeshObjectStore&);				// prevent creation via copy-constructor
 	MeshObjectStore & operator = (const MeshObjectStore &);	// prevent instance copies
+
+	bool inGpuUploadPhase = false;	// signal that this effect is uploading data to GPU
 };

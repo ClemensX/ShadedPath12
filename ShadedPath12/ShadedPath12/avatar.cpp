@@ -116,7 +116,9 @@ void Avatar::init()
 	// for hands:
 	xapp().textureStore.loadTexture(L"hand_color.dds", "white");
 	//xapp().textureStore.loadTexture(L"413fd8923c71e_951f51e94248778a.dds", "white");
+	#pragma warning( disable : 4101 )
 	TextureInfo *GrassTex, *HouseTex, *MetalTex, *WormTex, *PlanetTex, *Meteor1Tex, *AxistestTex;
+    #pragma warning( default : 4101 )
 	TextureInfo *WhiteTex = xapp().textureStore.getTexture("white");
 	xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);

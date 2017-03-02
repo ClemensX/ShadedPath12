@@ -312,7 +312,6 @@ int Linetext::addTextLine(XMFLOAT4 pos, string text, UINT rotIndex) {
 }
 
 int Linetext::addTextLine(XMFLOAT4 pos, string text, Plane plane) {
-	XMFLOAT4X4 rot;
 	UINT rotindex = 0;
 	switch (plane) {
 	case XY:
