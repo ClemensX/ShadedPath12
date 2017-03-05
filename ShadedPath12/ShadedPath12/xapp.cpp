@@ -746,3 +746,15 @@ void XAppMultiBase::initAllApps()
 		app->init();
 	}
 }
+
+void XApp::handleRTVClearing(ID3D12GraphicsCommandList * commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle, D3D12_CPU_DESCRIPTOR_HANDLE dsv_handle, ID3D12Resource * resource)
+{
+	if (rtvHasToBeCleared()) {
+		rtvCleared = true;
+		ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
+		resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+		commandList->ClearRenderTargetView(rtv_handle, clearColor, 0, nullptr);
+		commandList->ClearDepthStencilView(dsv_handle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+		//resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_PRESENT, commandList);
+	}
+}

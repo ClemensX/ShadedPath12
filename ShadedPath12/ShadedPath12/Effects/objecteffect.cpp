@@ -221,7 +221,10 @@ void WorldObjectEffect::preDraw(DrawInfo &di)
 		CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
 		//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 		commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-		xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
+		ID3D12Resource *resource;
+		if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
+		else resource = xapp().vr.texResource[frameIndex];
+		xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle, resource);
 		return;
 	}
 	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, di.objectNum, 0));
@@ -362,7 +365,10 @@ void WorldObjectEffect::beginBulkUpdate()
 	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
 	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
+	ID3D12Resource *resource;
+	if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
+	else resource = xapp().vr.texResource[frameIndex];
+	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle, resource);
 }
 
 void WorldObjectEffect::endBulkUpdate()

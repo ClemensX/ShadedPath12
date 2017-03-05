@@ -105,13 +105,7 @@ public:
 		clearColor[2] = bgColor.z;
 		clearColor[3] = bgColor.w;
 	};
-	void handleRTVClearing(ID3D12GraphicsCommandList *commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle, D3D12_CPU_DESCRIPTOR_HANDLE dsv_handle) {
-		if (rtvHasToBeCleared()) {
-			rtvCleared = true;
-			commandList->ClearRenderTargetView(rtv_handle, clearColor, 0, nullptr);
-			commandList->ClearDepthStencilView(dsv_handle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-		}
-	};
+	void handleRTVClearing(ID3D12GraphicsCommandList *commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle, D3D12_CPU_DESCRIPTOR_HANDLE dsv_handle, ID3D12Resource* resource);
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE getRTVHandle(int frameIndex) {
 #if defined(_OVR_)

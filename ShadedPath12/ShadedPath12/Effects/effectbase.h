@@ -6,6 +6,11 @@ public:
 
 class ResourceStateHelper {
 public:
+	//singleton:
+	static ResourceStateHelper *getResourceStateHelper() {
+		static ResourceStateHelper singleton;
+		return &singleton;
+	};
 	void add(ID3D12Resource* res, D3D12_RESOURCE_STATES state) {
 		assert(resourceStates.count(res) == 0);
 		ResourceStateInfo si;
@@ -22,6 +27,9 @@ public:
 	};
 private:
 	unordered_map<ID3D12Resource*, ResourceStateInfo> resourceStates;
+	ResourceStateHelper() {};										// prevent creation outside this class
+	ResourceStateHelper(const ResourceStateHelper&);				// prevent creation via copy-constructor
+	ResourceStateHelper & operator = (const ResourceStateHelper &);	// prevent instance copies
 };
 
 class EffectBase {
@@ -100,6 +108,6 @@ protected:
 	void prepareDraw(VR *vr);
 	virtual ~EffectBase();
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
-	ResourceStateHelper resourceStateHelper;
+	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 public:
 };

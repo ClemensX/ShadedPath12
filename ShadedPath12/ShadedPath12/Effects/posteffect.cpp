@@ -109,11 +109,11 @@ void PostEffect::init()
 		// prepare resourceStateHelper
 		// renderTarget needs to be saved in all cases:
 		ID3D12Resource * resource = xapp().renderTargets[n].Get();;
-		resourceStateHelper.add(resource, D3D12_RESOURCE_STATE_PRESENT);
+		resourceStateHelper->add(resource, D3D12_RESOURCE_STATE_PRESENT);
 		// vr.texResources only needed in VR mode:
 		if (xapp().ovrRendering) {
 			resource = xapp().vr.texResource[n];
-			resourceStateHelper.add(resource, D3D12_RESOURCE_STATE_PRESENT);
+			resourceStateHelper->add(resource, D3D12_RESOURCE_STATE_PRESENT);
 		} 
 	}
 
@@ -148,7 +148,7 @@ void PostEffect::init()
 			nullptr,
 			IID_PPV_ARGS(&m_texture)));
 		m_texture.Get()->SetName(L"post_copy_frame");
-		resourceStateHelper.add(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
+		resourceStateHelper->add(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
 
 		//const UINT64 uploadBufferSize = GetRequiredIntermediateSize(m_texture.Get(), 0, 1);
 
@@ -188,7 +188,7 @@ void PostEffect::init2()
 		nullptr,
 		IID_PPV_ARGS(&vertexBuffer)));
 	vertexBuffer.Get()->SetName(L"vertexBuffer_post");
-	resourceStateHelper.add(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
+	resourceStateHelper->add(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
 
 	ThrowIfFailed(xapp().device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
@@ -209,7 +209,7 @@ void PostEffect::init2()
 	commandLists[frameIndex].Get()->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get());
 	PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"posteffect: update vertex buffer for postEffect");
 	UpdateSubresources<1>(commandLists[frameIndex].Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData);
-	resourceStateHelper.toState(vertexBuffer.Get(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, commandLists[frameIndex].Get());
+	resourceStateHelper->toState(vertexBuffer.Get(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, commandLists[frameIndex].Get());
 	//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 	PIXEndEvent(commandLists[frameIndex].Get());
 
@@ -256,7 +256,7 @@ void PostEffect::preDraw() {
 	D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
 	//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 	//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
-	resourceStateHelper.toState(resource, D3D12_RESOURCE_STATE_COPY_SOURCE, commandLists[frameIndex].Get());
+	resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_COPY_SOURCE, commandLists[frameIndex].Get());
 	//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE,
 	//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 
@@ -299,7 +299,7 @@ void PostEffect::draw()
 	if (true || xapp().ovrMirror) {
 		//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST,
 		//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
-		resourceStateHelper.toState(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST, commandLists[frameIndex].Get());
+		resourceStateHelper->toState(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST, commandLists[frameIndex].Get());
 		CD3DX12_TEXTURE_COPY_LOCATION Dst(m_texture.Get(), 0);
 		CD3DX12_TEXTURE_COPY_LOCATION Src(resource, 0);
 		commandLists[frameIndex]->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
@@ -309,11 +309,11 @@ void PostEffect::draw()
 	//	commandLists[frameIndex]->DrawInstanced((UINT)numVertices, 1, 0, 0);
 	//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET,
 	//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
-	resourceStateHelper.toState(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, commandLists[frameIndex].Get());
+	resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, commandLists[frameIndex].Get());
 	if (true || xapp().ovrMirror) {
 		//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE| D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
 		//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
-		resourceStateHelper.toState(m_texture.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandLists[frameIndex].Get());
+		resourceStateHelper->toState(m_texture.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandLists[frameIndex].Get());
 	}
 	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
@@ -364,28 +364,28 @@ void PostEffect::postDraw() {
 	if (!xapp().ovrRendering) {
 		//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT,
 		//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
-		resourceStateHelper.toState(resource, D3D12_RESOURCE_STATE_PRESENT, commandLists[frameIndex].Get());
+		resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_PRESENT, commandLists[frameIndex].Get());
 	}
 	else {
 		//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST,
 		//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
-		resourceStateHelper.toState(resource, D3D12_RESOURCE_STATE_COPY_DEST, commandLists[frameIndex].Get());
+		resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_COPY_DEST, commandLists[frameIndex].Get());
 	}
 	if (xapp().ovrMirror) {
 		//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE|D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE,
 		//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
-		resourceStateHelper.toState(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, commandLists[frameIndex].Get());
+		resourceStateHelper->toState(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, commandLists[frameIndex].Get());
 		ID3D12Resource *resource = xapp().renderTargets[frameIndex].Get();
-		resourceStateHelper.toState(resource, D3D12_RESOURCE_STATE_COPY_DEST, commandLists[frameIndex].Get());
+		resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_COPY_DEST, commandLists[frameIndex].Get());
 		CD3DX12_TEXTURE_COPY_LOCATION Src(m_texture.Get(), 0);
 		CD3DX12_TEXTURE_COPY_LOCATION Dst(resource, 0);
 		commandLists[frameIndex]->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
 		//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT,
 		//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
-		resourceStateHelper.toState(resource, D3D12_RESOURCE_STATE_PRESENT, commandLists[frameIndex].Get());
+		resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_PRESENT, commandLists[frameIndex].Get());
 		//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
 		//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
-		resourceStateHelper.toState(m_texture.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandLists[frameIndex].Get());
+		resourceStateHelper->toState(m_texture.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandLists[frameIndex].Get());
 	}
 	// Record commands.
 	ThrowIfFailed(commandLists[frameIndex]->Close());
