@@ -209,9 +209,12 @@ void XApp::init()
 	// Enable the D3D12 debug layer.
 	{
 		ComPtr<ID3D12Debug> debugController;
+		ComPtr<ID3D12Debug1> debugController1;
 		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
 		{
 			debugController->EnableDebugLayer();
+			debugController->QueryInterface(IID_PPV_ARGS(&debugController1));
+			debugController1->SetEnableGPUBasedValidation(true);
 		}
 		HRESULT getAnalysis = DXGIGetDebugInterface1(0, __uuidof(pGraphicsAnalysis), reinterpret_cast<void**>(&pGraphicsAnalysis));
 	}

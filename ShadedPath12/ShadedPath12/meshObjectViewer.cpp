@@ -25,6 +25,7 @@ void MeshObjectViewer::init()
 	linesEffect.init();
 	xapp().world.linesEffect = &linesEffect;
 	textEffect.init();
+	objStore->init();
 	//objectEffect.init(&xapp().objectStore, 1);
 	float aspectRatio = xapp().aspectRatio;
 
@@ -198,8 +199,8 @@ void MeshObjectViewer::update()
 void MeshObjectViewer::draw()
 {
 	linesEffect.draw();
-	dotcrossEffect.draw();
-	textEffect.draw();
+	//dotcrossEffect.draw();
+	//textEffect.draw();
 	//object.draw();
 	postEffect.draw();
 }

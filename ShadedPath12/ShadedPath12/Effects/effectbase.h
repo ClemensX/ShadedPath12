@@ -1,3 +1,29 @@
+
+class ResourceStateInfo {
+public:
+	D3D12_RESOURCE_STATES current_state;
+};
+
+class ResourceStateHelper {
+public:
+	void add(ID3D12Resource* res, D3D12_RESOURCE_STATES state) {
+		assert(resourceStates.count(res) == 0);
+		ResourceStateInfo si;
+		si.current_state = state;
+		resourceStates[res] = si;
+	};
+	void toState(ID3D12Resource* res, D3D12_RESOURCE_STATES state, ID3D12GraphicsCommandList *cl) {
+		assert(resourceStates.count(res) > 0);
+		ResourceStateInfo &resourceStateInfo = resourceStates.at(res);
+		if (resourceStateInfo.current_state != state) {
+			cl->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(res, resourceStateInfo.current_state, state));
+			resourceStateInfo.current_state = state;
+		}
+	};
+private:
+	unordered_map<ID3D12Resource*, ResourceStateInfo> resourceStates;
+};
+
 class EffectBase {
 protected:
 	//HANDLE fenceEvent;
@@ -73,6 +99,7 @@ protected:
 	// initialize next ovr draw by copying globals from VR class to vr_eyes
 	void prepareDraw(VR *vr);
 	virtual ~EffectBase();
-	bool initialized = false;  // set to tre in init(). All effects that need to do something in destructor should check if effect was used at all...
+	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
+	ResourceStateHelper resourceStateHelper;
 public:
 };
