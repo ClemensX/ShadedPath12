@@ -214,7 +214,11 @@ void XApp::init()
 		{
 			debugController->EnableDebugLayer();
 			debugController->QueryInterface(IID_PPV_ARGS(&debugController1));
-			debugController1->SetEnableGPUBasedValidation(true);
+			if (debugController1) {
+				debugController1->SetEnableGPUBasedValidation(true);
+			} else {
+				Log("WARNING: Could not enable GPU validation - ID3D12Debug1 controller not available" << endl);
+			}
 		}
 		HRESULT getAnalysis = DXGIGetDebugInterface1(0, __uuidof(pGraphicsAnalysis), reinterpret_cast<void**>(&pGraphicsAnalysis));
 	}
