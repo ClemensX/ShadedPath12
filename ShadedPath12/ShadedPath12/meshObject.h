@@ -17,12 +17,18 @@ public:
 	virtual ~MeshObject();
 	//XMFLOAT4 pos;
 	XMFLOAT3& pos();
+	XMFLOAT3& rot();
 	XMFLOAT4 rot_quaternion;
 	float scale = 1.0f;
 	Material material;
 	BoundingBox aabb;
 	bool drawBoundingBox = false;
 	bool drawNormals = false;
+	bool useQuaternionRotation = false;
+	XMMATRIX calcToWorld();
+private:
+	XMFLOAT3 _pos;
+	XMFLOAT3 _rot;
 };
 
 // MeshObject Store:
@@ -48,15 +54,15 @@ public:
 	void loadObject(wstring filename, string id, float scale = 1.0f, XMFLOAT3 *displacement = nullptr);
 	// add loaded object to scene
 	void addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid = 0);
-	void addObject(WorldObject &w, string id, XMFLOAT3 pos, TextureID tid = 0);
-	// obbject groups: give fast access to specific objects (e.g. all worm NPCs)
+	//void addObject(WorldObject &w, string id, XMFLOAT3 pos, TextureID tid = 0);
+	// object groups: give fast access to specific objects (e.g. all worm NPCs)
 	void createGroup(string groupname);
 	const vector<unique_ptr<WorldObject>> *getGroup(string groupname);
 	// draw all objects within a group (all have same mesh), set threadNum > 1 to draw with multiple threads
 	void drawGroup(string groupname, size_t threadNum = 0);
 	void setWorldObjectEffect(WorldObjectEffect *objectEffect);
 private:
-	unordered_map<string, vector<unique_ptr<WorldObject>>> groups;
+	unordered_map<string, vector<unique_ptr<MeshObject>>> groups;
 	unordered_map<string, Mesh> meshes;
 
 	MeshObjectStore() {};									// prevent creation outside this class
@@ -71,6 +77,7 @@ public:
 	void init();
 	void createAndUploadVertexAndIndexBuffer(Mesh *mesh);
 	void createRootSigAndPSO(ComPtr<ID3D12RootSignature>& sig, ComPtr<ID3D12PipelineState>& pso);
+	XMMATRIX calcWVP(XMMATRIX & toWorld, XMMATRIX & vp);
 	struct CBV {
 		XMFLOAT4X4 wvp;
 		XMFLOAT4X4 world;  // needed for normal calculations
@@ -92,8 +99,8 @@ private:
 	// all data that needs to be frame local. No sync calls should be necessary
 	class MeshObjectFrameResource {
 	public:
-		ComPtr<ID3D12GraphicsCommandList> commandList;
-		ComPtr<ID3D12CommandAllocator> commandAllocator;
+		//ComPtr<ID3D12GraphicsCommandList> commandList; //already defined in effectbase
+		//ComPtr<ID3D12CommandAllocator> commandAllocator; //already defined in effectbase
 		Camera camera;
 		Camera cameram[2];
 		CBV cbv;
@@ -101,4 +108,5 @@ private:
 		VR_Eyes vr_eyesm[2];
 		bool initialized;
 	};
+	MeshObjectFrameResource frameEffectData[XApp::FrameCount];
 };

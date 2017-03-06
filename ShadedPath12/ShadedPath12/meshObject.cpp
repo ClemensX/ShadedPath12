@@ -8,6 +8,34 @@ MeshObject::~MeshObject()
 {
 }
 
+XMFLOAT3& MeshObject::pos() {
+	return _pos;
+}
+
+XMFLOAT3& MeshObject::rot() {
+	return _rot;
+}
+
+XMMATRIX MeshObject::calcToWorld() {
+	// quaternion
+	XMVECTOR q = XMQuaternionIdentity();
+	//XMVECTOR q = XMVectorSet(rot().x, rot().y, rot().z, 0.0f);
+	XMVECTOR q_origin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	XMMATRIX rotateM = XMMatrixRotationRollPitchYaw(rot().y, rot().x, rot().z);
+	q = XMQuaternionRotationMatrix(rotateM);
+	if (useQuaternionRotation) {
+		q = XMLoadFloat4(&rot_quaternion);
+	}
+	q = XMQuaternionNormalize(q);
+	// scalar
+	XMVECTOR s = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
+	// translation
+	XMVECTOR t = XMVectorSet(pos().x, pos().y, pos().z, 0.0f);
+	// toWorld matrix:
+	return XMMatrixAffineTransformation(s, q_origin, q, t);
+}
+
+
 // object store:
 void MeshObjectStore::loadObject(wstring filename, string id, float scale, XMFLOAT3 *displacement) {
 	assert(inGpuUploadPhase);
@@ -27,9 +55,57 @@ void MeshObjectStore::setMaxObjectCount(unsigned int maxNum)
 	maxObjects = maxNum;
 }
 
+/*
+* Calculate WVP matrix from projection and world matrix
+*/
+XMMATRIX MeshObjectStore::calcWVP(XMMATRIX &toWorld, XMMATRIX &vp) {
+	// optimization of commented code via transpose rule: (A*B)T = BT * AT
+	//vp = XMMatrixTranspose(vp);
+	//toWorld = XMMatrixTranspose(toWorld);
+	//XMMATRIX wvp = toWorld * vp;
+	//wvp = XMMatrixTranspose(wvp);
+	//return wvp;
+	return vp * toWorld;
+}
+
 void MeshObjectStore::update()
 {
 	assert(this->maxObjects > 0);	// setting of max object count missing
+	int frameIndex = xapp().getCurrentBackBufferIndex();
+
+	frameEffectData[frameIndex].camera = xapp().camera;
+
+	Camera *cam = &frameEffectData[frameIndex].camera;
+	CBV my_cbv;
+	CBV *cbv = &my_cbv;
+	prepareDraw(&xapp().vr);
+	if (!xapp().ovrRendering) {
+		frameEffectData[frameIndex].vr_eyesm[0] = vr_eyes;
+		XMMATRIX vp = cam->worldViewProjection();
+		cbv->cameraPos.x = cam->pos.x;
+		cbv->cameraPos.y = cam->pos.y;
+		cbv->cameraPos.z = cam->pos.z;
+//		for (auto & w : this->) {
+//			w->draw();
+//		}
+//		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
+//		XMMATRIX wvp = calcWVP(toWorld, vp);
+//		XMStoreFloat4x4(&cbv->wvp, wvp);
+//		cbv->world = di.world;
+//		cbv->alpha = di.alpha;
+//		if (inBulkOperation) {
+//			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, 0), cbv, sizeof(*cbv));
+//		}
+//		else {
+//			memcpy(cbvGPUDest, cbv, sizeof(*cbv));
+//		}
+		//memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum), &cbv, sizeof(cbv));
+		//memcpy(cbvGPUDest + cbvAlignedSize, &cbv, sizeof(cbv));
+		//memcpy(getCBVUploadAddress(frameIndex, 0), &cbv, sizeof(cbv));
+//		drawInternal(di);
+		return;
+	}
+
 }
 
 void MeshObjectStore::draw()
@@ -46,6 +122,28 @@ void MeshObjectStore::gpuUploadPhaseEnd()
 	waitForSyncPoint(f);
 	inGpuUploadPhase = false;
 }
+
+void MeshObjectStore::createGroup(string groupname) {
+	if (groups.count(groupname) > 0) return;  // do not recreate groups
+											  //vector<WorldObject> *newGroup = groups[groupname];
+	const auto &newGroup = groups[groupname];
+	Log(" ---groups size " << groups.size() << endl);
+	Log(" ---newGroup vecor size " << newGroup.size() << endl);
+}
+
+void MeshObjectStore::addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid) {
+	assert(groups.count(groupname) > 0);
+	auto &grp = groups[groupname];
+	grp.push_back(unique_ptr<MeshObject>(new MeshObject()));
+	MeshObject *w = grp[grp.size() - 1].get();
+	w->pos() = pos;
+	//w->mesh = &mesh;
+	//w->textureID = tid;
+	////w.wireframe = false;
+	//w->alpha = 1.0f;
+	//addObjectPrivate(w, id, pos, tid);
+}
+
 
 // effect methods:
 
@@ -82,6 +180,8 @@ void MeshObjectStore::init()
 		if (frameData[n].fenceEvent == nullptr) {
 			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
 		}
+		// init frame resources of this effect: 
+		frameEffectData[n].initialized = true;
 	}
 	// init resources for update thread:
 	ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&updateCommandAllocator)));

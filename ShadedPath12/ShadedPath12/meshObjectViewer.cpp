@@ -82,7 +82,7 @@ void MeshObjectViewer::init()
 	#pragma warning( default : 4101 )
 	MetalTex = xapp().textureStore.getTexture("metal");
 	//TextureInfo *GrassTex = xapp().textureStore.getTexture("grass");
-	//TextureInfo *HouseTex = xapp().textureStore.getTexture("default");
+	HouseTex = xapp().textureStore.getTexture("default");
 	//TextureInfo *MetalTex = xapp().textureStore.getTexture("metal");
 	//TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	//TextureInfo *PlanetTex = xapp().textureStore.getTexture("planet");
@@ -95,15 +95,16 @@ void MeshObjectViewer::init()
 
 	objStore->gpuUploadPhaseStart();
 	// object creation:
+	objStore->createGroup("default");
 	if (true) {
 		objStore->loadObject(L"house4_anim.b", "House");
-		//xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
-		object.drawBoundingBox = true;
-		object.drawNormals = true;
-		//object.setAction("Cube");
-		//object.pathDescMove->pathMode = Path_Reverse;
-		object.material.specExp = 1.0f;       // no spec color
-		object.material.specIntensity = 0.0f; // no spec color
+		objStore->addObject("default", "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
+		//object.drawBoundingBox = true;
+		//object.drawNormals = true;
+		////object.setAction("Cube");
+		////object.pathDescMove->pathMode = Path_Reverse;
+		//object.material.specExp = 1.0f;       // no spec color
+		//object.material.specIntensity = 0.0f; // no spec color
 	}
 
 	// draw lines for mesh:
