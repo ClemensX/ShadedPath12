@@ -68,7 +68,7 @@ protected:
 	// duplicated for each worker thread
 	// max number of objects has to be given 
 	// setting maxObjects to 0 disables single buffer mode
-	// has to ge called in init() before rendering
+	// has to be called in init() before rendering
 	void setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wchar_t * name);
 	vector<ComPtr<ID3D12Resource>> singleCBVResources;
 	//ComPtr<ID3D12Resource> singleCBVResources[XApp::FrameCount*2]; // TODO
@@ -100,7 +100,7 @@ protected:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 protected:
 	bool singleCbvBufferMode = false;
-	UINT maxObjects = 0;
+	UINT maxObjects = 0;	// max number of entities allowed in this effect
 	vector<thread> workerThreads;
 	void waitForWorkerThreads();
 	VR_Eyes vr_eyes;

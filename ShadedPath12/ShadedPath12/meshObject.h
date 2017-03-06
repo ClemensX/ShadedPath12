@@ -1,3 +1,16 @@
+/*
+ * MeshObject and Store - central classes for rendering and handling meshed based objects inside the virtual world
+ *
+ * Design principles: 
+ *  Use on global constant buffer for all objects, allocated only once at effect intialization
+ *  You cannot use more objects that specfied at effect initialization (guarded by assertions)
+ *  Constant buffer should be fully set after update() phase
+ *  all objects are updated and drawn through the store - no update() and draw() calls on the individial objects
+ *  store is also the effect - using different classes like in WorldObject only caused overhead
+ *  constant buffer is duplicated in size for VR mode, with first left eye constants, followed by right eye constants
+ *  cbv[0] is always reserved for global data the shader code might need, actual objects start with index == 1
+ */
+
 class MeshObject {
 public:
 	MeshObject();
@@ -6,11 +19,11 @@ public:
 	XMFLOAT3& pos();
 	XMFLOAT4 rot_quaternion;
 	float scale = 1.0f;
+	Material material;
+	BoundingBox aabb;
 	bool drawBoundingBox = false;
 	bool drawNormals = false;
-	Material material;
 };
-
 
 // MeshObject Store:
 class MeshObjectStore : public EffectBase {
@@ -21,6 +34,10 @@ public:
 		return &singleton;
 	};
 
+	// set max number of objects allowed in the store (is guarded by assertions)
+	void setMaxObjectCount(unsigned int);
+	void update();  // update all objects - CBV is complete after this
+	void draw();	// draw all objects
 	// uploading mesh data to GPU can only be done in GpuUploadPhase
 	// this prevents unnecessary waits between upload requests
 	void gpuUploadPhaseStart() { inGpuUploadPhase = true; };
@@ -47,9 +64,10 @@ private:
 	MeshObjectStore & operator = (const MeshObjectStore &);	// prevent instance copies
 
 	bool inGpuUploadPhase = false;	// signal that this effect is uploading data to GPU
+	unsigned int used_objects = 0;	// counter to get total number of used objects and next available index
 
+// effect methods / members:
 public:
-	// effect methods / members:
 	void init();
 	void createAndUploadVertexAndIndexBuffer(Mesh *mesh);
 	void createRootSigAndPSO(ComPtr<ID3D12RootSignature>& sig, ComPtr<ID3D12PipelineState>& pso);
@@ -60,6 +78,7 @@ public:
 		float    alpha;
 	};
 private:
+	CBV cbv;	// only used for convenience - all CBVs are in buffer array
 	// globally enable wireframe display of objects
 	bool wireframe = false;
 
@@ -68,4 +87,18 @@ private:
 	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
 	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
 	FrameResource updateFrameData;
+	UINT cbvAlignedSize = 0;	// aligned size of cbv for using indexes into larger buffers (256 byte alignment)
+
+	// all data that needs to be frame local. No sync calls should be necessary
+	class MeshObjectFrameResource {
+	public:
+		ComPtr<ID3D12GraphicsCommandList> commandList;
+		ComPtr<ID3D12CommandAllocator> commandAllocator;
+		Camera camera;
+		Camera cameram[2];
+		CBV cbv;
+		CBV cbvm[2];
+		VR_Eyes vr_eyesm[2];
+		bool initialized;
+	};
 };

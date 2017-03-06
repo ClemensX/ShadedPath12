@@ -20,30 +20,46 @@ void MeshObjectStore::loadObject(wstring filename, string id, float scale, XMFLO
 	//meshes[id].createVertexAndIndexBuffer(this->objectEffect);
 }
 
+void MeshObjectStore::setMaxObjectCount(unsigned int maxNum)
+{
+	assert(maxNum > 0);
+	assert(initialized == false);	// only allowed to call before effect initialization
+	maxObjects = maxNum;
+}
+
+void MeshObjectStore::update()
+{
+	assert(this->maxObjects > 0);	// setting of max object count missing
+}
+
+void MeshObjectStore::draw()
+{
+	assert(this->maxObjects > 0);	// setting of max object count missing
+}
+
 // GPU Upload Phase
 void MeshObjectStore::gpuUploadPhaseEnd()
 {
 	// TODO: actual upload with effect ??
+	auto &f = updateFrameData;
+	createSyncPoint(f, xapp().commandQueue);
+	waitForSyncPoint(f);
 	inGpuUploadPhase = false;
 }
 
 // effect methods:
+
 void MeshObjectStore::init()
 {
 	if (initialized) return;
 	initialized = true;
+	assert(this->maxObjects > 0);	// setting of max object count missing
+
 	// try to do all expensive operations like shader loading and PSO creation here
 	// Create the pipeline state, which includes compiling and loading shaders.
 	{
 		createRootSigAndPSO(rootSignature, pipelineState);
-		//cbvAlignedSize = calcConstantBufferSize((UINT)sizeof(cbv));
-
-		//createConstantBuffer((UINT)2 * cbvAlignedSize, L"objecteffect_cbv_resource"); // TODO
-		//setSingleCBVMode(maxThreads, maxNumObjects, sizeof(cbv), L"objecteffect_cbvsingle_resource");
-		//// set cbv data:
-		//XMMATRIX ident = XMMatrixIdentity();
-		//XMStoreFloat4x4(&cbv.wvp, ident);
-		//cbv.world = cbv.wvp;
+		setSingleCBVMode(1, maxObjects, sizeof(cbv), L"mesheffect_cbvsingle_resource");
 	}
 
 	// Create command allocators and command lists for each frame.
@@ -114,21 +130,6 @@ void MeshObjectStore::createAndUploadVertexAndIndexBuffer(Mesh * mesh)
 	ThrowIfFailed(updateCommandList->Close());
 	ID3D12CommandList* ppCommandLists[] = { updateCommandList.Get() };
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-	//Sleep(100);
-	// Wait for the gpu to complete the update.
-	auto &f = updateFrameData;
-	//
-	// Close the command list and execute it to begin the vertex buffer copy into
-	// the default heap.
-	//ThrowIfFailed(commandLists[frameIndex]->Close());
-	//ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
-	//xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-	////Sleep(100);
-	//// Wait for the gpu to complete the update.
-	//auto &f = frameData[frameIndex];
-	//
-	createSyncPoint(f, xapp().commandQueue);
-	waitForSyncPoint(f);
 }
 
 #include "CompiledShaders/ObjectVS.h"

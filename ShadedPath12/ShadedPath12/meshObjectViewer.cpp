@@ -25,6 +25,7 @@ void MeshObjectViewer::init()
 	linesEffect.init();
 	xapp().world.linesEffect = &linesEffect;
 	textEffect.init();
+	objStore->setMaxObjectCount(1000);
 	objStore->init();
 	//objectEffect.init(&xapp().objectStore, 1);
 	float aspectRatio = xapp().aspectRatio;
@@ -193,7 +194,7 @@ void MeshObjectViewer::update()
 	lights->directionalLights[0].color = lightControl.factor(globalDirectionalLightLevel, dirColor1);
 	lights->directionalLights[1].color = lightControl.factor(globalDirectionalLightLevel, dirColor2);
 
-	//object.update();
+	objStore->update();
 }
 
 void MeshObjectViewer::draw()
@@ -201,7 +202,7 @@ void MeshObjectViewer::draw()
 	linesEffect.draw();
 	dotcrossEffect.draw();
 	textEffect.draw();
-	//object.draw();
+	objStore->draw();
 	postEffect.draw();
 }
 
