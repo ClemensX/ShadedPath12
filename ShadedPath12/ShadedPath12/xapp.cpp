@@ -163,7 +163,7 @@ void XApp::destroy()
 
 	//Sleep(150);
 	//CloseHandle(fenceEvent);
-#ifdef _DEBUG
+#ifdef _DEBUGXXX
 	//ThrowIfFailed(DXGIGetDebugInterface1(0, ));
 	typedef HRESULT(__stdcall *fPtr)(const IID&, void**);
 	HMODULE hDll = GetModuleHandleW(L"dxgidebug.dll");

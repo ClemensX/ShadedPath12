@@ -202,8 +202,8 @@ void MeshObjectViewer::update()
 void MeshObjectViewer::draw()
 {
 	linesEffect.draw();
-	dotcrossEffect.draw();
-	textEffect.draw();
+	//dotcrossEffect.draw();
+	//textEffect.draw();
 	objStore->draw();
 	postEffect.draw();
 }

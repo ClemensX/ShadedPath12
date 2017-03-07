@@ -306,6 +306,10 @@ void MeshObjectStore::preDraw()
 	ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
 	// Set necessary state.
 	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
+
+	// TODO adapt for 2 eyes:
+	commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[0]);
+	commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[0]);
 	// TODO check
 	//commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
 	//commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
@@ -344,6 +348,8 @@ void MeshObjectStore::postDraw()
 
 void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 {
+	xapp().lights.lights.material = mo->material;
+	xapp().lights.update();
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &mo->mesh->vertexBufferView);
