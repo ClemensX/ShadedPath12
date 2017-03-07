@@ -61,6 +61,7 @@ public:
 	// draw all objects within a group (all have same mesh), set threadNum > 1 to draw with multiple threads
 	void drawGroup(string groupname, size_t threadNum = 0);
 	void setWorldObjectEffect(WorldObjectEffect *objectEffect);
+	void forAll(std::function<void ()> func);
 private:
 	unordered_map<string, vector<unique_ptr<MeshObject>>> groups;
 	unordered_map<string, Mesh> meshes;

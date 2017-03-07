@@ -85,9 +85,13 @@ void MeshObjectStore::update()
 		cbv->cameraPos.x = cam->pos.x;
 		cbv->cameraPos.y = cam->pos.y;
 		cbv->cameraPos.z = cam->pos.z;
-//		for (auto & w : this->) {
-//			w->draw();
-//		}
+		for (auto & group : this->groups) {
+			Log("group: " << group.first.c_str() << endl);
+			for (auto & w : group.second) {
+				Log("  group el: " << w.get()->pos().x << endl);
+			}
+		}
+		forAll([]() { Log("one");});
 //		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
 //		XMMATRIX wvp = calcWVP(toWorld, vp);
 //		XMStoreFloat4x4(&cbv->wvp, wvp);
@@ -125,10 +129,20 @@ void MeshObjectStore::gpuUploadPhaseEnd()
 
 void MeshObjectStore::createGroup(string groupname) {
 	if (groups.count(groupname) > 0) return;  // do not recreate groups
-											  //vector<WorldObject> *newGroup = groups[groupname];
 	const auto &newGroup = groups[groupname];
 	Log(" ---groups size " << groups.size() << endl);
 	Log(" ---newGroup vecor size " << newGroup.size() << endl);
+}
+
+void MeshObjectStore::forAll(std::function<void()> func)
+{
+	for (auto & group : this->groups) {
+		//Log("group: " << group.first.c_str() << endl);
+		for (auto & w : group.second) {
+			//Log("  group el: " << w.get()->pos().x << endl);
+			func();
+		}
+	}
 }
 
 void MeshObjectStore::addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid) {
