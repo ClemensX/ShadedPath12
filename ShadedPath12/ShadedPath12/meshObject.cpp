@@ -68,18 +68,16 @@ XMMATRIX MeshObjectStore::calcWVP(XMMATRIX &toWorld, XMMATRIX &vp) {
 	return vp * toWorld;
 }
 
-void MeshObjectStore::updateOne(MeshObject *mo, MeshObjectStore *store, XMMATRIX vp, int frameIndex) {
+void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frameIndex) {
 	assert(mo->objectNum > 0); // not properly added to store
-	CBV my_cbv;
-	CBV *cbv = &my_cbv;
 	//Log("  elem: " << mo->pos().x << endl);
 	XMMATRIX toWorld = mo->calcToWorld(); // apply pos and rot
-	XMMATRIX wvp = store->calcWVP(toWorld, vp);
+	XMMATRIX wvp = calcWVP(toWorld, vp);
 	XMStoreFloat4x4(&cbv->wvp, wvp);
 	XMStoreFloat4x4(&cbv->world, toWorld);
 	//cbv->world = di.world;
 	cbv->alpha = mo->alpha;
-	memcpy(MeshObjectStore::getStore()->getCBVUploadAddress(frameIndex, 0, mo->objectNum, 0), cbv, sizeof(*cbv));
+	memcpy(getCBVUploadAddress(frameIndex, 0, mo->objectNum, 0), cbv, sizeof(*cbv));
 
 }
 
@@ -100,33 +98,26 @@ void MeshObjectStore::update()
 		cbv->cameraPos.x = cam->pos.x;
 		cbv->cameraPos.y = cam->pos.y;
 		cbv->cameraPos.z = cam->pos.z;
-		forAll([vp, frameIndex](MeshObject *mo) {
+		forAll([this, cbv, vp, frameIndex](MeshObject *mo) {
 			//Log("  elem: " << mo->pos().x << endl);
-			MeshObjectStore::updateOne(mo, MeshObjectStore::getStore(), vp, frameIndex);
+			updateOne(cbv, mo, vp, frameIndex);
 		});
-		//		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
-//		XMMATRIX wvp = calcWVP(toWorld, vp);
-//		XMStoreFloat4x4(&cbv->wvp, wvp);
-//		cbv->world = di.world;
-//		cbv->alpha = di.alpha;
-//		if (inBulkOperation) {
-//			memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum, 0), cbv, sizeof(*cbv));
-//		}
-//		else {
-//			memcpy(cbvGPUDest, cbv, sizeof(*cbv));
-//		}
-		//memcpy(getCBVUploadAddress(frameIndex, di.threadNum, di.objectNum), &cbv, sizeof(cbv));
-		//memcpy(cbvGPUDest + cbvAlignedSize, &cbv, sizeof(cbv));
-		//memcpy(getCBVUploadAddress(frameIndex, 0), &cbv, sizeof(cbv));
-//		drawInternal(di);
 		return;
 	}
-
 }
 
 void MeshObjectStore::draw()
 {
 	assert(this->maxObjects > 0);	// setting of max object count missing
+	prepareDraw(&xapp().vr);
+	preDraw();
+	if (!xapp().ovrRendering) {
+		forAll([this](MeshObject *mo) {
+			//Log("  elem: " << mo->pos().x << endl);
+			drawInternal(mo);
+		});
+	}
+	postDraw();
 }
 
 // GPU Upload Phase
@@ -165,11 +156,12 @@ void MeshObjectStore::addObject(string groupname, string id, XMFLOAT3 pos, Textu
 	MeshObject *w = grp[grp.size() - 1].get();
 	w->pos() = pos;
 	w->objectNum = ++this->used_objects;
-	//w->mesh = &mesh;
-	//w->textureID = tid;
-	////w.wireframe = false;
-	//w->alpha = 1.0f;
-	//addObjectPrivate(w, id, pos, tid);
+	assert(meshes.count(id) > 0);
+	Mesh &mesh = meshes.at(id);
+	w->mesh = &mesh;
+	w->textureID = tid;
+	//w.wireframe = false;
+	//w->action = nullptr;
 }
 
 
@@ -303,4 +295,61 @@ void MeshObjectStore::createRootSigAndPSO(ComPtr<ID3D12RootSignature> &sig, ComP
 	psoDesc.pRootSignature = sig.Get();
 	ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso)));
 	pso.Get()->SetName(L"state_objecteffect_init");
+}
+
+// drawing
+void MeshObjectStore::preDraw()
+{
+	int frameIndex = xapp().getCurrentBackBufferIndex();
+	ThrowIfFailed(commandAllocators[frameIndex]->Reset());
+	ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
+	// Set necessary state.
+	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
+	// TODO check
+	//commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
+	//commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
+	//commandLists[frameIndex]->RSSetViewports(1, xapp().vr.getViewport());
+	//commandLists[frameIndex]->RSSetScissorRects(1, xapp().vr.getScissorRect());
+
+	// Set CBVs
+	//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, di.objectNum, 0));
+	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, 0, 0));  // set to beginning of all object buffer
+	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
+
+	// Indicate that the back buffer will be used as a render target.
+	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
+	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+	ID3D12Resource *resource;
+	if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
+	else resource = xapp().vr.texResource[frameIndex];
+	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle, resource);
+
+}
+
+void MeshObjectStore::postDraw()
+{
+	int frameIndex = xapp().getCurrentBackBufferIndex();
+
+	ThrowIfFailed(commandLists[frameIndex]->Close());
+	// Execute the command list.
+	ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
+	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+}
+
+void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
+{
+	int frameIndex = xapp().getCurrentBackBufferIndex();
+	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &mo->mesh->vertexBufferView);
+	commandLists[frameIndex]->IASetIndexBuffer(&mo->mesh->indexBufferView);
+	//auto *tex = xapp().textureStore.getTexture(elvec.first);
+	// Set SRV
+	ID3D12DescriptorHeap* ppHeaps[] = { mo->textureID->m_srvHeap.Get() };
+	commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	commandLists[frameIndex]->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+	commandLists[frameIndex]->DrawIndexedInstanced(mo->mesh->numIndexes, 1, 0, 0, 0);
 }

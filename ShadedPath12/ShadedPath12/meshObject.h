@@ -28,6 +28,8 @@ public:
 	XMMATRIX calcToWorld();
 	float alpha = 1.0f;
 	unsigned int objectNum = 0;	// 0 indicates not properly added object
+	Mesh *mesh;
+	TextureID textureID;
 private:
 	XMFLOAT3 _pos;
 	XMFLOAT3 _rot;
@@ -42,11 +44,17 @@ public:
 		return &singleton;
 	};
 
+	struct CBV {
+		XMFLOAT4X4 wvp;
+		XMFLOAT4X4 world;  // needed for normal calculations
+		XMFLOAT3   cameraPos;
+		float    alpha;
+	};
 	// set max number of objects allowed in the store (is guarded by assertions)
 	void setMaxObjectCount(unsigned int);
 	void update();  // update all objects - CBV is complete after this
 	void draw();	// draw all objects
-	static void updateOne(MeshObject * mo, MeshObjectStore * store, XMMATRIX vp, int frameIndex);
+	void updateOne(CBV *cbv, MeshObject * mo, XMMATRIX vp, int frameIndex);
 	// uploading mesh data to GPU can only be done in GpuUploadPhase
 	// this prevents unnecessary waits between upload requests
 	void gpuUploadPhaseStart() { inGpuUploadPhase = true; };
@@ -84,12 +92,6 @@ public:
 	void createAndUploadVertexAndIndexBuffer(Mesh *mesh);
 	void createRootSigAndPSO(ComPtr<ID3D12RootSignature>& sig, ComPtr<ID3D12PipelineState>& pso);
 	XMMATRIX calcWVP(XMMATRIX & toWorld, XMMATRIX & vp);
-	struct CBV {
-		XMFLOAT4X4 wvp;
-		XMFLOAT4X4 world;  // needed for normal calculations
-		XMFLOAT3   cameraPos;
-		float    alpha;
-	};
 private:
 	CBV cbv;	// only used for convenience - all CBVs are in buffer array
 	// globally enable wireframe display of objects
@@ -115,4 +117,7 @@ private:
 		bool initialized;
 	};
 	MeshObjectFrameResource frameEffectData[XApp::FrameCount];
+	void preDraw();
+	void postDraw();
+	void drawInternal(MeshObject *mo, int eyeNum = 0);
 };
