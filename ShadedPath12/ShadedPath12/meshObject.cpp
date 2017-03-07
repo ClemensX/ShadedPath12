@@ -151,6 +151,7 @@ void MeshObjectStore::forAll(std::function<void(MeshObject *mo)> func)
 void MeshObjectStore::addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid) {
 	assert(groups.count(groupname) > 0);
 	assert(used_objects + 1 < maxObjects);
+	assert(tid->texSRV && tid->m_srvHeap);  // texture correctly loaded?
 	auto &grp = groups[groupname];
 	grp.push_back(unique_ptr<MeshObject>(new MeshObject()));
 	MeshObject *w = grp[grp.size() - 1].get();
@@ -313,7 +314,7 @@ void MeshObjectStore::preDraw()
 
 	// Set CBVs
 	//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, di.objectNum, 0));
-	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, 0, 0));  // set to beginning of all object buffer
+	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, 1, 0));  // set to beginning of all object buffer
 	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
 
 	// Indicate that the back buffer will be used as a render target.
@@ -344,6 +345,7 @@ void MeshObjectStore::postDraw()
 void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
+	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &mo->mesh->vertexBufferView);
 	commandLists[frameIndex]->IASetIndexBuffer(&mo->mesh->indexBufferView);
 	//auto *tex = xapp().textureStore.getTexture(elvec.first);

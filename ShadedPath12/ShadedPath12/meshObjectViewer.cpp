@@ -69,7 +69,7 @@ void MeshObjectViewer::init()
 
 	// textures
 	//xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
-	//xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
+	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "markings");
 	xapp().textureStore.loadTexture(L"metal1.dds", "metal");
 	//xapp().textureStore.loadTexture(L"worm1.dds", "worm");
 	//xapp().textureStore.loadTexture(L"mars_6k_color.dds", "planet");
@@ -82,7 +82,7 @@ void MeshObjectViewer::init()
 	#pragma warning( default : 4101 )
 	MetalTex = xapp().textureStore.getTexture("metal");
 	//TextureInfo *GrassTex = xapp().textureStore.getTexture("grass");
-	HouseTex = xapp().textureStore.getTexture("default");
+	HouseTex = xapp().textureStore.getTexture("markings");
 	//TextureInfo *MetalTex = xapp().textureStore.getTexture("metal");
 	//TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	//TextureInfo *PlanetTex = xapp().textureStore.getTexture("planet");
@@ -98,7 +98,8 @@ void MeshObjectViewer::init()
 	objStore->createGroup("default");
 	if (true) {
 		objStore->loadObject(L"house4_anim.b", "House");
-		objStore->addObject("default", "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
+		//objStore->addObject("default", "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
+		objStore->addObject("default", "House", XMFLOAT3(0.0f, 0.0f, 0.0f), HouseTex);
 		//object.drawBoundingBox = true;
 		//object.drawNormals = true;
 		////object.setAction("Cube");
