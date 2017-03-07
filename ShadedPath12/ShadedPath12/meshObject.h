@@ -64,7 +64,7 @@ public:
 	// load object definition from .b file, save under given hash name
 	void loadObject(wstring filename, string id, float scale = 1.0f, XMFLOAT3 *displacement = nullptr);
 	// add loaded object to scene
-	void addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid = 0);
+	MeshObject* addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid = 0);
 	//void addObject(WorldObject &w, string id, XMFLOAT3 pos, TextureID tid = 0);
 	// object groups: give fast access to specific objects (e.g. all worm NPCs)
 	void createGroup(string groupname);

@@ -78,7 +78,8 @@ void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frame
 	//cbv->world = di.world;
 	cbv->alpha = mo->alpha;
 	memcpy(getCBVUploadAddress(frameIndex, 0, mo->objectNum, 0), cbv, sizeof(*cbv));
-
+	xapp().lights.lights.material = mo->material;
+	xapp().lights.update();
 }
 
 void MeshObjectStore::update()
@@ -148,7 +149,7 @@ void MeshObjectStore::forAll(std::function<void(MeshObject *mo)> func)
 	}
 }
 
-void MeshObjectStore::addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid) {
+MeshObject* MeshObjectStore::addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid) {
 	assert(groups.count(groupname) > 0);
 	assert(used_objects + 1 < maxObjects);
 	assert(tid->texSRV && tid->m_srvHeap);  // texture correctly loaded?
@@ -161,6 +162,7 @@ void MeshObjectStore::addObject(string groupname, string id, XMFLOAT3 pos, Textu
 	Mesh &mesh = meshes.at(id);
 	w->mesh = &mesh;
 	w->textureID = tid;
+	return w;
 	//w.wireframe = false;
 	//w->action = nullptr;
 }
@@ -348,8 +350,6 @@ void MeshObjectStore::postDraw()
 
 void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 {
-	xapp().lights.lights.material = mo->material;
-	xapp().lights.update();
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &mo->mesh->vertexBufferView);

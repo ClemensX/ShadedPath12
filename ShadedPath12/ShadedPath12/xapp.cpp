@@ -163,7 +163,7 @@ void XApp::destroy()
 
 	//Sleep(150);
 	//CloseHandle(fenceEvent);
-#ifdef _DEBUGXXX
+#ifdef _DEBUG
 	//ThrowIfFailed(DXGIGetDebugInterface1(0, ));
 	typedef HRESULT(__stdcall *fPtr)(const IID&, void**);
 	HMODULE hDll = GetModuleHandleW(L"dxgidebug.dll");
@@ -205,7 +205,7 @@ void XApp::init()
 		// throw assertion error in debug mode
 		assert(app != nullptr);
 	}
-#ifdef _DEBUG
+#ifdef _DEBUGXXX
 	// Enable the D3D12 debug layer.
 	{
 		ComPtr<ID3D12Debug> debugController;

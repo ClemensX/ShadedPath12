@@ -98,14 +98,16 @@ void MeshObjectViewer::init()
 	objStore->createGroup("default");
 	if (true) {
 		objStore->loadObject(L"house4_anim.b", "House");
-		//objStore->addObject("default", "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
-		objStore->addObject("default", "House", XMFLOAT3(0.0f, 0.0f, 0.0f), HouseTex);
+		MeshObject * o = objStore->addObject("default", "House", XMFLOAT3(1.0f, 1.0f, 1.0f), HouseTex);
 		//object.drawBoundingBox = true;
 		//object.drawNormals = true;
 		////object.setAction("Cube");
 		////object.pathDescMove->pathMode = Path_Reverse;
 		//object.material.specExp = 1.0f;       // no spec color
 		//object.material.specIntensity = 0.0f; // no spec color
+		o->material.ambient = XMFLOAT4(1, 1, 1, 1);
+		o->material.specExp = 1.0f;       // no spec color
+		o->material.specIntensity = 0.0f; // no spec color
 	}
 
 	// draw lines for mesh:
@@ -114,12 +116,12 @@ void MeshObjectViewer::init()
 	CBVLights *lights = &xapp().lights.lights;
 
 	// ambient light
-	//lights->ambient[0].ambient = XMFLOAT4(0.3, 0.3, 0.3, 1); overwritten in update()
+	lights->ambientLights[0].ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.f);
 	assert(0 < MAX_AMBIENT);
 	globalAmbientLightLevel = 0.3f;
 	globalDirectionalLightLevel = 1.0f;
-	globalAmbientLightLevel = 0.0f;
-	globalDirectionalLightLevel = 0.0f;
+	//globalAmbientLightLevel = 0.0f;
+	//globalDirectionalLightLevel = 0.0f;
 
 	// directional lights:
 	dirColor1 = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -171,7 +173,6 @@ void MeshObjectViewer::update()
 	if (globalDirectionalLightLevel < 0.0f) globalDirectionalLightLevel = 0.0f;
 	if (globalDirectionalLightLevel > 1.0f) globalDirectionalLightLevel = 1.0f;
 
-	xapp().lights.update();
 	linesEffect.update();
 	dotcrossEffect.update();
 	// update info text:
@@ -195,6 +196,7 @@ void MeshObjectViewer::update()
 	lights->ambientLights[0].ambient = XMFLOAT4(f, f, f, 1);
 	lights->directionalLights[0].color = lightControl.factor(globalDirectionalLightLevel, dirColor1);
 	lights->directionalLights[1].color = lightControl.factor(globalDirectionalLightLevel, dirColor2);
+	xapp().lights.update();
 
 	objStore->update();
 }

@@ -26,7 +26,7 @@ private:
 	LONGLONG startTime;
 	int framenumLine, fpsLine;  // indexes into the text array for Linetext effect
 	bool textureFullFrameTest = false;
-	MeshObject object;
+	//MeshObject object;
 	float globalAmbientLightLevel;
 	float globalDirectionalLightLevel;
 	XMFLOAT4 dirColor1, dirColor2;
