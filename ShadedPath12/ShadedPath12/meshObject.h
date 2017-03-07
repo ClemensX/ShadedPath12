@@ -26,6 +26,8 @@ public:
 	bool drawNormals = false;
 	bool useQuaternionRotation = false;
 	XMMATRIX calcToWorld();
+	float alpha = 1.0f;
+	unsigned int objectNum = 0;	// 0 indicates not properly added object
 private:
 	XMFLOAT3 _pos;
 	XMFLOAT3 _rot;
@@ -44,6 +46,7 @@ public:
 	void setMaxObjectCount(unsigned int);
 	void update();  // update all objects - CBV is complete after this
 	void draw();	// draw all objects
+	static void updateOne(MeshObject * mo, MeshObjectStore * store, XMMATRIX vp, int frameIndex);
 	// uploading mesh data to GPU can only be done in GpuUploadPhase
 	// this prevents unnecessary waits between upload requests
 	void gpuUploadPhaseStart() { inGpuUploadPhase = true; };
@@ -61,7 +64,9 @@ public:
 	// draw all objects within a group (all have same mesh), set threadNum > 1 to draw with multiple threads
 	void drawGroup(string groupname, size_t threadNum = 0);
 	void setWorldObjectEffect(WorldObjectEffect *objectEffect);
-	void forAll(std::function<void ()> func);
+	// lambda for acting on all objects in the store
+	// call like this: 		forAll([](MeshObject *mo) { Log("  elem: " << mo->pos().x << endl);});
+	void forAll(std::function<void (MeshObject*)> func);
 private:
 	unordered_map<string, vector<unique_ptr<MeshObject>>> groups;
 	unordered_map<string, Mesh> meshes;

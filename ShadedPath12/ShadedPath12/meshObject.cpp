@@ -68,6 +68,21 @@ XMMATRIX MeshObjectStore::calcWVP(XMMATRIX &toWorld, XMMATRIX &vp) {
 	return vp * toWorld;
 }
 
+void MeshObjectStore::updateOne(MeshObject *mo, MeshObjectStore *store, XMMATRIX vp, int frameIndex) {
+	assert(mo->objectNum > 0); // not properly added to store
+	CBV my_cbv;
+	CBV *cbv = &my_cbv;
+	//Log("  elem: " << mo->pos().x << endl);
+	XMMATRIX toWorld = mo->calcToWorld(); // apply pos and rot
+	XMMATRIX wvp = store->calcWVP(toWorld, vp);
+	XMStoreFloat4x4(&cbv->wvp, wvp);
+	XMStoreFloat4x4(&cbv->world, toWorld);
+	//cbv->world = di.world;
+	cbv->alpha = mo->alpha;
+	memcpy(MeshObjectStore::getStore()->getCBVUploadAddress(frameIndex, 0, mo->objectNum, 0), cbv, sizeof(*cbv));
+
+}
+
 void MeshObjectStore::update()
 {
 	assert(this->maxObjects > 0);	// setting of max object count missing
@@ -85,14 +100,11 @@ void MeshObjectStore::update()
 		cbv->cameraPos.x = cam->pos.x;
 		cbv->cameraPos.y = cam->pos.y;
 		cbv->cameraPos.z = cam->pos.z;
-		for (auto & group : this->groups) {
-			Log("group: " << group.first.c_str() << endl);
-			for (auto & w : group.second) {
-				Log("  group el: " << w.get()->pos().x << endl);
-			}
-		}
-		forAll([]() { Log("one");});
-//		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
+		forAll([vp, frameIndex](MeshObject *mo) {
+			//Log("  elem: " << mo->pos().x << endl);
+			MeshObjectStore::updateOne(mo, MeshObjectStore::getStore(), vp, frameIndex);
+		});
+		//		XMMATRIX toWorld = XMLoadFloat4x4(&di.world);
 //		XMMATRIX wvp = calcWVP(toWorld, vp);
 //		XMStoreFloat4x4(&cbv->wvp, wvp);
 //		cbv->world = di.world;
@@ -134,23 +146,25 @@ void MeshObjectStore::createGroup(string groupname) {
 	Log(" ---newGroup vecor size " << newGroup.size() << endl);
 }
 
-void MeshObjectStore::forAll(std::function<void()> func)
+void MeshObjectStore::forAll(std::function<void(MeshObject *mo)> func)
 {
 	for (auto & group : this->groups) {
 		//Log("group: " << group.first.c_str() << endl);
 		for (auto & w : group.second) {
 			//Log("  group el: " << w.get()->pos().x << endl);
-			func();
+			func(w.get());
 		}
 	}
 }
 
 void MeshObjectStore::addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid) {
 	assert(groups.count(groupname) > 0);
+	assert(used_objects + 1 < maxObjects);
 	auto &grp = groups[groupname];
 	grp.push_back(unique_ptr<MeshObject>(new MeshObject()));
 	MeshObject *w = grp[grp.size() - 1].get();
 	w->pos() = pos;
+	w->objectNum = ++this->used_objects;
 	//w->mesh = &mesh;
 	//w->textureID = tid;
 	////w.wireframe = false;
