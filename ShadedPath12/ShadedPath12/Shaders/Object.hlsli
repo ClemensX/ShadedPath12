@@ -23,6 +23,11 @@ struct ObjectConstantBuffer {
 };
 
 ConstantBuffer<ObjectConstantBuffer> cbv: register(b0);
+// we cannot use array - it exceeds max allowed CBV size of 4096 16-byte entries
+// set single CBV pointer to correct offset before calling shader code
+//cbuffer cbFixedCBVs : register(b1) {
+//	ObjectConstantBuffer cbvs[1000];
+//};
 
 struct VSInput
 {

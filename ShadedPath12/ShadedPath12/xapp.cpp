@@ -205,7 +205,7 @@ void XApp::init()
 		// throw assertion error in debug mode
 		assert(app != nullptr);
 	}
-#ifdef _DEBUG
+#ifdef _DEBUGXXX
 	// Enable the D3D12 debug layer.
 	{
 		ComPtr<ID3D12Debug> debugController;

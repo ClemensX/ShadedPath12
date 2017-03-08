@@ -73,7 +73,7 @@ void ObjectViewer::init()
 
 	// textures
 	//xapp().textureStore.loadTexture(L"grassdirt8.dds", "grass");
-	//xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
+	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
 	xapp().textureStore.loadTexture(L"metal1.dds", "metal");
 	//xapp().textureStore.loadTexture(L"worm1.dds", "worm");
 	//xapp().textureStore.loadTexture(L"mars_6k_color.dds", "planet");
@@ -98,7 +98,7 @@ void ObjectViewer::init()
 	TextureInfo *GrassTex, *HouseTex, *MetalTex, *WormTex, *PlanetTex, *Meteor1Tex, *AxistestTex;
 	MetalTex = xapp().textureStore.getTexture("metal");
 	//TextureInfo *GrassTex = xapp().textureStore.getTexture("grass");
-	//TextureInfo *HouseTex = xapp().textureStore.getTexture("default");
+	HouseTex = xapp().textureStore.getTexture("default");
 	//TextureInfo *MetalTex = xapp().textureStore.getTexture("metal");
 	//TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	//TextureInfo *PlanetTex = xapp().textureStore.getTexture("planet");
@@ -150,12 +150,12 @@ void ObjectViewer::init()
 		object.material.specExp = 1.0f;       // no spec color 1 0 nothing
 		object.material.specIntensity = 0.0f; // no spec color
 	}
-	if (false) {
+	if (true) {
 		xapp().objectStore.loadObject(L"house4_anim.b", "House");
-		xapp().objectStore.addObject(object, "House", XMFLOAT3(10.0f, 10.0f, 10.0f), HouseTex);
+		xapp().objectStore.addObject(object, "House", XMFLOAT3(1.0f, 1.0f, 1.0f), HouseTex);
 		//object.drawBoundingBox = true;
 		object.drawNormals = true;
-		object.setAction("Cube");
+		//object.setAction("Cube");
 		//object.pathDescMove->pathMode = Path_Reverse;
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
@@ -241,7 +241,7 @@ void ObjectViewer::init()
 		object.material.specExp = 1.0f;       // no spec color
 		object.material.specIntensity = 0.0f; // no spec color
 	}
-	if (true) {
+	if (false) {
 		//XMFLOAT3 displacement(0.02f, 0.033f, 0.0f);
 		XMFLOAT3 displacement(-0.017f, 0.032f, 0.0f);
 		xapp().objectStore.loadObject(L"ovr_557a26331850dbf.b", "rightSpinController", 1.0f, &displacement);
@@ -353,9 +353,9 @@ void ObjectViewer::update()
 	object.update();
 
 	// disable for no spinning:
-	double fullturn_sec = 5.0;
-	double turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
-	object.rot().z = (float)(turnfrac * XM_2PI);
+	//double fullturn_sec = 5.0;
+	//double turnfrac = fmod(nowf, fullturn_sec) / fullturn_sec;  // 0.0 .. 1.0
+	//object.rot().z = (float)(turnfrac * XM_2PI);
 
 	//Log("obj pos " << object.pos().x << endl);
 

@@ -32,7 +32,7 @@ XMMATRIX MeshObject::calcToWorld() {
 	// translation
 	XMVECTOR t = XMVectorSet(pos().x, pos().y, pos().z, 0.0f);
 	// toWorld matrix:
-	return XMMatrixAffineTransformation(s, q_origin, q, t);
+	return XMMatrixTranspose(XMMatrixAffineTransformation(s, q_origin, q, t));
 }
 
 
@@ -320,7 +320,6 @@ void MeshObjectStore::preDraw()
 
 	// Set CBVs
 	//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, di.objectNum, 0));
-	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, 1, 0));  // set to beginning of all object buffer
 	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
 
 	// Indicate that the back buffer will be used as a render target.
@@ -354,7 +353,7 @@ void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &mo->mesh->vertexBufferView);
 	commandLists[frameIndex]->IASetIndexBuffer(&mo->mesh->indexBufferView);
-	//auto *tex = xapp().textureStore.getTexture(elvec.first);
+	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, mo->objectNum, 0));  // set to beginning of all object buffer
 	// Set SRV
 	ID3D12DescriptorHeap* ppHeaps[] = { mo->textureID->m_srvHeap.Get() };
 	commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
