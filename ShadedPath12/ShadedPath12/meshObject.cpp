@@ -68,7 +68,7 @@ XMMATRIX MeshObjectStore::calcWVP(XMMATRIX &toWorld, XMMATRIX &vp) {
 	return vp * toWorld;
 }
 
-void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frameIndex) {
+void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frameIndex, int eyeNum) {
 	assert(mo->objectNum > 0); // not properly added to store
 	//Log("  elem: " << mo->pos().x << endl);
 	XMMATRIX toWorld = mo->calcToWorld(); // apply pos and rot
@@ -77,7 +77,7 @@ void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frame
 	XMStoreFloat4x4(&cbv->world, toWorld);
 	//cbv->world = di.world;
 	cbv->alpha = mo->alpha;
-	memcpy(getCBVUploadAddress(frameIndex, 0, mo->objectNum, 0), cbv, sizeof(*cbv));
+	memcpy(getCBVUploadAddress(frameIndex, 0, mo->objectNum, eyeNum), cbv, sizeof(*cbv));
 	xapp().lights.lights.material = mo->material;
 	xapp().lights.update();
 }
@@ -103,7 +103,21 @@ void MeshObjectStore::update()
 			//Log("  elem: " << mo->pos().x << endl);
 			updateOne(cbv, mo, vp, frameIndex);
 		});
-		return;
+	} else {
+		for (int eyeNum = 0; eyeNum < 2; eyeNum++) {
+			// adjust PVW matrix
+			frameEffectData[frameIndex].vr_eyesm[eyeNum] = vr_eyes;
+			XMMATRIX adjustedEyeMatrix;
+			cam->eyeNumUse = true;
+			cam->eyeNum = eyeNum;
+			frameEffectData[frameIndex].vr_eyesm[eyeNum].adjustEyeMatrix(adjustedEyeMatrix, cam, eyeNum, &xapp().vr);
+			XMMATRIX vp = adjustedEyeMatrix;
+			cbv->cameraPos = frameEffectData[frameIndex].vr_eyesm[eyeNum].adjustedEyePos[eyeNum];
+			forAll([this, cbv, vp, frameIndex, eyeNum](MeshObject *mo) {
+				//Log("  elem: " << mo->pos().x << endl);
+				updateOne(cbv, mo, vp, frameIndex, eyeNum); // add adjustedeyematrix
+			});
+		}
 	}
 }
 
@@ -116,6 +130,12 @@ void MeshObjectStore::draw()
 		forAll([this](MeshObject *mo) {
 			//Log("  elem: " << mo->pos().x << endl);
 			drawInternal(mo);
+		});
+	} else {
+		forAll([this](MeshObject *mo) {
+			//Log("  elem: " << mo->pos().x << endl);
+			drawInternal(mo, 0);
+			drawInternal(mo, 1);
 		});
 	}
 	postDraw();
@@ -350,10 +370,12 @@ void MeshObjectStore::postDraw()
 void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
+	commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
+	commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &mo->mesh->vertexBufferView);
 	commandLists[frameIndex]->IASetIndexBuffer(&mo->mesh->indexBufferView);
-	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, mo->objectNum, 0));  // set to beginning of all object buffer
+	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, mo->objectNum, eyeNum));  // set to beginning of all object buffer
 	// Set SRV
 	ID3D12DescriptorHeap* ppHeaps[] = { mo->textureID->m_srvHeap.Get() };
 	commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);

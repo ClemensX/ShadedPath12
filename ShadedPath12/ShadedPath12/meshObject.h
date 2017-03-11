@@ -54,7 +54,7 @@ public:
 	void setMaxObjectCount(unsigned int);
 	void update();  // update all objects - CBV is complete after this
 	void draw();	// draw all objects
-	void updateOne(CBV *cbv, MeshObject * mo, XMMATRIX vp, int frameIndex);
+	void updateOne(CBV *cbv, MeshObject * mo, XMMATRIX vp, int frameIndex, int eyeNum = 0);
 	// uploading mesh data to GPU can only be done in GpuUploadPhase
 	// this prevents unnecessary waits between upload requests
 	void gpuUploadPhaseStart() { inGpuUploadPhase = true; };
