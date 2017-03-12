@@ -29,7 +29,7 @@ void MassTest::init()
 	linesEffect.init();
 	textEffect.init();
 	postEffect.init();
-	objectEffect.init(&xapp().objectStore, NUM_THREADS, NUM_METEOR + 18);
+	objectEffect.init(&xapp().objectStore, NUM_THREADS, NUM_METEOR + 80);
 
 	// initialize game time to real time:
 	gameTime.init(1);

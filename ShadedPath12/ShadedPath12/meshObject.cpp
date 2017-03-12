@@ -158,6 +158,11 @@ void MeshObjectStore::createGroup(string groupname) {
 	Log(" ---newGroup vecor size " << newGroup.size() << endl);
 }
 
+const vector<unique_ptr<MeshObject>> *MeshObjectStore::getGroup(string groupname) {
+	if (groups.count(groupname) == 0) return nullptr;
+	return &groups[groupname];
+}
+
 void MeshObjectStore::forAll(std::function<void(MeshObject *mo)> func)
 {
 	for (auto & group : this->groups) {

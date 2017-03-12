@@ -68,7 +68,7 @@ public:
 	//void addObject(WorldObject &w, string id, XMFLOAT3 pos, TextureID tid = 0);
 	// object groups: give fast access to specific objects (e.g. all worm NPCs)
 	void createGroup(string groupname);
-	const vector<unique_ptr<WorldObject>> *getGroup(string groupname);
+	const vector<unique_ptr<MeshObject>> *getGroup(string groupname);
 	// draw all objects within a group (all have same mesh), set threadNum > 1 to draw with multiple threads
 	void drawGroup(string groupname, size_t threadNum = 0);
 	void setWorldObjectEffect(WorldObjectEffect *objectEffect);
