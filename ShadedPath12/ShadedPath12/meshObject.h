@@ -30,6 +30,9 @@ public:
 	unsigned int objectNum = 0;	// 0 indicates not properly added object
 	Mesh *mesh;
 	TextureID textureID;
+	ComPtr<ID3D12GraphicsCommandList> bundleCommandLists[XApp::FrameCount];
+	ComPtr<ID3D12CommandAllocator> bundleCommandAllocators[XApp::FrameCount];
+	bool drawBundleAvailable = false;
 private:
 	XMFLOAT3 _pos;
 	XMFLOAT3 _rot;
@@ -75,6 +78,7 @@ public:
 	// lambda for acting on all objects in the store
 	// call like this: 		forAll([](MeshObject *mo) { Log("  elem: " << mo->pos().x << endl);});
 	void forAll(std::function<void (MeshObject*)> func);
+	void createDrawBundle(MeshObject *meshObject);
 private:
 	unordered_map<string, vector<unique_ptr<MeshObject>>> groups;
 	unordered_map<string, Mesh> meshes;

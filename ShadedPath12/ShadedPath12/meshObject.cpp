@@ -375,6 +375,17 @@ void MeshObjectStore::postDraw()
 void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
+	if (mo->drawBundleAvailable) {
+		commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
+		commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
+		commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, mo->objectNum, eyeNum));  // set to beginning of all object buffer
+																																	 // Set SRV
+		ID3D12DescriptorHeap* ppHeaps[] = { mo->textureID->m_srvHeap.Get() };
+		commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+		commandLists[frameIndex]->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+		commandLists[frameIndex]->ExecuteBundle(mo->bundleCommandLists[frameIndex].Get());
+		return;
+	}
 	commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
 	commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -386,4 +397,25 @@ void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 	commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	commandLists[frameIndex]->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
 	commandLists[frameIndex]->DrawIndexedInstanced(mo->mesh->numIndexes, 1, 0, 0, 0);
+}
+
+void MeshObjectStore::createDrawBundle(MeshObject * meshObject)
+{
+	for (UINT n = 0; n < XApp::FrameCount; n++)
+	{
+		// Create one Bundle and Allocator for each frame:
+		ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_BUNDLE, IID_PPV_ARGS(&meshObject->bundleCommandAllocators[n])));
+		ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_BUNDLE, meshObject->bundleCommandAllocators[n].Get(), pipelineState.Get(), IID_PPV_ARGS(&meshObject->bundleCommandLists[n])));
+		meshObject->bundleCommandLists[n]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		meshObject->bundleCommandLists[n]->IASetVertexBuffers(0, 1, &meshObject->mesh->vertexBufferView);
+		meshObject->bundleCommandLists[n]->IASetIndexBuffer(&meshObject->mesh->indexBufferView);
+		ID3D12DescriptorHeap* ppHeaps[] = { meshObject->textureID->m_srvHeap.Get() };
+		//meshObject->bundleCommandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+		//meshObject->bundleCommandLists[frameIndex]->SetGraphicsRootDescriptorTable(2, meshObject->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+		meshObject->bundleCommandLists[n]->DrawIndexedInstanced(meshObject->mesh->numIndexes, 1, 0, 0, 0);
+
+		ThrowIfFailed(meshObject->bundleCommandLists[n]->Close());
+		// do we need to synchronize? --> Hope not!
+	}
+	meshObject->drawBundleAvailable = true;
 }

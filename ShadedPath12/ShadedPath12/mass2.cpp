@@ -110,6 +110,7 @@ void MassTest2::init()
 		o->material.ambient = XMFLOAT4(1, 1, 1, 1);
 		o->material.specExp = 1.0f;       // no spec color
 		o->material.specIntensity = 0.0f; // no spec color
+		objStore->createDrawBundle(o);
 	}
 	initMeteorField();
 
