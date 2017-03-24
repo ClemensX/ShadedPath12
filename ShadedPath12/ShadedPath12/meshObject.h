@@ -124,4 +124,23 @@ private:
 	void preDraw();
 	void postDraw();
 	void drawInternal(MeshObject *mo, int eyeNum = 0);
+
+	// indirect drawing
+	ComPtr<ID3D12CommandSignature> commandSignature;
+	// Data structure to match the command signature used for ExecuteIndirect.
+	struct IndirectCommand
+	{
+		D3D12_GPU_VIRTUAL_ADDRESS cbv;  // matrices
+		D3D12_GPU_VIRTUAL_ADDRESS srv;	// texture
+		D3D12_DRAW_ARGUMENTS drawArguments;
+	};
+	// Graphics root signature parameter offsets.
+	// counted 0, 1, 2...
+	enum GraphicsRootParameters
+	{
+		Cbv,		// cbv with matrices
+		CbvLights,  // cbv with light info
+		Srv,		// srv with texture
+		GraphicsRootParametersCount
+	};
 };
