@@ -232,24 +232,26 @@ void MeshObjectStore::init()
 		frameEffectData[n].initialized = true;
 	}
 
-	// Create the command signature used for indirect drawing.
-	{
-		// Each command consists of a CBV update, SRV update (for texture) and a DrawInstanced call.
-		D3D12_INDIRECT_ARGUMENT_DESC argumentDescs[3] = {};
-		argumentDescs[0].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW;
-		argumentDescs[0].ConstantBufferView.RootParameterIndex = Cbv;
-		argumentDescs[1].Type = D3D12_INDIRECT_ARGUMENT_TYPE_SHADER_RESOURCE_VIEW;
-		argumentDescs[1].ShaderResourceView.RootParameterIndex = Srv;
-		argumentDescs[2].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW;
+	//// Create the command signature used for indirect drawing.
+	//{
+	//	// Each command consists of a CBV update, SRV update (for texture) and a DrawInstanced call.
+	//	D3D12_INDIRECT_ARGUMENT_DESC argumentDescs[4] = {};
+	//	argumentDescs[0].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW;
+	//	argumentDescs[0].ConstantBufferView.RootParameterIndex = Cbv;
+	//	argumentDescs[1].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW;
+	//	argumentDescs[1].ConstantBufferView.RootParameterIndex = CbvLights;
+	//	argumentDescs[2].Type = D3D12_INDIRECT_ARGUMENT_TYPE_SHADER_RESOURCE_VIEW;
+	//	argumentDescs[2].ShaderResourceView.RootParameterIndex = Srv;
+	//	argumentDescs[3].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW;
 
-		D3D12_COMMAND_SIGNATURE_DESC commandSignatureDesc = {};
-		commandSignatureDesc.pArgumentDescs = argumentDescs;
-		commandSignatureDesc.NumArgumentDescs = _countof(argumentDescs);
-		commandSignatureDesc.ByteStride = sizeof(IndirectCommand);
+	//	D3D12_COMMAND_SIGNATURE_DESC commandSignatureDesc = {};
+	//	commandSignatureDesc.pArgumentDescs = argumentDescs;
+	//	commandSignatureDesc.NumArgumentDescs = _countof(argumentDescs);
+	//	commandSignatureDesc.ByteStride = sizeof(IndirectCommand);
 
-		ThrowIfFailed(xapp().device->CreateCommandSignature(&commandSignatureDesc, rootSignature.Get(), IID_PPV_ARGS(&commandSignature)));
-		NAME_D3D12_OBJECT(commandSignature);
-	}
+	//	ThrowIfFailed(xapp().device->CreateCommandSignature(&commandSignatureDesc, rootSignature.Get(), IID_PPV_ARGS(&commandSignature)));
+	//	NAME_D3D12_OBJECT(commandSignature);
+	//}
 	// indirect drawing end
 
 	// init resources for update thread:
