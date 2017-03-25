@@ -762,3 +762,41 @@ void XApp::handleRTVClearing(ID3D12GraphicsCommandList * commandList, D3D12_CPU_
 		//resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_PRESENT, commandList);
 	}
 }
+
+void Stats::startUpdate(GameTime &gameTime)
+{
+	long long framenum = xapp().getFramenum();
+	if (frameNumStartGathering <= framenum && framenum < frameNumStartGathering + numFramesGathered) {
+		LARGE_INTEGER qwTime;
+		QueryPerformanceCounter(&qwTime);
+		LONGLONG now = qwTime.QuadPart;
+		started[framenum-frameNumStartGathering] = now;
+	}
+}
+
+void Stats::startDraw(GameTime &gameTime)
+{
+}
+
+void Stats::endUpdate(GameTime &gameTime)
+{
+}
+
+void Stats::endDraw(GameTime &gameTime)
+{
+	long long framenum = xapp().getFramenum();
+	if (frameNumStartGathering <= framenum && framenum < frameNumStartGathering + numFramesGathered) {
+		LARGE_INTEGER qwTime;
+		QueryPerformanceCounter(&qwTime);
+		LONGLONG now = qwTime.QuadPart;
+		ended[framenum - frameNumStartGathering] = now;
+	}
+}
+
+Stats::~Stats()
+{
+	//Log("stats");  // set breakpoint here to see stats
+	for (int i = 0; i < numFramesGathered; i++) {
+		Log("stat frame " << frameNumStartGathering + i << " " << started[i] - started[0] << " " << ended[i] - started[0] << endl);
+	}
+}

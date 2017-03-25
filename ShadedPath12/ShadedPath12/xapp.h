@@ -57,6 +57,22 @@ class XAppMultiBase
 		vector<XAppBase *> apps;	// all apps maintained by this Mult-Scene App
 };
 
+// helper class for some statistics like frame timing 
+class Stats
+{
+public:
+	void startUpdate(GameTime &gameTime);
+	void startDraw(GameTime &gameTime);
+	void endUpdate(GameTime &gameTime);
+	void endDraw(GameTime &gameTime);
+
+	static const int numFramesGathered = 10 * 3;
+	static const int frameNumStartGathering = 10 * 3;
+	LONGLONG started[numFramesGathered] = { 0 };
+	LONGLONG ended[numFramesGathered] = { 0 };
+	virtual ~Stats();
+};
+
 class XApp
 {
 public:
@@ -186,6 +202,7 @@ public:
 	VR vr;
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
 	thread mythread;
+	Stats stats;
 private:
 	long long framenum;
 	UINT frameIndex;

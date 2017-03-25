@@ -178,6 +178,7 @@ void MassTest2::initMeteorField() {
 void MassTest2::update()
 {
 	gameTime.advanceTime();
+	xapp().stats.startUpdate(gameTime);
 	LONGLONG now = gameTime.getRealTime();
 	double nowf = gameTime.getTimeAbsSeconds();
 	static bool done = false;
@@ -204,21 +205,21 @@ void MassTest2::update()
 	if (globalDirectionalLightLevel < 0.0f) globalDirectionalLightLevel = 0.0f;
 	if (globalDirectionalLightLevel > 1.0f) globalDirectionalLightLevel = 1.0f;
 
-	linesEffect.update();
-	dotcrossEffect.update();
+	//linesEffect.update();
+	//dotcrossEffect.update();
 	// update info text:
 	string fr("Frame ");
 	stringstream ss;
 	ss << xapp().getFramenum();
 	fr.append(ss.str());
-	textEffect.changeTextLine(framenumLine, fr);
+//	textEffect.changeTextLine(framenumLine, fr);
 
 	string fps_str("FPS ");
 	stringstream sss;
 	sss << xapp().fps;
 	fps_str.append(sss.str());
-	textEffect.changeTextLine(fpsLine, fps_str);
-	textEffect.update();
+//	textEffect.changeTextLine(fpsLine, fps_str);
+//	textEffect.update();
 	//billboardEffect.update();
 
 	CBVLights *lights = &xapp().lights.lights;
@@ -234,11 +235,12 @@ void MassTest2::update()
 
 void MassTest2::draw()
 {
-	linesEffect.draw();
-	//dotcrossEffect.draw();
-	textEffect.draw();
+	//linesEffect.draw();
+	////dotcrossEffect.draw();
+	//textEffect.draw();
 	objStore->draw();
 	postEffect.draw();
+	xapp().stats.endDraw(gameTime);
 }
 
 void MassTest2::destroy()
