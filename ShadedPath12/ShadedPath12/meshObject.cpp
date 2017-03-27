@@ -84,6 +84,7 @@ void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frame
 
 void MeshObjectStore::update()
 {
+	xapp().stats.start("meshStoreUpdate");
 	assert(this->maxObjects > 0);	// setting of max object count missing
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 
@@ -119,6 +120,7 @@ void MeshObjectStore::update()
 			});
 		}
 	}
+	xapp().stats.end("meshStoreUpdate");
 }
 
 void MeshObjectStore::draw()

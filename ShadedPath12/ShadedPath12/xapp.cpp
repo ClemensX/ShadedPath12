@@ -795,8 +795,49 @@ void Stats::endDraw(GameTime &gameTime)
 
 Stats::~Stats()
 {
-	//Log("stats");  // set breakpoint here to see stats
-	for (int i = 0; i < numFramesGathered; i++) {
-		Log("stat frame " << frameNumStartGathering + i << " " << started[i] - started[0] << " " << ended[i] - started[0] << endl);
-	}
+
+	StatTopic *t = get("meshStoreUpdate");
+	Log("" << getInfo("meshStoreUpdate"));
+
+	//for (int i = 0; i < numFramesGathered; i++) {
+	//	Log("stat frame " << frameNumStartGathering + i << " " << started[i] - started[0] << " " << ended[i] - started[0] << endl);
+	//}
+}
+
+long long Stats::getNow() {
+	LARGE_INTEGER qwTime;
+	QueryPerformanceCounter(&qwTime);
+	LONGLONG now = qwTime.QuadPart;
+	return now;
+}
+
+wstring Stats::getInfo(string name)
+{
+	LARGE_INTEGER qwFrequency;
+	QueryPerformanceFrequency(&qwFrequency);
+	StatTopic *t = get(name);
+	long long average = t->cumulated / t->called;
+	// convert average to micro seconds
+	average *= 1000000;
+	average /= qwFrequency.QuadPart;
+	// total time in ms:
+	long long total = t->cumulated * 1000;
+	total /= qwFrequency.QuadPart;
+	wstringstream s;
+	s << "average " << s2w(name) << " microseconds(10^-6): " << average << " total [ms]: " << total << " called: " << t->called << endl ;
+	return s.str();
+}
+
+void Stats::start(string topic)
+{
+	StatTopic *t = &statTopics[topic];
+	t->curStart = getNow();
+}
+
+void Stats::end(string topic)
+{
+	StatTopic *t = &statTopics[topic];
+	long long duration = getNow() - t->curStart;
+	t->cumulated += duration;
+	t->called++;
 }
