@@ -82,6 +82,13 @@ void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frame
 	xapp().lights.update();
 }
 
+void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, const vector<unique_ptr<MeshObject>>& mov, XMMATRIX vp, int frameIndex, int eyeNum)
+{
+	for (unsigned int i = bi.start; i <= bi.end; i++) {
+		updateOne(cbv, mov[i].get(), vp, frameIndex, eyeNum);
+	}
+}
+
 void MeshObjectStore::update()
 {
 	xapp().stats.start("meshStoreUpdate");
@@ -100,10 +107,19 @@ void MeshObjectStore::update()
 		cbv->cameraPos.x = cam->pos.x;
 		cbv->cameraPos.y = cam->pos.y;
 		cbv->cameraPos.z = cam->pos.z;
-		forAll([this, cbv, vp, frameIndex](MeshObject *mo) {
-			//Log("  elem: " << mo->pos().x << endl);
-			updateOne(cbv, mo, vp, frameIndex);
-		});
+		for (auto & group : this->groups) {
+			//Log("group: " << group.first.c_str() << endl);
+			divideBulk(group.second.size(), 1, bulkInfos);
+			if (bulkInfos.size() == 1) {
+				// simple update of all
+				updatePart(bulkInfos[0], cbv, group.second, vp, frameIndex);
+			}
+		}
+
+		//forAll([this, cbv, vp, frameIndex](MeshObject *mo) {
+		//	//Log("  elem: " << mo->pos().x << endl);
+		//	updateOne(cbv, mo, vp, frameIndex);
+		//});
 	} else {
 		for (int eyeNum = 0; eyeNum < 2; eyeNum++) {
 			// adjust PVW matrix
@@ -443,4 +459,25 @@ void MeshObjectStore::createDrawBundle(MeshObject * meshObject)
 		// do we need to synchronize? --> Hope not!
 	}
 	meshObject->drawBundleAvailable = true;
+}
+
+void MeshObjectStore::divideBulk(size_t numObjects, size_t numParallel, vector<BulkDivideInfo>& subProblems)
+{
+	assert(numParallel >= 1);
+	subProblems.clear();
+	BulkDivideInfo bi;
+	UINT totalNum = (UINT)numObjects;
+	UINT perThread = totalNum / (UINT)numParallel;
+	// adjust for rounding error: better to increase the count per thread by one instead of starting a new thread with very few elements:
+	if (perThread * (UINT)numParallel < totalNum)
+		perThread++;
+	UINT count = 0;
+	while (count < totalNum) {
+		bi.start = count;
+		bi.end = count + perThread - 1;
+		if (bi.end >(totalNum - 1))
+			bi.end = totalNum - 1;
+		count += perThread;
+		subProblems.push_back(bi);
+	}
 }

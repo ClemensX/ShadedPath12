@@ -58,6 +58,7 @@ public:
 	void update();  // update all objects - CBV is complete after this
 	void draw();	// draw all objects
 	void updateOne(CBV *cbv, MeshObject * mo, XMMATRIX vp, int frameIndex, int eyeNum = 0);
+	void updatePart(BulkDivideInfo bi, CBV *cbv, const vector<unique_ptr<MeshObject>> &mov, XMMATRIX vp, int frameIndex, int eyeNum = 0);
 	// uploading mesh data to GPU can only be done in GpuUploadPhase
 	// this prevents unnecessary waits between upload requests
 	void gpuUploadPhaseStart() { inGpuUploadPhase = true; };
@@ -96,6 +97,9 @@ public:
 	void createAndUploadVertexAndIndexBuffer(Mesh *mesh);
 	void createRootSigAndPSO(ComPtr<ID3D12RootSignature>& sig, ComPtr<ID3D12PipelineState>& pso);
 	XMMATRIX calcWVP(XMMATRIX & toWorld, XMMATRIX & vp);
+	// algorithm to divide a any number of problems into equally sized sub-problems
+	// the result vector holds BulkDivideInfos that give start and end positions for each sub problem
+	void divideBulk(size_t numObjects, size_t numParallel, vector<BulkDivideInfo> &subProblems);
 private:
 	CBV cbv;	// only used for convenience - all CBVs are in buffer array
 	// globally enable wireframe display of objects
@@ -124,6 +128,7 @@ private:
 	void preDraw();
 	void postDraw();
 	void drawInternal(MeshObject *mo, int eyeNum = 0);
+	vector<BulkDivideInfo> bulkInfos;
 
 	// indirect drawing
 	//ComPtr<ID3D12CommandSignature> commandSignature;
