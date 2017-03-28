@@ -795,10 +795,12 @@ void Stats::endDraw(GameTime &gameTime)
 
 Stats::~Stats()
 {
-
-	StatTopic *t = get("meshStoreUpdate");
-	Log("" << getInfo("meshStoreUpdate"));
-
+	//unsigned int hwc = thread::hardware_concurrency;
+	Log(" HW concurrency: " << thread::hardware_concurrency() << endl);
+	for (const auto &si : statTopics) {
+		const StatTopic *st = &si.second;
+		Log("" << getInfo(si.first));
+	}
 	//for (int i = 0; i < numFramesGathered; i++) {
 	//	Log("stat frame " << frameNumStartGathering + i << " " << started[i] - started[0] << " " << ended[i] - started[0] << endl);
 	//}

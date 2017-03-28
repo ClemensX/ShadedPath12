@@ -1,0 +1,13 @@
+timing:
+
+microseconds:
+
+10362
+10240
+
+one thread: 
+12013
+
+w/o debugging:
+9512
+

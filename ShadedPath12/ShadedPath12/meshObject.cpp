@@ -110,7 +110,7 @@ void MeshObjectStore::update()
 		cbv->cameraPos.z = cam->pos.z;
 		for (auto & group : this->groups) {
 			//Log("group: " << group.first.c_str() << endl);
-			divideBulk(group.second.size(), 1, bulkInfos);
+			divideBulk(group.second.size(), 8, bulkInfos);
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (bulkInfos.size() == 1 && false) {
 				// simple update of all
@@ -118,8 +118,13 @@ void MeshObjectStore::update()
 			} else {
 				vector<thread> threads;
 				//thread t(&MeshObjectStore::updatePart, this, bulkInfos[0], cbv, group.second, vp, frameIndex);
-				thread t([=] { this->updatePart(bulkInfos[0], cbv, mov, vp, frameIndex); });
-				t.join();
+				for (int i = 0; i < bulkInfos.size(); i++) {
+					thread t([=] { this->updatePart(bulkInfos[i], cbv, mov, vp, frameIndex); });
+					threads.push_back(move(t));
+				}
+				for (auto &t : threads) {
+					t.join();
+				}
 			}
 		}
 
