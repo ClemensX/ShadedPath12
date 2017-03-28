@@ -82,10 +82,11 @@ void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frame
 	xapp().lights.update();
 }
 
-void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, const vector<unique_ptr<MeshObject>>& mov, XMMATRIX vp, int frameIndex, int eyeNum)
+void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr<MeshObject>>* mov, XMMATRIX vp, int frameIndex, int eyeNum)
 {
 	for (unsigned int i = bi.start; i <= bi.end; i++) {
-		updateOne(cbv, mov[i].get(), vp, frameIndex, eyeNum);
+		//updateOne(cbv, mov[i].get(), vp, frameIndex, eyeNum);
+		updateOne(cbv, mov->at(i).get(), vp, frameIndex, eyeNum);
 	}
 }
 
@@ -110,9 +111,15 @@ void MeshObjectStore::update()
 		for (auto & group : this->groups) {
 			//Log("group: " << group.first.c_str() << endl);
 			divideBulk(group.second.size(), 1, bulkInfos);
-			if (bulkInfos.size() == 1) {
+			vector<unique_ptr<MeshObject>>* mov = &group.second;
+			if (bulkInfos.size() == 1 && false) {
 				// simple update of all
-				updatePart(bulkInfos[0], cbv, group.second, vp, frameIndex);
+				updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
+			} else {
+				vector<thread> threads;
+				//thread t(&MeshObjectStore::updatePart, this, bulkInfos[0], cbv, group.second, vp, frameIndex);
+				thread t([=] { this->updatePart(bulkInfos[0], cbv, mov, vp, frameIndex); });
+				t.join();
 			}
 		}
 
