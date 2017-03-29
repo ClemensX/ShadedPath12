@@ -23,10 +23,10 @@ XMMATRIX MeshObject::calcToWorld() {
 	XMVECTOR q = XMQuaternionIdentity();
 	//XMVECTOR q = XMVectorSet(rot().x, rot().y, rot().z, 0.0f);
 	XMVECTOR q_origin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	//WegDamit2.lock();
 	XMFLOAT3 p = XMFLOAT3(0.0f, 0.0f, 0.0f);//rot();
-	//WegDamit2.unlock();
+	//WegDamit2.lock();
 	XMMATRIX rotateM = XMMatrixRotationRollPitchYaw(p.y, p.x, p.z);
+	//WegDamit2.unlock();
 	q = XMQuaternionRotationMatrix(rotateM);
 	if (useQuaternionRotation) {
 		q = XMLoadFloat4(&rot_quaternion);
@@ -83,7 +83,6 @@ void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frame
 	//Log("  elem: " << mo->pos().x << endl);
 	//WegDamit.lock();
 	XMMATRIX toWorld = mo->calcToWorld(); // apply pos and rot
-	//WegDamit.unlock();
 	XMMATRIX wvp = calcWVP(toWorld, vp);
 	XMStoreFloat4x4(&cbv->wvp, wvp);
 	XMStoreFloat4x4(&cbv->world, toWorld);
@@ -92,6 +91,7 @@ void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frame
 	memcpy(getCBVUploadAddress(frameIndex, 0, mo->objectNum, eyeNum), cbv, sizeof(*cbv));
 	xapp().lights.lights.material = mo->material;
 	xapp().lights.update();
+	//WegDamit.unlock();
 	if (false) {
 		// non-threadsave checks - use with 1 thread only
 		assert(objNums.count(mo->objectNum) == 0);  // ensure no double obj id found

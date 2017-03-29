@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "mass2.h"
 
-#define NUM_METEOR 5000
+#define NUM_METEOR 50000
 
 static MassTest2 massTest2;
 
