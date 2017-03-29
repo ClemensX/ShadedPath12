@@ -36,6 +36,7 @@ public:
 private:
 	XMFLOAT3 _pos;
 	XMFLOAT3 _rot;
+	static mutex WegDamit2;
 };
 
 // MeshObject Store:
@@ -148,4 +149,5 @@ private:
 	//	Srv,		// srv with texture
 	//	GraphicsRootParametersCount
 	//};
+	mutex WegDamit;
 };

@@ -16,12 +16,17 @@ XMFLOAT3& MeshObject::rot() {
 	return _rot;
 }
 
+mutex MeshObject::WegDamit2;
+
 XMMATRIX MeshObject::calcToWorld() {
 	// quaternion
 	XMVECTOR q = XMQuaternionIdentity();
 	//XMVECTOR q = XMVectorSet(rot().x, rot().y, rot().z, 0.0f);
 	XMVECTOR q_origin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	XMMATRIX rotateM = XMMatrixRotationRollPitchYaw(rot().y, rot().x, rot().z);
+	//WegDamit2.lock();
+	XMFLOAT3 p = XMFLOAT3(0.0f, 0.0f, 0.0f);//rot();
+	//WegDamit2.unlock();
+	XMMATRIX rotateM = XMMatrixRotationRollPitchYaw(p.y, p.x, p.z);
 	q = XMQuaternionRotationMatrix(rotateM);
 	if (useQuaternionRotation) {
 		q = XMLoadFloat4(&rot_quaternion);
@@ -32,7 +37,9 @@ XMMATRIX MeshObject::calcToWorld() {
 	// translation
 	XMVECTOR t = XMVectorSet(pos().x, pos().y, pos().z, 0.0f);
 	// toWorld matrix:
-	return XMMatrixTranspose(XMMatrixAffineTransformation(s, q_origin, q, t));
+	XMMATRIX r = XMMatrixTranspose(XMMatrixAffineTransformation(s, q_origin, q, t));
+	return r;
+	//return XMMatrixTranspose(XMMatrixAffineTransformation(s, q_origin, q, t));
 }
 
 
@@ -74,7 +81,9 @@ unordered_map<unsigned int, unsigned int> objNums;
 void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frameIndex, int eyeNum) {
 	assert(mo->objectNum > 0); // not properly added to store
 	//Log("  elem: " << mo->pos().x << endl);
+	//WegDamit.lock();
 	XMMATRIX toWorld = mo->calcToWorld(); // apply pos and rot
+	//WegDamit.unlock();
 	XMMATRIX wvp = calcWVP(toWorld, vp);
 	XMStoreFloat4x4(&cbv->wvp, wvp);
 	XMStoreFloat4x4(&cbv->world, toWorld);
@@ -83,7 +92,7 @@ void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frame
 	memcpy(getCBVUploadAddress(frameIndex, 0, mo->objectNum, eyeNum), cbv, sizeof(*cbv));
 	xapp().lights.lights.material = mo->material;
 	xapp().lights.update();
-	if (true) {
+	if (false) {
 		// non-threadsave checks - use with 1 thread only
 		assert(objNums.count(mo->objectNum) == 0);  // ensure no double obj id found
 		objNums[mo->objectNum] = 1;
@@ -104,7 +113,7 @@ void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr
 void MeshObjectStore::update()
 {
 	adds.clear();
-	//objNums.clear();
+	objNums.clear();
 	xapp().stats.start("meshStoreUpdate");
 	assert(this->maxObjects > 0);	// setting of max object count missing
 	int frameIndex = xapp().getCurrentBackBufferIndex();
@@ -123,7 +132,7 @@ void MeshObjectStore::update()
 		cbv->cameraPos.z = cam->pos.z;
 		for (auto & group : this->groups) {
 			//Log("group: " << group.first.c_str() << endl);
-			divideBulk(group.second.size(), 1, bulkInfos);
+			divideBulk(group.second.size(), 4, bulkInfos);
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (bulkInfos.size() == 1 && false) {
 				// simple update of all
