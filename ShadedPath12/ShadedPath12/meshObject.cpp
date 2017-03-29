@@ -68,6 +68,9 @@ XMMATRIX MeshObjectStore::calcWVP(XMMATRIX &toWorld, XMMATRIX &vp) {
 	return vp * toWorld;
 }
 
+unordered_map<UINT8*, UINT8*> adds;
+unordered_map<unsigned int, unsigned int> objNums;
+
 void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frameIndex, int eyeNum) {
 	assert(mo->objectNum > 0); // not properly added to store
 	//Log("  elem: " << mo->pos().x << endl);
@@ -80,6 +83,14 @@ void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frame
 	memcpy(getCBVUploadAddress(frameIndex, 0, mo->objectNum, eyeNum), cbv, sizeof(*cbv));
 	xapp().lights.lights.material = mo->material;
 	xapp().lights.update();
+	if (true) {
+		// non-threadsave checks - use with 1 thread only
+		assert(objNums.count(mo->objectNum) == 0);  // ensure no double obj id found
+		objNums[mo->objectNum] = 1;
+		UINT8 *mem = getCBVUploadAddress(frameIndex, 0, mo->objectNum, eyeNum);
+		assert(adds.count(mem) == 0); // ensure no double mem pointers used
+		adds[mem] = nullptr;
+	}
 }
 
 void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr<MeshObject>>* mov, XMMATRIX vp, int frameIndex, int eyeNum)
@@ -92,6 +103,8 @@ void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr
 
 void MeshObjectStore::update()
 {
+	adds.clear();
+	//objNums.clear();
 	xapp().stats.start("meshStoreUpdate");
 	assert(this->maxObjects > 0);	// setting of max object count missing
 	int frameIndex = xapp().getCurrentBackBufferIndex();
@@ -110,7 +123,7 @@ void MeshObjectStore::update()
 		cbv->cameraPos.z = cam->pos.z;
 		for (auto & group : this->groups) {
 			//Log("group: " << group.first.c_str() << endl);
-			divideBulk(group.second.size(), 8, bulkInfos);
+			divideBulk(group.second.size(), 1, bulkInfos);
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (bulkInfos.size() == 1 && false) {
 				// simple update of all
