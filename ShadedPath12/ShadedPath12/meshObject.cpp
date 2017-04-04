@@ -92,6 +92,16 @@ void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frame
 	xapp().lights.lights.material = mo->material;
 	xapp().lights.update();
 	//WegDamit.unlock();
+	if (true && mo->pos().y > 50) {
+		auto pos = mo->mesh->vertices.at(0).Pos;
+		XMVECTOR p = XMVectorSet(pos.x, pos.y, pos.z, 0.0f);
+		p = XMVector3Transform(p, XMMatrixTranspose(toWorld));
+		if (XMVectorGetY(p) < 50.0f) {
+			Log("assert(false) " << pos.y << " " << XMVectorGetY(p) << endl);
+			DebugBreak();
+		}
+
+	}
 	if (false) {
 		// non-threadsave checks - use with 1 thread only
 		assert(objNums.count(mo->objectNum) == 0);  // ensure no double obj id found
@@ -132,7 +142,7 @@ void MeshObjectStore::update()
 		cbv->cameraPos.z = cam->pos.z;
 		for (auto & group : this->groups) {
 			//Log("group: " << group.first.c_str() << endl);
-			divideBulk(group.second.size(), 4, bulkInfos);
+			divideBulk(group.second.size(), 8, bulkInfos);
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (bulkInfos.size() == 1 && false) {
 				// simple update of all
