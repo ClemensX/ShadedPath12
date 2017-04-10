@@ -78,22 +78,27 @@ XMMATRIX MeshObjectStore::calcWVP(XMMATRIX &toWorld, XMMATRIX &vp) {
 unordered_map<UINT8*, UINT8*> adds;
 unordered_map<unsigned int, unsigned int> objNums;
 
-void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frameIndex, int eyeNum) {
+void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp, int frameIndex, int eyeNum) {
 	assert(mo->objectNum > 0); // not properly added to store
 	//Log("  elem: " << mo->pos().x << endl);
 	//WegDamit.lock();
 	XMMATRIX toWorld = mo->calcToWorld(); // apply pos and rot
 	XMMATRIX wvp = calcWVP(toWorld, vp);
+	CBV localcbv = *cbv_read;
+	CBV *cbv = &localcbv;
 	XMStoreFloat4x4(&cbv->wvp, wvp);
 	XMStoreFloat4x4(&cbv->world, toWorld);
 	//cbv->world = di.world;
 	cbv->alpha = mo->alpha;
 	memcpy(getCBVUploadAddress(frameIndex, 0, mo->objectNum, eyeNum), cbv, sizeof(*cbv));
-	memcpy(getMemUploadAddress(frameIndex, 0, mo->objectNum, eyeNum), cbv, sizeof(*cbv));
+	auto mem = getMemUploadAddress(frameIndex, 0, mo->objectNum, eyeNum);
+	CBV *chkcbv = (CBV*)mem;
+	//assert(chkcbv->world._14 == 0.0f);
+	memcpy(mem, cbv, sizeof(*cbv));
 	xapp().lights.lights.material = mo->material;
 	xapp().lights.update();
 	//WegDamit.unlock();
-	if (true && mo->pos().y > 50) {
+	if (false && mo->pos().y > 50) {
 		auto pos = mo->mesh->vertices.at(0).Pos;
 		XMVECTOR p = XMVectorSet(pos.x, pos.y, pos.z, 0.0f);
 		p = XMVector3Transform(p, XMMatrixTranspose(toWorld));
@@ -145,6 +150,21 @@ void MeshObjectStore::update()
 			//Log("group: " << group.first.c_str() << endl);
 			divideBulk(group.second.size(), 4, bulkInfos);
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
+			if (false) {
+				// init mem const buffer to defined values
+				for (unsigned int i = 0; i < group.second.size(); i++) {
+					vector<unique_ptr<MeshObject>>* mov = &group.second;
+					MeshObject *mo = mov->at(i).get();
+					void *mem = getMemUploadAddress(frameIndex, 0, mo->objectNum, 0);
+					cbv = (CBV*)mem;
+					cbv->world._14 = 0.0f;
+					cbv->world._24 = 0.0f;
+					cbv->world._34 = 0.0f;
+					if (cbv->world._44 < 0) {
+						Log("error");
+					}
+				}
+			}
 			if (bulkInfos.size() == 1 && true) {
 				// simple update of all
 				updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
@@ -160,7 +180,7 @@ void MeshObjectStore::update()
 				}
 			}
 			// validate const buffer:
-			if (true) {
+			if (false) {
 				for (unsigned int i = 0; i < group.second.size(); i++) {
 					vector<unique_ptr<MeshObject>>* mov = &group.second;
 					MeshObject *mo = mov->at(i).get();
