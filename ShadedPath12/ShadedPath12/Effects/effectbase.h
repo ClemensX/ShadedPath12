@@ -71,12 +71,14 @@ protected:
 	// has to be called in init() before rendering
 	void setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wchar_t * name);
 	vector<ComPtr<ID3D12Resource>> singleCBVResources;
+	vector<void*> singleMemResources;
 	//ComPtr<ID3D12Resource> singleCBVResources[XApp::FrameCount*2]; // TODO
 	vector<UINT8*> singleCBV_GPUDests;
 	//UINT8* singleCBV_GPUDests[XApp::FrameCount*4];  // memcpy() changed cbv data to this address before draw()
 	UINT slotSize = 0;  // allocated size for single CVB element
 	D3D12_GPU_VIRTUAL_ADDRESS getCBVVirtualAddress(int frame, int thread, UINT objectIndex, int eyeNum);
 	UINT8* getCBVUploadAddress(int frame, int thread, UINT objectIndex, int eyeNum);
+	UINT8* getMemUploadAddress(int frame, int thread, UINT objectIndex, int eyeNum);
 
 
 	// vertex buffer

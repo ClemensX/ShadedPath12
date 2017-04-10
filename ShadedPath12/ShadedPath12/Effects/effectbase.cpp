@@ -70,6 +70,8 @@ void EffectBase::setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wc
 		singleCBVResources[i].Get()->SetName(name);
 		//Log("GPU virtual: " <<  cbvResource->GetGPUVirtualAddress(); << endl);
 		ThrowIfFailed(singleCBVResources[i]->Map(0, nullptr, reinterpret_cast<void**>(&singleCBV_GPUDests[i])));
+		void *mem = new BYTE[totalSize];
+		singleMemResources.push_back(mem);
 	}
 }
 
@@ -97,6 +99,25 @@ UINT8* EffectBase::getCBVUploadAddress(int frame, int thread, UINT objectIndex, 
 	if (mem == nullptr) {
 		return this->cbvGPUDest;
 	}
+	UINT64 plus = slotSize * objectIndex;
+	if (xapp().ovrRendering) {
+		plus *= 2; // adjust for two eyes
+	}
+	if (xapp().ovrRendering && eyeNum == 1) {
+		plus += slotSize;
+	}
+	//Log("vup " << (mem + plus) << endl);
+	return  mem + plus;
+}
+
+UINT8* EffectBase::getMemUploadAddress(int frame, int thread, UINT objectIndex, int eyeNum)
+{
+	// TODO: slotsize has to be object specific?
+	//assert(XApp::FrameCount*thread + frame <= singleCBVResources.size());
+	UINT8* mem = (UINT8 *)singleMemResources[XApp::FrameCount*thread + frame];
+	//if (mem == nullptr) {
+	//	return this->cbvGPUDest;
+	//}
 	UINT64 plus = slotSize * objectIndex;
 	if (xapp().ovrRendering) {
 		plus *= 2; // adjust for two eyes
@@ -234,6 +255,9 @@ void EffectBase::prepareDraw(VR *vr)
 EffectBase::~EffectBase()
 {
 	waitForWorkerThreads();
+	for (auto m : singleMemResources) {
+		delete[] m;
+	}
 }
 
 /*

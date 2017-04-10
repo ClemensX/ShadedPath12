@@ -89,6 +89,7 @@ void MeshObjectStore::updateOne(CBV *cbv, MeshObject *mo, XMMATRIX vp, int frame
 	//cbv->world = di.world;
 	cbv->alpha = mo->alpha;
 	memcpy(getCBVUploadAddress(frameIndex, 0, mo->objectNum, eyeNum), cbv, sizeof(*cbv));
+	memcpy(getMemUploadAddress(frameIndex, 0, mo->objectNum, eyeNum), cbv, sizeof(*cbv));
 	xapp().lights.lights.material = mo->material;
 	xapp().lights.update();
 	//WegDamit.unlock();
@@ -142,9 +143,9 @@ void MeshObjectStore::update()
 		cbv->cameraPos.z = cam->pos.z;
 		for (auto & group : this->groups) {
 			//Log("group: " << group.first.c_str() << endl);
-			divideBulk(group.second.size(), 8, bulkInfos);
+			divideBulk(group.second.size(), 4, bulkInfos);
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
-			if (bulkInfos.size() == 1 && false) {
+			if (bulkInfos.size() == 1 && true) {
 				// simple update of all
 				updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
 			} else {
@@ -156,6 +157,21 @@ void MeshObjectStore::update()
 				}
 				for (auto &t : threads) {
 					t.join();
+				}
+			}
+			// validate const buffer:
+			if (true) {
+				for (unsigned int i = 0; i < group.second.size(); i++) {
+					vector<unique_ptr<MeshObject>>* mov = &group.second;
+					MeshObject *mo = mov->at(i).get();
+					void *mem = getMemUploadAddress(frameIndex, 0, mo->objectNum, 0);
+					cbv = (CBV*)mem;
+					assert(mo->pos().x == cbv->world._14);
+					assert(mo->pos().y == cbv->world._24);
+					assert(mo->pos().z == cbv->world._34);
+					if (cbv->world._44 < 0) {
+						Log("error");
+					}
 				}
 			}
 		}
