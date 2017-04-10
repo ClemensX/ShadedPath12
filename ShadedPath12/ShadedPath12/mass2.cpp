@@ -1,7 +1,10 @@
 #include "stdafx.h"
 #include "mass2.h"
 
-#define NUM_METEOR 5000
+
+#define NUM_METEOR 50000
+
+#define NUM_THREADS 1
 
 static MassTest2 massTest2;
 
@@ -212,14 +215,14 @@ void MassTest2::update()
 	stringstream ss;
 	ss << xapp().getFramenum();
 	fr.append(ss.str());
-//	textEffect.changeTextLine(framenumLine, fr);
+	textEffect.changeTextLine(framenumLine, fr);
 
 	string fps_str("FPS ");
 	stringstream sss;
 	sss << xapp().fps;
 	fps_str.append(sss.str());
-//	textEffect.changeTextLine(fpsLine, fps_str);
-//	textEffect.update();
+	textEffect.changeTextLine(fpsLine, fps_str);
+	textEffect.update();
 	//billboardEffect.update();
 
 	CBVLights *lights = &xapp().lights.lights;
@@ -237,7 +240,7 @@ void MassTest2::draw()
 {
 	//linesEffect.draw();
 	////dotcrossEffect.draw();
-	//textEffect.draw();
+	textEffect.draw();
 	objStore->draw();
 	postEffect.draw();
 	xapp().stats.endDraw(gameTime);
