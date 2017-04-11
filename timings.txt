@@ -11,3 +11,22 @@ one thread:
 w/o debugging:
 9512
 
+corrected meshStoreUpdate:
+
+~20s runtime
+#######################
+
+1 (==no) thread
+
+Debug
+Threads Text
+
+01		average meshStoreUpdate microseconds(10^-6): 233576 total [ms]: 21255 called: 91
+02		average meshStoreUpdate microseconds(10^-6): 124740 total [ms]: 20582 called: 165
+04		average meshStoreUpdate microseconds(10^-6): 82561 total [ms]: 20062 called: 243
+06		average meshStoreUpdate microseconds(10^-6): 63186 total [ms]: 20093 called: 318
+07		average meshStoreUpdate microseconds(10^-6): 57353 total [ms]: 19901 called: 347
+08		average meshStoreUpdate microseconds(10^-6): 57954 total [ms]: 19762 called: 341
+10		average meshStoreUpdate microseconds(10^-6): 69129 total [ms]: 19909 called: 288
+16		average meshStoreUpdate microseconds(10^-6): 65218 total [ms]: 20152 called: 309
+
