@@ -240,8 +240,8 @@ void MassTest2::draw()
 {
 	//linesEffect.draw();
 	////dotcrossEffect.draw();
-	textEffect.draw();
-	objStore->draw();
+	//textEffect.draw();
+	//objStore->draw();
 	postEffect.draw();
 	xapp().stats.endDraw(gameTime);
 }

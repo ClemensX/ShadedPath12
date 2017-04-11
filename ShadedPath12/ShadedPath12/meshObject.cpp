@@ -148,7 +148,7 @@ void MeshObjectStore::update()
 		cbv->cameraPos.z = cam->pos.z;
 		for (auto & group : this->groups) {
 			//Log("group: " << group.first.c_str() << endl);
-			divideBulk(group.second.size(), 8, bulkInfos);
+			divideBulk(group.second.size(), 1, bulkInfos);
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (false) {
 				// init mem const buffer to defined values
