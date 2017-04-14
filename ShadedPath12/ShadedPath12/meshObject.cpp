@@ -1,5 +1,8 @@
 #include "stdafx.h"
 
+#include "CompiledShaders/MObjectVS.h"
+#include "CompiledShaders/MObjectPS.h"
+
 MeshObject::MeshObject()
 {
 }
@@ -82,8 +85,8 @@ void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp
 	assert(mo->objectNum > 0); // not properly added to store
 	//Log("  elem: " << mo->pos().x << endl);
 	//WegDamit.lock();
-	XMMATRIX toWorld = mo->calcToWorld(); // apply pos and rot
-	XMMATRIX wvp = calcWVP(toWorld, vp);
+	XMMATRIX toWorld = XMMatrixIdentity();//mo->calcToWorld(); // apply pos and rot
+	XMMATRIX wvp = XMMatrixIdentity(); //calcWVP(toWorld, vp);
 	CBV localcbv = *cbv_read;
 	CBV *cbv = &localcbv;
 	XMStoreFloat4x4(&cbv->wvp, wvp);
@@ -95,8 +98,8 @@ void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp
 	CBV *chkcbv = (CBV*)mem;
 	//assert(chkcbv->world._14 == 0.0f);
 	memcpy(mem, cbv, sizeof(*cbv));
-	xapp().lights.lights.material = mo->material;
-	xapp().lights.update();
+	//xapp().lights.lights.material = mo->material;
+	//xapp().lights.update();
 	//WegDamit.unlock();
 	if (false && mo->pos().y > 50) {
 		auto pos = mo->mesh->vertices.at(0).Pos;
@@ -148,7 +151,7 @@ void MeshObjectStore::update()
 		cbv->cameraPos.z = cam->pos.z;
 		for (auto & group : this->groups) {
 			//Log("group: " << group.first.c_str() << endl);
-			divideBulk(group.second.size(), 1, bulkInfos);
+			divideBulk(group.second.size(), 8, bulkInfos);
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (false) {
 				// init mem const buffer to defined values
@@ -401,9 +404,6 @@ void MeshObjectStore::createAndUploadVertexAndIndexBuffer(Mesh * mesh)
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 }
 
-#include "CompiledShaders/ObjectVS.h"
-#include "CompiledShaders/ObjectPS.h"
-
 void MeshObjectStore::createRootSigAndPSO(ComPtr<ID3D12RootSignature> &sig, ComPtr<ID3D12PipelineState> &pso)
 {
 	// Define the vertex input layout.
@@ -437,13 +437,13 @@ void MeshObjectStore::createRootSigAndPSO(ComPtr<ID3D12RootSignature> &sig, ComP
 	psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	psoDesc.SampleDesc.Count = 1;
 
-	psoDesc.VS = { binShader_ObjectVS, sizeof(binShader_ObjectVS) };
-	psoDesc.PS = { binShader_ObjectPS, sizeof(binShader_ObjectPS) };
-	ThrowIfFailed(xapp().device->CreateRootSignature(0, binShader_ObjectVS, sizeof(binShader_ObjectVS), IID_PPV_ARGS(&sig)));
-	sig.Get()->SetName(L"Object_root_signature");
+	psoDesc.VS = { binShader_MObjectVS, sizeof(binShader_MObjectVS) };
+	psoDesc.PS = { binShader_MObjectPS, sizeof(binShader_MObjectPS) };
+	ThrowIfFailed(xapp().device->CreateRootSignature(0, binShader_MObjectVS, sizeof(binShader_MObjectVS), IID_PPV_ARGS(&sig)));
+	sig.Get()->SetName(L"MObject_root_signature");
 	psoDesc.pRootSignature = sig.Get();
 	ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso)));
-	pso.Get()->SetName(L"state_objecteffect_init");
+	pso.Get()->SetName(L"state_mobjecteffect_init");
 }
 
 // drawing
