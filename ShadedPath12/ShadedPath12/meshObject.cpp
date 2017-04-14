@@ -85,10 +85,13 @@ void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp
 	assert(mo->objectNum > 0); // not properly added to store
 	//Log("  elem: " << mo->pos().x << endl);
 	//WegDamit.lock();
-	XMMATRIX toWorld = XMMatrixIdentity();//mo->calcToWorld(); // apply pos and rot
-	XMMATRIX wvp = XMMatrixIdentity(); //calcWVP(toWorld, vp);
+	//XMMATRIX toWorld = XMMatrixIdentity();//mo->calcToWorld(); // apply pos and rot
+	//XMMATRIX wvp = XMMatrixIdentity(); //calcWVP(toWorld, vp);
+	XMMATRIX toWorld = mo->calcToWorld(); // apply pos and rot
+	XMMATRIX wvp = calcWVP(toWorld, vp);
 	CBV localcbv = *cbv_read;
 	CBV *cbv = &localcbv;
+	cbv->material = mo->material;
 	XMStoreFloat4x4(&cbv->wvp, wvp);
 	XMStoreFloat4x4(&cbv->world, toWorld);
 	//cbv->world = di.world;
@@ -97,7 +100,7 @@ void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp
 	auto mem = getMemUploadAddress(frameIndex, 0, mo->objectNum, eyeNum);
 	CBV *chkcbv = (CBV*)mem;
 	//assert(chkcbv->world._14 == 0.0f);
-	memcpy(mem, cbv, sizeof(*cbv));
+	//memcpy(mem, cbv, sizeof(*cbv));
 	//xapp().lights.lights.material = mo->material;
 	//xapp().lights.update();
 	//WegDamit.unlock();
@@ -143,6 +146,7 @@ void MeshObjectStore::update()
 	CBV my_cbv;
 	CBV *cbv = &my_cbv;
 	prepareDraw(&xapp().vr);
+	xapp().lights.update();
 	if (!xapp().ovrRendering) {
 		frameEffectData[frameIndex].vr_eyesm[0] = vr_eyes;
 		XMMATRIX vp = cam->worldViewProjection();

@@ -1,3 +1,4 @@
+#include "lights_basic.hlsi"
 #include "Object.hlsli"
 
 [RootSignature(ObjectRS)]

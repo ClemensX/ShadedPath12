@@ -1,3 +1,4 @@
+#include "lights_basic.hlsi"
 #include "Object.hlsli"
 
 [RootSignature(ObjectRS)]
@@ -9,7 +10,7 @@ float4 main(PSInput input) : SV_TARGET
 	texColor = screenTex.Sample(s, thisTexCoord).xyz;
 	float3 finalColor;
 	  //return float4(texColor,1);
-	finalColor = applyLighting(texColor, input.Pos.xyz, input.PosW, input.Normal, cbv.cameraPos);
+	finalColor = applyLighting(texColor, input.Pos.xyz, input.PosW, input.Normal, cbv.cameraPos, cbv.material);
 
 	float4 alphaColor;
 	alphaColor.rgb = finalColor;

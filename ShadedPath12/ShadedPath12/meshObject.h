@@ -53,6 +53,7 @@ public:
 		XMFLOAT4X4 world;  // needed for normal calculations
 		XMFLOAT3   cameraPos;
 		float    alpha;
+		Material material;
 	};
 	// set max number of objects allowed in the store (is guarded by assertions)
 	void setMaxObjectCount(unsigned int);

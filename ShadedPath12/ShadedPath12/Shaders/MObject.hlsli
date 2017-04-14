@@ -20,6 +20,7 @@ struct ObjectConstantBuffer {
 	float4x4 world;
 	float3   cameraPos;
 	float    alpha;
+	Material material;
 };
 
 ConstantBuffer<ObjectConstantBuffer> cbv: register(b0);

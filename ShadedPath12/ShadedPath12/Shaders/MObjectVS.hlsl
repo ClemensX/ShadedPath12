@@ -1,4 +1,5 @@
-#include "Object.hlsli"
+#include "lights_basic.hlsi"
+#include "MObject.hlsli"
 
 [RootSignature(ObjectRS)]
 
