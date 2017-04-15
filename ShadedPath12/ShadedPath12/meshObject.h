@@ -65,6 +65,7 @@ public:
 	// this prevents unnecessary waits between upload requests
 	void gpuUploadPhaseStart() { inGpuUploadPhase = true; };
 	void gpuUploadPhaseEnd();
+	void updateMaterialOnNextFrame();
 
 	// objects
 	// load object definition from .b file, save under given hash name
@@ -125,6 +126,7 @@ private:
 		CBV cbvm[2];
 		VR_Eyes vr_eyesm[2];
 		bool initialized;
+		bool updateMaterial = false;  // set to true once for first frame, then only after material changes
 	};
 	MeshObjectFrameResource frameEffectData[XApp::FrameCount];
 	void preDraw();
