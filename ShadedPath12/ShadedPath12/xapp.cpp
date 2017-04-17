@@ -138,6 +138,9 @@ void XApp::draw() {
 	if (!ovrRendering) {
 		int frameIndex = xapp().getCurrentBackBufferIndex();
 		lastPresentedFrame = frameIndex;
+		if (isShutdownMode()) {
+			UINT n = shutdownFrameNumStart;
+		}
 		ThrowIfFailedWithDevice(swapChain->Present(0, 0), xapp().device.Get());
 	}
 

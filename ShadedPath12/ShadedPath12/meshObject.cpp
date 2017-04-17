@@ -129,6 +129,7 @@ void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr
 
 void MeshObjectStore::update()
 {
+	if (xapp().isShutdownMode()) return;
 	adds.clear();
 	objNums.clear();
 	xapp().stats.start("meshStoreUpdate");
@@ -194,6 +195,7 @@ void MeshObjectStore::update()
 
 void MeshObjectStore::draw()
 {
+	if (xapp().isShutdownMode()) return;
 	assert(this->maxObjects > 0);	// setting of max object count missing
 	prepareDraw(&xapp().vr);
 	preDraw();

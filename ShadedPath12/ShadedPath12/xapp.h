@@ -103,6 +103,11 @@ public:
 	void destroy();
 	void report();
 	void calcBackbufferSizeAndAspectRatio();
+	// signal shutdown - game loop will end in 3 frames
+	void setShutdownMode() { shutdownMode = true; shutdownFrameNumStart = framenum; };
+	bool isShutdownMode() { return shutdownMode; };
+	bool isShudownFinished() { return shutdownMode && (framenum > (shutdownFrameNumStart + 3)); };
+
 	// asset handling
 	enum FileCategory { FX, TEXTURE, MESH, SOUND, TEXTUREPAK };
 	// find absolute filename for a name and category, defaults to display error dialog, returns empty filename if not found and errorIfNotFound is set to false,
@@ -218,6 +223,8 @@ public:
 	thread mythread;
 	Stats stats;
 private:
+	bool shutdownMode = false;
+	UINT shutdownFrameNumStart;
 	long long framenum;
 	UINT frameIndex;
 	bool rtvCleared = false; // shaders can ask if ClearRenderTargetView still has to be called (usually only first shader needs to)

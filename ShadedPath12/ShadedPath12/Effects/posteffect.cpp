@@ -290,6 +290,7 @@ void PostEffect::preDraw() {
 
 void PostEffect::draw()
 {
+	if (xapp().isShutdownMode()) return;
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	preDraw();
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
