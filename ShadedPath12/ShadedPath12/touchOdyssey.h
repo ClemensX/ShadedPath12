@@ -32,7 +32,7 @@ private:
 	float globalAmbientLightLevel;
 	float globalDirectionalLightLevel;
 	XMFLOAT4 dirColor1, dirColor2;
-	bool loadAvatarAssetsFromOculus = false; // true triggers loading all meshes and texures and saving to local files
+	bool loadAvatarAssetsFromOculus = true; // true triggers loading all meshes and texures and saving to local files
 	bool isMovingRC = false;
 	bool isMovingRCFinished = false;
 	bool isTurningRC = false;
