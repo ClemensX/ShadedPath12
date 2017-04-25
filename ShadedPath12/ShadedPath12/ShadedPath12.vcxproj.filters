@@ -151,6 +151,9 @@
     <ClInclude Include="meshObjectViewer.h">
       <Filter>Apps</Filter>
     </ClInclude>
+    <ClInclude Include="mass2.h">
+      <Filter>Apps</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -258,6 +261,9 @@
     <ClCompile Include="meshObjectViewer.cpp">
       <Filter>Apps</Filter>
     </ClCompile>
+    <ClCompile Include="mass2.cpp">
+      <Filter>Apps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ShadedPath.rc">
@@ -317,6 +323,12 @@
     <FxCompile Include="Shaders\ObjectVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\MObjectPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\MObjectVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Line.hlsli">
@@ -344,5 +356,8 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="ClassDiagram.cd" />
+    <None Include="Shaders\MObject.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

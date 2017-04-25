@@ -41,13 +41,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -81,7 +81,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\$(Platform)\$(Configuration)\Output\$(ProjectName);C:\dev\repos\OVRPlatformSDK\Include</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\$(Platform)\$(Configuration)\Output\$(ProjectName);C:\dev\repos\OVRPlatformSDK\Include;D:\msvc\dev\repos\SP12\OVRPlatformSDK\Include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -181,6 +181,7 @@
     <ClInclude Include="lights.h" />
     <ClInclude Include="logo.h" />
     <ClInclude Include="mass.h" />
+    <ClInclude Include="mass2.h" />
     <ClInclude Include="meshObject.h" />
     <ClInclude Include="meshObjectViewer.h" />
     <ClInclude Include="objectViewer.h" />
@@ -220,6 +221,7 @@
     <ClCompile Include="lights.cpp" />
     <ClCompile Include="logo.cpp" />
     <ClCompile Include="mass.cpp" />
+    <ClCompile Include="mass2.cpp" />
     <ClCompile Include="meshObject.cpp" />
     <ClCompile Include="meshObjectViewer.cpp" />
     <ClCompile Include="objectViewer.cpp" />
@@ -313,6 +315,18 @@
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\$(Platform)\$(Configuration)\Output\$(ProjectName)\CompiledShaders\%(Filename).asm</AssemblerOutputFile>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
     </FxCompile>
+    <FxCompile Include="Shaders\MObjectPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\MObjectVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Shaders\ObjectPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
@@ -336,12 +350,16 @@
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\$(Platform)\$(Configuration)\Output\$(ProjectName)\CompiledShaders\%(Filename).asm</AssemblerOutputFile>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableOptimizations>
+      <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</EnableDebuggingInformation>
     </FxCompile>
     <FxCompile Include="Shaders\PostVS.hlsl">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableOptimizations>
+      <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</EnableDebuggingInformation>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -352,6 +370,7 @@
     <None Include="Shaders\lights_basic.hlsi" />
     <None Include="Shaders\Line.hlsli" />
     <None Include="Shaders\Linetext.hlsli" />
+    <None Include="Shaders\MObject.hlsli" />
     <None Include="Shaders\Object.hlsli" />
     <None Include="Shaders\Post.hlsli" />
   </ItemGroup>
