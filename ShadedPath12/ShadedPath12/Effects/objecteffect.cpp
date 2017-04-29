@@ -221,7 +221,10 @@ void WorldObjectEffect::preDraw(DrawInfo &di)
 		CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
 		//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 		commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-		xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
+		ID3D12Resource *resource;
+		if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
+		else resource = xapp().vr.texResource[frameIndex];
+		xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle, resource);
 		return;
 	}
 	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, di.objectNum, 0));
@@ -255,8 +258,9 @@ void WorldObjectEffect::draw(DrawInfo &di) {
 		cam = &xapp().camera;
 		cbv = &this->cbv;
 		// update lights, for thread operations: must have been done earlier in divideBulk (same material for all objects)
-		xapp().lights.lights.material = *di.material;
-		xapp().lights.update();
+		//xapp().lights.lights.material = *di.material;
+		//xapp().lights.update();
+		cbv->material = *di.material;
 	}
 	prepareDraw(&xapp().vr);
 	if (!xapp().ovrRendering) {
@@ -362,7 +366,10 @@ void WorldObjectEffect::beginBulkUpdate()
 	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
 	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
+	ID3D12Resource *resource;
+	if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
+	else resource = xapp().vr.texResource[frameIndex];
+	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle, resource);
 }
 
 void WorldObjectEffect::endBulkUpdate()
@@ -552,8 +559,8 @@ void WorldObjectEffect::divideBulk(size_t numObjects, size_t numThreads, const v
 	unique_lock<mutex> lock(multiRenderLock);
 	render_start.wait(lock, [this, numThreads]() {return waiting_for_rendering == numThreads; });
 	// update lights with material of this object type:
-	xapp().lights.lights.material = grp->at(0)->material;
-	xapp().lights.update();
+	//xapp().lights.lights.material = grp->at(0)->material; // TODO handle material through oblect CBV
+	//xapp().lights.update();
 	// all threads are ready for action, set counter to 0 and signal threads to do rendering
 	waiting_for_rendering = 0;
 	render_wait.notify_all();

@@ -194,7 +194,10 @@ void LinesEffect::preDraw(int eyeNum) {
 	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 
-	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
+	ID3D12Resource *resource;
+	if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
+	else resource = xapp().vr.texResource[frameIndex];
+	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle, resource);
 }
 
 void LinesEffect::draw()

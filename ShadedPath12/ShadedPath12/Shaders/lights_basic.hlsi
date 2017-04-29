@@ -41,7 +41,7 @@ struct Material {
 
 // Changes here NEED to be reflected in lights.hlsi !!!
 struct CBVLights {
-	Material material;
+	//Material material;
     AmbientLight ambientLights[MAX_AMBIENT];
 	DirectionalLight directionalLights[MAX_DIRECTIONAL];
 	PointLight pointLights[MAX_POINT];

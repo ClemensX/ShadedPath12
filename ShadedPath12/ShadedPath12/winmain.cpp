@@ -173,9 +173,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 
-			if (msg.message == WM_QUIT)
+			if (msg.message == WM_QUIT) {
+				xapp().setShutdownMode();
+			}
+
+			if (xapp().isShudownFinished())
 				break;
 		} else {
+			if (xapp().isShudownFinished())
+				break;
 			xapp().update();
 			xapp().draw();
 		}

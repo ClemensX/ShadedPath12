@@ -978,7 +978,7 @@ void Path::defineAction(char* name, WorldObject & wo, vector<XMFLOAT4>& ctrlPoin
 	action->name = std::string(name);
 	for (int i = 0; i < 9; i++) {
 		Curve curve;
-		int numSegments = ctrlPoints.size();
+		int numSegments = (int)ctrlPoints.size();
 		//bfile.read((char*)&numSegments, 4);
 		for (int j = 0; j < numSegments; j++) {
 			BezTriple b;

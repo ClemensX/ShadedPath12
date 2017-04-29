@@ -475,16 +475,38 @@ void VR::handleOVRMessages()
 {
 	handleAvatarMessages();
 	ovrMessage *message = ovr_PopMessage();
+	if (ovr_Message_IsError(message) != 0) {
+		Log("OVR message error" << endl);
+		auto errHandle = ovr_Message_GetError(message);
+		const char* desc = ovr_Error_GetDisplayableMessage(errHandle);
+		const char* tech = ovr_Error_GetMessage(errHandle);
+		Log("error desc: " << desc << endl);
+		Log("error tech: " << tech << endl);
+	}
 	if (!message) {
 		return; // no new messages.
 	}
 	int messageType = ovr_Message_GetType(message);
 	//Log("OVR message received: " << std::hex << messageType << " " << ovrMessageType_ToString((ovrMessageType)messageType) << endl);
 	if (messageType == ovrMessage_Entitlement_GetIsViewerEntitled) {
+		Log("Entitlement message " << endl);
+		if (!ovr_Message_IsError(message))
+		{
+			// User is entitled.  Continue with normal game behaviour
+			Log("your user is allowe to use this oculus app" << endl);
+		}
+		else
+		{
+			// User is NOT entitled.  Exit
+			Log(L"WARNING: Your User is not allowed to use this Oculus application. You may continue but will not be able to use hands/controllers. Please consider registering register your app at Oculus.");
+			Log("Attempting to run without Platform SDK." << endl);
+			auto userId = ovr_GetLoggedInUserID();
+			ovrAvatar_RequestAvatarSpecification(userId);
+		}
 	}
 	else if (messageType == ovrMessage_User_GetLoggedInUser) {
 		if (ovr_Message_IsError(message) != 0) {
-			// Network error or something.     
+			Log("message error");
 		}
 		else {
 			auto user = ovr_Message_GetUser(message);

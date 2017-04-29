@@ -14,6 +14,7 @@ public:
 		XMFLOAT4X4 world;  // needed for normal calculations
 		XMFLOAT3   cameraPos;
 		float    alpha;
+		Material material;  // moved here from light_basic.hlsi
 	};
 	// declare this struct static thread_local to hold thread specific data:
 	struct ThreadLocalData {

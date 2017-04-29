@@ -210,8 +210,10 @@ void Linetext::preDraw(int eyeNum)
 	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
 	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-
-	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle);
+	ID3D12Resource *resource;
+	if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
+	else resource = xapp().vr.texResource[frameIndex];
+	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle, resource);
 }
 
 void Linetext::draw()
@@ -312,7 +314,6 @@ int Linetext::addTextLine(XMFLOAT4 pos, string text, UINT rotIndex) {
 }
 
 int Linetext::addTextLine(XMFLOAT4 pos, string text, Plane plane) {
-	XMFLOAT4X4 rot;
 	UINT rotindex = 0;
 	switch (plane) {
 	case XY:

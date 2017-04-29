@@ -138,6 +138,9 @@ void XApp::draw() {
 	if (!ovrRendering) {
 		int frameIndex = xapp().getCurrentBackBufferIndex();
 		lastPresentedFrame = frameIndex;
+		if (isShutdownMode()) {
+			UINT n = shutdownFrameNumStart;
+		}
 		ThrowIfFailedWithDevice(swapChain->Present(0, 0), xapp().device.Get());
 	}
 
@@ -209,9 +212,16 @@ void XApp::init()
 	// Enable the D3D12 debug layer.
 	{
 		ComPtr<ID3D12Debug> debugController;
+		ComPtr<ID3D12Debug1> debugController1;
 		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
 		{
 			debugController->EnableDebugLayer();
+			debugController->QueryInterface(IID_PPV_ARGS(&debugController1));
+			if (debugController1 && false) {
+				debugController1->SetEnableGPUBasedValidation(true);
+			} else {
+				Log("WARNING: Could not enable GPU validation - ID3D12Debug1 controller not available" << endl);
+			}
 		}
 		HRESULT getAnalysis = DXGIGetDebugInterface1(0, __uuidof(pGraphicsAnalysis), reinterpret_cast<void**>(&pGraphicsAnalysis));
 	}
@@ -742,4 +752,97 @@ void XAppMultiBase::initAllApps()
 	{
 		app->init();
 	}
+}
+
+void XApp::handleRTVClearing(ID3D12GraphicsCommandList * commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle, D3D12_CPU_DESCRIPTOR_HANDLE dsv_handle, ID3D12Resource * resource)
+{
+	if (rtvHasToBeCleared()) {
+		rtvCleared = true;
+		ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
+		resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+		commandList->ClearRenderTargetView(rtv_handle, clearColor, 0, nullptr);
+		commandList->ClearDepthStencilView(dsv_handle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+		//resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_PRESENT, commandList);
+	}
+}
+
+void Stats::startUpdate(GameTime &gameTime)
+{
+	long long framenum = xapp().getFramenum();
+	if (frameNumStartGathering <= framenum && framenum < frameNumStartGathering + numFramesGathered) {
+		LARGE_INTEGER qwTime;
+		QueryPerformanceCounter(&qwTime);
+		LONGLONG now = qwTime.QuadPart;
+		started[framenum-frameNumStartGathering] = now;
+	}
+}
+
+void Stats::startDraw(GameTime &gameTime)
+{
+}
+
+void Stats::endUpdate(GameTime &gameTime)
+{
+}
+
+void Stats::endDraw(GameTime &gameTime)
+{
+	long long framenum = xapp().getFramenum();
+	if (frameNumStartGathering <= framenum && framenum < frameNumStartGathering + numFramesGathered) {
+		LARGE_INTEGER qwTime;
+		QueryPerformanceCounter(&qwTime);
+		LONGLONG now = qwTime.QuadPart;
+		ended[framenum - frameNumStartGathering] = now;
+	}
+}
+
+Stats::~Stats()
+{
+	//unsigned int hwc = thread::hardware_concurrency;
+	Log(" HW concurrency: " << thread::hardware_concurrency() << endl);
+	for (const auto &si : statTopics) {
+		const StatTopic *st = &si.second;
+		Log("" << getInfo(si.first));
+	}
+	//for (int i = 0; i < numFramesGathered; i++) {
+	//	Log("stat frame " << frameNumStartGathering + i << " " << started[i] - started[0] << " " << ended[i] - started[0] << endl);
+	//}
+}
+
+long long Stats::getNow() {
+	LARGE_INTEGER qwTime;
+	QueryPerformanceCounter(&qwTime);
+	LONGLONG now = qwTime.QuadPart;
+	return now;
+}
+
+wstring Stats::getInfo(string name)
+{
+	LARGE_INTEGER qwFrequency;
+	QueryPerformanceFrequency(&qwFrequency);
+	StatTopic *t = get(name);
+	long long average = t->cumulated / t->called;
+	// convert average to micro seconds
+	average *= 1000000;
+	average /= qwFrequency.QuadPart;
+	// total time in ms:
+	long long total = t->cumulated * 1000;
+	total /= qwFrequency.QuadPart;
+	wstringstream s;
+	s << "average " << s2w(name) << " microseconds(10^-6): " << average << " total [ms]: " << total << " called: " << t->called << endl ;
+	return s.str();
+}
+
+void Stats::start(string topic)
+{
+	StatTopic *t = &statTopics[topic];
+	t->curStart = getNow();
+}
+
+void Stats::end(string topic)
+{
+	StatTopic *t = &statTopics[topic];
+	long long duration = getNow() - t->curStart;
+	t->cumulated += duration;
+	t->called++;
 }

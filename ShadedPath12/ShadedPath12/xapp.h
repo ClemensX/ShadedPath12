@@ -57,6 +57,36 @@ class XAppMultiBase
 		vector<XAppBase *> apps;	// all apps maintained by this Mult-Scene App
 };
 
+// helper class for some statistics like frame timing 
+class Stats
+{
+public:
+	void startUpdate(GameTime &gameTime);
+	void startDraw(GameTime &gameTime);
+	void endUpdate(GameTime &gameTime);
+	void endDraw(GameTime &gameTime);
+
+	static const int numFramesGathered = 10 * 3;
+	static const int frameNumStartGathering = 10 * 3;
+	LONGLONG started[numFramesGathered] = { 0 };
+	LONGLONG ended[numFramesGathered] = { 0 };
+	virtual ~Stats();
+
+	// measure single methods ans similar
+	struct StatTopic {
+		string topicName;
+		long long cumulated;  // total time spent
+		long long called = 0; // number of calls so far
+		long long curStart;   // record current invocation time
+	};
+	unordered_map<string, StatTopic> statTopics;
+	void start(string topic);
+	void end(string topic);
+	StatTopic *get(string name) { return &statTopics[name]; };
+	long long getNow();
+	wstring getInfo(string name);
+};
+
 class XApp
 {
 public:
@@ -73,6 +103,11 @@ public:
 	void destroy();
 	void report();
 	void calcBackbufferSizeAndAspectRatio();
+	// signal shutdown - game loop will end in 3 frames
+	void setShutdownMode() { shutdownMode = true; shutdownFrameNumStart = framenum; };
+	bool isShutdownMode() { return shutdownMode; };
+	bool isShudownFinished() { return shutdownMode && (framenum > (shutdownFrameNumStart + 3)); };
+
 	// asset handling
 	enum FileCategory { FX, TEXTURE, MESH, SOUND, TEXTUREPAK };
 	// find absolute filename for a name and category, defaults to display error dialog, returns empty filename if not found and errorIfNotFound is set to false,
@@ -105,13 +140,7 @@ public:
 		clearColor[2] = bgColor.z;
 		clearColor[3] = bgColor.w;
 	};
-	void handleRTVClearing(ID3D12GraphicsCommandList *commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle, D3D12_CPU_DESCRIPTOR_HANDLE dsv_handle) {
-		if (rtvHasToBeCleared()) {
-			rtvCleared = true;
-			commandList->ClearRenderTargetView(rtv_handle, clearColor, 0, nullptr);
-			commandList->ClearDepthStencilView(dsv_handle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-		}
-	};
+	void handleRTVClearing(ID3D12GraphicsCommandList *commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle, D3D12_CPU_DESCRIPTOR_HANDLE dsv_handle, ID3D12Resource* resource);
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE getRTVHandle(int frameIndex) {
 #if defined(_OVR_)
@@ -192,7 +221,10 @@ public:
 	VR vr;
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
 	thread mythread;
+	Stats stats;
 private:
+	bool shutdownMode = false;
+	UINT shutdownFrameNumStart;
 	long long framenum;
 	UINT frameIndex;
 	bool rtvCleared = false; // shaders can ask if ClearRenderTargetView still has to be called (usually only first shader needs to)

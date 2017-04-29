@@ -1,3 +1,37 @@
+
+class ResourceStateInfo {
+public:
+	D3D12_RESOURCE_STATES current_state;
+};
+
+class ResourceStateHelper {
+public:
+	//singleton:
+	static ResourceStateHelper *getResourceStateHelper() {
+		static ResourceStateHelper singleton;
+		return &singleton;
+	};
+	void add(ID3D12Resource* res, D3D12_RESOURCE_STATES state) {
+		assert(resourceStates.count(res) == 0);
+		ResourceStateInfo si;
+		si.current_state = state;
+		resourceStates[res] = si;
+	};
+	void toState(ID3D12Resource* res, D3D12_RESOURCE_STATES state, ID3D12GraphicsCommandList *cl) {
+		assert(resourceStates.count(res) > 0);
+		ResourceStateInfo &resourceStateInfo = resourceStates.at(res);
+		if (resourceStateInfo.current_state != state) {
+			cl->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(res, resourceStateInfo.current_state, state));
+			resourceStateInfo.current_state = state;
+		}
+	};
+private:
+	unordered_map<ID3D12Resource*, ResourceStateInfo> resourceStates;
+	ResourceStateHelper() {};										// prevent creation outside this class
+	ResourceStateHelper(const ResourceStateHelper&);				// prevent creation via copy-constructor
+	ResourceStateHelper & operator = (const ResourceStateHelper &);	// prevent instance copies
+};
+
 class EffectBase {
 protected:
 	//HANDLE fenceEvent;
@@ -34,15 +68,17 @@ protected:
 	// duplicated for each worker thread
 	// max number of objects has to be given 
 	// setting maxObjects to 0 disables single buffer mode
-	// has to ge called in init() before rendering
+	// has to be called in init() before rendering
 	void setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wchar_t * name);
 	vector<ComPtr<ID3D12Resource>> singleCBVResources;
+	vector<void*> singleMemResources;
 	//ComPtr<ID3D12Resource> singleCBVResources[XApp::FrameCount*2]; // TODO
 	vector<UINT8*> singleCBV_GPUDests;
 	//UINT8* singleCBV_GPUDests[XApp::FrameCount*4];  // memcpy() changed cbv data to this address before draw()
 	UINT slotSize = 0;  // allocated size for single CVB element
 	D3D12_GPU_VIRTUAL_ADDRESS getCBVVirtualAddress(int frame, int thread, UINT objectIndex, int eyeNum);
 	UINT8* getCBVUploadAddress(int frame, int thread, UINT objectIndex, int eyeNum);
+	UINT8* getMemUploadAddress(int frame, int thread, UINT objectIndex, int eyeNum);
 
 
 	// vertex buffer
@@ -66,13 +102,14 @@ protected:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 protected:
 	bool singleCbvBufferMode = false;
-	UINT maxObjects = 0;
+	UINT maxObjects = 0;	// max number of entities allowed in this effect
 	vector<thread> workerThreads;
 	void waitForWorkerThreads();
 	VR_Eyes vr_eyes;
 	// initialize next ovr draw by copying globals from VR class to vr_eyes
 	void prepareDraw(VR *vr);
 	virtual ~EffectBase();
-	bool initialized = false;  // set to tre in init(). All effects that need to do something in destructor should check if effect was used at all...
+	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
+	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 public:
 };

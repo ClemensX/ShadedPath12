@@ -1,0 +1,49 @@
+timing:
+
+microseconds:
+
+10362
+10240
+
+one thread: 
+12013
+
+w/o debugging:
+9512
+
+corrected meshStoreUpdate:
+
+~20s runtime
+#######################
+
+1 (==no) thread
+
+Debug
+Threads Text
+
+01		average meshStoreUpdate microseconds(10^-6): 233576 total [ms]: 21255 called: 91
+02		average meshStoreUpdate microseconds(10^-6): 124740 total [ms]: 20582 called: 165
+04		average meshStoreUpdate microseconds(10^-6): 82561 total [ms]: 20062 called: 243
+06		average meshStoreUpdate microseconds(10^-6): 63186 total [ms]: 20093 called: 318
+07		average meshStoreUpdate microseconds(10^-6): 57353 total [ms]: 19901 called: 347
+08		average meshStoreUpdate microseconds(10^-6): 57954 total [ms]: 19762 called: 341
+10		average meshStoreUpdate microseconds(10^-6): 69129 total [ms]: 19909 called: 288
+16		average meshStoreUpdate microseconds(10^-6): 65218 total [ms]: 20152 called: 309
+
+home:
+01		average meshStoreUpdate microseconds(10^-6): 173606 total [ms]: 21353 called: 123
+02		average meshStoreUpdate microseconds(10^-6): 92163 total [ms]: 20183 called: 219
+04		average meshStoreUpdate microseconds(10^-6): 56319 total [ms]: 20612 called: 366
+06		average meshStoreUpdate microseconds(10^-6): 43275 total [ms]: 20469 called: 473
+08		average meshStoreUpdate microseconds(10^-6): 39524 total [ms]: 20275 called: 513
+10		average meshStoreUpdate microseconds(10^-6): 49508 total [ms]: 20248 called: 409
+
+
+release CTRL F5:
+
+01		average meshStoreUpdate microseconds(10^-6): 8635 total [ms]: 17063 called: 1976
+02		average meshStoreUpdate microseconds(10^-6): 5161 total [ms]: 15465 called: 2996
+04		average meshStoreUpdate microseconds(10^-6): 3876 total [ms]: 15204 called: 3922
+06		average meshStoreUpdate microseconds(10^-6): 4162 total [ms]: 15944 called: 3830
+08		average meshStoreUpdate microseconds(10^-6): 4538 total [ms]: 15996 called: 3525
+10		average meshStoreUpdate microseconds(10^-6): 4463 total [ms]: 16555 called: 3709

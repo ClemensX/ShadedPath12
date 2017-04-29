@@ -142,6 +142,7 @@ void draw_letter_xy_plane(in float4 pos, in unsigned int ch, in int charpos, in 
 
 [RootSignature(LinetextRS)]
 [maxvertexcount(14)]
+//[maxvertexcount(1024)]
 void main(
 	point TextElement input[1],
 	inout LineStream< GSOutput > output
