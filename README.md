@@ -1,7 +1,7 @@
 # ShadedPath12
 DirectX 12 Framework and Applications for Oculus Rift
 
-**Latest Update:** Touch support.
+**Latest Update:** Fixed Hands/Controller rendering: Some Oculus Platform SDK features require a complicated registration process. This prevented non-registered users from being able to download and render Avatar parts like hands or controllers. Fixed by using other API to request avatar specification without using Platform SDK.
 
 # General Info
 
