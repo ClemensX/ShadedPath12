@@ -3,6 +3,8 @@ DirectX 12 Framework and Applications for Oculus Rift
 
 **Latest Update:** Fixed Hands/Controller rendering: Some Oculus Platform SDK features require a complicated registration process. This prevented non-registered users from being able to download and render Avatar parts like hands or controllers. Fixed by using other API to request avatar specification without using Platform SDK.
 
+There are a number of new classes where I began work to rewrite object rendering. Goal is to have a better code structure and better performance. If you want to look at this experimental code see mass2.cpp and MeshObject.cpp.
+
 # General Info
 
 This framework is free to use for everybody! If you just run a precompiled example or copy the entire source code into your own project is 
