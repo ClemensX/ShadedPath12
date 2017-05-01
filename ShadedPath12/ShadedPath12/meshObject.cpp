@@ -144,7 +144,9 @@ void MeshObjectStore::update()
 	CBV *cbv = &my_cbv;
 	prepareDraw(&xapp().vr);
 	xapp().lights.update();
+	xapp().stats.start("compute");
 	computeMethod(frameIndex);
+	xapp().stats.end("compute");
 	if (!xapp().ovrRendering) {
 		frameEffectData[frameIndex].vr_eyesm[0] = vr_eyes;
 		XMMATRIX vp = cam->worldViewProjection();
@@ -157,7 +159,7 @@ void MeshObjectStore::update()
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (bulkInfos.size() == 1 && true) {
 				// simple update of all
-				updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
+				//updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
 			} else {
 				vector<thread> threads;
 				//thread t(&MeshObjectStore::updatePart, this, bulkInfos[0], cbv, group.second, vp, frameIndex);
