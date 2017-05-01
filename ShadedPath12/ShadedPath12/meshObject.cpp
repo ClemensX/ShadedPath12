@@ -2,6 +2,7 @@
 
 #include "CompiledShaders/MObjectVS.h"
 #include "CompiledShaders/MObjectPS.h"
+#include "CompiledShaders/MObjectCS.h"
 
 MeshObject::MeshObject()
 {
@@ -143,6 +144,7 @@ void MeshObjectStore::update()
 	CBV *cbv = &my_cbv;
 	prepareDraw(&xapp().vr);
 	xapp().lights.update();
+	computeMethod(frameIndex);
 	if (!xapp().ovrRendering) {
 		frameEffectData[frameIndex].vr_eyesm[0] = vr_eyes;
 		XMMATRIX vp = cam->worldViewProjection();
@@ -151,7 +153,7 @@ void MeshObjectStore::update()
 		cbv->cameraPos.z = cam->pos.z;
 		for (auto & group : this->groups) {
 			//Log("group: " << group.first.c_str() << endl);
-			divideBulk(group.second.size(), 8, bulkInfos);
+			divideBulk(group.second.size(), 1, bulkInfos);
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (bulkInfos.size() == 1 && true) {
 				// simple update of all
@@ -303,6 +305,12 @@ void MeshObjectStore::init()
 		}
 		// init frame resources of this effect: 
 		frameEffectData[n].initialized = true;
+		// Create compute resources.
+		D3D12_COMMAND_QUEUE_DESC queueDesc = { D3D12_COMMAND_LIST_TYPE_COMPUTE, 0, D3D12_COMMAND_QUEUE_FLAG_NONE };
+		ThrowIfFailed(xapp().device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&computeCommandQueue[n])));
+		ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COMPUTE, IID_PPV_ARGS(&computeAllocator[n])));
+		ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_COMPUTE, computeAllocator[n].Get(), nullptr, IID_PPV_ARGS(&computeCommandList[n])));
+		//ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_SHARED, IID_PPV_ARGS(&threadFences[threadIndex])));
 	}
 
 	//// Create the command signature used for indirect drawing.
@@ -424,6 +432,16 @@ void MeshObjectStore::createRootSigAndPSO(ComPtr<ID3D12RootSignature> &sig, ComP
 	psoDesc.pRootSignature = sig.Get();
 	ThrowIfFailed(xapp().device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso)));
 	pso.Get()->SetName(L"state_mobjecteffect_init");
+
+	// Describe and create the compute pipeline state object (PSO).
+	D3D12_COMPUTE_PIPELINE_STATE_DESC computePsoDesc = {};
+	computePsoDesc.CS = { binShader_MObjectCS, sizeof(binShader_MObjectCS) };
+	ThrowIfFailed(xapp().device->CreateRootSignature(0, binShader_MObjectCS, sizeof(binShader_MObjectCS), IID_PPV_ARGS(&computeRootSignature)));
+	computeRootSignature.Get()->SetName(L"MObjectCS_root_signature");
+	computePsoDesc.pRootSignature = computeRootSignature.Get();
+
+	ThrowIfFailed(xapp().device->CreateComputePipelineState(&computePsoDesc, IID_PPV_ARGS(&computePipelineState)));
+	computePipelineState.Get()->SetName(L"computestate_mobject");
 }
 
 // drawing
@@ -540,4 +558,35 @@ void MeshObjectStore::divideBulk(size_t numObjects, size_t numParallel, vector<B
 		count += perThread;
 		subProblems.push_back(bi);
 	}
+}
+
+// compute shader
+
+void MeshObjectStore::computeMethod(UINT frameNum)
+{
+	ID3D12CommandQueue* pCommandQueue = computeCommandQueue[frameNum].Get();
+	ID3D12CommandAllocator* pCommandAllocator = computeAllocator[frameNum].Get();
+	ID3D12GraphicsCommandList* pCommandList = computeCommandList[frameNum].Get();
+
+	pCommandList->SetPipelineState(computePipelineState.Get());
+	pCommandList->SetComputeRootSignature(computeRootSignature.Get());
+
+	pCommandList->Dispatch(1, 1, 1);
+
+	// Close and execute the command list.
+	ThrowIfFailed(pCommandList->Close());
+	ID3D12CommandList* ppCommandLists[] = { pCommandList };
+
+	PIXBeginEvent(pCommandQueue, 0, L"Frame %d: Iterate on CBV recalculation", frameNum);
+	pCommandQueue->ExecuteCommandLists(1, ppCommandLists);
+	PIXEndEvent(pCommandQueue);
+
+	auto &f = frameData[frameNum];
+	// Wait for the gpu to complete the draw.
+	createSyncPoint(f, pCommandQueue);
+	waitForSyncPoint(f); // ok, but not optimal
+
+	// Prepare for the next frame.
+	ThrowIfFailed(pCommandAllocator->Reset());
+	ThrowIfFailed(pCommandList->Reset(pCommandAllocator, computePipelineState.Get()));
 }

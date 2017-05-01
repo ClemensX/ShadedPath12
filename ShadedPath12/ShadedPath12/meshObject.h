@@ -152,5 +152,11 @@ private:
 	//	Srv,		// srv with texture
 	//	GraphicsRootParametersCount
 	//};
-	mutex WegDamit;
+	// Compute objects.
+	ComPtr<ID3D12PipelineState> computePipelineState;
+	ComPtr<ID3D12RootSignature> computeRootSignature;
+	ComPtr<ID3D12CommandAllocator> computeAllocator[XApp::FrameCount];
+	ComPtr<ID3D12CommandQueue> computeCommandQueue[XApp::FrameCount];
+	ComPtr<ID3D12GraphicsCommandList> computeCommandList[XApp::FrameCount];
+	void computeMethod(UINT frameNum);
 };
