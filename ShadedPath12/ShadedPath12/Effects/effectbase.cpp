@@ -43,7 +43,7 @@ void EffectBase::createConstantBuffer(size_t s, wchar_t * name)
 	ThrowIfFailed(cbvResource->Map(0, nullptr, reinterpret_cast<void**>(&cbvGPUDest)));
 }
 
-void EffectBase::setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wchar_t * name)
+void EffectBase::setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wchar_t * name, bool createGPU_RW)
 {
 	if (maxObjects == 0) {
 		singleCbvBufferMode = false;
@@ -72,6 +72,22 @@ void EffectBase::setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wc
 		ThrowIfFailed(singleCBVResources[i]->Map(0, nullptr, reinterpret_cast<void**>(&singleCBV_GPUDests[i])));
 		void *mem = new BYTE[totalSize];
 		singleMemResources.push_back(mem);
+		if (createGPU_RW) {
+			ComPtr<ID3D12Resource> t;
+			singleCBVResourcesGPU_RW.push_back(move(t));
+			ThrowIfFailed(xapp().device->CreateCommittedResource(
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+				D3D12_HEAP_FLAG_NONE, // do not set - dx12 does this automatically depending on resource type
+				&CD3DX12_RESOURCE_DESC::Buffer(totalSize),
+				//D3D12_RESOURCE_STATE_COPY_DEST,
+				D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
+				nullptr,
+				IID_PPV_ARGS(&singleCBVResourcesGPU_RW[i])));
+			wstring gpuRwName = wstring(name).append(L"GPU_RW");
+			singleCBVResourcesGPU_RW[i].Get()->SetName(gpuRwName.c_str());
+			//Log("GPU virtual: " <<  cbvResource->GetGPUVirtualAddress(); << endl);
+			//ThrowIfFailed(singleCBVResources[i]->Map(0, nullptr, reinterpret_cast<void**>(&singleCBV_GPUDests[i])));
+		}
 	}
 }
 

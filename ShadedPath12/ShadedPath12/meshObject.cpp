@@ -282,7 +282,7 @@ void MeshObjectStore::init()
 	// Create the pipeline state, which includes compiling and loading shaders.
 	{
 		createRootSigAndPSO(rootSignature, pipelineState);
-		setSingleCBVMode(1, maxObjects, sizeof(cbv), L"mesheffect_cbvsingle_resource");
+		setSingleCBVMode(1, maxObjects, sizeof(cbv), L"mesheffect_cbvsingle_resource", true);
 	}
 
 	// Create command allocators and command lists for each frame.
@@ -570,9 +570,9 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 	ID3D12CommandAllocator* pCommandAllocator = computeAllocator[frameNum].Get();
 	ID3D12GraphicsCommandList* pCommandList = computeCommandList[frameNum].Get();
 
-	ID3D12Resource *resource = singleCBVResources[frameNum].Get();
-	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-		D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
+	ID3D12Resource *resource = singleCBVResourcesGPU_RW[frameNum].Get();
+	//pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));// ,
+		//D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 	pCommandList->SetPipelineState(computePipelineState.Get());
 	pCommandList->SetComputeRootSignature(computeRootSignature.Get());
 

@@ -69,8 +69,10 @@ protected:
 	// max number of objects has to be given 
 	// setting maxObjects to 0 disables single buffer mode
 	// has to be called in init() before rendering
-	void setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wchar_t * name);
+	// if createGPU_RW true another set of buffers will be created for GPU internal operations like in compute shaders
+	void setSingleCBVMode(UINT maxThreads, UINT maxObjects, size_t s, wchar_t * name, bool createGPU_RW = false);
 	vector<ComPtr<ID3D12Resource>> singleCBVResources;
+	vector<ComPtr<ID3D12Resource>> singleCBVResourcesGPU_RW;
 	vector<void*> singleMemResources;
 	//ComPtr<ID3D12Resource> singleCBVResources[XApp::FrameCount*2]; // TODO
 	vector<UINT8*> singleCBV_GPUDests;
