@@ -176,6 +176,7 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 #include "d3dx12.h"
 #include "DDSTextureLoader.h"
 #include "forward_structures.h"
+#include "dxmanager.h"
 #include "texture.h"
 #include "gametime.h"
 #include "util.h"

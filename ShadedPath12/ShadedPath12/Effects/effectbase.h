@@ -1,37 +1,4 @@
 
-class ResourceStateInfo {
-public:
-	D3D12_RESOURCE_STATES current_state;
-};
-
-class ResourceStateHelper {
-public:
-	//singleton:
-	static ResourceStateHelper *getResourceStateHelper() {
-		static ResourceStateHelper singleton;
-		return &singleton;
-	};
-	void add(ID3D12Resource* res, D3D12_RESOURCE_STATES state) {
-		assert(resourceStates.count(res) == 0);
-		ResourceStateInfo si;
-		si.current_state = state;
-		resourceStates[res] = si;
-	};
-	void toState(ID3D12Resource* res, D3D12_RESOURCE_STATES state, ID3D12GraphicsCommandList *cl) {
-		assert(resourceStates.count(res) > 0);
-		ResourceStateInfo &resourceStateInfo = resourceStates.at(res);
-		if (resourceStateInfo.current_state != state) {
-			cl->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(res, resourceStateInfo.current_state, state));
-			resourceStateInfo.current_state = state;
-		}
-	};
-private:
-	unordered_map<ID3D12Resource*, ResourceStateInfo> resourceStates;
-	ResourceStateHelper() {};										// prevent creation outside this class
-	ResourceStateHelper(const ResourceStateHelper&);				// prevent creation via copy-constructor
-	ResourceStateHelper & operator = (const ResourceStateHelper &);	// prevent instance copies
-};
-
 class EffectBase {
 protected:
 	//HANDLE fenceEvent;

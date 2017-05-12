@@ -20,8 +20,6 @@ XMFLOAT3& MeshObject::rot() {
 	return _rot;
 }
 
-mutex MeshObject::WegDamit2;
-
 XMMATRIX MeshObject::calcToWorld() {
 	// quaternion
 	XMVECTOR q = XMQuaternionIdentity();
@@ -145,7 +143,7 @@ void MeshObjectStore::update()
 	prepareDraw(&xapp().vr);
 	xapp().lights.update();
 	xapp().stats.start("compute");
-	computeMethod(frameIndex);
+	//computeMethod(frameIndex);
 	xapp().stats.end("compute");
 	if (!xapp().ovrRendering) {
 		frameEffectData[frameIndex].vr_eyesm[0] = vr_eyes;
@@ -159,7 +157,7 @@ void MeshObjectStore::update()
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (bulkInfos.size() == 1 && true) {
 				// simple update of all
-				//updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
+				updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
 			} else {
 				vector<thread> threads;
 				//thread t(&MeshObjectStore::updatePart, this, bulkInfos[0], cbv, group.second, vp, frameIndex);
@@ -282,6 +280,7 @@ void MeshObjectStore::init()
 	// Create the pipeline state, which includes compiling and loading shaders.
 	{
 		createRootSigAndPSO(rootSignature, pipelineState);
+		dxManager.createConstantBuffer(1, maxObjects, sizeof(cbv), L"mesheffect_cbvsingle_resource");
 		setSingleCBVMode(1, maxObjects, sizeof(cbv), L"mesheffect_cbvsingle_resource", true);
 	}
 
@@ -571,12 +570,13 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 	ID3D12GraphicsCommandList* pCommandList = computeCommandList[frameNum].Get();
 
 	ID3D12Resource *resource = singleCBVResourcesGPU_RW[frameNum].Get();
+	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST));
 	//pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));// ,
 		//D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 	pCommandList->SetPipelineState(computePipelineState.Get());
 	pCommandList->SetComputeRootSignature(computeRootSignature.Get());
 
-	pCommandList->Dispatch(1, 1, 1);
+	//pCommandList->Dispatch(1, 1, 1);
 
 	// Close and execute the command list.
 	ThrowIfFailed(pCommandList->Close());

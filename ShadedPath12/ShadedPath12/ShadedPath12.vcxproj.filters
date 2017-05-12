@@ -154,6 +154,9 @@
     <ClInclude Include="mass2.h">
       <Filter>Apps</Filter>
     </ClInclude>
+    <ClInclude Include="dxmanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -263,6 +266,9 @@
     </ClCompile>
     <ClCompile Include="mass2.cpp">
       <Filter>Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="dxmanager.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

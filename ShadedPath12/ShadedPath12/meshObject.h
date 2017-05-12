@@ -36,7 +36,6 @@ public:
 private:
 	XMFLOAT3 _pos;
 	XMFLOAT3 _rot;
-	static mutex WegDamit2;
 };
 
 // MeshObject Store:
@@ -87,7 +86,7 @@ private:
 	unordered_map<string, vector<unique_ptr<MeshObject>>> groups;
 	unordered_map<string, Mesh> meshes;
 
-	MeshObjectStore() {};									// prevent creation outside this class
+	MeshObjectStore() : dxManager(XApp::FrameCount) {};		// prevent creation outside this class
 	MeshObjectStore(const MeshObjectStore&);				// prevent creation via copy-constructor
 	MeshObjectStore & operator = (const MeshObjectStore &);	// prevent instance copies
 
@@ -159,4 +158,5 @@ private:
 	ComPtr<ID3D12CommandQueue> computeCommandQueue[XApp::FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> computeCommandList[XApp::FrameCount];
 	void computeMethod(UINT frameNum);
+	DXManager dxManager;
 };
