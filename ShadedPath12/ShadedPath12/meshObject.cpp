@@ -275,12 +275,15 @@ void MeshObjectStore::init()
 	if (initialized) return;
 	initialized = true;
 	assert(this->maxObjects > 0);	// setting of max object count missing
+	dxManager.init(xapp().device.Get());
 
 	// try to do all expensive operations like shader loading and PSO creation here
 	// Create the pipeline state, which includes compiling and loading shaders.
 	{
 		createRootSigAndPSO(rootSignature, pipelineState);
 		dxManager.createConstantBuffer(1, maxObjects, sizeof(cbv), L"mesheffect_cbvsingle_resource");
+		dxManager.createGraphicsExecutionEnv(pipelineState.Get());
+		dxManager.createUploadBuffers();
 		setSingleCBVMode(1, maxObjects, sizeof(cbv), L"mesheffect_cbvsingle_resource", true);
 	}
 

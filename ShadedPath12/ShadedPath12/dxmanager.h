@@ -42,13 +42,40 @@ private:
 class DXManager {
 public:
 	// create manager for number of frames
-	DXManager(int frameCount) { this->frameCount = frameCount; };
+	DXManager(int frameCount) { 
+		assert(frameCount == FrameCount);
+		this->frameCount = frameCount;
+	};
+	void init(ID3D12Device *d) { device = d; };
 	void setCurrentFrame(int frameNum) { currentFrame = frameNum; };
 	void createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name);
+	void createUploadBuffers();
+	void createGraphicsExecutionEnv(ID3D12PipelineState *ps);
+	void createComputeExecutionEnv();
+	UINT64 getOffsetInConstantBuffer(UINT objectIndex, int eyeNum = 0);
 private:
+	// FrameCount should be a copy of XApp::FrameCount, but we don't want to reference XApp from here
+	// That the size is the same as in XApp is checked in intializer
+	static const UINT FrameCount = 3;
 	int currentFrame = 0;
 	int frameCount;
 	vector<ComPtr<ID3D12Resource>> singleCBVResources; // one for each thread and frame count
 	UINT maxObjects = 0;	// max number of entities allowed in this buffer
 	UINT slotSize = 0;      // allocated size for single CVB element (aligned size)
+	UINT totalSize = 0;     // tozal size of one constant buffer
+	// handle constant upload buffer as one large chunk (one buffer for all frames)
+	ComPtr<ID3D12Resource> constantBufferUpload;
+	UINT8* constantBufferUploadCPU;
+
+	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
+	// Graphics objects:
+	ComPtr<ID3D12CommandAllocator> commandAllocators[FrameCount];
+	ComPtr<ID3D12GraphicsCommandList> commandLists[FrameCount];
+	// Compute objects.
+	ComPtr<ID3D12PipelineState> computePipelineState;
+	ComPtr<ID3D12RootSignature> computeRootSignature;
+	ComPtr<ID3D12CommandAllocator> computeAllocator[FrameCount];
+	ComPtr<ID3D12CommandQueue> computeCommandQueue[FrameCount];
+	ComPtr<ID3D12GraphicsCommandList> computeCommandList[FrameCount];
+	ID3D12Device *device = nullptr;
 };
