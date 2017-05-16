@@ -57,12 +57,39 @@ void DXManager::createUploadBuffers()
 void DXManager::createGraphicsExecutionEnv(ID3D12PipelineState *ps)
 {
 	assert(device != nullptr);
+	graphics_ps = ps;
 	for (int n = 0; n < this->frameCount; n++) {
+		// Create compute resources.
+		D3D12_COMMAND_QUEUE_DESC queueDesc = { D3D12_COMMAND_LIST_TYPE_DIRECT, 0, D3D12_COMMAND_QUEUE_FLAG_NONE };
+		ThrowIfFailed(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueues[n])));
 		ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
 		ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocators[n].Get(), ps, IID_PPV_ARGS(&commandLists[n])));
 		// Command lists are created in the recording state, but there is nothing
 		// to record yet. The main loop expects it to be closed, so close it now.
 		ThrowIfFailed(commandLists[n]->Close());
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+		srvDesc.Buffer.FirstElement = 0;
+		srvDesc.Buffer.NumElements = maxObjects;
+		srvDesc.Buffer.StructureByteStride = slotSize;
+		srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+
+		//CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle0(m_srvUavHeap->GetCPUDescriptorHandleForHeapStart(), SrvParticlePosVelo0 + index, m_srvUavDescriptorSize);
+		//device->CreateShaderResourceView(m_particleBuffer0[index].Get(), &srvDesc, srvHandle0);
+
+		D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+		uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+		uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+		uavDesc.Buffer.FirstElement = 0;
+		uavDesc.Buffer.NumElements = maxObjects;
+		uavDesc.Buffer.StructureByteStride = slotSize;
+		uavDesc.Buffer.CounterOffsetInBytes = 0;
+		uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+
+		//CD3DX12_CPU_DESCRIPTOR_HANDLE uavHandle0(m_srvUavHeap->GetCPUDescriptorHandleForHeapStart(), UavParticlePosVelo0 + index, m_srvUavDescriptorSize);
+		//device->CreateUnorderedAccessView(m_particleBuffer0[index].Get(), nullptr, &uavDesc, uavHandle0);
 	}
 }
 
@@ -76,4 +103,33 @@ UINT64 DXManager::getOffsetInConstantBuffer(UINT objectIndex, int eyeNum)
 		plus += slotSize;
 	}
 	return  plus;
+}
+
+void DXManager::upload(UINT objectIndex, int eyeNum, void * mem_source)
+{
+	// frame related base address
+	UINT8 * dest = constantBufferUploadCPU + currentFrame * totalSize;
+	// add individual object/eye
+	dest += getOffsetInConstantBuffer(objectIndex, eyeNum);
+	memcpy(dest, mem_source, slotSize);
+}
+
+void DXManager::copyToComputeBuffer(FrameResource & f)
+{
+	ThrowIfFailed(commandAllocators[currentFrame]->Reset());
+	ThrowIfFailed(commandLists[currentFrame]->Reset(commandAllocators[currentFrame].Get(), graphics_ps));
+	// Set necessary state.
+	//commandLists[currentFrame]->SetGraphicsRootSignature(rootSignature.Get());
+	UINT64 source_offset = currentFrame * totalSize;
+	commandLists[currentFrame]->CopyBufferRegion(singleCBVResources[currentFrame].Get(), 0L, constantBufferUpload.Get(), source_offset, totalSize);
+	resourceStateHelper->toState(singleCBVResources[currentFrame].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandLists[currentFrame].Get());
+	//resourceStateHelper->toState(singleCBVResources[currentFrame].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, commandLists[currentFrame].Get());
+	//commandLists[currentFrame]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(singleCBVResources[currentFrame].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+
+	ThrowIfFailed(commandLists[currentFrame]->Close());
+	// Execute the command list.
+	ID3D12CommandList* ppCommandLists[] = { commandLists[currentFrame].Get() };
+	commandQueues[currentFrame]->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	EffectBase::createSyncPoint(f, commandQueues[currentFrame]);
+	EffectBase::waitForSyncPoint(f);
 }

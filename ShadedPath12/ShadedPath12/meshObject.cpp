@@ -98,6 +98,7 @@ void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp
 	// only update material if necessary
 	size_t size = frameEffectData[frameIndex].updateMaterial ? sizeof(*cbv) : sizeof(*cbv) - sizeof(Material);
 	memcpy(getCBVUploadAddress(frameIndex, 0, mo->objectNum, eyeNum), cbv, size);
+	dxManager.upload(mo->objectNum, eyeNum, cbv);
 	if (false && mo->pos().y > 50) {
 		auto pos = mo->mesh->vertices.at(0).Pos;
 		XMVECTOR p = XMVectorSet(pos.x, pos.y, pos.z, 0.0f);
@@ -134,6 +135,7 @@ void MeshObjectStore::update()
 	xapp().stats.start("meshStoreUpdate");
 	assert(this->maxObjects > 0);	// setting of max object count missing
 	int frameIndex = xapp().getCurrentBackBufferIndex();
+	dxManager.setCurrentFrame(frameIndex);
 
 	frameEffectData[frameIndex].camera = xapp().camera;
 
@@ -192,6 +194,8 @@ void MeshObjectStore::update()
 		}
 	}
 	frameEffectData[frameIndex].updateMaterial = false;
+	dxManager.copyToComputeBuffer(frameData[frameIndex]);
+	computeMethod(frameIndex);
 	xapp().stats.end("meshStoreUpdate");
 }
 
@@ -572,14 +576,15 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 	ID3D12CommandAllocator* pCommandAllocator = computeAllocator[frameNum].Get();
 	ID3D12GraphicsCommandList* pCommandList = computeCommandList[frameNum].Get();
 
-	ID3D12Resource *resource = singleCBVResourcesGPU_RW[frameNum].Get();
-	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST));
+	//ID3D12Resource *resource = singleCBVResourcesGPU_RW[frameNum].Get();
+	ID3D12Resource *resource = dxManager.getConstantBuffer();
+	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 	//pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));// ,
 		//D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 	pCommandList->SetPipelineState(computePipelineState.Get());
 	pCommandList->SetComputeRootSignature(computeRootSignature.Get());
 
-	//pCommandList->Dispatch(1, 1, 1);
+	pCommandList->Dispatch(1, 1, 1);
 
 	// Close and execute the command list.
 	ThrowIfFailed(pCommandList->Close());

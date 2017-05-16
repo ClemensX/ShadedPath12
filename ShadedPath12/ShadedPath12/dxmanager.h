@@ -53,6 +53,11 @@ public:
 	void createGraphicsExecutionEnv(ID3D12PipelineState *ps);
 	void createComputeExecutionEnv();
 	UINT64 getOffsetInConstantBuffer(UINT objectIndex, int eyeNum = 0);
+	// copy data to upload buffer
+	void upload(UINT objectIndex, int eyeNum, void* mem_source);
+	// copy complete constant buffer to compute buffer
+	void copyToComputeBuffer(FrameResource & f);
+	ID3D12Resource *getConstantBuffer() { return singleCBVResources[currentFrame].Get(); };
 private:
 	// FrameCount should be a copy of XApp::FrameCount, but we don't want to reference XApp from here
 	// That the size is the same as in XApp is checked in intializer
@@ -69,8 +74,10 @@ private:
 
 	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	// Graphics objects:
+	ComPtr<ID3D12CommandQueue> commandQueues[FrameCount];
 	ComPtr<ID3D12CommandAllocator> commandAllocators[FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> commandLists[FrameCount];
+	ID3D12PipelineState *graphics_ps;
 	// Compute objects.
 	ComPtr<ID3D12PipelineState> computePipelineState;
 	ComPtr<ID3D12RootSignature> computeRootSignature;
