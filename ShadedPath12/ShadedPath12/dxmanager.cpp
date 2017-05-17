@@ -58,6 +58,14 @@ void DXManager::createGraphicsExecutionEnv(ID3D12PipelineState *ps)
 {
 	assert(device != nullptr);
 	graphics_ps = ps;
+	// Describe and create a shader resource view (SRV) and unordered
+	// access view (UAV) descriptor heap.
+	D3D12_DESCRIPTOR_HEAP_DESC srvUavHeapDesc = {};
+	srvUavHeapDesc.NumDescriptors = FrameCount;
+	srvUavHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	srvUavHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	ThrowIfFailed(device->CreateDescriptorHeap(&srvUavHeapDesc, IID_PPV_ARGS(&srvUavHeap)));
+	NAME_D3D12_OBJECT(srvUavHeap);
 	for (int n = 0; n < this->frameCount; n++) {
 		// Create compute resources.
 		D3D12_COMMAND_QUEUE_DESC queueDesc = { D3D12_COMMAND_LIST_TYPE_DIRECT, 0, D3D12_COMMAND_QUEUE_FLAG_NONE };

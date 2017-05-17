@@ -78,6 +78,9 @@ private:
 	ComPtr<ID3D12CommandAllocator> commandAllocators[FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> commandLists[FrameCount];
 	ID3D12PipelineState *graphics_ps;
+
+	ComPtr<ID3D12DescriptorHeap> srvUavHeap;
+
 	// Compute objects.
 	ComPtr<ID3D12PipelineState> computePipelineState;
 	ComPtr<ID3D12RootSignature> computeRootSignature;
