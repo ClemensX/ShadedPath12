@@ -159,4 +159,5 @@ private:
 	ComPtr<ID3D12GraphicsCommandList> computeCommandList[XApp::FrameCount];
 	void computeMethod(UINT frameNum);
 	DXManager dxManager;
+	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 };

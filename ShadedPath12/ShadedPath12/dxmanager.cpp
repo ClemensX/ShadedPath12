@@ -17,7 +17,7 @@ void DXManager::createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t si
 		ThrowIfFailed(device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE, // do not set - dx12 does this automatically depending on resource type
-			&CD3DX12_RESOURCE_DESC::Buffer(totalSize),
+			&CD3DX12_RESOURCE_DESC::Buffer(totalSize, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
 			D3D12_RESOURCE_STATE_COPY_DEST,
 			//D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
 			nullptr,
@@ -84,8 +84,8 @@ void DXManager::createGraphicsExecutionEnv(ID3D12PipelineState *ps)
 		srvDesc.Buffer.StructureByteStride = slotSize;
 		srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
-		//CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle0(m_srvUavHeap->GetCPUDescriptorHandleForHeapStart(), SrvParticlePosVelo0 + index, m_srvUavDescriptorSize);
-		//device->CreateShaderResourceView(m_particleBuffer0[index].Get(), &srvDesc, srvHandle0);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle0(srvUavHeap->GetCPUDescriptorHandleForHeapStart(), n, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+		device->CreateShaderResourceView(singleCBVResources[n].Get(), &srvDesc, srvHandle0);
 
 		D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
 		uavDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -96,8 +96,8 @@ void DXManager::createGraphicsExecutionEnv(ID3D12PipelineState *ps)
 		uavDesc.Buffer.CounterOffsetInBytes = 0;
 		uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
-		//CD3DX12_CPU_DESCRIPTOR_HANDLE uavHandle0(m_srvUavHeap->GetCPUDescriptorHandleForHeapStart(), UavParticlePosVelo0 + index, m_srvUavDescriptorSize);
-		//device->CreateUnorderedAccessView(m_particleBuffer0[index].Get(), nullptr, &uavDesc, uavHandle0);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE uavHandle0(srvUavHeap->GetCPUDescriptorHandleForHeapStart(), n, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+		device->CreateUnorderedAccessView(singleCBVResources[n].Get(), nullptr, &uavDesc, uavHandle0);
 	}
 }
 

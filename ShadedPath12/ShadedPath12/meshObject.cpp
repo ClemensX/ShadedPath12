@@ -578,7 +578,8 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 
 	//ID3D12Resource *resource = singleCBVResourcesGPU_RW[frameNum].Get();
 	ID3D12Resource *resource = dxManager.getConstantBuffer();
-	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
+	resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, pCommandList);
+	//pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 	//pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));// ,
 		//D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 	pCommandList->SetPipelineState(computePipelineState.Get());
