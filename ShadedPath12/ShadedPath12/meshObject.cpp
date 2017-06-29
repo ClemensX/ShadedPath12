@@ -297,11 +297,11 @@ void MeshObjectStore::init()
 	};
 	for (UINT n = 0; n < XApp::FrameCount; n++)
 	{
-		ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
-		ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocators[n].Get(), pipelineState.Get(), IID_PPV_ARGS(&commandLists[n])));
+		// todo ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
+		// todo ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocators[n].Get(), pipelineState.Get(), IID_PPV_ARGS(&commandLists[n])));
 		// Command lists are created in the recording state, but there is nothing
 		// to record yet. The main loop expects it to be closed, so close it now.
-		ThrowIfFailed(commandLists[n]->Close());
+		// todo ThrowIfFailed(commandLists[n]->Close());
 		// init fences:
 		//ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frameData[n].fence.GetAddressOf())));
 		ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frameData[n].fence)));
@@ -378,8 +378,8 @@ void MeshObjectStore::createAndUploadVertexAndIndexBuffer(Mesh * mesh)
 		pipelineState.Get(), L"MeshVB",
 		mesh->vertexBuffer,
 		mesh->vertexBufferUpload,
-		commandAllocators[frameIndex],
-		updateCommandList,
+		dxManager.getGraphicsCommandAllocatorComPtr(),//commandAllocators[frameIndex],
+		dxManager.getGraphicsCommandListComPtr(),//updateCommandList,
 		mesh->vertexBufferView
 	);
 	// upload index
@@ -389,14 +389,17 @@ void MeshObjectStore::createAndUploadVertexAndIndexBuffer(Mesh * mesh)
 		pipelineState.Get(), L"MeshIB",
 		mesh->indexBuffer,
 		mesh->indexBufferUpload,
-		commandAllocators[frameIndex],
-		updateCommandList,
+		dxManager.getGraphicsCommandAllocatorComPtr(),//commandAllocators[frameIndex],
+		dxManager.getGraphicsCommandListComPtr(),//updateCommandList,
 		mesh->indexBufferView
 	);
 	// Close the command list and execute it to begin the vertex buffer copy into
 	// the default heap.
-	ThrowIfFailed(updateCommandList->Close());
-	ID3D12CommandList* ppCommandLists[] = { updateCommandList.Get() };
+	//ThrowIfFailed(updateCommandList->Close());
+	//ID3D12CommandList* ppCommandLists[] = { updateCommandList.Get() };
+	//xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	ThrowIfFailed(dxManager.getGraphicsCommandListComPtr()->Close());
+	ID3D12CommandList* ppCommandLists[] = { dxManager.getGraphicsCommandListComPtr().Get() };
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 }
 
@@ -456,14 +459,14 @@ void MeshObjectStore::createRootSigAndPSO(ComPtr<ID3D12RootSignature> &sig, ComP
 void MeshObjectStore::preDraw()
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
-	ThrowIfFailed(commandAllocators[frameIndex]->Reset());
-	ThrowIfFailed(commandLists[frameIndex]->Reset(commandAllocators[frameIndex].Get(), pipelineState.Get()));
+	ThrowIfFailed(dxManager.getGraphicsCommandAllocatorComPtr()->Reset());
+	ThrowIfFailed(dxManager.getGraphicsCommandListComPtr()->Reset(dxManager.getGraphicsCommandAllocatorComPtr().Get(), pipelineState.Get()));
 	// Set necessary state.
-	commandLists[frameIndex]->SetGraphicsRootSignature(rootSignature.Get());
+	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootSignature(rootSignature.Get());
 
 	// TODO adapt for 2 eyes:
-	commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[0]);
-	commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[0]);
+	dxManager.getGraphicsCommandListComPtr()->RSSetViewports(1, &vr_eyes.viewports[0]);
+	dxManager.getGraphicsCommandListComPtr()->RSSetScissorRects(1, &vr_eyes.scissorRects[0]);
 	// TODO check
 	//commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
 	//commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
@@ -472,7 +475,7 @@ void MeshObjectStore::preDraw()
 
 	// Set CBVs
 	//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, di.objectNum, 0));
-	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
+	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, xapp().lights.cbvResource->GetGPUVirtualAddress());
 
 	// Indicate that the back buffer will be used as a render target.
 	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
@@ -481,11 +484,11 @@ void MeshObjectStore::preDraw()
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = xapp().getRTVHandle(frameIndex);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(xapp().dsvHeaps[frameIndex]->GetCPUDescriptorHandleForHeapStart());
 	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-	commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+	dxManager.getGraphicsCommandListComPtr()->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	ID3D12Resource *resource;
 	if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
 	else resource = xapp().vr.texResource[frameIndex];
-	xapp().handleRTVClearing(commandLists[frameIndex].Get(), rtvHandle, dsvHandle, resource);
+	xapp().handleRTVClearing(dxManager.getGraphicsCommandListComPtr().Get(), rtvHandle, dsvHandle, resource);
 
 }
 
@@ -493,37 +496,37 @@ void MeshObjectStore::postDraw()
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 
-	ThrowIfFailed(commandLists[frameIndex]->Close());
+	ThrowIfFailed(dxManager.getGraphicsCommandListComPtr()->Close());
 	// Execute the command list.
-	ID3D12CommandList* ppCommandLists[] = { commandLists[frameIndex].Get() };
-	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	ID3D12CommandList* ppCommandLists[] = { dxManager.getGraphicsCommandListComPtr().Get() };
+	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists); // TODO use effect local queue here? 
 }
 
 void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	if (mo->drawBundleAvailable) {
-		commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
-		commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
-		commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, mo->objectNum, eyeNum));  // set to beginning of all object buffer
+		dxManager.getGraphicsCommandListComPtr()->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
+		dxManager.getGraphicsCommandListComPtr()->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
+		dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, mo->objectNum, eyeNum));  // set to beginning of all object buffer
 																																	 // Set SRV
 		ID3D12DescriptorHeap* ppHeaps[] = { mo->textureID->m_srvHeap.Get() };
-		commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-		commandLists[frameIndex]->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
-		commandLists[frameIndex]->ExecuteBundle(mo->bundleCommandLists[frameIndex].Get());
+		dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+		dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+		dxManager.getGraphicsCommandListComPtr()->ExecuteBundle(mo->bundleCommandLists[frameIndex].Get());
 		return;
 	}
-	commandLists[frameIndex]->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
-	commandLists[frameIndex]->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
-	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	commandLists[frameIndex]->IASetVertexBuffers(0, 1, &mo->mesh->vertexBufferView);
-	commandLists[frameIndex]->IASetIndexBuffer(&mo->mesh->indexBufferView);
-	commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, mo->objectNum, eyeNum));  // set to beginning of all object buffer
+	dxManager.getGraphicsCommandListComPtr()->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
+	dxManager.getGraphicsCommandListComPtr()->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
+	dxManager.getGraphicsCommandListComPtr()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	dxManager.getGraphicsCommandListComPtr()->IASetVertexBuffers(0, 1, &mo->mesh->vertexBufferView);
+	dxManager.getGraphicsCommandListComPtr()->IASetIndexBuffer(&mo->mesh->indexBufferView);
+	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, mo->objectNum, eyeNum));  // set to beginning of all object buffer
 	// Set SRV
 	ID3D12DescriptorHeap* ppHeaps[] = { mo->textureID->m_srvHeap.Get() };
-	commandLists[frameIndex]->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
-	commandLists[frameIndex]->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
-	commandLists[frameIndex]->DrawIndexedInstanced(mo->mesh->numIndexes, 1, 0, 0, 0);
+	dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, 1, 0, 0, 0);
 }
 
 void MeshObjectStore::createDrawBundle(MeshObject * meshObject)

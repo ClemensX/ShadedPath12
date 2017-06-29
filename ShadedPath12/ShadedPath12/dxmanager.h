@@ -58,6 +58,9 @@ public:
 	// copy complete constant buffer to compute buffer
 	void copyToComputeBuffer(FrameResource & f);
 	ID3D12Resource *getConstantBuffer() { return singleCBVResources[currentFrame].Get(); };
+	//ID3D12CommandAllocator *getGraphicsCommandAllocator() { return commandAllocators[currentFrame].Get(); };
+	ComPtr<ID3D12CommandAllocator> &getGraphicsCommandAllocatorComPtr() { return commandAllocators[currentFrame]; };
+	ComPtr<ID3D12GraphicsCommandList> &getGraphicsCommandListComPtr() { return commandLists[currentFrame]; };
 private:
 	// FrameCount should be a copy of XApp::FrameCount, but we don't want to reference XApp from here
 	// That the size is the same as in XApp is checked in intializer
