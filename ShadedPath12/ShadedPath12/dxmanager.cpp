@@ -122,6 +122,16 @@ void DXManager::upload(UINT objectIndex, int eyeNum, void * mem_source)
 	memcpy(dest, mem_source, slotSize);
 }
 
+D3D12_GPU_VIRTUAL_ADDRESS DXManager::getCBVVirtualAddress(UINT objectIndex, int eyeNum)
+{
+	// frame related base address
+	D3D12_GPU_VIRTUAL_ADDRESS dest = singleCBVResources[currentFrame]->GetGPUVirtualAddress();
+	UINT64 plus = getOffsetInConstantBuffer(objectIndex, eyeNum);
+	//plus = 0;
+	return dest + plus;
+	//return 0;
+}
+
 void DXManager::copyToComputeBuffer(FrameResource & f)
 {
 	ThrowIfFailed(commandAllocators[currentFrame]->Reset());

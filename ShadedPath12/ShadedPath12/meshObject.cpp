@@ -505,11 +505,13 @@ void MeshObjectStore::postDraw()
 void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
+	//if (mo->objectNum > 10) return;
 	if (mo->drawBundleAvailable) {
 		dxManager.getGraphicsCommandListComPtr()->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
 		dxManager.getGraphicsCommandListComPtr()->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
-		dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, mo->objectNum, eyeNum));  // set to beginning of all object buffer
-																																	 // Set SRV
+		//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, mo->objectNum, eyeNum));  // set to beginning of all object buffer
+		dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(0, dxManager.getCBVVirtualAddress(mo->objectNum, eyeNum));
+																																					 // Set SRV
 		ID3D12DescriptorHeap* ppHeaps[] = { mo->textureID->m_srvHeap.Get() };
 		dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 		dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
@@ -521,7 +523,8 @@ void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 	dxManager.getGraphicsCommandListComPtr()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	dxManager.getGraphicsCommandListComPtr()->IASetVertexBuffers(0, 1, &mo->mesh->vertexBufferView);
 	dxManager.getGraphicsCommandListComPtr()->IASetIndexBuffer(&mo->mesh->indexBufferView);
-	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, mo->objectNum, eyeNum));  // set to beginning of all object buffer
+	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, mo->objectNum, eyeNum));  // set to beginning of all object buffer
+	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(0, dxManager.getCBVVirtualAddress(mo->objectNum, eyeNum));
 	// Set SRV
 	ID3D12DescriptorHeap* ppHeaps[] = { mo->textureID->m_srvHeap.Get() };
 	dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
@@ -547,7 +550,7 @@ void MeshObjectStore::createDrawBundle(MeshObject * meshObject)
 		ThrowIfFailed(meshObject->bundleCommandLists[n]->Close());
 		// do we need to synchronize? --> Hope not!
 	}
-	meshObject->drawBundleAvailable = true;
+	//meshObject->drawBundleAvailable = true;
 }
 
 void MeshObjectStore::divideBulk(size_t numObjects, size_t numParallel, vector<BulkDivideInfo>& subProblems)
@@ -587,6 +590,7 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 		//D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 	pCommandList->SetPipelineState(computePipelineState.Get());
 	pCommandList->SetComputeRootSignature(computeRootSignature.Get());
+	pCommandList->SetComputeRootUnorderedAccessView(0, dxManager.getCBVVirtualAddress(0, 0));
 
 	pCommandList->Dispatch(1, 1, 1);
 
