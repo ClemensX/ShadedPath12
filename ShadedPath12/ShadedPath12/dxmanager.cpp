@@ -22,7 +22,8 @@ void DXManager::createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t si
 			//D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
 			nullptr,
 			IID_PPV_ARGS(&singleCBVResources[i])));
-		singleCBVResources[i].Get()->SetName(name);
+		wstring mod_name = wstring(name).append(L"_").append(to_wstring(i));
+		singleCBVResources[i].Get()->SetName(mod_name.c_str());
 		ID3D12Resource * resource = singleCBVResources[i].Get();
 		resourceStateHelper->add(resource, D3D12_RESOURCE_STATE_COPY_DEST);
 		//wstring gpuRwName = wstring(name).append(L"GPU_RW");
@@ -139,6 +140,7 @@ void DXManager::copyToComputeBuffer(FrameResource & f)
 	// Set necessary state.
 	//commandLists[currentFrame]->SetGraphicsRootSignature(rootSignature.Get());
 	UINT64 source_offset = currentFrame * totalSize;
+	resourceStateHelper->toState(singleCBVResources[currentFrame].Get(), D3D12_RESOURCE_STATE_COPY_DEST, commandLists[currentFrame].Get());
 	commandLists[currentFrame]->CopyBufferRegion(singleCBVResources[currentFrame].Get(), 0L, constantBufferUpload.Get(), source_offset, totalSize);
 	resourceStateHelper->toState(singleCBVResources[currentFrame].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandLists[currentFrame].Get());
 	//resourceStateHelper->toState(singleCBVResources[currentFrame].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, commandLists[currentFrame].Get());
