@@ -32,12 +32,12 @@ struct SpotLight {
 };
 
 struct Material {
-    float4 ambient;       // only .rgb used
-	float  specExp;       // 1 for no specular color
-	float  specIntensity; // 0 for no specular color
-	float  isLightSource; // 1.0 for light source (== draw bright)
-	float fill2;
-};
+    float4 ambient;       // only .rgb used                             0
+	float  specExp;       // 1 for no specular color                   16
+	float  specIntensity; // 0 for no specular color                   20
+	float  isLightSource; // 1.0 for light source (== draw bright)     24
+	float fill2;//                                                     28
+}; // total: 32
 
 // Changes here NEED to be reflected in lights.hlsi !!!
 struct CBVLights {

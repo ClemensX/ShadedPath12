@@ -24,15 +24,21 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	float4x4 m = cbv.wvp;
 	m[0][0] = 0.0;
 	m[0][1] = 0.0;
-	float4x4 m2 = {1, 0, 0, 0,
-	     0, 1, 0, 0,
-	     0, 0, 1, 0,
-	     0, 0, 0, 1};
+	float4x4 m2 = { 0, 0, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0 };
+	//float4x4 m2 = { 1, 0, 0, 0,
+	//	0, 1, 0, 0,
+	//	0, 0, 1, 0,
+	//	0, 0, 0, 1 };
 	//cbv.wvp = m;
 	//cbvResult[0].wvp = m2;
 	for (uint tile = 0; tile < 500; tile++)
 	{
 		cbvResult[tile].wvp = m2;
-		//cbvResult[tile].world = m2;
+		cbvResult[tile].world = m2;
+		cbvResult[tile].cameraPos = m2[0].xyz;
+		cbvResult[tile].alpha = 0;
 	}
 }

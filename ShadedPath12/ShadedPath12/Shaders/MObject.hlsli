@@ -15,13 +15,13 @@
 Texture2D<float4> screenTex : register(t0);
 SamplerState s : register(s0);
 
-struct ObjectConstantBuffer {
-	float4x4 wvp;
-	float4x4 world;
-	float3   cameraPos;
-	float    alpha;
-	Material material;
-};
+struct ObjectConstantBuffer { // offset
+	float4x4 wvp;        //   0
+	float4x4 world;      //  64
+	float3   cameraPos;  // 128
+	float    alpha;      // 140
+	Material material;   // 144
+}; // total 32 + 144 = 176
 
 ConstantBuffer<ObjectConstantBuffer> cbv: register(b0);
 // we cannot use array - it exceeds max allowed CBV size of 4096 16-byte entries

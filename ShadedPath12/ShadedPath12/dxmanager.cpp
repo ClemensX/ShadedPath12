@@ -3,9 +3,14 @@
 void DXManager::createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name) {
 	assert(maxObjects > 0);
 	this->maxObjects = maxObjects;
-	slotSize = calcConstantBufferSize((UINT)singleObjectSize);
+	// check that constant buffer data fills 16 byte slots:
+	assert(singleObjectSize % 16 == 0);
+	slotSize = (UINT)singleObjectSize;
+	//slotSize = calcConstantBufferSize((UINT)singleObjectSize);
 	// allocate const buffer for all frames and possibly OVR:
 	totalSize = slotSize * maxObjects;
+	totalSize = calcConstantBufferSize((UINT)totalSize);
+	assert(totalSize == calcConstantBufferSize((UINT)totalSize));
 	if (xapp().ovrRendering) totalSize *= 2; // TODO: really needed?
 	for (unsigned int i = 0; i < this->frameCount * maxThreads; i++) {
 		ComPtr<ID3D12Resource> t;
@@ -31,7 +36,10 @@ void DXManager::createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t si
 		//Log("GPU virtual: " <<  cbvResource->GetGPUVirtualAddress(); << endl);
 		//ThrowIfFailed(singleCBVResources[i]->Map(0, nullptr, reinterpret_cast<void**>(&singleCBV_GPUDests[i])));
 	}
-
+	Log("slot size: " << slotSize << endl);
+	Log("max objects: " << maxObjects << endl);
+	Log("total size (per frame): " << totalSize << endl);
+	Log("object size: " << singleObjectSize << endl);
 };
 
 void DXManager::createUploadBuffers()

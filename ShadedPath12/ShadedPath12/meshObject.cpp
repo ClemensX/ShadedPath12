@@ -518,6 +518,7 @@ void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 		dxManager.getGraphicsCommandListComPtr()->ExecuteBundle(mo->bundleCommandLists[frameIndex].Get());
 		return;
 	}
+	//if (mo->objectNum > 325) return;
 	dxManager.getGraphicsCommandListComPtr()->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
 	dxManager.getGraphicsCommandListComPtr()->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
 	dxManager.getGraphicsCommandListComPtr()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
