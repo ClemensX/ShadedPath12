@@ -53,6 +53,7 @@ public:
 		XMFLOAT3   cameraPos;
 		float    alpha;
 		Material material;
+		float fill[20];
 	};
 	// set max number of objects allowed in the store (is guarded by assertions)
 	void setMaxObjectCount(unsigned int);

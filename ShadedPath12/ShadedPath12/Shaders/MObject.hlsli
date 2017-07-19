@@ -21,7 +21,8 @@ struct ObjectConstantBuffer { // offset
 	float3   cameraPos;  // 128
 	float    alpha;      // 140
 	Material material;   // 144
-}; // total 32 + 144 = 176
+	float fill[20]; // 80
+}; // total 32 + 144 = 176 (256)
 
 ConstantBuffer<ObjectConstantBuffer> cbv: register(b0);
 // we cannot use array - it exceeds max allowed CBV size of 4096 16-byte entries

@@ -5,8 +5,8 @@ void DXManager::createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t si
 	this->maxObjects = maxObjects;
 	// check that constant buffer data fills 16 byte slots:
 	assert(singleObjectSize % 16 == 0);
-	slotSize = (UINT)singleObjectSize;
-	//slotSize = calcConstantBufferSize((UINT)singleObjectSize);
+	//slotSize = (UINT)singleObjectSize;
+	slotSize = calcConstantBufferSize((UINT)singleObjectSize); // we need to align because we reset constant buffer start with each call
 	// allocate const buffer for all frames and possibly OVR:
 	totalSize = slotSize * maxObjects;
 	totalSize = calcConstantBufferSize((UINT)totalSize);
@@ -40,6 +40,7 @@ void DXManager::createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t si
 	Log("max objects: " << maxObjects << endl);
 	Log("total size (per frame): " << totalSize << endl);
 	Log("object size: " << singleObjectSize << endl);
+	assert(slotSize == singleObjectSize);
 };
 
 void DXManager::createUploadBuffers()
