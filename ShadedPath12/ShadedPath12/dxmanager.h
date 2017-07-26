@@ -48,6 +48,11 @@ public:
 	};
 	void init(ID3D12Device *d) { device = d; };
 	void setCurrentFrame(int frameNum) { currentFrame = frameNum; };
+	// Buffer sets are identified by number, should start from 0
+	void createConstantBufferSet(UINT setNum, UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name);
+	void uploadConstantBufferSet(UINT setNum, size_t singleObjectSize, void *mem_source);
+    // buffer sets end
+
 	void createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name);
 	void createUploadBuffers();
 	void createGraphicsExecutionEnv(ID3D12PipelineState *ps);
@@ -92,4 +97,7 @@ private:
 	ComPtr<ID3D12CommandQueue> computeCommandQueue[FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> computeCommandList[FrameCount];
 	ID3D12Device *device = nullptr;
+	vector<ComPtr<ID3D12Resource>> cbvSetResources; // for all numbered buffer sets
+	vector<UINT8*> cbvSetGPUDest;  // memcpy() changed cbv data to this address before draw()
+	UINT setSize = 0;
 };

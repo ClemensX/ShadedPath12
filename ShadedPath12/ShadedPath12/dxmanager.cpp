@@ -43,6 +43,57 @@ void DXManager::createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t si
 	assert(slotSize == singleObjectSize);
 };
 
+void DXManager::uploadConstantBufferSet(UINT setNum, size_t singleObjectSize, void *mem_source)
+{
+	// frame related base address
+	UINT8 * dest = cbvSetGPUDest[setSize * setNum + currentFrame];
+	memcpy(dest, mem_source, singleObjectSize);
+}
+
+void DXManager::createConstantBufferSet(UINT setNum, UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name) {
+	assert(maxObjects > 0);
+	this->maxObjects = maxObjects;
+	// check that constant buffer data fills 16 byte slots:
+	assert(singleObjectSize % 16 == 0);
+	slotSize = calcConstantBufferSize((UINT)singleObjectSize); // we need to align because we reset constant buffer start with each call
+															   // allocate const buffer for all frames and possibly OVR:
+	totalSize = slotSize * maxObjects;
+	totalSize = calcConstantBufferSize((UINT)totalSize);
+	assert(totalSize == calcConstantBufferSize((UINT)totalSize));
+	if (xapp().ovrRendering) totalSize *= 2; // TODO: really needed?
+	setSize = this->frameCount * maxThreads;
+	for (unsigned int i = setSize * setNum + 0; i < setSize * (setNum+1); i++) {
+		ComPtr<ID3D12Resource> t;
+		cbvSetResources.push_back(move(t));
+		ThrowIfFailed(device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE, // do not set - dx12 does this automatically depending on resource type
+			&CD3DX12_RESOURCE_DESC::Buffer(totalSize),
+			//D3D12_RESOURCE_STATE_COPY_DEST,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&cbvSetResources[i])));
+		wstring mod_name = wstring(name).append(L"_").append(to_wstring(i));
+		cbvSetResources[i].Get()->SetName(mod_name.c_str());
+		ID3D12Resource * resource = cbvSetResources[i].Get();
+		//resourceStateHelper->add(resource, D3D12_RESOURCE_STATE_COPY_DEST);
+		resourceStateHelper->add(resource, D3D12_RESOURCE_STATE_GENERIC_READ);
+		UINT8* gpuDest;
+		ThrowIfFailed(resource->Map(0, nullptr, reinterpret_cast<void**>(&gpuDest)));
+		cbvSetGPUDest.push_back(gpuDest);
+		//wstring gpuRwName = wstring(name).append(L"GPU_RW");
+		//singleCBVResourcesGPU_RW[i].Get()->SetName(gpuRwName.c_str());
+		//Log("GPU virtual: " <<  cbvResource->GetGPUVirtualAddress(); << endl);
+		//ThrowIfFailed(singleCBVResources[i]->Map(0, nullptr, reinterpret_cast<void**>(&singleCBV_GPUDests[i])));
+	}
+	//Log("slot size: " << slotSize << endl);
+	//Log("max objects: " << maxObjects << endl);
+	//Log("total size (per frame): " << totalSize << endl);
+	//Log("object size: " << singleObjectSize << endl);
+	//assert(slotSize == singleObjectSize);
+};
+
+
 void DXManager::createUploadBuffers()
 {
 	const UINT constantBufferSize = totalSize * FrameCount;

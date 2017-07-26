@@ -13,8 +13,13 @@
 			"maxAnisotropy = 8, comparisonFunc = COMPARISON_LESS_EQUAL " \
 			")"
 
-
+// named ObjectConstantBuffer for historic reasons, is UAV here, really
 RWStructuredBuffer<ObjectConstantBuffer> cbvResult	: register(u0);	// UAV
+
+struct CSConstantBuffer { // offset
+	float4x4 vp;        //   0
+};
+CSConstantBuffer cbvCS: register(b0);
 
 [RootSignature(ObjectCS)]
 
@@ -34,9 +39,10 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		0, 0, 0, 1 };
 	//cbv.wvp = m;
 	//cbvResult[0].wvp = m2;
-	for (uint tile = 0; tile < 500; tile++)
+	for (uint tile = 0; tile < 502; tile++)
 	{
-		cbvResult[tile].wvp = m2;
+		//cbvResult[tile].wvp = m2;
+		cbvResult[tile].wvp = cbvCS.vp;
 		//cbvResult[tile].world = m2;
 		cbvResult[tile].cameraPos = m2[0].xyz;
 		cbvResult[tile].alpha = 120;

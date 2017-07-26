@@ -55,6 +55,12 @@ public:
 		Material material;
 		float fill[20];
 	};
+
+	// compute shader constant buffer ==> keep in sync with MObjectCS.hlsl/cbvCS
+	struct CBV_CS {
+		XMFLOAT4X4 vp;
+	};
+
 	// set max number of objects allowed in the store (is guarded by assertions)
 	void setMaxObjectCount(unsigned int);
 	void update();  // update all objects - CBV is complete after this
@@ -124,9 +130,11 @@ private:
 		Camera cameram[2];
 		CBV cbv;
 		CBV cbvm[2];
+		CBV_CS cbvCS;
 		VR_Eyes vr_eyesm[2];
 		bool initialized;
 		bool updateMaterial = false;  // set to true once for first frame, then only after material changes
+		bool updateConstBuffers = true; // usually const buffers need to be updated only once, after that the compute shader will do all the calculations
 	};
 	MeshObjectFrameResource frameEffectData[XApp::FrameCount];
 	void preDraw();

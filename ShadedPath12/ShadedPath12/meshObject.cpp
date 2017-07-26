@@ -121,10 +121,14 @@ void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp
 
 void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr<MeshObject>>* mov, XMMATRIX vp, int frameIndex, int eyeNum)
 {
+	dxManager.uploadConstantBufferSet(0, sizeof(CBV_CS), &frameEffectData[frameIndex].cbvCS);
+	if (frameEffectData[frameIndex].updateConstBuffers == false)
+		return;
 	for (unsigned int i = bi.start; i <= bi.end; i++) {
 		//updateOne(cbv, mov[i].get(), vp, frameIndex, eyeNum);
 		updateOne(cbv, mov->at(i).get(), vp, frameIndex, eyeNum);
 	}
+	frameEffectData[frameIndex].updateConstBuffers = false;
 }
 
 void MeshObjectStore::update()
@@ -153,6 +157,9 @@ void MeshObjectStore::update()
 		cbv->cameraPos.x = cam->pos.x;
 		cbv->cameraPos.y = cam->pos.y;
 		cbv->cameraPos.z = cam->pos.z;
+		XMFLOAT4X4 vpM;
+		XMStoreFloat4x4(&vpM, vp);
+		frameEffectData[frameIndex].cbvCS.vp = vpM;
 		for (auto & group : this->groups) {
 			//Log("group: " << group.first.c_str() << endl);
 			divideBulk(group.second.size(), 1, bulkInfos);
@@ -286,6 +293,7 @@ void MeshObjectStore::init()
 	{
 		createRootSigAndPSO(rootSignature, pipelineState);
 		dxManager.createConstantBuffer(1, maxObjects, sizeof(cbv), L"mesheffect_cbvsingle_resource");
+		dxManager.createConstantBufferSet(0, 1, 1, sizeof(CBV_CS), L"mesheffect_cs_cbv_set");
 		dxManager.createGraphicsExecutionEnv(pipelineState.Get());
 		dxManager.createUploadBuffers();
 		setSingleCBVMode(1, maxObjects, sizeof(cbv), L"mesheffect_cbvsingle_resource", true);
