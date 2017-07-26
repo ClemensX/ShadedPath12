@@ -600,6 +600,7 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 	pCommandList->SetPipelineState(computePipelineState.Get());
 	pCommandList->SetComputeRootSignature(computeRootSignature.Get());
 	pCommandList->SetComputeRootUnorderedAccessView(0, dxManager.getCBVVirtualAddress(0, 0));
+	pCommandList->SetComputeRootConstantBufferView(1, dxManager.getConstantBufferSetVirtualAddress(0, 0));
 
 	pCommandList->Dispatch(1, 1, 1);
 

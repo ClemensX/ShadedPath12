@@ -51,7 +51,8 @@ public:
 	// Buffer sets are identified by number, should start from 0
 	void createConstantBufferSet(UINT setNum, UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name);
 	void uploadConstantBufferSet(UINT setNum, size_t singleObjectSize, void *mem_source);
-    // buffer sets end
+	D3D12_GPU_VIRTUAL_ADDRESS getConstantBufferSetVirtualAddress(UINT setNum, int eyeNum);
+	// buffer sets end
 
 	void createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name);
 	void createUploadBuffers();

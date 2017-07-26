@@ -43,6 +43,14 @@ void DXManager::createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t si
 	assert(slotSize == singleObjectSize);
 };
 
+D3D12_GPU_VIRTUAL_ADDRESS DXManager::getConstantBufferSetVirtualAddress(UINT setNum, int eyeNum)
+{
+	// frame related base address
+	D3D12_GPU_VIRTUAL_ADDRESS dest = cbvSetResources[setSize * setNum + currentFrame]->GetGPUVirtualAddress();
+	UINT64 plus = 0; // getOffsetInConstantBuffer(objectIndex, eyeNum);
+	return dest + plus;
+}
+
 void DXManager::uploadConstantBufferSet(UINT setNum, size_t singleObjectSize, void *mem_source)
 {
 	// frame related base address
