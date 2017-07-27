@@ -128,11 +128,13 @@ void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr
 	XMVECTOR SinAngles, CosAngles;
 	XMVectorSinCos(&SinAngles, &CosAngles, qv);
 	//XMStoreFloat4(&t, CosAngles);
+	XMMATRIX m = XMMatrixRotationQuaternion(qv);
 	XMStoreFloat4(&t, qv);
 	frameEffectData[frameIndex].cbvCS.vp._11 = t.x;
 	frameEffectData[frameIndex].cbvCS.vp._21 = t.y;
 	frameEffectData[frameIndex].cbvCS.vp._31 = t.z;
 	frameEffectData[frameIndex].cbvCS.vp._41 = t.w;
+	XMStoreFloat4x4(&frameEffectData[frameIndex].cbvCS.vp, m);
 	dxManager.uploadConstantBufferSet(0, sizeof(CBV_CS), &frameEffectData[frameIndex].cbvCS);
 	if (frameEffectData[frameIndex].updateConstBuffers == false)
 		return;

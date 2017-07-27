@@ -7,6 +7,11 @@ float vectorsEqual(float4 a, float4 b) {
 	return length(a - b) < 0.00001;
 }
 
+float matrixEqual(float4x4 a, float4x4 b) {
+	float diff = length(a[0] - b[0]) + length(a[1] - b[1]) + length(a[2] - b[2]) + length(a[3] - b[3]);
+	return diff < 0.0001;
+}
+
 float4 QuaternionRotationRollPitchYaw(float4 Angles) {
 	float4 HalfAngles = Angles * g_XMOneHalf;
 	//return HalfAngles;
@@ -207,13 +212,18 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	rot_q = float4(1, 2, 3, 0);
 	rot_q = QuaternionRotationRollPitchYaw(rot_q);
 	rot_q = normalize(rot_q);
+	float4x4 mrot = transpose(MatrixRotationQuaternion(rot_q));
 	float4 from_c_code = cbvCS.vp[0];
 	// formulate codition to return --> see smoething
 	//if (from_c_code.x == rot_q.x) return;
 	//if (from_c_code.y == rot_q.y) return;
-	if (vectorsEqual(from_c_code, rot_q)) return;
+	//if (vectorsEqual(from_c_code, rot_q)) return;
 	//if (!from_c_code.x == rot_q.x) return;
 	//if (rot_q.x < 0.0000000000000000000000000000000000001) return;
+	//if (vectorsEqual(from_c_code, mrot[0])) return;
+	//if (from_c_code.x == mrot[0].x) return; ohne transpose
+	//if (from_c_code.y == mrot[1].x) return; ohne transpose
+	if (matrixEqual(cbvCS.vp, mrot)) return;
 	for (uint tile = 0; tile < 500; tile++)
 	{
 		cbvResult[tile].wvp = m2;
