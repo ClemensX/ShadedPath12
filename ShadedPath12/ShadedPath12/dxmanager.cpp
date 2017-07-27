@@ -59,13 +59,12 @@ void DXManager::uploadConstantBufferSet(UINT setNum, size_t singleObjectSize, vo
 }
 
 void DXManager::createConstantBufferSet(UINT setNum, UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name) {
-	assert(maxObjects > 0);
-	this->maxObjects = maxObjects;
+	assert(maxObjects == 1); // we only handle constant buffer for one element currently
 	// check that constant buffer data fills 16 byte slots:
 	assert(singleObjectSize % 16 == 0);
-	slotSize = calcConstantBufferSize((UINT)singleObjectSize); // we need to align because we reset constant buffer start with each call
-															   // allocate const buffer for all frames and possibly OVR:
-	totalSize = slotSize * maxObjects;
+	UINT slotSize = calcConstantBufferSize((UINT)singleObjectSize);	// we need to align because we reset constant buffer start with each call
+		        													// allocate const buffer for all frames and possibly OVR:
+	UINT totalSize = slotSize * maxObjects;
 	totalSize = calcConstantBufferSize((UINT)totalSize);
 	assert(totalSize == calcConstantBufferSize((UINT)totalSize));
 	if (xapp().ovrRendering) totalSize *= 2; // TODO: really needed?

@@ -121,6 +121,18 @@ void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp
 
 void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr<MeshObject>>* mov, XMMATRIX vp, int frameIndex, int eyeNum)
 {
+	XMFLOAT4 t = XMFLOAT4(1,2,3,0);
+	XMVECTOR tv = XMLoadFloat4(&t);
+	XMVECTOR qv = XMQuaternionRotationRollPitchYawFromVector(tv);
+	//qv = XMVectorMultiply(tv, g_XMOneHalf);
+	XMVECTOR SinAngles, CosAngles;
+	XMVectorSinCos(&SinAngles, &CosAngles, qv);
+	//XMStoreFloat4(&t, CosAngles);
+	XMStoreFloat4(&t, qv);
+	frameEffectData[frameIndex].cbvCS.vp._11 = t.x;
+	frameEffectData[frameIndex].cbvCS.vp._21 = t.y;
+	frameEffectData[frameIndex].cbvCS.vp._31 = t.z;
+	frameEffectData[frameIndex].cbvCS.vp._41 = t.w;
 	dxManager.uploadConstantBufferSet(0, sizeof(CBV_CS), &frameEffectData[frameIndex].cbvCS);
 	if (frameEffectData[frameIndex].updateConstBuffers == false)
 		return;
@@ -128,7 +140,7 @@ void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr
 		//updateOne(cbv, mov[i].get(), vp, frameIndex, eyeNum);
 		updateOne(cbv, mov->at(i).get(), vp, frameIndex, eyeNum);
 	}
-	frameEffectData[frameIndex].updateConstBuffers = false;
+	//frameEffectData[frameIndex].updateConstBuffers = false;
 }
 
 void MeshObjectStore::update()
@@ -297,6 +309,11 @@ void MeshObjectStore::init()
 		dxManager.createGraphicsExecutionEnv(pipelineState.Get());
 		dxManager.createUploadBuffers();
 		setSingleCBVMode(1, maxObjects, sizeof(cbv), L"mesheffect_cbvsingle_resource", true);
+		// XM test
+		XMVECTOR v = g_XMOneHalf.v;
+		XMFLOAT4 vF;
+		XMStoreFloat4(&vF, v);
+		Log("val " << vF.w << endl);
 	}
 
 	// Create command allocators and command lists for each frame.
