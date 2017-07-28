@@ -26,6 +26,7 @@ public:
 	bool drawNormals = false;
 	bool useQuaternionRotation = false;
 	XMMATRIX calcToWorld();
+	static XMMATRIX calcToWorld(XMFLOAT3 pos, XMFLOAT3 rot, bool useQuaternionRotation = false, XMFLOAT4 *rot_quaternion = nullptr);
 	float alpha = 1.0f;
 	unsigned int objectNum = 0;	// 0 indicates not properly added object
 	Mesh *mesh;

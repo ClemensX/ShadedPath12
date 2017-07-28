@@ -21,23 +21,27 @@ XMFLOAT3& MeshObject::rot() {
 }
 
 XMMATRIX MeshObject::calcToWorld() {
+	return calcToWorld(pos(), rot(), useQuaternionRotation, &rot_quaternion);
+}
+
+XMMATRIX MeshObject::calcToWorld(XMFLOAT3 pos, XMFLOAT3 rot, bool useQuaternionRotation, XMFLOAT4 *rot_quaternion) {
 	// quaternion
 	XMVECTOR q = XMQuaternionIdentity();
-	//XMVECTOR q = XMVectorSet(rot().x, rot().y, rot().z, 0.0f);
+	//XMVECTOR q = XMVectorSet(rot.x, rot.y, rot.z, 0.0f);
 	XMVECTOR q_origin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMFLOAT3 p = XMFLOAT3(0.0f, 0.0f, 0.0f);//rot();
-	//WegDamit2.lock();
+											//WegDamit2.lock();
 	XMMATRIX rotateM = XMMatrixRotationRollPitchYaw(p.y, p.x, p.z);
 	//WegDamit2.unlock();
 	q = XMQuaternionRotationMatrix(rotateM);
 	if (useQuaternionRotation) {
-		q = XMLoadFloat4(&rot_quaternion);
+		q = XMLoadFloat4(rot_quaternion);
 	}
 	q = XMQuaternionNormalize(q);
 	// scalar
 	XMVECTOR s = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
 	// translation
-	XMVECTOR t = XMVectorSet(pos().x, pos().y, pos().z, 0.0f);
+	XMVECTOR t = XMVectorSet(pos.x, pos.y, pos.z, 0.0f);
 	// toWorld matrix:
 	XMMATRIX r = XMMatrixTranspose(XMMatrixAffineTransformation(s, q_origin, q, t));
 	return r;

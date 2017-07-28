@@ -114,27 +114,36 @@ float4x4 MatrixRotationQuaternion(float4 Quaternion) {
 	//return M;
 }
 
-float4x4 XMMatrixAffineTransformation(float4 Scaling, float4 RotationOrigin, float4 RotationQuaternion, float4 Translation) {
+float4x4 MatrixAffineTransformation(float4 Scaling, float4 RotationOrigin, float4 RotationQuaternion, float4 Translation) {
 
 	//XMMATRIX MScaling = XMMatrixScalingFromVector(Scaling);
 	float4x4 MScaling = MatrixScalingFromVector(Scaling);
 	//XMVECTOR VRotationOrigin = XMVectorSelect(g_XMSelect1110.v, RotationOrigin, g_XMSelect1110.v);
 	float4 VRotationOrigin = float4(RotationOrigin.xyz, 0);
 	//XMMATRIX MRotation = XMMatrixRotationQuaternion(RotationQuaternion);
+	float4x4 MRotation = MatrixRotationQuaternion(RotationQuaternion);
 	//XMVECTOR VTranslation = XMVectorSelect(g_XMSelect1110.v, Translation, g_XMSelect1110.v);
+	float4 VTranslation = float4(Translation.xyz, 0);
 
 	//XMMATRIX M;
+	float4x4 m;
 	//M = MScaling;
+	m = MScaling;
 	//M.r[3] = XMVectorSubtract(M.r[3], VRotationOrigin);
+	m[3] = m[3] - VRotationOrigin;
 	//M = XMMatrixMultiply(M, MRotation);
+	m = m * MRotation;
 	//M.r[3] = XMVectorAdd(M.r[3], VRotationOrigin);
+	m[3] = m[3] + VRotationOrigin;
 	//M.r[3] = XMVectorAdd(M.r[3], VTranslation);
+	m[3] = m[3] + VTranslation;
 	//return M;
+	return m;
 }
 
-float4x4 calcToWorld(float4 p, float4 q) {
+float4x4 calcToWorld(float4 pos, float4 rot) {
 
-	float4 q_origin = float4(0,0,0,0);
+/*	float4 q_origin = float4(0,0,0,0);
 	q = q_origin;
 	float4 rot_roll_pitch_yaw = float4(q.y, q.x, q.z, 0);
 	q = QuaternionRotationRollPitchYaw(rot_roll_pitch_yaw);
@@ -143,27 +152,34 @@ float4x4 calcToWorld(float4 p, float4 q) {
 	float4 s = float4(1, 1, 1, 1);
 	// translation
 	float4 t = float4(p.x, p.y, p.z, 0);
+	*/
+	//// original code
 	//// quaternion
 	//XMVECTOR q = XMQuaternionIdentity();
-	////XMVECTOR q = XMVectorSet(rot().x, rot().y, rot().z, 0.0f);
+	//float4 q = g_XMIdentityR3;
 	//XMVECTOR q_origin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	float4 q_origin = float4(0, 0, 0, 0);
 	//XMFLOAT3 p = XMFLOAT3(0.0f, 0.0f, 0.0f);//rot();
-	//										//WegDamit2.lock();
+	float4 p = float4(0, 0, 0, 0);//rot(); initially no rotation specified
 	//XMMATRIX rotateM = XMMatrixRotationRollPitchYaw(p.y, p.x, p.z);
-	////WegDamit2.unlock();
 	//q = XMQuaternionRotationMatrix(rotateM);
+	float4 rot_roll_pitch_yaw = float4(p.y, p.x, p.z, 0);
+    float4 q = QuaternionRotationRollPitchYaw(rot_roll_pitch_yaw);
 	//if (useQuaternionRotation) {
 	//	q = XMLoadFloat4(&rot_quaternion);
 	//}
 	//q = XMQuaternionNormalize(q);
+	q = normalize(q);
 	//// scalar
 	//XMVECTOR s = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
+	float4 s = float4(1, 1, 1, 1);
 	//// translation
 	//XMVECTOR t = XMVectorSet(pos().x, pos().y, pos().z, 0.0f);
+	float4 t = float4(pos.x, pos.y, pos.z, 0);
 	//// toWorld matrix:
 	//XMMATRIX r = XMMatrixTranspose(XMMatrixAffineTransformation(s, q_origin, q, t));
-	//return r;
-	////return XMMatrixTranspose(XMMatrixAffineTransformation(s, q_origin, q, t));
+	float4x4 r = MatrixAffineTransformation(s, q_origin, q, t);
+	return r;
 }
 
 #include "lights_basic.hlsi"
