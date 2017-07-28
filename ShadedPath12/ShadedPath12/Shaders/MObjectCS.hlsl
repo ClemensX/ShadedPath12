@@ -221,6 +221,11 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		0, 1, 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1 };
+	float4x4 fixedVP = {
+		0.78441339, 0, 0, 0,
+		0, 1.33056235, 0, 0,
+		0, 0, 1.0001002, 2.80027986,
+		0, 0, 1, 3 };
 	//cbv.wvp = m;
 	//cbvResult[0].wvp = m2;
 	float4 rot_q; // rotation quaternion
@@ -230,6 +235,15 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	rot_q = normalize(rot_q);
 	float4x4 mrot = transpose(MatrixRotationQuaternion(rot_q));
 	float4 from_c_code = cbvCS.vp[0];
+	//if (matrixEqual(cbvCS.vp, mrot)) return;
+
+	// wvp test
+	float4 pos = float4(1, -2, 3, 0);
+	float4 rot = float4(0, 0, 0, 0);
+	float4x4 wvp = calcToWorld(pos, rot);
+	//if (matrixEqual(cbvCS.vp, wvp)) return;
+
+
 	// formulate codition to return --> see smoething
 	//if (from_c_code.x == rot_q.x) return;
 	//if (from_c_code.y == rot_q.y) return;
@@ -239,10 +253,24 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	//if (vectorsEqual(from_c_code, mrot[0])) return;
 	//if (from_c_code.x == mrot[0].x) return; ohne transpose
 	//if (from_c_code.y == mrot[1].x) return; ohne transpose
-	if (matrixEqual(cbvCS.vp, mrot)) return;
 	for (uint tile = 0; tile < 500; tile++)
 	{
-		cbvResult[tile].wvp = m2;
+		// real thing:
+		pos = float4(1, 1, 1, 0);
+		rot = float4(0, 0, 0, 0);
+		pos.x = cbvResult[tile].world[0][0];
+		pos.y = cbvResult[tile].world[1][0];
+		pos.z = cbvResult[tile].world[2][0];
+		float4x4 toWorld = calcToWorld(pos, rot);
+		//wvp = cbvCS.vp * transpose(toWorld);
+		//wvp = transpose(wvp);
+		//wvp = transpose(cbvCS.vp) * toWorld;
+		wvp = transpose(fixedVP) * toWorld;
+		//if (pos.x != 1) cbvResult[tile].wvp = wvp;
+		//if (pos.y != 2) cbvResult[tile].wvp = wvp;
+		//if (pos.z != 3) cbvResult[tile].wvp = wvp;
+		//cbvResult[tile].wvp = m2;
+		//cbvResult[tile].wvp = wvp;
 		//cbvResult[tile].wvp = cbvCS.vp;
 		cbvResult[tile].world = m2;
 		cbvResult[tile].cameraPos = m2[0].xyz;

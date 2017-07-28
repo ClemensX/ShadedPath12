@@ -97,11 +97,18 @@ void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp
 	cbv->material = mo->material;
 	XMStoreFloat4x4(&cbv->wvp, wvp);
 	XMStoreFloat4x4(&cbv->world, toWorld);
-	//cbv->world = di.world;
+	//XMStoreFloat4x4(&cbv->, toWorld);
+	//cbv->world._11 = 1;// mo->pos().x;
+	//cbv->world._12 = 2;// mo->pos().y;
+	//cbv->world._13 = 3;// mo->pos().z;
+	cbv->cameraPos.x = mo->pos().x;
+	cbv->cameraPos.y = mo->pos().y;
+	cbv->cameraPos.z = mo->pos().z;
+				   //cbv->world = di.world;
 	cbv->alpha = mo->alpha;
 	// only update material if necessary
-	size_t size = frameEffectData[frameIndex].updateMaterial ? sizeof(*cbv) : sizeof(*cbv) - sizeof(Material);
-	memcpy(getCBVUploadAddress(frameIndex, 0, mo->objectNum, eyeNum), cbv, size);
+	//size_t size = frameEffectData[frameIndex].updateMaterial ? sizeof(*cbv) : sizeof(*cbv) - sizeof(Material);
+	memcpy(getCBVUploadAddress(frameIndex, 0, mo->objectNum, eyeNum), cbv, sizeof(*cbv));
 	dxManager.upload(mo->objectNum, eyeNum, cbv);
 	if (false && mo->pos().y > 50) {
 		auto pos = mo->mesh->vertices.at(0).Pos;
@@ -139,7 +146,17 @@ void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr
 	frameEffectData[frameIndex].cbvCS.vp._31 = t.z;
 	frameEffectData[frameIndex].cbvCS.vp._41 = t.w;
 	XMStoreFloat4x4(&frameEffectData[frameIndex].cbvCS.vp, m);
+	// another test for wvp calculation:
+	XMFLOAT3 pos = XMFLOAT3(1, -2, 3);
+	XMFLOAT3 rot = XMFLOAT3(0, 0, 0);
+	XMMATRIX wvp = MeshObject::calcToWorld(pos, rot);
+	XMStoreFloat4x4(&frameEffectData[frameIndex].cbvCS.vp, wvp);
+
+	// now the real thing:
+	XMStoreFloat4x4(&frameEffectData[frameIndex].cbvCS.vp, vp);
+
 	dxManager.uploadConstantBufferSet(0, sizeof(CBV_CS), &frameEffectData[frameIndex].cbvCS);
+
 	if (frameEffectData[frameIndex].updateConstBuffers == false)
 		return;
 	for (unsigned int i = bi.start; i <= bi.end; i++) {

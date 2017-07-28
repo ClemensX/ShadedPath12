@@ -18,11 +18,12 @@ SamplerState s : register(s0);
 struct ObjectConstantBuffer { // offset
 	float4x4 wvp;        //   0
 	float4x4 world;      //  64
-	float3   cameraPos;  // 128
-	float    alpha;      // 140
-	Material material;   // 144
-	float fill[20]; // 80
-}; // total 32 + 144 = 176 ( + 89 = 256)
+	float4x4 vp;         // 128
+	float3   cameraPos;  // 192
+	float    alpha;      // 204
+	Material material;   // 208 (size 32) --> total 240
+	float fill[4]; // 16
+}; // total 32 + 208 = 240 ( + 16 = 256)
 
 ConstantBuffer<ObjectConstantBuffer> cbv: register(b0);
 // we cannot use array - it exceeds max allowed CBV size of 4096 16-byte entries
