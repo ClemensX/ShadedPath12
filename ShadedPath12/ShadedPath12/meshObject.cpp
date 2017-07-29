@@ -97,6 +97,7 @@ void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp
 	cbv->material = mo->material;
 	XMStoreFloat4x4(&cbv->wvp, wvp);
 	XMStoreFloat4x4(&cbv->world, toWorld);
+	XMStoreFloat4x4(&cbv->vp, vp);
 	//XMStoreFloat4x4(&cbv->, toWorld);
 	//cbv->world._11 = 1;// mo->pos().x;
 	//cbv->world._12 = 2;// mo->pos().y;

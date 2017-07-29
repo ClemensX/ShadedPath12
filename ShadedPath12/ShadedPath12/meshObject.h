@@ -51,10 +51,11 @@ public:
 	struct CBV {
 		XMFLOAT4X4 wvp;
 		XMFLOAT4X4 world;  // needed for normal calculations
+		XMFLOAT4X4 vp;         // 128
 		XMFLOAT3   cameraPos;
 		float    alpha;
 		Material material;
-		float fill[20];
+		float fill[4];
 	};
 
 	// compute shader constant buffer ==> keep in sync with MObjectCS.hlsl/cbvCS

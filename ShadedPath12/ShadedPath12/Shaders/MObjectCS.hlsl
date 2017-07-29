@@ -253,23 +253,37 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	//if (vectorsEqual(from_c_code, mrot[0])) return;
 	//if (from_c_code.x == mrot[0].x) return; ohne transpose
 	//if (from_c_code.y == mrot[1].x) return; ohne transpose
+	//return;
 	for (uint tile = 0; tile < 500; tile++)
 	{
 		// real thing:
 		pos = float4(1, 1, 1, 0);
 		rot = float4(0, 0, 0, 0);
-		pos.x = cbvResult[tile].world[0][0];
-		pos.y = cbvResult[tile].world[1][0];
-		pos.z = cbvResult[tile].world[2][0];
+		pos.x = cbvResult[tile].cameraPos.x;
+		pos.y = cbvResult[tile].cameraPos.y;
+		pos.z = cbvResult[tile].cameraPos.z;
 		float4x4 toWorld = calcToWorld(pos, rot);
-		//wvp = cbvCS.vp * transpose(toWorld);
+		//wvp = transpose(toWorld) * transpose(cbvCS.vp);
+		wvp = mul(toWorld, cbvCS.vp);
 		//wvp = transpose(wvp);
 		//wvp = transpose(cbvCS.vp) * toWorld;
-		wvp = transpose(fixedVP) * toWorld;
+		//wvp = transpose(fixedVP) * toWorld;
+		float4x4 c = cbvResult[tile].wvp;
+		float4x4 h = wvp;
+		//float4x4 c = cbvResult[tile].world;
+		//float4x4 h = toWorld;
+		//float4x4 c = cbvResult[tile].vp;
+		//float4x4 h = cbvCS.vp;
+		//if (!(c[0][0] == h[0][0] && c[0][1] == h[1][0]))
+		//if (!(vectorsEqual(c[0], h[0])))
+		//if (!matrixEqual(cbvResult[tile].vp, cbvCS.vp))
+		//if (!matrixEqual(cbvResult[tile].world, toWorld))
+		//if (!matrixEqual(cbvResult[tile].wvp, wvp))
+		if (!matrixEqual(c, h))
+			cbvResult[tile].wvp = m2;
 		//if (pos.x != 1) cbvResult[tile].wvp = wvp;
 		//if (pos.y != 2) cbvResult[tile].wvp = wvp;
 		//if (pos.z != 3) cbvResult[tile].wvp = wvp;
-		//cbvResult[tile].wvp = m2;
 		//cbvResult[tile].wvp = wvp;
 		//cbvResult[tile].wvp = cbvCS.vp;
 		cbvResult[tile].world = m2;
