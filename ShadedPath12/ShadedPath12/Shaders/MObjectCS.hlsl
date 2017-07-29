@@ -13,7 +13,7 @@ float matrixEqual(float4x4 a, float4x4 b) {
 }
 
 float4 QuaternionRotationRollPitchYaw(float4 Angles) {
-	float4 HalfAngles = Angles * g_XMOneHalf;
+	float4 HalfAngles = Angles * g_XMOneHalf; // component wise multiplication
 	//return HalfAngles;
 
 	float4 SinAngles = sin(HalfAngles);
@@ -37,15 +37,15 @@ float4 QuaternionRotationRollPitchYaw(float4 Angles) {
 	float4 r1 = float4(s.z, s.z, c.z, s.z);
 
 	//XMVECTOR Q1 = XMVectorMultiply(P1, Sign.v);
-	float4 q1 = p1 * Sign;
+	float4 q1 = p1 * Sign; // component wise mult
 	//XMVECTOR Q0 = XMVectorMultiply(P0, Y0);
-	float4 q0 = p0 * y0;
+	float4 q0 = p0 * y0; // component wise mult
 	//Q1 = XMVectorMultiply(Q1, Y1);
-	q1 = q1 * y1;
+	q1 = q1 * y1; // component wise mult
 	//Q0 = XMVectorMultiply(Q0, R0);
-	q0 = q0 * r0;
+	q0 = q0 * r0; // component wise mult
 	//XMVECTOR Q = XMVectorMultiplyAdd(Q1, R1, Q0);
-	float4 q = q1 * r1 + q0;
+	float4 q = q1 * r1 + q0; // component wise mult and add
 	return q;
 }
 
@@ -81,14 +81,14 @@ float4x4 MatrixRotationQuaternion(float4 Quaternion) {
 	//V1 = XMVectorSwizzle<XM_SWIZZLE_Z, XM_SWIZZLE_Y, XM_SWIZZLE_Z, XM_SWIZZLE_W>(Q0);
 	v1 = float4(q0.z, q0.y, q0.z, q0.w);
 	//V0 = XMVectorMultiply(V0, V1);
-	v0 = v0 * v1;
+	v0 = v0 * v1; // component wise mult
 
 	//V1 = XMVectorSplatW(Quaternion);
 	v1 = float4(Quaternion.w, Quaternion.w, Quaternion.w, Quaternion.w);
 	//XMVECTOR V2 = XMVectorSwizzle<XM_SWIZZLE_Y, XM_SWIZZLE_Z, XM_SWIZZLE_X, XM_SWIZZLE_W>(Q0);
 	float4 v2 = float4(q0.y, q0.z, q0.x, q0.w);
 	//V1 = XMVectorMultiply(V1, V2);
-	v1 = v1 * v2;
+	v1 = v1 * v2; // component wise mult
 
 	//XMVECTOR R1 = XMVectorAdd(V0, V1);
 	float4 r1 = v0 + v1;
@@ -132,7 +132,7 @@ float4x4 MatrixAffineTransformation(float4 Scaling, float4 RotationOrigin, float
 	//M.r[3] = XMVectorSubtract(M.r[3], VRotationOrigin);
 	m[3] = m[3] - VRotationOrigin;
 	//M = XMMatrixMultiply(M, MRotation);
-	m = m * MRotation;
+	m = mul(MRotation, m);  // change order for HLSL matrix mult
 	//M.r[3] = XMVectorAdd(M.r[3], VRotationOrigin);
 	m[3] = m[3] + VRotationOrigin;
 	//M.r[3] = XMVectorAdd(M.r[3], VTranslation);
@@ -264,12 +264,14 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		pos.z = cbvResult[tile].cameraPos.z;
 		float4x4 toWorld = calcToWorld(pos, rot);
 		//wvp = transpose(toWorld) * transpose(cbvCS.vp);
-		wvp = mul(toWorld, cbvCS.vp);
+		wvp = mul(toWorld, cbvCS.vp); // change order for matrix mult
 		//wvp = transpose(wvp);
 		//wvp = transpose(cbvCS.vp) * toWorld;
 		//wvp = transpose(fixedVP) * toWorld;
-		float4x4 c = cbvResult[tile].wvp;
-		float4x4 h = wvp;
+		//float4x4 c = cbvResult[tile].wvp;
+		//float4x4 h = wvp;
+		//if (!matrixEqual(c, h))
+		//	cbvResult[tile].wvp = m2;
 		//float4x4 c = cbvResult[tile].world;
 		//float4x4 h = toWorld;
 		//float4x4 c = cbvResult[tile].vp;
@@ -279,12 +281,10 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		//if (!matrixEqual(cbvResult[tile].vp, cbvCS.vp))
 		//if (!matrixEqual(cbvResult[tile].world, toWorld))
 		//if (!matrixEqual(cbvResult[tile].wvp, wvp))
-		if (!matrixEqual(c, h))
-			cbvResult[tile].wvp = m2;
 		//if (pos.x != 1) cbvResult[tile].wvp = wvp;
 		//if (pos.y != 2) cbvResult[tile].wvp = wvp;
 		//if (pos.z != 3) cbvResult[tile].wvp = wvp;
-		//cbvResult[tile].wvp = wvp;
+		cbvResult[tile].wvp = wvp;
 		//cbvResult[tile].wvp = cbvCS.vp;
 		cbvResult[tile].world = m2;
 		cbvResult[tile].cameraPos = m2[0].xyz;
