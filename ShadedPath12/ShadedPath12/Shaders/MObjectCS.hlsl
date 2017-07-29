@@ -3,6 +3,7 @@ static const float4 g_XMIdentityR3 = { 0.0, 0.0, 0.0, 1.0 };
 static const float4 Sign = { 1.0, -1.0, -1.0, 1.0 };
 static const float4 Constant1110 = { 1.0, 1.0, 1.0, 0.0 };
 
+/*
 float vectorsEqual(float4 a, float4 b) {
 	return length(a - b) < 0.00001;
 }
@@ -11,6 +12,7 @@ float matrixEqual(float4x4 a, float4x4 b) {
 	float diff = length(a[0] - b[0]) + length(a[1] - b[1]) + length(a[2] - b[2]) + length(a[3] - b[3]);
 	return diff < 0.0001;
 }
+*/
 
 float4 QuaternionRotationRollPitchYaw(float4 Angles) {
 	float4 HalfAngles = Angles * g_XMOneHalf; // component wise multiplication
@@ -210,84 +212,15 @@ CSConstantBuffer cbvCS: register(b0);
 [numthreads(1, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
-	float4x4 m = cbv.wvp;
-	m[0][0] = 0.0;
-	m[0][1] = 0.0;
-	//float4x4 m2 = { 0, 0, 0, 0,
-	//	0, 0, 0, 0,
-	//	0, 0, 0, 0,
-	//	0, 0, 0, 0 };
-	float4x4 m2 = { 1, 0, 0, 0,
-		0, 1, 0, 0,
-		0, 0, 1, 0,
-		0, 0, 0, 1 };
-	float4x4 fixedVP = {
-		0.78441339, 0, 0, 0,
-		0, 1.33056235, 0, 0,
-		0, 0, 1.0001002, 2.80027986,
-		0, 0, 1, 3 };
-	//cbv.wvp = m;
-	//cbvResult[0].wvp = m2;
-	float4 rot_q; // rotation quaternion
-	rot_q = float4(0, 0, 0, 1);
-	rot_q = float4(1, 2, 3, 0);
-	rot_q = QuaternionRotationRollPitchYaw(rot_q);
-	rot_q = normalize(rot_q);
-	float4x4 mrot = transpose(MatrixRotationQuaternion(rot_q));
-	float4 from_c_code = cbvCS.vp[0];
-	//if (matrixEqual(cbvCS.vp, mrot)) return;
-
-	// wvp test
-	float4 pos = float4(1, -2, 3, 0);
-	float4 rot = float4(0, 0, 0, 0);
-	float4x4 wvp = calcToWorld(pos, rot);
-	//if (matrixEqual(cbvCS.vp, wvp)) return;
-
-
-	// formulate codition to return --> see smoething
-	//if (from_c_code.x == rot_q.x) return;
-	//if (from_c_code.y == rot_q.y) return;
-	//if (vectorsEqual(from_c_code, rot_q)) return;
-	//if (!from_c_code.x == rot_q.x) return;
-	//if (rot_q.x < 0.0000000000000000000000000000000000001) return;
-	//if (vectorsEqual(from_c_code, mrot[0])) return;
-	//if (from_c_code.x == mrot[0].x) return; ohne transpose
-	//if (from_c_code.y == mrot[1].x) return; ohne transpose
-	//return;
 	for (uint tile = 0; tile < 500; tile++)
 	{
-		// real thing:
-		pos = float4(1, 1, 1, 0);
-		rot = float4(0, 0, 0, 0);
+		float4 rot = float4(0, 0, 0, 0);
+		float4 pos;
 		pos.x = cbvResult[tile].cameraPos.x;
 		pos.y = cbvResult[tile].cameraPos.y;
 		pos.z = cbvResult[tile].cameraPos.z;
 		float4x4 toWorld = calcToWorld(pos, rot);
-		//wvp = transpose(toWorld) * transpose(cbvCS.vp);
-		wvp = mul(toWorld, cbvCS.vp); // change order for matrix mult
-		//wvp = transpose(wvp);
-		//wvp = transpose(cbvCS.vp) * toWorld;
-		//wvp = transpose(fixedVP) * toWorld;
-		//float4x4 c = cbvResult[tile].wvp;
-		//float4x4 h = wvp;
-		//if (!matrixEqual(c, h))
-		//	cbvResult[tile].wvp = m2;
-		//float4x4 c = cbvResult[tile].world;
-		//float4x4 h = toWorld;
-		//float4x4 c = cbvResult[tile].vp;
-		//float4x4 h = cbvCS.vp;
-		//if (!(c[0][0] == h[0][0] && c[0][1] == h[1][0]))
-		//if (!(vectorsEqual(c[0], h[0])))
-		//if (!matrixEqual(cbvResult[tile].vp, cbvCS.vp))
-		//if (!matrixEqual(cbvResult[tile].world, toWorld))
-		//if (!matrixEqual(cbvResult[tile].wvp, wvp))
-		//if (pos.x != 1) cbvResult[tile].wvp = wvp;
-		//if (pos.y != 2) cbvResult[tile].wvp = wvp;
-		//if (pos.z != 3) cbvResult[tile].wvp = wvp;
+		float4x4 wvp = mul(toWorld, cbvCS.vp); // change order for matrix mult
 		cbvResult[tile].wvp = wvp;
-		//cbvResult[tile].wvp = cbvCS.vp;
-		cbvResult[tile].world = m2;
-		cbvResult[tile].cameraPos = m2[0].xyz;
-		cbvResult[tile].alpha = 120;
 	}
 }
