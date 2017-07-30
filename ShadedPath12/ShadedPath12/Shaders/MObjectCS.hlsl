@@ -212,7 +212,7 @@ CSConstantBuffer cbvCS: register(b0);
 [numthreads(1, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
-	for (uint tile = 0; tile < 500; tile++)
+	for (uint tile = 0; tile < 50000; tile++)
 	{
 		float4 rot = float4(0, 0, 0, 0);
 		float4 pos;

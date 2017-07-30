@@ -6,6 +6,7 @@
 
 MeshObject::MeshObject()
 {
+	flagUploadToGPU();
 }
 
 MeshObject::~MeshObject()
@@ -86,6 +87,8 @@ unordered_map<unsigned int, unsigned int> objNums;
 
 void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp, int frameIndex, int eyeNum) {
 	assert(mo->objectNum > 0); // not properly added to store
+	if (mo->uploadedToGPU[frameIndex]) return;
+	mo->uploadedToGPU[frameIndex] = true;
 	//Log("  elem: " << mo->pos().x << endl);
 	//WegDamit.lock();
 	//XMMATRIX toWorld = XMMatrixIdentity();//mo->calcToWorld(); // apply pos and rot
@@ -97,7 +100,7 @@ void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp
 	cbv->material = mo->material;
 	XMStoreFloat4x4(&cbv->wvp, wvp);
 	XMStoreFloat4x4(&cbv->world, toWorld);
-	XMStoreFloat4x4(&cbv->vp, vp);
+	//XMStoreFloat4x4(&cbv->vp, vp);
 	//XMStoreFloat4x4(&cbv->, toWorld);
 	//cbv->world._11 = 1;// mo->pos().x;
 	//cbv->world._12 = 2;// mo->pos().y;
@@ -158,8 +161,8 @@ void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr
 
 	dxManager.uploadConstantBufferSet(0, sizeof(CBV_CS), &frameEffectData[frameIndex].cbvCS);
 
-	if (frameEffectData[frameIndex].updateConstBuffers == false)
-		return;
+	//if (frameEffectData[frameIndex].updateConstBuffers == false)
+	//	return;
 	for (unsigned int i = bi.start; i <= bi.end; i++) {
 		//updateOne(cbv, mov[i].get(), vp, frameIndex, eyeNum);
 		updateOne(cbv, mov->at(i).get(), vp, frameIndex, eyeNum);
@@ -184,9 +187,6 @@ void MeshObjectStore::update()
 	CBV *cbv = &my_cbv;
 	prepareDraw(&xapp().vr);
 	xapp().lights.update();
-	xapp().stats.start("compute");
-	//computeMethod(frameIndex);
-	xapp().stats.end("compute");
 	if (!xapp().ovrRendering) {
 		frameEffectData[frameIndex].vr_eyesm[0] = vr_eyes;
 		XMMATRIX vp = cam->worldViewProjection();
@@ -237,8 +237,10 @@ void MeshObjectStore::update()
 		}
 	}
 	frameEffectData[frameIndex].updateMaterial = false;
+	xapp().stats.start("compute");
 	dxManager.copyToComputeBuffer(frameData[frameIndex]);
 	computeMethod(frameIndex);
+	xapp().stats.end("compute");
 	xapp().stats.end("meshStoreUpdate");
 }
 

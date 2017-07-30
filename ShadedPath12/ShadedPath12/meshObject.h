@@ -33,6 +33,13 @@ public:
 	TextureID textureID;
 	ComPtr<ID3D12GraphicsCommandList> bundleCommandLists[XApp::FrameCount];
 	ComPtr<ID3D12CommandAllocator> bundleCommandAllocators[XApp::FrameCount];
+	bool uploadedToGPU[XApp::FrameCount]; // keep track if object needs upload
+	// mark object as needing upload on next draw cycles (for all frames)
+	void flagUploadToGPU() {
+		for (int i = 0; i < XApp::FrameCount; i++) {
+			uploadedToGPU[i] = false;
+		}
+	};
 	bool drawBundleAvailable = false;
 private:
 	XMFLOAT3 _pos;
@@ -49,6 +56,14 @@ public:
 	};
 
 	struct CBV {
+		XMFLOAT4X4 wvp;
+		XMFLOAT4X4 world;  // needed for normal calculations
+		XMFLOAT3   cameraPos;
+		float    alpha;
+		Material material;
+		float fill[20];
+	};
+	struct CBVDebug {
 		XMFLOAT4X4 wvp;
 		XMFLOAT4X4 world;  // needed for normal calculations
 		XMFLOAT4X4 vp;         // 128

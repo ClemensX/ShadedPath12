@@ -18,8 +18,17 @@ SamplerState s : register(s0);
 struct ObjectConstantBuffer { // offset
 	float4x4 wvp;        //   0
 	float4x4 world;      //  64
+	float3   cameraPos;  // 128
+	float    alpha;      // 140
+	Material material;   // 144 (size 32) --> total 176
+	float fill[20];
+}; // total 32 + 144 = 176 ( + 80 = 256)
+
+struct ObjectConstantBufferDebug { // offset
+	float4x4 wvp;        //   0
+	float4x4 world;      //  64
 	float4x4 vp;         // 128
-	float3   cameraPos;  // 192
+	float3   cameraPos;  // 128 192
 	float    alpha;      // 204
 	Material material;   // 208 (size 32) --> total 240
 	float fill[4]; // 16
