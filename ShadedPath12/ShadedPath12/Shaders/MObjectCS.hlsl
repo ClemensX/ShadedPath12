@@ -162,7 +162,7 @@ float4x4 calcToWorld(float4 pos, float4 rot) {
 	//XMVECTOR q_origin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	float4 q_origin = float4(0, 0, 0, 0);
 	//XMFLOAT3 p = XMFLOAT3(0.0f, 0.0f, 0.0f);//rot();
-	float4 p = float4(0, 0, 0, 0);//rot(); initially no rotation specified
+	float4 p = float4(rot.x, rot.y, rot.z, 0);//rot(); initially no rotation specified
 	//XMMATRIX rotateM = XMMatrixRotationRollPitchYaw(p.y, p.x, p.z);
 	//q = XMQuaternionRotationMatrix(rotateM);
 	float4 rot_roll_pitch_yaw = float4(p.y, p.x, p.z, 0);
@@ -215,7 +215,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	//for (uint tile = 0; tile < 50000; tile++)
 	//{
 		uint tile = DTid.x;
-		float4 rot = float4(0, 0, 0, 0);
+		float4 rot = float4(0.15, 0.4, 0.2, 0);
 		float4 pos;
 		pos.x = cbvResult[tile].cameraPos.x;
 		pos.y = cbvResult[tile].cameraPos.y;
