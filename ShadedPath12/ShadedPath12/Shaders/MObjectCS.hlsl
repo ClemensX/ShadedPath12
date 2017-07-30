@@ -209,11 +209,12 @@ CSConstantBuffer cbvCS: register(b0);
 
 [RootSignature(ObjectCS)]
 
-[numthreads(1, 1, 1)]
+[numthreads(1024, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
-	for (uint tile = 0; tile < 50000; tile++)
-	{
+	//for (uint tile = 0; tile < 50000; tile++)
+	//{
+		uint tile = DTid.x;
 		float4 rot = float4(0, 0, 0, 0);
 		float4 pos;
 		pos.x = cbvResult[tile].cameraPos.x;
@@ -222,5 +223,5 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		float4x4 toWorld = calcToWorld(pos, rot);
 		float4x4 wvp = mul(toWorld, cbvCS.vp); // change order for matrix mult
 		cbvResult[tile].wvp = wvp;
-	}
+	//}
 }

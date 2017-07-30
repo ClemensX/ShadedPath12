@@ -645,7 +645,7 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 	pCommandList->SetComputeRootUnorderedAccessView(0, dxManager.getCBVVirtualAddress(0, 0));
 	pCommandList->SetComputeRootConstantBufferView(1, dxManager.getConstantBufferSetVirtualAddress(0, 0));
 
-	pCommandList->Dispatch(1, 1, 1);
+	pCommandList->Dispatch(ceil(50000.0f/1024), 1, 1);
 
 	// Close and execute the command list.
 	ThrowIfFailed(pCommandList->Close());
@@ -657,8 +657,8 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 
 	auto &f = frameData[frameNum];
 	// Wait for the gpu to complete the draw.
-	createSyncPoint(f, pCommandQueue);
-	waitForSyncPoint(f); // ok, but not optimal
+	//createSyncPoint(f, pCommandQueue);
+	//waitForSyncPoint(f); // ok, but not optimal
 
 	// Prepare for the next frame.
 	ThrowIfFailed(pCommandAllocator->Reset());
