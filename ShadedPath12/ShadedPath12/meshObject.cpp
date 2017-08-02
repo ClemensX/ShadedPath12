@@ -369,6 +369,9 @@ void MeshObjectStore::init()
 		ThrowIfFailed(xapp().device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&computeCommandQueue[n])));
 		ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COMPUTE, IID_PPV_ARGS(&computeAllocator[n])));
 		ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_COMPUTE, computeAllocator[n].Get(), nullptr, IID_PPV_ARGS(&computeCommandList[n])));
+		// immediately close the command list - it will be reset as first step in computeMethod
+		ThrowIfFailed(computeCommandList[n]->Close());
+
 		//ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_SHARED, IID_PPV_ARGS(&threadFences[threadIndex])));
 	}
 
@@ -634,6 +637,10 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 	ID3D12CommandAllocator* pCommandAllocator = computeAllocator[frameNum].Get();
 	ID3D12GraphicsCommandList* pCommandList = computeCommandList[frameNum].Get();
 
+	// Prepare for this next frame.
+	//ThrowIfFailed(pCommandAllocator->Reset());
+	ThrowIfFailed(pCommandList->Reset(pCommandAllocator, computePipelineState.Get()));
+
 	//ID3D12Resource *resource = singleCBVResourcesGPU_RW[frameNum].Get();
 	ID3D12Resource *resource = dxManager.getConstantBuffer();
 	resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, pCommandList);
@@ -646,6 +653,7 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 	pCommandList->SetComputeRootConstantBufferView(1, dxManager.getConstantBufferSetVirtualAddress(0, 0));
 
 	pCommandList->Dispatch(ceil(50000.0f/1024), 1, 1);
+	resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, pCommandList);
 
 	// Close and execute the command list.
 	ThrowIfFailed(pCommandList->Close());
@@ -661,6 +669,6 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 	//waitForSyncPoint(f); // ok, but not optimal
 
 	// Prepare for the next frame.
-	ThrowIfFailed(pCommandAllocator->Reset());
-	ThrowIfFailed(pCommandList->Reset(pCommandAllocator, computePipelineState.Get()));
+	//ThrowIfFailed(pCommandAllocator->Reset());
+	//ThrowIfFailed(pCommandList->Reset(pCommandAllocator, computePipelineState.Get()));
 }
