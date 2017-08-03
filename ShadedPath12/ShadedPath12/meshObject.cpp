@@ -584,7 +584,7 @@ void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 	ID3D12DescriptorHeap* ppHeaps[] = { mo->textureID->m_srvHeap.Get() };
 	dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
-	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, 1, 0, 0, 0);
+	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, 2, 0, 0, 0);
 }
 
 void MeshObjectStore::createDrawBundle(MeshObject * meshObject)
@@ -651,8 +651,8 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 	pCommandList->SetComputeRootSignature(computeRootSignature.Get());
 	pCommandList->SetComputeRootUnorderedAccessView(0, dxManager.getCBVVirtualAddress(0, 0));
 	pCommandList->SetComputeRootConstantBufferView(1, dxManager.getConstantBufferSetVirtualAddress(0, 0));
-
-	pCommandList->Dispatch(ceil(50000.0f/1024), 1, 1);
+	UINT threadGroupCount = ceil((maxObjects * 1.0f) / 1024);
+	pCommandList->Dispatch(threadGroupCount, 1, 1);
 	resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, pCommandList);
 
 	// Close and execute the command list.

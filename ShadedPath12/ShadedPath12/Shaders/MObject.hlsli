@@ -46,6 +46,7 @@ struct VSInput
 	float3 Pos    : POSITION;
 	float3 Normal : NORMAL;
 	float2 Tex    : TEXCOORD;
+	uint   Id     : SV_InstanceID;
 };
 
 struct PSInput
