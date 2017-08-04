@@ -16,7 +16,8 @@ float4 main(PSInput input) : SV_TARGET
 	texColor = screenTex.Sample(s, thisTexCoord).xyz;
 	float3 finalColor = float4(1,1,1,1);
 	  //return float4(texColor,1);
-	finalColor = applyLighting(texColor, input.Pos.xyz, input.PosW, input.Normal, cbv[0].cameraPos, cbv[0].material);
+	uint id = asuint(input.Id);
+	finalColor = applyLighting(texColor, input.Pos.xyz, input.PosW, input.Normal, cbv[id].cameraPos, cbv[id].material);
 
 	float4 alphaColor;
 	alphaColor.rgb = finalColor;

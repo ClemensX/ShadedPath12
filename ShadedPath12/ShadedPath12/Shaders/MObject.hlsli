@@ -57,6 +57,7 @@ struct PSInput
 	float3 PosW  : POSITION;
 	float2 Tex   : TEXCOORD;
 	float3 Normal: NORMAL;
+	float   Id    : PSIZE;
 };
 
 #include "lights.hlsi"

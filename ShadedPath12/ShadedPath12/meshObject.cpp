@@ -559,7 +559,7 @@ void MeshObjectStore::postDraw()
 void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
-	//if (mo->objectNum > 10) return;
+	if (mo->objectNum != 1) return;
 	if (mo->drawBundleAvailable) {
 		dxManager.getGraphicsCommandListComPtr()->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
 		dxManager.getGraphicsCommandListComPtr()->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
@@ -578,13 +578,13 @@ void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 	dxManager.getGraphicsCommandListComPtr()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	dxManager.getGraphicsCommandListComPtr()->IASetVertexBuffers(0, 1, &mo->mesh->vertexBufferView);
 	dxManager.getGraphicsCommandListComPtr()->IASetIndexBuffer(&mo->mesh->indexBufferView);
-	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, mo->objectNum, eyeNum));  // set to beginning of all object buffer
-	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, dxManager.getCBVVirtualAddress(mo->objectNum, eyeNum));
+	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, dxManager.getCBVVirtualAddress(mo->objectNum, eyeNum));
+	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, dxManager.getCBVVirtualAddress(0, eyeNum));
 	// Set SRV
 	ID3D12DescriptorHeap* ppHeaps[] = { mo->textureID->m_srvHeap.Get() };
 	dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
-	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, 2, 0, 0, 0);
+	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, 500, 0, 0, 0);
 }
 
 void MeshObjectStore::createDrawBundle(MeshObject * meshObject)
