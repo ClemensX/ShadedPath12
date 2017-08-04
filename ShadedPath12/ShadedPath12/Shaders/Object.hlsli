@@ -45,4 +45,5 @@ struct PSInput
 	float3 Normal: NORMAL;
 };
 
-#include "lights.hlsi"
+#include "lights_old.hlsi"
+//#include "lights_old.hlsi"

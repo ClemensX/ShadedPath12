@@ -380,6 +380,7 @@
     <None Include="Shaders\Dotcross.hlsli" />
     <None Include="Shaders\lights.hlsi" />
     <None Include="Shaders\lights_basic.hlsi" />
+    <None Include="Shaders\lights_old.hlsi" />
     <None Include="Shaders\Line.hlsli" />
     <None Include="Shaders\Linetext.hlsli" />
     <None Include="Shaders\MObject.hlsli" />

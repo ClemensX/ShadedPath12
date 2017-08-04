@@ -368,5 +368,8 @@
     <None Include="Shaders\MObject.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\lights_old.hlsi">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

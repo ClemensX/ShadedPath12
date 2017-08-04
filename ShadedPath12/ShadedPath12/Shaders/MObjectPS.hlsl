@@ -1,16 +1,6 @@
 #include "lights_basic.hlsi"
 #include "MObject.hlsli"
 
-ConstantBuffer<CBVLights> cbvL[1]: register(b0);
-
-
-
-float3 applyLighting2(float3 col, float3 pos, float3 posw, float3 normal, float3 camera, Material material) {
-	col.x = cbvL[0].ambientLights[0].pos.x;
-	return saturate(col);
-}
-
-
 [RootSignature(ObjectRS)]
 
 float4 main(PSInput input) : SV_TARGET
@@ -26,7 +16,7 @@ float4 main(PSInput input) : SV_TARGET
 	texColor = screenTex.Sample(s, thisTexCoord).xyz;
 	float3 finalColor = float4(1,1,1,1);
 	  //return float4(texColor,1);
-	finalColor = applyLighting2(texColor, input.Pos.xyz, input.PosW, input.Normal, cbv[0].cameraPos, cbv[0].material);
+	finalColor = applyLighting(texColor, input.Pos.xyz, input.PosW, input.Normal, cbv[0].cameraPos, cbv[0].material);
 
 	float4 alphaColor;
 	alphaColor.rgb = finalColor;

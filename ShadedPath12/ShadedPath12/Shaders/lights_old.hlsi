@@ -1,7 +1,7 @@
 //#include "lights_basic.hlsi"
 
-//ConstantBuffer<CBVLights> cbvLights[1]: register(b0);
-cbuffer cbFixedLights : register(b0) {
+//ConstantBuffer<CBVLights> cbvLights: register(b1);
+cbuffer cbFixedLights : register(b1) {
 	//Material material;
     AmbientLight ambientLights[MAX_AMBIENT];
 	DirectionalLight directionalLights[MAX_DIRECTIONAL];
@@ -76,6 +76,7 @@ float3 applyLighting(float3 col, float3 pos, float3 posw, float3 normal, float3 
 		return float3(1.0f, 1.0f, 1.0f);
 	}
 	float3 ambient = calcAmbient(material);
+
 	float3 directional = float3(0,0,0);
 	[unroll] for (int i = 0; i < MAX_DIRECTIONAL; i++) {
 		directional += calcDirectional(pos, normal, material, i, camera);
@@ -85,7 +86,7 @@ float3 applyLighting(float3 col, float3 pos, float3 posw, float3 normal, float3 
 	[unroll] for (int j = 0; j < MAX_POINT; j++) {
 		pointx += calcPoint(posw, normal, material, j, camera);
 	}
+
 	col = col * (ambient + directional + pointx);
 	return saturate(col);
 }
-
