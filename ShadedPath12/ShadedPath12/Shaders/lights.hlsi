@@ -1,26 +1,26 @@
 //#include "lights_basic.hlsi"
 
-//ConstantBuffer<CBVLights> cbvLights: register(b1);
-cbuffer cbFixedLights : register(b1) {
+//ConstantBuffer<CBVLights> cbvLights[]: register(b1);
+/*cbuffer cbFixedLights : register(b1) {
 	//Material material;
     AmbientLight ambientLights[MAX_AMBIENT];
 	DirectionalLight directionalLights[MAX_DIRECTIONAL];
 	PointLight pointLights[MAX_POINT];
 	SpotLight spotLights[MAX_SPOT];
 };
-
+*/
 // ambient color is maximum of all ambient color values * material.ambient
-float3 calcAmbient(Material material) {
+/*float3 calcAmbient(Material material) {
 	float3 amb = float3(0,0,0);
 	[unroll] for (int i = 0; i < MAX_AMBIENT; i++) {
-		amb.x = max(amb.x, ambientLights[i].ambient.x);
-		amb.y = max(amb.y, ambientLights[i].ambient.y);
-		amb.z = max(amb.z, ambientLights[i].ambient.z);
+		amb.x = max(amb.x, cbvLights[0].ambientLights[i].ambient.x);
+		//amb.y = max(amb.y, cbvLights.ambientLights[i].ambient.y);
+		//amb.z = max(amb.z, cbvLights.ambientLights[i].ambient.z);
 	}
 	return amb * material.ambient.rgb;
 }
-
-float3 calcDirectional(float3 pos, float3 normal, Material material, int index, float3 camera)
+*/
+/*float3 calcDirectional(float3 pos, float3 normal, Material material, int index, float3 camera)
 {
 	float b = directionalLights[index].used_fill.x;
 	if (b < 1.0) {
@@ -69,15 +69,15 @@ float3 calcPoint(float3 pos, float3 normal, Material material, int index, float3
 
 	return finalColor;
 }
-
-float3 applyLighting(float3 col, float3 pos, float3 posw, float3 normal, float3 camera, Material material) {
+*/
+/*float3 applyLighting(float3 col, float3 pos, float3 posw, float3 normal, float3 camera, Material material) {
 	float b = material.isLightSource;
 	if (b > 0.0) {
 		return float3(1.0f, 1.0f, 1.0f);
 	}
 	float3 ambient = calcAmbient(material);
-
-	float3 directional = float3(0,0,0);
+	*/
+/*	float3 directional = float3(0,0,0);
 	[unroll] for (int i = 0; i < MAX_DIRECTIONAL; i++) {
 		directional += calcDirectional(pos, normal, material, i, camera);
 	}
@@ -86,7 +86,7 @@ float3 applyLighting(float3 col, float3 pos, float3 posw, float3 normal, float3 
 	[unroll] for (int j = 0; j < MAX_POINT; j++) {
 		pointx += calcPoint(posw, normal, material, j, camera);
 	}
-
 	col = col * (ambient + directional + pointx);
 	return saturate(col);
 }
+*/

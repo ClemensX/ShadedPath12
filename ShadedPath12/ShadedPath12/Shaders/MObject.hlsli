@@ -34,7 +34,9 @@ struct ObjectConstantBufferDebug { // offset
 	float fill[4]; // 16
 }; // total 32 + 208 = 240 ( + 16 = 256)
 
-ConstantBuffer<ObjectConstantBuffer> cbv: register(b0);
+//StructuredBuffer<ObjectConstantBuffer> cbv
+//ConstantBuffer<ObjectConstantBuffer> cbv2[]: register(b1);
+ConstantBuffer<ObjectConstantBuffer> cbv[]: register(b1);
 // we cannot use array - it exceeds max allowed CBV size of 4096 16-byte entries
 // set single CBV pointer to correct offset before calling shader code
 //cbuffer cbFixedCBVs : register(b1) {
