@@ -214,7 +214,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 {
 	//for (uint tile = 0; tile < 50000; tile++)
 	//{
-		uint tile = DTid.x;
+		uint tile = min(500, DTid.x);
 		float4 rot = float4(0.15, 0.4, 0.2, 0);
 		float4 pos;
 		pos.x = cbvResult[tile].cameraPos.x;

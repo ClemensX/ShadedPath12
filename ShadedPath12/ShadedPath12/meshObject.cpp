@@ -551,15 +551,17 @@ void MeshObjectStore::postDraw()
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 
 	ThrowIfFailed(dxManager.getGraphicsCommandListComPtr()->Close());
+	ID3D12CommandQueue* pCommandQueue = computeCommandQueue[frameIndex].Get();
 	// Execute the command list.
 	ID3D12CommandList* ppCommandLists[] = { dxManager.getGraphicsCommandListComPtr().Get() };
 	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists); // TODO use effect local queue here? 
+	//pCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 }
 
 void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
-	if (mo->objectNum != 1) return;
+	//if (mo->objectNum != 1) return;
 	if (mo->drawBundleAvailable) {
 		dxManager.getGraphicsCommandListComPtr()->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
 		dxManager.getGraphicsCommandListComPtr()->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
@@ -579,12 +581,12 @@ void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 	dxManager.getGraphicsCommandListComPtr()->IASetVertexBuffers(0, 1, &mo->mesh->vertexBufferView);
 	dxManager.getGraphicsCommandListComPtr()->IASetIndexBuffer(&mo->mesh->indexBufferView);
 	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, dxManager.getCBVVirtualAddress(mo->objectNum, eyeNum));
-	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, dxManager.getCBVVirtualAddress(0, eyeNum));
+	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, dxManager.getCBVVirtualAddress(1, eyeNum));
 	// Set SRV
 	ID3D12DescriptorHeap* ppHeaps[] = { mo->textureID->m_srvHeap.Get() };
 	dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
-	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, 500, 0, 0, 0);
+	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, 1/*500*/, 0, 0, 0);
 }
 
 void MeshObjectStore::createDrawBundle(MeshObject * meshObject)
@@ -665,8 +667,8 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 
 	auto &f = frameData[frameNum];
 	// Wait for the gpu to complete the draw.
-	//createSyncPoint(f, pCommandQueue);
-	//waitForSyncPoint(f); // ok, but not optimal
+	createSyncPoint(f, pCommandQueue);
+	waitForSyncPoint(f); // ok, but not optimal
 
 	// Prepare for the next frame.
 	//ThrowIfFailed(pCommandAllocator->Reset());
