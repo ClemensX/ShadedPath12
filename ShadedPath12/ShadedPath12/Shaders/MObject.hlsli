@@ -21,7 +21,7 @@ struct ObjectConstantBuffer { // offset
 	float3   cameraPos;  // 128
 	float    alpha;      // 140
 	Material material;   // 144 (size 32) --> total 176
-	float fill[20];
+	float4 fill[5];      // be aware of packing rules!! use float4 instead of float
 }; // total 32 + 144 = 176 ( + 80 = 256)
 
 struct ObjectConstantBufferDebug { // offset

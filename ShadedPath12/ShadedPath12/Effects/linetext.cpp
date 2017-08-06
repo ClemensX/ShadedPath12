@@ -6,6 +6,7 @@
 
 void Linetext::init()
 {
+	if (xapp().disableLineShaders) return;
 	initialized = true;
 	// try to do all expensive operations like shader loading and PSO creation here
 	// Create the pipeline state, which includes compiling and loading shaders.
@@ -97,6 +98,7 @@ void Linetext::init()
 }
 
 void Linetext::setSize(float charHeight) {
+	if (xapp().disableLineShaders) return;
 	cbv.dx = charHeight / 5.0f;
 	cbv.dy = cbv.dx;
 	memcpy(cbvGPUDest, &cbv, sizeof(cbv));
@@ -104,6 +106,7 @@ void Linetext::setSize(float charHeight) {
 
 void Linetext::update()
 {
+	if (xapp().disableLineShaders) return;
 	mutex_Linetext.lock();
 	if (updateRunning) {
 		// no need to start another update task if the old one is not ready
@@ -218,6 +221,7 @@ void Linetext::preDraw(int eyeNum)
 
 void Linetext::draw()
 {
+	if (xapp().disableLineShaders) return;
 	prepareDraw(&xapp().vr);
 	if (!xapp().ovrRendering) {
 		XMStoreFloat4x4(&cbv.wvp, xapp().camera.worldViewProjection());
@@ -314,6 +318,7 @@ int Linetext::addTextLine(XMFLOAT4 pos, string text, UINT rotIndex) {
 }
 
 int Linetext::addTextLine(XMFLOAT4 pos, string text, Plane plane) {
+	if (xapp().disableLineShaders) return 0;
 	UINT rotindex = 0;
 	switch (plane) {
 	case XY:
