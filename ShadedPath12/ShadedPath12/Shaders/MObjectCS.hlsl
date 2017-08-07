@@ -204,6 +204,8 @@ RWStructuredBuffer<ObjectConstantBuffer> cbvResult	: register(u0);	// UAV
 
 struct CSConstantBuffer { // offset
 	float4x4 vp;        //   0
+	uint     num_objects; // number of objects used in this call)
+	float    fill[3];
 };
 CSConstantBuffer cbvCS: register(b0);
 
@@ -214,7 +216,9 @@ void main( uint3 DTid : SV_DispatchThreadID )
 {
 	//for (uint tile = 0; tile < 50000; tile++)
 	//{
-		uint tile = min(500, DTid.x);
+		uint max = cbvCS.num_objects;
+		uint tile = min(max, DTid.x);
+		//uint tile = min(10, DTid.x);
 		float4 rot = float4(0.15, 0.4, 0.2, 0);
 		float4 pos;
 		pos.x = cbvResult[tile].cameraPos.x;

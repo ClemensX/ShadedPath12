@@ -158,6 +158,7 @@ void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr
 
 	// now the real thing:
 	XMStoreFloat4x4(&frameEffectData[frameIndex].cbvCS.vp, vp);
+	frameEffectData[frameIndex].cbvCS.num_objects = this->maxObjects;
 
 	dxManager.uploadConstantBufferSet(0, sizeof(CBV_CS), &frameEffectData[frameIndex].cbvCS);
 
@@ -653,7 +654,7 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 	pCommandList->SetComputeRootSignature(computeRootSignature.Get());
 	pCommandList->SetComputeRootUnorderedAccessView(0, dxManager.getCBVVirtualAddress(0, 0));
 	pCommandList->SetComputeRootConstantBufferView(1, dxManager.getConstantBufferSetVirtualAddress(0, 0));
-	UINT threadGroupCount = ceil((maxObjects * 1.0f) / 1024);
+	UINT threadGroupCount = (UINT)ceil((maxObjects * 1.0f) / 1024);
 	pCommandList->Dispatch(threadGroupCount, 1, 1);
 	resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, pCommandList);
 

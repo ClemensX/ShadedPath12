@@ -75,7 +75,9 @@ public:
 
 	// compute shader constant buffer ==> keep in sync with MObjectCS.hlsl/cbvCS
 	struct CBV_CS {
-		XMFLOAT4X4 vp;
+		XMFLOAT4X4	vp;
+		UINT        num_objects;
+		float		fill[3];
 	};
 
 	// set max number of objects allowed in the store (is guarded by assertions)
