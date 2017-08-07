@@ -216,7 +216,7 @@ void main( uint3 DTid : SV_DispatchThreadID )
 {
 	//for (uint tile = 0; tile < 50000; tile++)
 	//{
-		uint max = cbvCS.num_objects;
+		uint max = cbvCS.num_objects - 1;
 		uint tile = min(max, DTid.x);
 		//uint tile = min(10, DTid.x);
 		float4 rot = float4(0.15, 0.4, 0.2, 0);

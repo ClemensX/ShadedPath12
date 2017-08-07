@@ -129,14 +129,16 @@ void XApp::update() {
 }
 
 void XApp::draw() {
+	int frameIndex = xapp().getCurrentBackBufferIndex();
 	if (ovrRendering) {
 		vr.startFrame();
 	}
+	Log("draw " << frameIndex);
 	app->draw();
+	Log(" end " << frameIndex << " " << getFramenum() << endl);
 
 	// Present the frame, if in VR this was already done by oculus SDK
 	if (!ovrRendering) {
-		int frameIndex = xapp().getCurrentBackBufferIndex();
 		lastPresentedFrame = frameIndex;
 		if (isShutdownMode()) {
 			UINT n = shutdownFrameNumStart;
@@ -217,7 +219,7 @@ void XApp::init()
 		{
 			debugController->EnableDebugLayer();
 			debugController->QueryInterface(IID_PPV_ARGS(&debugController1));
-			if (debugController1 && false) {
+			if (debugController1 /*&& false*/) {
 				debugController1->SetEnableGPUBasedValidation(true);
 			} else {
 				Log("WARNING: Could not enable GPU validation - ID3D12Debug1 controller not available" << endl);
