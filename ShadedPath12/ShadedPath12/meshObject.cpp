@@ -641,7 +641,7 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 	ID3D12GraphicsCommandList* pCommandList = computeCommandList[frameNum].Get();
 
 	// Prepare for this next frame.
-	//ThrowIfFailed(pCommandAllocator->Reset());
+	ThrowIfFailed(pCommandAllocator->Reset());
 	ThrowIfFailed(pCommandList->Reset(pCommandAllocator, computePipelineState.Get()));
 
 	//ID3D12Resource *resource = singleCBVResourcesGPU_RW[frameNum].Get();
