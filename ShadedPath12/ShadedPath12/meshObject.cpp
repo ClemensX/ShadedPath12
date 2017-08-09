@@ -460,12 +460,13 @@ void MeshObjectStore::createAndUploadVertexAndIndexBuffer(Mesh * mesh)
 
 void MeshObjectStore::createRootSigAndPSO(ComPtr<ID3D12RootSignature> &sig, ComPtr<ID3D12PipelineState> &pso)
 {
-	// Define the vertex input layout.
+	// Define the vertex input layout. Has to match struct VSInput in MObject.hlsli
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "SV_InstanceID", 0, DXGI_FORMAT_R32_UINT, 1, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 }
 		//{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		//{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		//{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
@@ -581,8 +582,8 @@ void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 	dxManager.getGraphicsCommandListComPtr()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	dxManager.getGraphicsCommandListComPtr()->IASetVertexBuffers(0, 1, &mo->mesh->vertexBufferView);
 	dxManager.getGraphicsCommandListComPtr()->IASetIndexBuffer(&mo->mesh->indexBufferView);
-	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, dxManager.getCBVVirtualAddress(mo->objectNum, eyeNum));
-	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, dxManager.getCBVVirtualAddress(1, eyeNum));
+	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, dxManager.getCBVVirtualAddress(mo->objectNum, eyeNum));
+	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, dxManager.getCBVVirtualAddress(0, eyeNum));
 	// Set SRV
 	ID3D12DescriptorHeap* ppHeaps[] = { mo->textureID->m_srvHeap.Get() };
 	dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
