@@ -68,6 +68,7 @@ public:
 	//ID3D12CommandAllocator *getGraphicsCommandAllocator() { return commandAllocators[currentFrame].Get(); };
 	ComPtr<ID3D12CommandAllocator> &getGraphicsCommandAllocatorComPtr() { return commandAllocators[currentFrame]; };
 	ComPtr<ID3D12GraphicsCommandList> &getGraphicsCommandListComPtr() { return commandLists[currentFrame]; };
+	ComPtr<ID3D12DescriptorHeap> &getCbvDescriptorHeapComPtr() { return cbvHeap[currentFrame]; };
 private:
 	// FrameCount should be a copy of XApp::FrameCount, but we don't want to reference XApp from here
 	// That the size is the same as in XApp is checked in intializer
@@ -90,6 +91,7 @@ private:
 	ID3D12PipelineState *graphics_ps;
 
 	ComPtr<ID3D12DescriptorHeap> srvUavHeap;
+	ComPtr<ID3D12DescriptorHeap> cbvHeap[FrameCount];
 
 	// Compute objects.
 	ComPtr<ID3D12PipelineState> computePipelineState;

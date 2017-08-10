@@ -166,6 +166,14 @@ void DXManager::createGraphicsExecutionEnv(ID3D12PipelineState *ps)
 
 		CD3DX12_CPU_DESCRIPTOR_HANDLE uavHandle0(srvUavHeap->GetCPUDescriptorHandleForHeapStart(), n, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 		device->CreateUnorderedAccessView(singleCBVResources[n].Get(), nullptr, &uavDesc, uavHandle0);
+
+		// cbv heaps: (because unlimited array does not work for root CBVs we have to use descriptor tables
+		D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc = {};
+		cbvHeapDesc.NumDescriptors = 2;
+		cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+		cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+		ThrowIfFailed(device->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&cbvHeap[n])));
+		//device->CreateConstantBufferView()
 	}
 }
 
