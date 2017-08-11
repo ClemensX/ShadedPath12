@@ -175,20 +175,20 @@ void DXManager::createGraphicsExecutionEnv(ID3D12PipelineState *ps)
 		ThrowIfFailed(device->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&cbvHeap[n])));
 		// now set cbv and srv in this heap:
 		UINT increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-		// CBV is first entry in descriptor heap:
+		// SRV is first entry in descriptor heap:
 		int heapIndex = 0;
 		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[n]->GetCPUDescriptorHandleForHeapStart());
 		handle.Offset(heapIndex, increment);
-		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-		cbvDesc.BufferLocation = singleCBVResources[n]->GetGPUVirtualAddress();
-		//cbvDesc.BufferLocation += 512;
-		cbvDesc.SizeInBytes = totalSize;
-		device->CreateConstantBufferView(&cbvDesc, handle);
-		// SRV is second entry
+		device->CreateShaderResourceView(singleCBVResources[n].Get(), &srvDesc, handle);
+		// CBV is second entry
 		heapIndex = 1;
 		handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[n]->GetCPUDescriptorHandleForHeapStart());
 		handle.Offset(heapIndex, increment);
-		device->CreateShaderResourceView(singleCBVResources[n].Get(), &srvDesc, handle);
+		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+		cbvDesc.BufferLocation = singleCBVResources[n]->GetGPUVirtualAddress();
+		cbvDesc.BufferLocation += 512;
+		cbvDesc.SizeInBytes = totalSize;
+		device->CreateConstantBufferView(&cbvDesc, handle);
 	}
 }
 

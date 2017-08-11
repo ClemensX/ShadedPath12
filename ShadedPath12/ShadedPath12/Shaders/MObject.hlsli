@@ -4,7 +4,7 @@
 // root signature: CBV with MVP matrix, Descriptor Table with texture SRV
 #define ObjectRS "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
             "CBV(b0, space = 0), " \
-            "DescriptorTable(CBV(b1, space = 0),SRV(t0, space = 0)), " \
+            "DescriptorTable(SRV(t0, space = 0), CBV(b1, space = 0)), " \
             "StaticSampler(s0, filter=FILTER_MIN_MAG_MIP_LINEAR, "\
 			"addressU = TEXTURE_ADDRESS_WRAP, addressV = TEXTURE_ADDRESS_WRAP, addressW = TEXTURE_ADDRESS_CLAMP, " \
 			"minLOD = 0, maxLOD = 0, mipLODBias = 0, " \
@@ -12,6 +12,7 @@
 			")"
 
 // was after cbv table:             "DescriptorTable(SRV(t0, space = 0)), " \
+//             "DescriptorTable(SRV(t0, space = 0), CBV(b1, numDescriptors = 12, space = 0)), " \
 
 Texture2D<float4> screenTex : register(t0);
 SamplerState s : register(s0);
@@ -28,7 +29,7 @@ struct ObjectConstantBuffer { // offset
 struct ObjectConstantBufferDebug { // offset
 	float4x4 wvp;        //   0
 	float4x4 world;      //  64
-	float4x4 vp;         // 128
+	float4x4 vp;         // 128s
 	float3   cameraPos;  // 128 192
 	float    alpha;      // 204
 	Material material;   // 208 (size 32) --> total 240
