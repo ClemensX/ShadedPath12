@@ -589,8 +589,8 @@ void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 	ID3D12DescriptorHeap* ppHeaps[] = { dxManager.getCbvDescriptorHeapComPtr().Get() };
 	dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	D3D12_GPU_DESCRIPTOR_HANDLE GPUHeapStart = dxManager.getCbvDescriptorHeapComPtr()->GetGPUDescriptorHandleForHeapStart();
-	CD3DX12_GPU_DESCRIPTOR_HANDLE cbvHandle(GPUHeapStart, 0, xapp().device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(1, cbvHandle);
+	//CD3DX12_GPU_DESCRIPTOR_HANDLE cbvHandle(GPUHeapStart, 0, xapp().device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(1, GPUHeapStart);
 	//ID3D12DescriptorHeap* ppHeaps2[] = {  };
 	//dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps2), ppHeaps2);
 	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
