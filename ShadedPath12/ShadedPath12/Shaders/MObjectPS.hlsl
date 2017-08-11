@@ -17,7 +17,7 @@ float4 main(PSInput input) : SV_TARGET
 	float3 finalColor = float4(1,1,1,1);
 	  //return float4(texColor,1);
 	uint id = asuint(input.Id);
-	id = 0;
+	id = 1;
 	finalColor = applyLighting(texColor, input.Pos.xyz, input.PosW, input.Normal, cbv[id].cameraPos, cbv[id].material);
 	//finalColor = float4(1,1,1,1);
 

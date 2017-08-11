@@ -169,7 +169,7 @@ void DXManager::createGraphicsExecutionEnv(ID3D12PipelineState *ps)
 
 		// cbv heaps: (because unlimited array does not work for root CBVs we have to use descriptor tables
 		D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc = {};
-		cbvHeapDesc.NumDescriptors = 2;
+		cbvHeapDesc.NumDescriptors = 13;
 		cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		ThrowIfFailed(device->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&cbvHeap[n])));
@@ -177,18 +177,27 @@ void DXManager::createGraphicsExecutionEnv(ID3D12PipelineState *ps)
 		UINT increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		// SRV is first entry in descriptor heap:
 		int heapIndex = 0;
-		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[n]->GetCPUDescriptorHandleForHeapStart());
-		handle.Offset(heapIndex, increment);
-		device->CreateShaderResourceView(singleCBVResources[n].Get(), &srvDesc, handle);
+		auto handle1 = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[n]->GetCPUDescriptorHandleForHeapStart());
+		handle1.Offset(heapIndex, increment);
+		device->CreateShaderResourceView(singleCBVResources[n].Get(), &srvDesc, handle1);
 		// CBV is second entry
 		heapIndex = 1;
-		handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[n]->GetCPUDescriptorHandleForHeapStart());
-		handle.Offset(heapIndex, increment);
+		auto handle2 = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[n]->GetCPUDescriptorHandleForHeapStart());
+		handle2.Offset(heapIndex, increment);
 		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
 		cbvDesc.BufferLocation = singleCBVResources[n]->GetGPUVirtualAddress();
 		cbvDesc.BufferLocation += 512;
-		cbvDesc.SizeInBytes = totalSize;
-		device->CreateConstantBufferView(&cbvDesc, handle);
+		cbvDesc.SizeInBytes = 256;
+		device->CreateConstantBufferView(&cbvDesc, handle2);
+		// 2nd cbv
+		heapIndex = 2;
+		auto handle3 = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[n]->GetCPUDescriptorHandleForHeapStart());
+		handle3.Offset(heapIndex, increment);
+		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc2;
+		cbvDesc2.BufferLocation = singleCBVResources[n]->GetGPUVirtualAddress();
+		cbvDesc2.BufferLocation += 256;
+		cbvDesc2.SizeInBytes = 256;
+		device->CreateConstantBufferView(&cbvDesc2, handle3);
 	}
 }
 
