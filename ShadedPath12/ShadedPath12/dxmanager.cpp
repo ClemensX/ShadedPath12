@@ -186,7 +186,7 @@ void DXManager::createGraphicsExecutionEnv(ID3D12PipelineState *ps)
 		handle2.Offset(heapIndex, increment);
 		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
 		cbvDesc.BufferLocation = singleCBVResources[n]->GetGPUVirtualAddress();
-		cbvDesc.BufferLocation += 512;
+		//cbvDesc.BufferLocation += 512;
 		cbvDesc.SizeInBytes = 256;
 		device->CreateConstantBufferView(&cbvDesc, handle2);
 		// 2nd cbv
