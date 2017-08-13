@@ -71,7 +71,7 @@ public:
 	ComPtr<ID3D12DescriptorHeap> &getCbvDescriptorHeapComPtr() { return cbvHeap[currentFrame]; };
 	// set SRV of texture in current descriptor table
 	//void setTexture(D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle);
-	void setTexture(ID3D12DescriptorHeap *texHeap);
+	void setTexture(ID3D12DescriptorHeap *texHeap, ID3D12Resource *r);
 private:
 	// FrameCount should be a copy of XApp::FrameCount, but we don't want to reference XApp from here
 	// That the size is the same as in XApp is checked in intializer
