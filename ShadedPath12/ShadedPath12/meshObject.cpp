@@ -666,7 +666,7 @@ void MeshObjectStore::computeMethod(UINT frameNum)
 	pCommandList->SetComputeRootConstantBufferView(1, dxManager.getConstantBufferSetVirtualAddress(0, 0));
 	UINT threadGroupCount = (UINT)ceil((maxObjects * 1.0f) / 1024);
 	pCommandList->Dispatch(threadGroupCount, 1, 1);
-	resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, pCommandList);
+	//resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, pCommandList);
 
 	// Close and execute the command list.
 	ThrowIfFailed(pCommandList->Close());
