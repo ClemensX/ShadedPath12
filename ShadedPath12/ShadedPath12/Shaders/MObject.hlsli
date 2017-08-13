@@ -4,7 +4,8 @@
 // root signature: CBV with MVP matrix, Descriptor Table with texture SRV
 #define ObjectRS "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
             "CBV(b0, space = 0), " \
-            "DescriptorTable(SRV(t0, space = 0), CBV(b1, numDescriptors = 12, space = 0)), " \
+            "DescriptorTable(CBV(b1, numDescriptors = 12, space = 0)), " \
+            "DescriptorTable(SRV(t0, space = 0)), " \
             "StaticSampler(s0, filter=FILTER_MIN_MAG_MIP_LINEAR, "\
 			"addressU = TEXTURE_ADDRESS_WRAP, addressV = TEXTURE_ADDRESS_WRAP, addressW = TEXTURE_ADDRESS_CLAMP, " \
 			"minLOD = 0, maxLOD = 0, mipLODBias = 0, " \
@@ -38,7 +39,7 @@ struct ObjectConstantBufferDebug { // offset
 
 //StructuredBuffer<ObjectConstantBuffer> cbv
 //ConstantBuffer<ObjectConstantBuffer> cbv2[]: register(b1);
-ConstantBuffer<ObjectConstantBuffer> cbv[2]: register(b1);
+ConstantBuffer<ObjectConstantBuffer> cbv[3]: register(b1);
 // we cannot use array - it exceeds max allowed CBV size of 4096 16-byte entries
 // set single CBV pointer to correct offset before calling shader code
 //cbuffer cbFixedCBVs : register(b1) {

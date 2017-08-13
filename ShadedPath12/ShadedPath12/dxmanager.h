@@ -69,6 +69,9 @@ public:
 	ComPtr<ID3D12CommandAllocator> &getGraphicsCommandAllocatorComPtr() { return commandAllocators[currentFrame]; };
 	ComPtr<ID3D12GraphicsCommandList> &getGraphicsCommandListComPtr() { return commandLists[currentFrame]; };
 	ComPtr<ID3D12DescriptorHeap> &getCbvDescriptorHeapComPtr() { return cbvHeap[currentFrame]; };
+	// set SRV of texture in current descriptor table
+	//void setTexture(D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle);
+	void setTexture(ID3D12DescriptorHeap *texHeap);
 private:
 	// FrameCount should be a copy of XApp::FrameCount, but we don't want to reference XApp from here
 	// That the size is the same as in XApp is checked in intializer
