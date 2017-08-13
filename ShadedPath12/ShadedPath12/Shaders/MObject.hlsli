@@ -5,6 +5,7 @@
 #define ObjectRS "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
             "CBV(b0, space = 0), " \
             "DescriptorTable(SRV(t0, space = 0), CBV(b1, numDescriptors = 12, space = 0)), " \
+            "UAV(u0, space = 0), " \
             "StaticSampler(s0, filter=FILTER_MIN_MAG_MIP_LINEAR, "\
 			"addressU = TEXTURE_ADDRESS_WRAP, addressV = TEXTURE_ADDRESS_WRAP, addressW = TEXTURE_ADDRESS_CLAMP, " \
 			"minLOD = 0, maxLOD = 0, mipLODBias = 0, " \

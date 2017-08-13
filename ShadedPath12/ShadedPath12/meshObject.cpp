@@ -532,6 +532,7 @@ void MeshObjectStore::preDraw()
 	// Set CBVs
 	//commandLists[frameIndex]->SetGraphicsRootConstantBufferView(0, getCBVVirtualAddress(frameIndex, 0, di.objectNum, 0));
 	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(0, xapp().lights.cbvResource->GetGPUVirtualAddress());
+	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootUnorderedAccessView(2, dxManager.getCBVVirtualAddress(0, 0));
 
 	// Indicate that the back buffer will be used as a render target.
 	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
