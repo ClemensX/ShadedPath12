@@ -577,7 +577,7 @@ void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 		dxManager.getGraphicsCommandListComPtr()->ExecuteBundle(mo->bundleCommandLists[frameIndex].Get());
 		return;
 	}
-	//if (mo->objectNum > 2) return;
+	if (mo->objectNum != 1) return;
 	dxManager.getGraphicsCommandListComPtr()->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
 	dxManager.getGraphicsCommandListComPtr()->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
 	dxManager.getGraphicsCommandListComPtr()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -597,7 +597,7 @@ void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 	//dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps2), ppHeaps2);
 	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
 
-	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, 1/*500*/, 0, 0, 0);
+	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, 11/*500*/, 0, 0, 0);
 }
 
 void MeshObjectStore::createDrawBundle(MeshObject * meshObject)

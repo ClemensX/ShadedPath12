@@ -133,9 +133,9 @@ void XApp::draw() {
 	if (ovrRendering) {
 		vr.startFrame();
 	}
-	Log("draw " << frameIndex);
+	//Log("draw " << frameIndex);
 	app->draw();
-	Log(" end " << frameIndex << " " << getFramenum() << endl);
+	//Log(" end " << frameIndex << " " << getFramenum() << endl);
 
 	// Present the frame, if in VR this was already done by oculus SDK
 	if (!ovrRendering) {

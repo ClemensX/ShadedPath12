@@ -17,14 +17,14 @@ PSInput main(VSInput vin)
 	uint id = vin.Id;
 	//if (id > 0)
 	//	vin.Pos.x = -10;
-	id = 1;
+	//id = 1;
 	//ObjectConstantBuffer c = cbv[NonUniformResourceIndex(id)];
 	ObjectConstantBuffer c = cbvResult[NonUniformResourceIndex(id)];
 	vout.Pos = mul(float4(vin.Pos, 1.0f), c.wvp);
 	vout.PosW = mul(float4(vin.Pos, 1.0f), c.world).xyz; //vin.Pos.xyz;//
 	vout.Normal = mul(vin.Normal, (float3x3)c.world);
 	vout.Tex = vin.Tex;
-	vout.Id = asfloat(id);
+	vout.Id = id;
 	return vout;
 }
 
