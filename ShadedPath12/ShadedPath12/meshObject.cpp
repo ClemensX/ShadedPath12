@@ -203,6 +203,7 @@ void MeshObjectStore::update()
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (bulkInfos.size() == 1 && true) {
 				// simple update of all
+				Log("  update: " << group.first.c_str() << " [" << bulkInfos[0].start << ".." << bulkInfos[0].end << "]" << endl);
 				updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
 			} else {
 				vector<thread> threads;
