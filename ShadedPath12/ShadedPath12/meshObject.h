@@ -108,6 +108,8 @@ public:
 	// call like this: 		forAll([](MeshObject *mo) { Log("  elem: " << mo->pos().x << endl);});
 	void forAll(std::function<void (MeshObject*)> func);
 	void createDrawBundle(MeshObject *meshObject);
+	// check that objects are well sorted (with regards to used mesh) and no holes exist with unused object ids
+	bool isSorted();
 private:
 	unordered_map<string, vector<unique_ptr<MeshObject>>> groups;
 	unordered_map<string, Mesh> meshes;

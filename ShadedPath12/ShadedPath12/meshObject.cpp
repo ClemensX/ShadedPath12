@@ -516,6 +516,8 @@ void MeshObjectStore::createRootSigAndPSO(ComPtr<ID3D12RootSignature> &sig, ComP
 void MeshObjectStore::preDraw()
 {
 	int frameIndex = xapp().getCurrentBackBufferIndex();
+	// assert that objects are well sorted (with regards to used mesh) and no holes exist with unused object ids
+	assert(isSorted());
 	ThrowIfFailed(dxManager.getGraphicsCommandAllocatorComPtr()->Reset());
 	ThrowIfFailed(dxManager.getGraphicsCommandListComPtr()->Reset(dxManager.getGraphicsCommandAllocatorComPtr().Get(), pipelineState.Get()));
 	// Set necessary state.
@@ -620,6 +622,27 @@ void MeshObjectStore::createDrawBundle(MeshObject * meshObject)
 		// do we need to synchronize? --> Hope not!
 	}
 	//meshObject->drawBundleAvailable = true;
+}
+
+bool MeshObjectStore::isSorted()
+{
+	// object numbers run from 1 to used_objects
+	Log("usedObjects " << used_objects << endl);
+	unsigned int min = 0, max = 0, last = 0;
+	forAll([this,&min,&max,&last](MeshObject *mo) {
+		Log("  objectNum: " << mo->objectNum << " mesh" << mo->mesh << endl);
+		unsigned int cur = mo->objectNum;
+		if (cur  < 1 || cur > this->used_objects)
+			return false;
+		if (cur != last + 1) return false;
+		last = cur;
+	});
+	//for (auto & group : this->groups) {
+	//	Log("isSorted() group: " << group.first.c_str() << endl);
+	//	divideBulk(group.second.size(), 1, bulkInfos);
+	//	vector<unique_ptr<MeshObject>>* mov = &group.second;
+	//}
+	return true;
 }
 
 void MeshObjectStore::divideBulk(size_t numObjects, size_t numParallel, vector<BulkDivideInfo>& subProblems)
