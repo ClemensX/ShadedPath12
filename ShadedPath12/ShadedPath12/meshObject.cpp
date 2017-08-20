@@ -203,7 +203,7 @@ void MeshObjectStore::update()
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (bulkInfos.size() == 1 && true) {
 				// simple update of all
-				Log("  update: " << group.first.c_str() << " [" << bulkInfos[0].start << ".." << bulkInfos[0].end << "]" << endl);
+				//Log("  update: " << group.first.c_str() << " [" << bulkInfos[0].start << ".." << bulkInfos[0].end << "]" << endl);
 				updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
 			} else {
 				vector<thread> threads;
@@ -252,18 +252,21 @@ void MeshObjectStore::draw()
 	assert(this->maxObjects > 0);	// setting of max object count missing
 	prepareDraw(&xapp().vr);
 	preDraw();
-	if (!xapp().ovrRendering) {
-		forAll([this](MeshObject *mo) {
-			//Log("  elem: " << mo->pos().x << endl);
-			drawInternal(mo);
-		});
-	} else {
-		forAll([this](MeshObject *mo) {
-			//Log("  elem: " << mo->pos().x << endl);
-			drawInternal(mo, 0);
-			drawInternal(mo, 1);
-		});
+	for (auto bi : drawBulkInfos) {
+		drawInternal(&bi, 0);
 	}
+	//if (!xapp().ovrRendering) {
+	//	forAll([this](MeshObject *mo) {
+	//		//Log("  elem: " << mo->pos().x << endl);
+	//		drawInternal(mo);
+	//	});
+	//} else {
+	//	forAll([this](MeshObject *mo) {
+	//		//Log("  elem: " << mo->pos().x << endl);
+	//		drawInternal(mo, 0);
+	//		drawInternal(mo, 1);
+	//	});
+	//}
 	postDraw();
 }
 
@@ -275,6 +278,32 @@ void MeshObjectStore::gpuUploadPhaseEnd()
 	createSyncPoint(f, xapp().commandQueue);
 	waitForSyncPoint(f);
 	inGpuUploadPhase = false;
+	divideDrawBulks();
+}
+
+void MeshObjectStore::divideDrawBulks()
+{
+	assert(isSorted());
+
+	unsigned int min = 0, max = 0, last = 0;
+	Mesh *last_mesh = nullptr;
+	forAll([this, &last_mesh, &min, &max, &last](MeshObject *mo) {
+		//Log("  objectNum: " << mo->objectNum << " mesh" << mo->mesh << endl);
+		if (mo->mesh != last_mesh) {
+			// start new bulk
+			BulkDivideInfoExt bi;
+			bi.start = mo->objectNum;
+			bi.end = mo->objectNum;
+			drawBulkInfos.push_back(bi);
+			last_mesh = mo->mesh;
+		} else {
+			// extending current bulk
+			auto bi = &drawBulkInfos[drawBulkInfos.size() - 1];
+			bi->end = mo->objectNum;
+			bi->mo = mo;
+		}
+
+	});
 }
 
 void MeshObjectStore::createGroup(string groupname) {
@@ -603,6 +632,32 @@ void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, 11/*500*/, 0, 0, 0);
 }
 
+void MeshObjectStore::drawInternal(BulkDivideInfoExt * bi, int eyeNum)
+{
+	int frameIndex = xapp().getCurrentBackBufferIndex();
+	MeshObject *mo = bi->mo;
+	dxManager.getGraphicsCommandListComPtr()->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
+	dxManager.getGraphicsCommandListComPtr()->RSSetScissorRects(1, &vr_eyes.scissorRects[eyeNum]);
+	dxManager.getGraphicsCommandListComPtr()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	dxManager.getGraphicsCommandListComPtr()->IASetVertexBuffers(0, 1, &mo->mesh->vertexBufferView);
+	dxManager.getGraphicsCommandListComPtr()->IASetIndexBuffer(&mo->mesh->indexBufferView);
+	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, dxManager.getCBVVirtualAddress(mo->objectNum, eyeNum));
+	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, dxManager.getCBVVirtualAddress(0, eyeNum));
+	// Set CBV and SRV descriptor heaps
+
+	dxManager.setTexture(mo->textureID->m_srvHeap.Get(), mo->textureID->texSRV.Get());
+	ID3D12DescriptorHeap* ppHeaps[] = { dxManager.getCbvDescriptorHeapComPtr().Get() };
+	dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	D3D12_GPU_DESCRIPTOR_HANDLE GPUHeapStart = dxManager.getCbvDescriptorHeapComPtr()->GetGPUDescriptorHandleForHeapStart();
+	//CD3DX12_GPU_DESCRIPTOR_HANDLE cbvHandle(GPUHeapStart, 0, xapp().device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(1, GPUHeapStart);
+	//ID3D12DescriptorHeap* ppHeaps2[] = { mo->textureID->m_srvHeap.Get() };
+	//dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps2), ppHeaps2);
+	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+	unsigned int instanceCount = bi->end - bi->start + 1;
+	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, instanceCount, 0, 0, bi->start);
+}
+
 void MeshObjectStore::createDrawBundle(MeshObject * meshObject)
 {
 	for (UINT n = 0; n < XApp::FrameCount; n++)
@@ -627,10 +682,10 @@ void MeshObjectStore::createDrawBundle(MeshObject * meshObject)
 bool MeshObjectStore::isSorted()
 {
 	// object numbers run from 1 to used_objects
-	Log("usedObjects " << used_objects << endl);
+	//Log("usedObjects " << used_objects << endl);
 	unsigned int min = 0, max = 0, last = 0;
 	forAll([this,&min,&max,&last](MeshObject *mo) {
-		Log("  objectNum: " << mo->objectNum << " mesh" << mo->mesh << endl);
+		//Log("  objectNum: " << mo->objectNum << " mesh" << mo->mesh << endl);
 		unsigned int cur = mo->objectNum;
 		if (cur  < 1 || cur > this->used_objects)
 			return false;

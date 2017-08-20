@@ -80,6 +80,10 @@ public:
 		float		fill[3];
 	};
 
+	struct BulkDivideInfoExt : BulkDivideInfo {
+		MeshObject *mo;
+	};
+
 	// set max number of objects allowed in the store (is guarded by assertions)
 	void setMaxObjectCount(unsigned int);
 	void update();  // update all objects - CBV is complete after this
@@ -130,6 +134,10 @@ public:
 	// algorithm to divide a any number of problems into equally sized sub-problems
 	// the result vector holds BulkDivideInfos that give start and end positions for each sub problem
 	void divideBulk(size_t numObjects, size_t numParallel, vector<BulkDivideInfo> &subProblems);
+	// prepare drawing same meshes together, needs to be called after objects have been added to the store (ideally at end of init)
+	// auto called at gpuUploadPhaseEnd()
+	// not synchronized: if called during update cycle frame synchronization needs to be done outside
+	void divideDrawBulks();
 private:
 	CBV cbv;	// only used for convenience - all CBVs are in buffer array
 	// globally enable wireframe display of objects
@@ -161,7 +169,9 @@ private:
 	void preDraw();
 	void postDraw();
 	void drawInternal(MeshObject *mo, int eyeNum = 0);
+	void drawInternal(BulkDivideInfoExt *bi, int eyeNum = 0);
 	vector<BulkDivideInfo> bulkInfos;
+	vector<BulkDivideInfoExt> drawBulkInfos;
 
 	// indirect drawing
 	//ComPtr<ID3D12CommandSignature> commandSignature;

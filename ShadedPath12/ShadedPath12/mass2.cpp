@@ -2,9 +2,9 @@
 #include "mass2.h"
 
 
-#define NUM_METEORXX 50000
-#define NUM_METEORX 500
-#define NUM_METEOR 10
+#define NUM_METEOR 100000
+#define NUM_METEORXX 5000
+#define NUM_METEORX 10
 
 #define NUM_THREADS 1
 
@@ -80,10 +80,15 @@ void MassTest2::init()
 	xapp().textureStore.loadTexture(L"metal1.dds", "metal");
 	//xapp().textureStore.loadTexture(L"worm1.dds", "worm");
 	//xapp().textureStore.loadTexture(L"mars_6k_color.dds", "planet");
-	//xapp().textureStore.loadTexture(L"met1.dds", "meteor1");
+	xapp().textureStore.loadTexture(L"met1.dds", "meteor1");
 	//xapp().textureStore.loadTexture(L"axistest.dds", "axistest");
 	xapp().textureStore.loadTexture(L"white.dds", "white");
-
+/*
+xapp().textureStore.loadTexture(L"met1.dds", "meteor1");
+TextureInfo *Meteor1Tex = xapp().textureStore.getTexture("meteor1");
+//xapp().objectStore.loadObject(L"house4_anim.b", "House");
+xapp().objectStore.loadObject(L"meteor_single.b", "Meteor1");
+*/
 	#pragma warning( disable : 4101 )
 	TextureInfo *GrassTex, *HouseTex, *MetalTex, *WormTex, *PlanetTex, *Meteor1Tex, *AxistestTex;
 	#pragma warning( default : 4101 )
@@ -93,7 +98,7 @@ void MassTest2::init()
 	//TextureInfo *MetalTex = xapp().textureStore.getTexture("metal");
 	//TextureInfo *WormTex = xapp().textureStore.getTexture("worm");
 	//TextureInfo *PlanetTex = xapp().textureStore.getTexture("planet");
-	//TextureInfo *Meteor1Tex = xapp().textureStore.getTexture("meteor1");
+	Meteor1Tex = xapp().textureStore.getTexture("meteor1");
 	//TextureInfo *AxistestTex = xapp().textureStore.getTexture("axistest");
 	TextureInfo *WhiteTex = xapp().textureStore.getTexture("white");
 	//TextureInfo *BrickwallTex = xapp().textureStore.getTexture("brickwall");
@@ -104,8 +109,11 @@ void MassTest2::init()
 	// object creation:
 	objStore->createGroup("default");
 	if (true) {
+		//objStore->loadObject(L"meteor_single.b", "House");
 		objStore->loadObject(L"house4_anim.b", "House");
-		MeshObject * o = objStore->addObject("default", "House", XMFLOAT3(1.0f, 1.0f, 1.0f), HouseTex);
+		//MeshObject * o = objStore->addObject("default", "House", XMFLOAT3(100.0f, 1.0f, 1.0f), Meteor1Tex);
+		MeshObject * o = objStore->addObject("default", "House", XMFLOAT3(100.0f, 1.0f, 1.0f), HouseTex);
+
 		//object.drawBoundingBox = true;
 		//object.drawNormals = true;
 		////object.setAction("Cube");
@@ -156,6 +164,7 @@ void MassTest2::init()
 void MassTest2::initMeteorField() {
 	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
 	TextureInfo *HouseTex = xapp().textureStore.getTexture("markings");
+	//TextureInfo *HouseTex = xapp().textureStore.getTexture("meteor1");
 
 	objStore->createGroup("meteor");
 	for (int i = 0; i < NUM_METEOR; i++) {
@@ -174,9 +183,9 @@ void MassTest2::initMeteorField() {
 		w.get()->material.specExp = 1.0f;       // no spec color
 		w.get()->material.specIntensity = 0.0f; // no spec color
 		w.get()->material.ambient = XMFLOAT4(1, 1, 1, 1);
-		if (w.get()->objectNum == 100) {
-			w.get()->pos() = XMFLOAT3(1, 1, 1);
-		}
+		//if (w.get()->objectNum == 100) {
+		//	w.get()->pos() = XMFLOAT3(1, 1, 1);
+		//}
 	}
 }
 
@@ -217,14 +226,14 @@ void MassTest2::update()
 	stringstream ss;
 	ss << xapp().getFramenum();
 	fr.append(ss.str());
-	//textEffect.changeTextLine(framenumLine, fr);
+	textEffect.changeTextLine(framenumLine, fr);
 
 	string fps_str("FPS ");
 	stringstream sss;
 	sss << xapp().fps;
 	fps_str.append(sss.str());
-	//textEffect.changeTextLine(fpsLine, fps_str);
-	//textEffect.update();
+	textEffect.changeTextLine(fpsLine, fps_str);
+	textEffect.update();
 	//billboardEffect.update();
 
 	CBVLights *lights = &xapp().lights.lights;
