@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "mass2.h"
 
-
-#define NUM_METEOR 100000
-#define NUM_METEORXX 5000
+// disable to see houses:
+//#define USE_METEORS
+#define NUM_METEORXX 100000
+#define NUM_METEOR 5000
 #define NUM_METEORX 10
 
 #define NUM_THREADS 1
@@ -109,10 +110,13 @@ xapp().objectStore.loadObject(L"meteor_single.b", "Meteor1");
 	// object creation:
 	objStore->createGroup("default");
 	if (true) {
-		//objStore->loadObject(L"meteor_single.b", "House");
+#if defined(USE_METEORS)
+		objStore->loadObject(L"meteor_single.b", "House");
+		MeshObject * o = objStore->addObject("default", "House", XMFLOAT3(100.0f, 1.0f, 1.0f), Meteor1Tex);
+#else
 		objStore->loadObject(L"house4_anim.b", "House");
-		//MeshObject * o = objStore->addObject("default", "House", XMFLOAT3(100.0f, 1.0f, 1.0f), Meteor1Tex);
 		MeshObject * o = objStore->addObject("default", "House", XMFLOAT3(100.0f, 1.0f, 1.0f), HouseTex);
+#endif
 
 		//object.drawBoundingBox = true;
 		//object.drawNormals = true;
@@ -163,8 +167,11 @@ xapp().objectStore.loadObject(L"meteor_single.b", "Meteor1");
 
 void MassTest2::initMeteorField() {
 	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
+#if defined(USE_METEORS)
+	TextureInfo *HouseTex = xapp().textureStore.getTexture("meteor1");
+#else
 	TextureInfo *HouseTex = xapp().textureStore.getTexture("markings");
-	//TextureInfo *HouseTex = xapp().textureStore.getTexture("meteor1");
+#endif
 
 	objStore->createGroup("meteor");
 	for (int i = 0; i < NUM_METEOR; i++) {
