@@ -19,8 +19,8 @@ float4 main(PSInput input) : SV_TARGET
 	texColor = screenTex.Sample(s, thisTexCoord).xyz;
 	float3 finalColor = float4(1,1,1,1);
 	  //return float4(texColor,1);
-	uint id = input.Id;
-	//id = 1;
+	uint id = floor(input.Id);
+	//id = 4;
 	ObjectConstantBuffer c = cbvResult[NonUniformResourceIndex(id)];
 	//finalColor = applyLighting(texColor, input.Pos.xyz, input.PosW, input.Normal, cbv[id].cameraPos, cbv[id].material);
 	finalColor = applyLighting(texColor, input.Pos.xyz, input.PosW, input.Normal, c.cameraPos, c.material);
@@ -30,6 +30,9 @@ float4 main(PSInput input) : SV_TARGET
 	alphaColor.rgb = finalColor;
 	//alphaColor.a = cbv[id].alpha;
 	alphaColor.a = cbvResult[id].alpha;
+	//id = floor(input.Id);
+	//float f = id;
+	//alphaColor.a = saturate(f);
 	//return float4(0.003125, 0.003125, 0.003125, 1);
 	return clamp(alphaColor, 0.0021973, 1.0);  // prevent strange smearing effect for total black pixels (only in HMD)
 }

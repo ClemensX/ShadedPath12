@@ -110,9 +110,6 @@ void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp
 	cbv->cameraPos.z = mo->pos().z;
 				   //cbv->world = di.world;
 	cbv->alpha = mo->alpha;
-	// only update material if necessary
-	//size_t size = frameEffectData[frameIndex].updateMaterial ? sizeof(*cbv) : sizeof(*cbv) - sizeof(Material);
-	memcpy(getCBVUploadAddress(frameIndex, 0, mo->objectNum, eyeNum), cbv, sizeof(*cbv));
 	dxManager.upload(mo->objectNum, eyeNum, cbv);
 	if (false && mo->pos().y > 50) {
 		auto pos = mo->mesh->vertices.at(0).Pos;
@@ -158,7 +155,12 @@ void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr
 
 	// now the real thing:
 	XMStoreFloat4x4(&frameEffectData[frameIndex].cbvCS.vp, vp);
-	frameEffectData[frameIndex].cbvCS.num_objects = this->maxObjects;
+	frameEffectData[frameIndex].cbvCS.num_objects = bi.end - bi.start + 1;
+	frameEffectData[frameIndex].cbvCS.start_objects = bi.start;
+	frameEffectData[frameIndex].cbvCS.start_objects = mov->at(bi.start).get()->objectNum;
+	if (frameIndex == 0) {
+		Log("from_index len " << frameEffectData[frameIndex].cbvCS.start_objects << " " << frameEffectData[frameIndex].cbvCS.num_objects << endl);
+	}
 
 	dxManager.uploadConstantBufferSet(0, sizeof(CBV_CS), &frameEffectData[frameIndex].cbvCS);
 
@@ -202,9 +204,19 @@ void MeshObjectStore::update()
 			divideBulk(group.second.size(), 1, bulkInfos);
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (bulkInfos.size() == 1 && true) {
+				//if (bulkInfos[0].end == 0) continue;
 				// simple update of all
 				//Log("  update: " << group.first.c_str() << " [" << bulkInfos[0].start << ".." << bulkInfos[0].end << "]" << endl);
+				//bulkInfos[0].start = 1;
+				//bulkInfos[0].end = 4;
 				updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
+				frameEffectData[frameIndex].updateMaterial = false;
+				xapp().stats.start("compute");
+				dxManager.copyToComputeBuffer(frameData[frameIndex]);
+				computeMethod(frameIndex);
+				xapp().stats.end("compute");
+				xapp().stats.end("meshStoreUpdate");
+				//return;
 			} else {
 				vector<thread> threads;
 				//thread t(&MeshObjectStore::updatePart, this, bulkInfos[0], cbv, group.second, vp, frameIndex);
@@ -238,12 +250,14 @@ void MeshObjectStore::update()
 			});
 		}
 	}
+	/*
 	frameEffectData[frameIndex].updateMaterial = false;
 	xapp().stats.start("compute");
 	dxManager.copyToComputeBuffer(frameData[frameIndex]);
 	computeMethod(frameIndex);
 	xapp().stats.end("compute");
 	xapp().stats.end("meshStoreUpdate");
+	*/
 }
 
 void MeshObjectStore::draw()
@@ -656,6 +670,7 @@ void MeshObjectStore::drawInternal(BulkDivideInfoExt * bi, int eyeNum)
 	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
 	unsigned int instanceCount = bi->end - bi->start + 1;
 	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, instanceCount, 0, 0, bi->start);
+	//dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, 3, 0, 0, 1);
 }
 
 void MeshObjectStore::createDrawBundle(MeshObject * meshObject)
@@ -685,7 +700,7 @@ bool MeshObjectStore::isSorted()
 	//Log("usedObjects " << used_objects << endl);
 	unsigned int min = 0, max = 0, last = 0;
 	forAll([this,&min,&max,&last](MeshObject *mo) {
-		//Log("  objectNum: " << mo->objectNum << " mesh" << mo->mesh << endl);
+		Log("  objectNum: " << mo->objectNum << " mesh" << mo->mesh << " x " << mo->pos().x << endl);
 		unsigned int cur = mo->objectNum;
 		if (cur  < 1 || cur > this->used_objects)
 			return false;

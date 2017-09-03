@@ -24,7 +24,8 @@ PSInput main(VSInput vin)
 	vout.PosW = mul(float4(vin.Pos, 1.0f), c.world).xyz; //vin.Pos.xyz;//
 	vout.Normal = mul(vin.Normal, (float3x3)c.world);
 	vout.Tex = vin.Tex;
-	vout.Id = id;
+	float f = id;
+	vout.Id = asfloat(f + 0.5);
 	return vout;
 }
 

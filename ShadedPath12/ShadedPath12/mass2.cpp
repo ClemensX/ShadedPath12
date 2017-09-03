@@ -2,11 +2,14 @@
 #include "mass2.h"
 
 
-#define NUM_METEOR 100000
-#define NUM_METEORXX 5000
-#define NUM_METEORX 10
+#define NUM_METEORXX 100000
+#define NUM_METEORX 5000
+#define NUM_METEOR 3
 
 #define NUM_THREADS 1
+
+// set useHouse to false for using meteor mesh
+static bool useHouse = true;
 
 static MassTest2 massTest2;
 
@@ -59,6 +62,7 @@ void MassTest2::init()
 	xapp().camera.setSpeed(10.5f); // faster for dev usability
 	xapp().camera.fieldOfViewAngleY = 1.289f;
 	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
+	xapp().world.setWorldSize(204.80f, 38.20f, 204.80f);
 
 	textEffect.setSize(textSize);
 	dotcrossEffect.setLineLength(6.0f * textSize);
@@ -109,10 +113,19 @@ xapp().objectStore.loadObject(L"meteor_single.b", "Meteor1");
 	// object creation:
 	objStore->createGroup("default");
 	if (true) {
-		//objStore->loadObject(L"meteor_single.b", "House");
-		objStore->loadObject(L"house4_anim.b", "House");
-		//MeshObject * o = objStore->addObject("default", "House", XMFLOAT3(100.0f, 1.0f, 1.0f), Meteor1Tex);
-		MeshObject * o = objStore->addObject("default", "House", XMFLOAT3(100.0f, 1.0f, 1.0f), HouseTex);
+		if (!useHouse) {
+			objStore->loadObject(L"meteor_single.b", "House");
+		}
+		else {
+			objStore->loadObject(L"house4_anim.b", "House");
+		}
+		MeshObject * o = nullptr;
+		if (!useHouse) {
+			o = objStore->addObject("default", "House", XMFLOAT3(100.0f, 1.0f, 1.0f), Meteor1Tex);
+		}
+		else {
+			o = objStore->addObject("default", "House", XMFLOAT3(100.0f, 1.0f, 1.0f), HouseTex);
+		}
 
 		//object.drawBoundingBox = true;
 		//object.drawNormals = true;
@@ -123,6 +136,7 @@ xapp().objectStore.loadObject(L"meteor_single.b", "Meteor1");
 		o->material.ambient = XMFLOAT4(1, 1, 1, 1);
 		o->material.specExp = 1.0f;       // no spec color
 		o->material.specIntensity = 0.0f; // no spec color
+		o->alpha = 1.0;
 		objStore->createDrawBundle(o);
 	}
 	initMeteorField();
@@ -163,8 +177,12 @@ xapp().objectStore.loadObject(L"meteor_single.b", "Meteor1");
 
 void MassTest2::initMeteorField() {
 	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
-	TextureInfo *HouseTex = xapp().textureStore.getTexture("markings");
-	//TextureInfo *HouseTex = xapp().textureStore.getTexture("meteor1");
+	TextureInfo *HouseTex = nullptr;
+	if (!useHouse) {
+		HouseTex = xapp().textureStore.getTexture("meteor1");
+	} else {
+		HouseTex = xapp().textureStore.getTexture("markings");
+	}
 
 	objStore->createGroup("meteor");
 	for (int i = 0; i < NUM_METEOR; i++) {

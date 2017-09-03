@@ -77,7 +77,8 @@ public:
 	struct CBV_CS {
 		XMFLOAT4X4	vp;
 		UINT        num_objects;
-		float		fill[3];
+		UINT        start_objects;
+		float		fill[2];
 	};
 
 	struct BulkDivideInfoExt : BulkDivideInfo {
