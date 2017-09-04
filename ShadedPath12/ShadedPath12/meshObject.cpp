@@ -204,11 +204,11 @@ void MeshObjectStore::update()
 			divideBulk(group.second.size(), 1, bulkInfos);
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (bulkInfos.size() == 1 && true) {
-				//if (bulkInfos[0].end == 0) continue;
+				if (bulkInfos[0].end == 0) continue;
 				// simple update of all
 				//Log("  update: " << group.first.c_str() << " [" << bulkInfos[0].start << ".." << bulkInfos[0].end << "]" << endl);
 				//bulkInfos[0].start = 1;
-				//bulkInfos[0].end = 4;
+				//bulkInfos[0].end = 3;
 				updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
 				frameEffectData[frameIndex].updateMaterial = false;
 				xapp().stats.start("compute");
@@ -375,11 +375,11 @@ void MeshObjectStore::init()
 	// Create the pipeline state, which includes compiling and loading shaders.
 	{
 		createRootSigAndPSO(rootSignature, pipelineState);
-		dxManager.createConstantBuffer(1, maxObjects, sizeof(cbv), L"mesheffect_cbvsingle_resource");
+		dxManager.createConstantBuffer(1, maxObjects+1, sizeof(cbv), L"mesheffect_cbvsingle_resource");
 		dxManager.createConstantBufferSet(0, 1, 1, sizeof(CBV_CS), L"mesheffect_cs_cbv_set");
 		dxManager.createGraphicsExecutionEnv(pipelineState.Get());
 		dxManager.createUploadBuffers();
-		setSingleCBVMode(1, maxObjects, sizeof(cbv), L"mesheffect_cbvsingle_resource", true);
+		setSingleCBVMode(1, maxObjects+1, sizeof(cbv), L"mesheffect_cbvsingle_resource", true);
 		// XM test
 		XMVECTOR v = g_XMOneHalf.v;
 		XMFLOAT4 vF;
