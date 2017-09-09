@@ -4,7 +4,7 @@
 
 #define NUM_METEORXX 100000
 #define NUM_METEORX 5000
-#define NUM_METEOR 3
+#define NUM_METEOR 10
 
 #define NUM_THREADS 1
 

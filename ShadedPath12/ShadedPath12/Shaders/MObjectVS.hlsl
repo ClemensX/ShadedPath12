@@ -14,7 +14,10 @@ PSInput main(VSInput vin)
 	//vin.Pos.x += vin.Id * 3.0;
 	//vin.Pos.y += vin.Id * 3.0;
 	//vin.Pos.z += vin.Id * 3.0;
-	uint id = vin.Id;
+	ObjectConstantBuffer zeroCBV = cbvResult[NonUniformResourceIndex(0)];
+	uint start = floor(zeroCBV.cameraPos.x);
+	//uint num = floor(zeroCBV.cameraPos.y); not needed
+	uint id = vin.Id + start;
 	//if (id > 0)
 	//	vin.Pos.x = -10;
 	//id = 1;

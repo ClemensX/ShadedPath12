@@ -204,7 +204,8 @@ void MeshObjectStore::update()
 			divideBulk(group.second.size(), 1, bulkInfos);
 			vector<unique_ptr<MeshObject>>* mov = &group.second;
 			if (bulkInfos.size() == 1 && true) {
-				if (bulkInfos[0].end == 0) continue;
+				//if (bulkInfos[0].end == 0) continue;
+				//if (mov->at(0).get()->objectNum != 1) continue;
 				// simple update of all
 				//Log("  update: " << group.first.c_str() << " [" << bulkInfos[0].start << ".." << bulkInfos[0].end << "]" << endl);
 				//bulkInfos[0].start = 1;
@@ -212,7 +213,12 @@ void MeshObjectStore::update()
 				updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
 				frameEffectData[frameIndex].updateMaterial = false;
 				xapp().stats.start("compute");
-				dxManager.copyToComputeBuffer(frameData[frameIndex]);
+				// TODO only copy once to compute buffer? find better way than this hack
+				static int count = 0;
+				count++;
+				if (count < 18) {
+					dxManager.copyToComputeBuffer(frameData[frameIndex]);
+				}
 				computeMethod(frameIndex);
 				xapp().stats.end("compute");
 				xapp().stats.end("meshStoreUpdate");
@@ -308,6 +314,7 @@ void MeshObjectStore::divideDrawBulks()
 			BulkDivideInfoExt bi;
 			bi.start = mo->objectNum;
 			bi.end = mo->objectNum;
+			bi.mo = mo;
 			drawBulkInfos.push_back(bi);
 			last_mesh = mo->mesh;
 		} else {
@@ -669,7 +676,14 @@ void MeshObjectStore::drawInternal(BulkDivideInfoExt * bi, int eyeNum)
 	//dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps2), ppHeaps2);
 	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
 	unsigned int instanceCount = bi->end - bi->start + 1;
-	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, instanceCount, 0, 0, bi->start);
+	// DrawIndexedInstanced() will always produce 0 based instances, regardless of last parameter, we store start index and length in cbv[0].cameraPos x and y:
+	CBV cbv = {};
+	cbv.alpha = 0.1f; // regognize this in shader debug
+	cbv.cameraPos.x = bi->start + 0.5f; // add 0.5 to get easy revert to int by floor in shader code
+	cbv.cameraPos.y = instanceCount + 0.5f;
+	dxManager.upload(0, 0, &cbv);
+
+	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, instanceCount, 0, 0, 0 /*bi->start*/);
 	//dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, 3, 0, 0, 1);
 }
 
