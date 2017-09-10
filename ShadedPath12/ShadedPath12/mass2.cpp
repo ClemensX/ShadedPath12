@@ -2,9 +2,9 @@
 #include "mass2.h"
 
 
-#define NUM_METEORXX 100000
+#define NUM_METEOR 400000
 #define NUM_METEORX 5000
-#define NUM_METEOR 10
+#define NUM_METEORXX 10
 
 #define NUM_THREADS 1
 
@@ -62,7 +62,7 @@ void MassTest2::init()
 	xapp().camera.setSpeed(10.5f); // faster for dev usability
 	xapp().camera.fieldOfViewAngleY = 1.289f;
 	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
-	xapp().world.setWorldSize(204.80f, 38.20f, 204.80f);
+	//xapp().world.setWorldSize(204.80f, 38.20f, 204.80f);
 
 	textEffect.setSize(textSize);
 	dotcrossEffect.setLineLength(6.0f * textSize);

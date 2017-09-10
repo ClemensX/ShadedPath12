@@ -87,8 +87,8 @@ unordered_map<unsigned int, unsigned int> objNums;
 
 void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp, int frameIndex, int eyeNum) {
 	assert(mo->objectNum > 0); // not properly added to store
-	if (mo->uploadedToGPU[frameIndex]) return;
-	mo->uploadedToGPU[frameIndex] = true;
+	//if (mo->uploadedToGPU[frameIndex]) return;
+	//mo->uploadedToGPU[frameIndex] = true;
 	//Log("  elem: " << mo->pos().x << endl);
 	//WegDamit.lock();
 	//XMMATRIX toWorld = XMMatrixIdentity();//mo->calcToWorld(); // apply pos and rot
@@ -168,7 +168,12 @@ void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr
 	//	return;
 	for (unsigned int i = bi.start; i <= bi.end; i++) {
 		//updateOne(cbv, mov[i].get(), vp, frameIndex, eyeNum);
-		updateOne(cbv, mov->at(i).get(), vp, frameIndex, eyeNum);
+		MeshObject *mo = mov->at(i).get();
+		if (!mo->uploadedToGPU[frameIndex]) {
+			mo->uploadedToGPU[frameIndex] = true;
+			updateOne(cbv, mo, vp, frameIndex, eyeNum);
+			frameEffectData[frameIndex].updateConstBuffers = true;
+		}
 	}
 	//frameEffectData[frameIndex].updateConstBuffers = false;
 }
@@ -216,8 +221,10 @@ void MeshObjectStore::update()
 				// TODO only copy once to compute buffer? find better way than this hack
 				static int count = 0;
 				count++;
-				if (count < 18) {
+				if (count < 18 || frameEffectData[frameIndex].updateConstBuffers) {
+					Log("update const for " << frameIndex << endl);
 					dxManager.copyToComputeBuffer(frameData[frameIndex]);
+					frameEffectData[frameIndex].updateConstBuffers = false;
 				}
 				computeMethod(frameIndex);
 				xapp().stats.end("compute");
