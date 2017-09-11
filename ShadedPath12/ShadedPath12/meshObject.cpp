@@ -217,18 +217,18 @@ void MeshObjectStore::update()
 				//bulkInfos[0].end = 3;
 				updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
 				frameEffectData[frameIndex].updateMaterial = false;
-				xapp().stats.start("compute");
 				// TODO only copy once to compute buffer? find better way than this hack
 				static int count = 0;
 				count++;
-				if (count < 18 || frameEffectData[frameIndex].updateConstBuffers) {
+				if (count < 14 || frameEffectData[frameIndex].updateConstBuffers) {
 					Log("update const for " << frameIndex << endl);
+					//Log("  update: " << group.first.c_str() << " [" << bulkInfos[0].start << ".." << bulkInfos[0].end << "]" << endl);
 					dxManager.copyToComputeBuffer(frameData[frameIndex]);
 					frameEffectData[frameIndex].updateConstBuffers = false;
 				}
+				xapp().stats.start("compute");
 				computeMethod(frameIndex);
 				xapp().stats.end("compute");
-				xapp().stats.end("meshStoreUpdate");
 				//return;
 			} else {
 				vector<thread> threads;
@@ -242,6 +242,7 @@ void MeshObjectStore::update()
 				}
 			}
 		}
+		xapp().stats.end("meshStoreUpdate");
 
 		//forAll([this, cbv, vp, frameIndex](MeshObject *mo) {
 		//	//Log("  elem: " << mo->pos().x << endl);
