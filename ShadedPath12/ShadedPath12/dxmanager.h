@@ -1,5 +1,39 @@
 #pragma once
 
+/*
+ * Ultility class to store state attributes for 3d objects.
+ * Used to store info if objects already stored on GPU / compute buffer
+ */
+class ObjectStateList {
+private:
+	enum State { INVALID, VALID_GPU };
+	size_t count_invalid;
+
+public:
+	void init(size_t count) {
+		states.resize(count, INVALID);
+		count_invalid = count; // all antries invalid
+	};
+
+	void setObjectValid(unsigned int objNum, bool valid) {
+		size_t index = (size_t)objNum;
+		if (valid) {
+			if (states[index] == INVALID) count_invalid--;
+			states[index] = VALID_GPU;
+		} else {
+			if (states[index] == VALID_GPU) count_invalid++;
+			states[index] = INVALID;
+		}
+	};
+
+	bool isValid() {
+		Log("count_invalid = " << count_invalid << endl);
+		return count_invalid == 0;
+	};
+private:
+	vector<State> states;
+};
+
 class ResourceStateInfo {
 public:
 	D3D12_RESOURCE_STATES current_state;
@@ -102,8 +136,11 @@ private:
 	ComPtr<ID3D12CommandAllocator> computeAllocator[FrameCount];
 	ComPtr<ID3D12CommandQueue> computeCommandQueue[FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> computeCommandList[FrameCount];
+
 	ID3D12Device *device = nullptr;
 	vector<ComPtr<ID3D12Resource>> cbvSetResources; // for all numbered buffer sets
 	vector<UINT8*> cbvSetGPUDest;  // memcpy() changed cbv data to this address before draw()
 	UINT setSize = 0;
+public:
+	ObjectStateList objectStateLists[FrameCount];
 };

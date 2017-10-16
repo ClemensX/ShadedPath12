@@ -220,6 +220,7 @@ void MeshObjectStore::update()
 				// TODO only copy once to compute buffer? find better way than this hack
 				static int count = 0;
 				count++;
+				dxManager.objectStateLists[frameIndex].isValid();
 				if (count < 14 || frameEffectData[frameIndex].updateConstBuffers) {
 					Log("update const for " << frameIndex << endl);
 					//Log("  update: " << group.first.c_str() << " [" << bulkInfos[0].start << ".." << bulkInfos[0].end << "]" << endl);
@@ -431,7 +432,7 @@ void MeshObjectStore::init()
 		ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_COMPUTE, computeAllocator[n].Get(), nullptr, IID_PPV_ARGS(&computeCommandList[n])));
 		// immediately close the command list - it will be reset as first step in computeMethod
 		ThrowIfFailed(computeCommandList[n]->Close());
-
+		dxManager.objectStateLists[n].init(maxObjects);
 		//ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_SHARED, IID_PPV_ARGS(&threadFences[threadIndex])));
 	}
 

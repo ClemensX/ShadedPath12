@@ -260,6 +260,7 @@ void DXManager::upload(UINT objectIndex, int eyeNum, void * mem_source)
 	// add individual object/eye
 	dest += getOffsetInConstantBuffer(objectIndex, eyeNum);
 	memcpy(dest, mem_source, slotSize);
+	objectStateLists[currentFrame].setObjectValid(objectIndex, false);
 }
 
 D3D12_GPU_VIRTUAL_ADDRESS DXManager::getCBVVirtualAddress(UINT objectIndex, int eyeNum)
