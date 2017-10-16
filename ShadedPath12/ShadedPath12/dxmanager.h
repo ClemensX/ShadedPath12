@@ -6,29 +6,50 @@
  */
 class ObjectStateList {
 private:
-	enum State { INVALID, VALID_GPU };
-	size_t count_invalid;
+	enum State { IN_CPU, IN_GPU, IN_COMPUTE };
+	size_t count_in_gpu;
+	size_t count_in_compute;
 
 public:
 	void init(size_t count) {
-		states.resize(count, INVALID);
-		count_invalid = count; // all antries invalid
+		states.resize(count, IN_CPU);
+		count_in_gpu = 0; // all antries invalid
+		count_in_compute = 0;
 	};
 
-	void setObjectValid(unsigned int objNum, bool valid) {
+	// mark object as copied to GPU mem
+	void setObjectValidGPU(unsigned int objNum, bool valid) {
 		size_t index = (size_t)objNum;
 		if (valid) {
-			if (states[index] == INVALID) count_invalid--;
-			states[index] = VALID_GPU;
-		} else {
-			if (states[index] == VALID_GPU) count_invalid++;
-			states[index] = INVALID;
+			if (states[index] == IN_CPU) count_in_gpu++;
+			states[index] = IN_GPU;
+		}
+		else {
+			if (states[index] != IN_CPU) count_in_gpu--;
+			states[index] = IN_CPU;
+		}
+	};
+
+	// mark object as copied to compute buffer, only objects already in GPU can be ok in compute buffer
+	void setObjectValidCompute(unsigned int objNum, bool valid) {
+		size_t index = (size_t)objNum;
+		auto cur_state = states[index];
+		if (valid) {
+			if (cur_state == IN_GPU) {
+				count_in_compute++;
+				states[index] = IN_COMPUTE;
+			}
+		}
+		else {
+			if (cur_state == IN_COMPUTE) count_in_compute--;
+			states[index] = IN_GPU;
 		}
 	};
 
 	bool isValid() {
-		Log("count_invalid = " << count_invalid << endl);
-		return count_invalid == 0;
+		Log("count_in_gpu = " << count_in_gpu << endl);
+		Log("count_in_compute = " << count_in_compute << endl);
+		return count_in_compute == states.size();
 	};
 private:
 	vector<State> states;

@@ -260,7 +260,7 @@ void DXManager::upload(UINT objectIndex, int eyeNum, void * mem_source)
 	// add individual object/eye
 	dest += getOffsetInConstantBuffer(objectIndex, eyeNum);
 	memcpy(dest, mem_source, slotSize);
-	objectStateLists[currentFrame].setObjectValid(objectIndex, false);
+	objectStateLists[currentFrame].setObjectValidGPU(objectIndex, true);
 }
 
 D3D12_GPU_VIRTUAL_ADDRESS DXManager::getCBVVirtualAddress(UINT objectIndex, int eyeNum)
@@ -292,4 +292,9 @@ void DXManager::copyToComputeBuffer(FrameResource & f)
 	commandQueues[currentFrame]->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 	EffectBase::createSyncPoint(f, commandQueues[currentFrame]);
 	EffectBase::waitForSyncPoint(f);
+	// signal updated const buffer: only objects already updated in GPU will be ok in compute buffer
+	assert(maxObjects == totalSize / slotSize);
+	for (unsigned int i = 0; i < maxObjects; i++) {
+		objectStateLists[currentFrame].setObjectValidCompute(i, true);
+	}
 }
