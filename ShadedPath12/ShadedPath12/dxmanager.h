@@ -47,9 +47,9 @@ public:
 	};
 
 	bool isValid() {
-		Log("count_in_gpu = " << count_in_gpu << endl);
-		Log("count_in_compute = " << count_in_compute << endl);
-		return count_in_compute == states.size();
+		//Log("count_in_gpu = " << count_in_gpu << endl);
+		//Log("count_in_compute = " << count_in_compute << endl);
+		return count_in_compute == count_in_gpu;
 	};
 private:
 	vector<State> states;

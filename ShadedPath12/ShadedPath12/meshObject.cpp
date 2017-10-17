@@ -158,9 +158,9 @@ void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr
 	frameEffectData[frameIndex].cbvCS.num_objects = bi.end - bi.start + 1;
 	frameEffectData[frameIndex].cbvCS.start_objects = bi.start;
 	frameEffectData[frameIndex].cbvCS.start_objects = mov->at(bi.start).get()->objectNum;
-	if (frameIndex == 0) {
-		Log("from_index len " << frameEffectData[frameIndex].cbvCS.start_objects << " " << frameEffectData[frameIndex].cbvCS.num_objects << endl);
-	}
+	//if (frameIndex == 0) {
+	//	Log("from_index len " << frameEffectData[frameIndex].cbvCS.start_objects << " " << frameEffectData[frameIndex].cbvCS.num_objects << endl);
+	//}
 
 	dxManager.uploadConstantBufferSet(0, sizeof(CBV_CS), &frameEffectData[frameIndex].cbvCS);
 
@@ -220,9 +220,9 @@ void MeshObjectStore::update()
 				// TODO only copy once to compute buffer? find better way than this hack
 				static int count = 0;
 				count++;
-				dxManager.objectStateLists[frameIndex].isValid();
-				if (count < 14 || frameEffectData[frameIndex].updateConstBuffers) {
-					Log("update const for " << frameIndex << endl);
+				auto valid = dxManager.objectStateLists[frameIndex].isValid();
+				if (!valid /*count < 14*/ || frameEffectData[frameIndex].updateConstBuffers) {
+					//Log("update const for " << frameIndex << endl);
 					//Log("  update: " << group.first.c_str() << " [" << bulkInfos[0].start << ".." << bulkInfos[0].end << "]" << endl);
 					dxManager.copyToComputeBuffer(frameData[frameIndex]);
 					frameEffectData[frameIndex].updateConstBuffers = false;
@@ -723,7 +723,7 @@ bool MeshObjectStore::isSorted()
 	//Log("usedObjects " << used_objects << endl);
 	unsigned int min = 0, max = 0, last = 0;
 	forAll([this,&min,&max,&last](MeshObject *mo) {
-		Log("  objectNum: " << mo->objectNum << " mesh" << mo->mesh << " x " << mo->pos().x << endl);
+		//Log("  objectNum: " << mo->objectNum << " mesh" << mo->mesh << " x " << mo->pos().x << endl);
 		unsigned int cur = mo->objectNum;
 		if (cur  < 1 || cur > this->used_objects)
 			return false;
