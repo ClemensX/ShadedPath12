@@ -257,6 +257,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	xapp().warp = xapp().getBoolParam("warp", false);
 	xapp().disableDX11Debug = xapp().getBoolParam("disableDX11Debug", false);
+	xapp().disableDX12Debug = xapp().getBoolParam("disableDX12Debug", false);
 	xapp().disableLineShaders = xapp().getBoolParam("disableLineShaders", false);
 	
     int style;

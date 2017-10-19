@@ -217,9 +217,9 @@ void XApp::init()
 		ComPtr<ID3D12Debug1> debugController1;
 		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
 		{
-			debugController->EnableDebugLayer();
+			if (!disableDX12Debug) debugController->EnableDebugLayer();
 			debugController->QueryInterface(IID_PPV_ARGS(&debugController1));
-			if (debugController1 /*&& false*/) {
+			if (debugController1) {
 				debugController1->SetEnableGPUBasedValidation(true);
 			} else {
 				Log("WARNING: Could not enable GPU validation - ID3D12Debug1 controller not available" << endl);
@@ -263,6 +263,7 @@ void XApp::init()
 		ComPtr<IDXGIAdapter> warpAdapter;
 		ThrowIfFailed(factory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
 
+		// if this fails in debug run: enable win 10 dev mode
 		ThrowIfFailed(D3D12CreateDevice(
 			warpAdapter.Get(),
 			D3D_FEATURE_LEVEL_11_0,
@@ -270,6 +271,7 @@ void XApp::init()
 			));
 	}
 	else {
+		// if this fails in debug run: enable win 10 dev mode and/or disable d3d12 debug layer via command line parameter -disableDX12Debug 
 		ThrowIfFailed(D3D12CreateDevice(
 			nullptr,
 			D3D_FEATURE_LEVEL_11_0,

@@ -171,7 +171,10 @@ public:
 	bool ovrRendering = false;   // use split screen ovr rendering
 	bool ovrMirror = true;       // if ovrRendering() then this flag indicates if mirroring to app window should occur, always false for non-ovr rendering
 	bool warp; //use warp device to render (a.k.a. software rendering)
-	// on some systems there is no debug version of DX 11 available,
+    // on some systems there is no debug version of DX12 available,
+    // then set -disableDX12Debug on command line to be able to let debug build run
+	bool disableDX12Debug = false;
+	// on some systems there is no debug version of DX11 available,
 	// then set -disableDX11Debug on command line to be able to let debug build run
 	bool disableDX11Debug = false;
 	// Graphics debugging does not like line shaders - it crashes on 2nd line shader initialization
