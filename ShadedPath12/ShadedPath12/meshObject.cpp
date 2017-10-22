@@ -664,6 +664,7 @@ void MeshObjectStore::drawInternal(MeshObject *mo, int eyeNum)
 
 void MeshObjectStore::drawInternal(BulkDivideInfoExt * bi, int eyeNum)
 {
+	//if (bi->start > 1) return;
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 	MeshObject *mo = bi->mo;
 	dxManager.getGraphicsCommandListComPtr()->RSSetViewports(1, &vr_eyes.viewports[eyeNum]);
@@ -681,15 +682,22 @@ void MeshObjectStore::drawInternal(BulkDivideInfoExt * bi, int eyeNum)
 	D3D12_GPU_DESCRIPTOR_HANDLE GPUHeapStart = dxManager.getCbvDescriptorHeapComPtr()->GetGPUDescriptorHandleForHeapStart();
 	//CD3DX12_GPU_DESCRIPTOR_HANDLE cbvHandle(GPUHeapStart, 0, xapp().device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(1, GPUHeapStart);
+	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRoot32BitConstant(3, bi->start, 0);
 	//ID3D12DescriptorHeap* ppHeaps2[] = { mo->textureID->m_srvHeap.Get() };
 	//dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps2), ppHeaps2);
 	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+
 	unsigned int instanceCount = bi->end - bi->start + 1;
 	// DrawIndexedInstanced() will always produce 0 based instances, regardless of last parameter, we store start index and length in cbv[0].cameraPos x and y:
 	CBV cbv = {};
 	cbv.alpha = 0.1f; // regognize this in shader debug
 	cbv.cameraPos.x = bi->start + 0.5f; // add 0.5 to get easy revert to int by floor in shader code
 	cbv.cameraPos.y = instanceCount + 0.5f;
+	// manual override for test:
+	//instanceCount += 5;
+	//cbv.cameraPos.x = /*bi->start*/1.0f + 0.5f; // add 0.5 to get easy revert to int by floor in shader code
+	//cbv.cameraPos.y = instanceCount + 0.5f;
+
 	dxManager.upload(0, 0, &cbv);
 
 	dxManager.getGraphicsCommandListComPtr()->DrawIndexedInstanced(mo->mesh->numIndexes, instanceCount, 0, 0, 0 /*bi->start*/);

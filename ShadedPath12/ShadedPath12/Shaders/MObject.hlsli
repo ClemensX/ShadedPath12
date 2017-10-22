@@ -4,8 +4,9 @@
 // root signature: CBV with MVP matrix, Descriptor Table with texture SRV
 #define ObjectRS "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
             "CBV(b0, space = 0), " \
-            "DescriptorTable(SRV(t0, space = 0), CBV(b1, numDescriptors = 12, space = 0)), " \
+            "DescriptorTable(SRV(t0, space = 0), CBV(b1, numDescriptors = 1, space = 0)), " \
             "UAV(u0, space = 0), " \
+            "RootConstants(num32BitConstants=1, b3, space = 0), " \
             "StaticSampler(s0, filter=FILTER_MIN_MAG_MIP_LINEAR, "\
 			"addressU = TEXTURE_ADDRESS_WRAP, addressV = TEXTURE_ADDRESS_WRAP, addressW = TEXTURE_ADDRESS_CLAMP, " \
 			"minLOD = 0, maxLOD = 0, mipLODBias = 0, " \
@@ -14,6 +15,7 @@
 
 // was after cbv table:             "DescriptorTable(SRV(t0, space = 0)), " \
 //             "DescriptorTable(SRV(t0, space = 0), CBV(b1, numDescriptors = 12, space = 0)), " \
+//            "RootConstants(num32BitConstants=1, b3), " \
 
 Texture2D<float4> screenTex : register(t0);
 SamplerState s : register(s0);
@@ -45,6 +47,12 @@ ConstantBuffer<ObjectConstantBuffer> cbv[2]: register(b1);
 //cbuffer cbFixedCBVs : register(b1) {
 //	ObjectConstantBuffer cbvs[1000];
 //};
+
+struct RootConstants
+{
+	uint start;
+};
+ConstantBuffer<RootConstants> rootConstants : register(b3, space0);
 
 struct VSInput
 {

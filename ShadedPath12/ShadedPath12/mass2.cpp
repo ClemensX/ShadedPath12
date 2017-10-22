@@ -11,6 +11,7 @@
 // set useHouse to false for using meteor mesh
 static bool useHouse = true;
 static bool smallWorld = true;
+static bool useSomeMeteors = true;
 
 static MassTest2 massTest2;
 
@@ -120,6 +121,7 @@ xapp().objectStore.loadObject(L"meteor_single.b", "Meteor1");
 		}
 		else {
 			objStore->loadObject(L"house4_anim.b", "House");
+			objStore->loadObject(L"meteor_single.b", "Meteor", 0.3f);
 		}
 		MeshObject * o = nullptr;
 		if (!useHouse) {
@@ -180,25 +182,32 @@ xapp().objectStore.loadObject(L"meteor_single.b", "Meteor1");
 void MassTest2::initMeteorField() {
 	xapp().textureStore.loadTexture(L"dirt6_markings.dds", "default");
 	TextureInfo *HouseTex = nullptr;
+	TextureInfo *MeteorTex = nullptr;
 	if (!useHouse) {
 		HouseTex = xapp().textureStore.getTexture("meteor1");
 	} else {
 		HouseTex = xapp().textureStore.getTexture("markings");
+		MeteorTex = xapp().textureStore.getTexture("meteor1");
 	}
 
-	objStore->createGroup("meteor");
-	for (int i = 0; i < NUM_METEOR; i++) {
+	objStore->createGroup("house");
+	int numHouses = NUM_METEOR;
+	if (useSomeMeteors) {
+		assert(numHouses % 2 == 0); // need even number
+		numHouses /= 2;
+	}
+	for (int i = 0; i < numHouses; i++) {
 		XMFLOAT3 p = xapp().world.getRandomPos(50);
 		//p.x = p.y = p.z = 0.0f;
 		//p.x = i * 10.0f;
-		objStore->addObject("meteor", "House", p, HouseTex);
+		objStore->addObject("house", "House", p, HouseTex);
 	}
 	//object.drawBoundingBox = true;
 	//object.drawNormals = true;
 	//object.setAction("Cube");
 	//object.pathDescMove->pathMode = Path_Reverse;
 	// update meteor data:
-	auto grp = objStore->getGroup("meteor");
+	auto grp = objStore->getGroup("house");
 	for (auto & w : *grp) {
 		w.get()->material.specExp = 1.0f;       // no spec color
 		w.get()->material.specIntensity = 0.0f; // no spec color
@@ -206,6 +215,21 @@ void MassTest2::initMeteorField() {
 		//if (w.get()->objectNum == 100) {
 		//	w.get()->pos() = XMFLOAT3(1, 1, 1);
 		//}
+	}
+	// add 2nd object type:
+	if (useSomeMeteors) {
+		objStore->createGroup("meteor");
+		for (int i = 0; i < numHouses; i++) {
+			XMFLOAT3 p = xapp().world.getRandomPos(50);
+			objStore->addObject("meteor", "Meteor", p, MeteorTex);
+		}
+		// update meteor data:
+		auto grp = objStore->getGroup("meteor");
+		for (auto & w : *grp) {
+			w.get()->material.specExp = 1.0f;       // no spec color
+			w.get()->material.specIntensity = 0.0f; // no spec color
+			w.get()->material.ambient = XMFLOAT4(1, 1, 1, 1);
+		}
 	}
 }
 
