@@ -179,4 +179,8 @@ void TextureStore::loadTexture(wstring filename, string id)
 	//waitForSyncPoint(f);
 	result.UploadBuffer->Release();
 	ThrowIfFailed(commandList->Reset(commandAllocator.Get(), pipelineState.Get()));
+
+	// create the descriptor table to bind before draw:
+	CD3DX12_GPU_DESCRIPTOR_HANDLE tex(texture->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+	texture->descriptorTable = tex;
 }

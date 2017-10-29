@@ -676,16 +676,34 @@ void MeshObjectStore::drawInternal(BulkDivideInfoExt * bi, int eyeNum)
 	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootConstantBufferView(1, dxManager.getCBVVirtualAddress(0, eyeNum));
 	// Set CBV and SRV descriptor heaps
 
-	dxManager.setTexture(mo->textureID->m_srvHeap.Get(), mo->textureID->texSRV.Get());
-	ID3D12DescriptorHeap* ppHeaps[] = { dxManager.getCbvDescriptorHeapComPtr().Get() };
+	//if (bi->start == 1 || frameIndex != 0)
+	//dxManager.setTexture(mo->textureID->m_srvHeap.Get(), mo->textureID->texSRV.Get());
+	//ID3D12DescriptorHeap* ppHeaps[] = { dxManager.getCbvDescriptorHeapComPtr().Get() };
+	//dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+	ID3D12DescriptorHeap* ppHeaps[] = { mo->textureID->m_srvHeap.Get() };
 	dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 	D3D12_GPU_DESCRIPTOR_HANDLE GPUHeapStart = dxManager.getCbvDescriptorHeapComPtr()->GetGPUDescriptorHandleForHeapStart();
 	//CD3DX12_GPU_DESCRIPTOR_HANDLE cbvHandle(GPUHeapStart, 0, xapp().device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(1, GPUHeapStart);
+	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(1, GPUHeapStart);
+	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(1, mo->textureID->descriptorTable);
 	dxManager.getGraphicsCommandListComPtr()->SetGraphicsRoot32BitConstant(3, bi->start, 0);
+	
+	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootShaderResourceView(4, mo->textureID->texSRV->GetGPUVirtualAddress());
+
 	//ID3D12DescriptorHeap* ppHeaps2[] = { mo->textureID->m_srvHeap.Get() };
 	//dxManager.getGraphicsCommandListComPtr()->SetDescriptorHeaps(_countof(ppHeaps2), ppHeaps2);
 	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(2, mo->textureID->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+
+	//auto handle1 = CD3DX12_CPU_DESCRIPTOR_HANDLE(mo->textureID->m_srvHeap->GetCPUDescriptorHandleForHeapStart());
+	//xapp().device->CreateShaderResourceView(mo->textureID->texSRV.Get(), nullptr, handle1);
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
+	srvHeapDesc.NumDescriptors = 1;
+	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	ThrowIfFailed(xapp().device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
+	CD3DX12_GPU_DESCRIPTOR_HANDLE tex(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	////if (bi->start == 1 )
+	//dxManager.getGraphicsCommandListComPtr()->SetGraphicsRootDescriptorTable(4, tex);
 
 	unsigned int instanceCount = bi->end - bi->start + 1;
 	// DrawIndexedInstanced() will always produce 0 based instances, regardless of last parameter, we store start index and length in cbv[0].cameraPos x and y:

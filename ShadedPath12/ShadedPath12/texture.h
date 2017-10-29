@@ -5,6 +5,8 @@ struct TextureInfo
 	wstring filename;
 	ComPtr<ID3D12Resource> texSRV;
 	ComPtr<ID3D12DescriptorHeap> m_srvHeap;
+	// new apparoach: pre define a descriptor table for each texture, just set this with SetGraphicsRootDescriptorTable
+	D3D12_GPU_DESCRIPTOR_HANDLE descriptorTable;
 	bool available; // true if this texture is ready for use in shader code
 };
 typedef TextureInfo* TextureID;

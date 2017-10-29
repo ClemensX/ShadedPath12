@@ -201,4 +201,6 @@ private:
 	void computeMethod(UINT frameNum);
 	DXManager dxManager;
 	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
+	ComPtr<ID3D12DescriptorHeap> mSrvDescriptorHeap;
+
 };
