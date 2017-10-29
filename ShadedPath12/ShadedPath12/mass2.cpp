@@ -2,7 +2,8 @@
 #include "mass2.h"
 
 
-#define NUM_METEORX 400000
+#define NUM_METEORXXX 400000
+#define NUM_METEORX 10000
 #define NUM_METEORXX 5000
 #define NUM_METEOR 10
 
