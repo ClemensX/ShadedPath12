@@ -4,7 +4,7 @@
 // root signature: CBV with MVP matrix, Descriptor Table with texture SRV
 #define ObjectRS "RootFlags( ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT), " \
             "CBV(b0, space = 0), " \
-            "DescriptorTable(SRV(t0, space = 0), CBV(b1, numDescriptors = 1, space = 0)), " \
+            "DescriptorTable(SRV(t0, space = 0)), " \
             "UAV(u0, space = 0), " \
             "RootConstants(num32BitConstants=1, b3, space = 0), " \
             "StaticSampler(s0, filter=FILTER_MIN_MAG_MIP_LINEAR, "\

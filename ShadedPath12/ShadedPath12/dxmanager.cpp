@@ -202,45 +202,6 @@ void DXManager::createGraphicsExecutionEnv(ID3D12PipelineState *ps)
 	}
 }
 
-void DXManager::setTexture(ID3D12DescriptorHeap *texHeap, ID3D12Resource *r)
-{
-	//auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[currentFrame]->GetCPUDescriptorHandleForHeapStart());
-	//// srv is first element in descriptor heap - we do not need to inclrement
-	//device->CopyDescriptorsSimple(1, handle, texHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-	// redo all heap descriptions:
-	// cbv heaps: (because unlimited array does not work for root CBVs we have to use descriptor tables
-	// now set cbv and srv in this heap:
-	UINT increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	// SRV is first entry in descriptor heap: (wrong entry - must be overwritten before draw()
-	int heapIndex = 0;
-	//auto handle1 = CD3DX12_CPU_DESCRIPTOR_HANDLE(texHeap->GetCPUDescriptorHandleForHeapStart());
-	auto handle1 = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[currentFrame]->GetCPUDescriptorHandleForHeapStart());
-	handle1.Offset(heapIndex, increment);
-	//D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	device->CreateShaderResourceView(r, nullptr, handle1);
-	//// CBV is second entry
-	//heapIndex = 1;
-	//auto handle2 = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[currentFrame]->GetCPUDescriptorHandleForHeapStart());
-	//handle2.Offset(heapIndex, increment);
-	//D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-	//cbvDesc.BufferLocation = singleCBVResources[currentFrame]->GetGPUVirtualAddress();
-	////cbvDesc.BufferLocation += 512;
-	//cbvDesc.SizeInBytes = 256;
-	//device->CreateConstantBufferView(&cbvDesc, handle2);
-	//// 2nd cbv
-	//heapIndex = 1;
-	//auto handle3 = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[currentFrame]->GetCPUDescriptorHandleForHeapStart());
-	//handle3.Offset(heapIndex, increment);
-	//D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc2;
-	//cbvDesc2.BufferLocation = singleCBVResources[currentFrame]->GetGPUVirtualAddress();
-	//cbvDesc2.BufferLocation += 256;
-	//cbvDesc2.SizeInBytes = 256;
-	//device->CreateConstantBufferView(&cbvDesc2, handle3);
-
-	// CBVs ashould be already set
-}
-
 UINT64 DXManager::getOffsetInConstantBuffer(UINT objectIndex, int eyeNum)
 {
 	UINT64 plus = slotSize * objectIndex;
