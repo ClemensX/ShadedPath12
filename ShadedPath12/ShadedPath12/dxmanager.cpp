@@ -254,7 +254,10 @@ void DXManager::copyToComputeBuffer(FrameResource & f)
 	EffectBase::createSyncPoint(f, commandQueues[currentFrame]);
 	EffectBase::waitForSyncPoint(f);
 	// signal updated const buffer: only objects already updated in GPU will be ok in compute buffer
-	assert(maxObjects == totalSize / slotSize);
+	if (!xapp().ovrRendering)
+		assert(maxObjects == totalSize / slotSize);
+	else 
+		assert(maxObjects == (totalSize/2) / slotSize);
 	for (unsigned int i = 0; i < maxObjects; i++) {
 		objectStateLists[currentFrame].setObjectValidCompute(i, true);
 	}

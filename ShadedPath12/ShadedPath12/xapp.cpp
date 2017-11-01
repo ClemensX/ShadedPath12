@@ -825,6 +825,9 @@ wstring Stats::getInfo(string name)
 	LARGE_INTEGER qwFrequency;
 	QueryPerformanceFrequency(&qwFrequency);
 	StatTopic *t = get(name);
+	if (t->called == 0L) {
+		t->called = 1;
+	}
 	long long average = t->cumulated / t->called;
 	// convert average to micro seconds
 	average *= 1000000;

@@ -111,24 +111,6 @@ void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp
 				   //cbv->world = di.world;
 	cbv->alpha = mo->alpha;
 	dxManager.upload(mo->objectNum, eyeNum, cbv);
-	if (false && mo->pos().y > 50) {
-		auto pos = mo->mesh->vertices.at(0).Pos;
-		XMVECTOR p = XMVectorSet(pos.x, pos.y, pos.z, 0.0f);
-		p = XMVector3Transform(p, XMMatrixTranspose(toWorld));
-		if (XMVectorGetY(p) < 50.0f) {
-			Log("assert(false) " << pos.y << " " << XMVectorGetY(p) << endl);
-			DebugBreak();
-		}
-
-	}
-	if (false) {
-		// non-threadsave checks - use with 1 thread only
-		assert(objNums.count(mo->objectNum) == 0);  // ensure no double obj id found
-		objNums[mo->objectNum] = 1;
-		UINT8 *mem = getCBVUploadAddress(frameIndex, 0, mo->objectNum, eyeNum);
-		assert(adds.count(mem) == 0); // ensure no double mem pointers used
-		adds[mem] = nullptr;
-	}
 }
 
 void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr<MeshObject>>* mov, XMMATRIX vp, int frameIndex, int eyeNum)
@@ -195,7 +177,7 @@ void MeshObjectStore::update()
 	CBV *cbv = &my_cbv;
 	prepareDraw(&xapp().vr);
 	xapp().lights.update();
-	if (!xapp().ovrRendering) {
+	if (!xapp().ovrRendering || true) {
 		frameEffectData[frameIndex].vr_eyesm[0] = vr_eyes;
 		XMMATRIX vp = cam->worldViewProjection();
 		cbv->cameraPos.x = cam->pos.x;
@@ -232,15 +214,7 @@ void MeshObjectStore::update()
 				xapp().stats.end("compute");
 				//return;
 			} else {
-				vector<thread> threads;
-				//thread t(&MeshObjectStore::updatePart, this, bulkInfos[0], cbv, group.second, vp, frameIndex);
-				for (int i = 0; i < bulkInfos.size(); i++) {
-					thread t([=] { this->updatePart(bulkInfos[i], cbv, mov, vp, frameIndex); });
-					threads.push_back(move(t));
-				}
-				for (auto &t : threads) {
-					t.join();
-				}
+				assert(false);
 			}
 		}
 		xapp().stats.end("meshStoreUpdate");
@@ -281,21 +255,16 @@ void MeshObjectStore::draw()
 	assert(this->maxObjects > 0);	// setting of max object count missing
 	prepareDraw(&xapp().vr);
 	preDraw();
-	for (auto bi : drawBulkInfos) {
-		drawInternal(&bi, 0);
+	if (!xapp().ovrRendering) {
+		for (auto bi : drawBulkInfos) {
+			drawInternal(&bi, 0);
+		}
+	} else {
+		for (auto bi : drawBulkInfos) {
+			drawInternal(&bi, 0);
+			//drawInternal(&bi, 1);
+		}
 	}
-	//if (!xapp().ovrRendering) {
-	//	forAll([this](MeshObject *mo) {
-	//		//Log("  elem: " << mo->pos().x << endl);
-	//		drawInternal(mo);
-	//	});
-	//} else {
-	//	forAll([this](MeshObject *mo) {
-	//		//Log("  elem: " << mo->pos().x << endl);
-	//		drawInternal(mo, 0);
-	//		drawInternal(mo, 1);
-	//	});
-	//}
 	postDraw();
 }
 
