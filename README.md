@@ -93,6 +93,8 @@ See below for command line switches. Use them in VC++ via right click on project
 
 # Features for 0.1.3
 
+[Details for MeshObject rendering](meshObjectShader.md)
+
 This version enables touch support. See apps TouchOdyssey and Avatar. Extended documentation is available in wiki page https://github.com/ClemensX/ShadedPath12/wiki/Developing-Touch-and-Avatar-support-with-DirectX
 You can either use the pre generated assets provided in the current binary distributon or download all assets belonging to an avatar.
 Please acknowledge that ShadedPath still uses CPU bound skinning for animated objects. Using hands and/or controllers will cost a lot of performance. In debug mode you will see a lot of stuttering, but you should be fine in release mode.
