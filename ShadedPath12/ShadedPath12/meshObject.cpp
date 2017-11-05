@@ -177,7 +177,7 @@ void MeshObjectStore::update()
 	CBV *cbv = &my_cbv;
 	prepareDraw(&xapp().vr);
 	xapp().lights.update();
-	if (!xapp().ovrRendering || true) {
+	if (!vr || true) {
 		frameEffectData[frameIndex].vr_eyesm[0] = vr_eyes;
 		XMMATRIX vp = cam->worldViewProjection();
 		cbv->cameraPos.x = cam->pos.x;
@@ -255,7 +255,7 @@ void MeshObjectStore::draw()
 	assert(this->maxObjects > 0);	// setting of max object count missing
 	prepareDraw(&xapp().vr);
 	preDraw();
-	if (!xapp().ovrRendering) {
+	if (!vr) {
 		for (auto bi : drawBulkInfos) {
 			drawInternal(&bi, 0);
 		}
@@ -353,6 +353,7 @@ void MeshObjectStore::init()
 {
 	if (initialized) return;
 	initialized = true;
+	if (xapp().ovrRendering) this->vr = true;
 	assert(this->maxObjects > 0);	// setting of max object count missing
 	dxManager.init(xapp().device.Get());
 
@@ -574,7 +575,7 @@ void MeshObjectStore::preDraw()
 	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	dxManager.getGraphicsCommandListComPtr()->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	ID3D12Resource *resource;
-	if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
+	if (!vr) resource = xapp().renderTargets[frameIndex].Get();
 	else resource = xapp().vr.texResource[frameIndex];
 	xapp().handleRTVClearing(dxManager.getGraphicsCommandListComPtr().Get(), rtvHandle, dsvHandle, resource);
 

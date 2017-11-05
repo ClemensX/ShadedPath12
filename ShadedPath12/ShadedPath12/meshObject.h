@@ -125,6 +125,7 @@ private:
 
 	bool inGpuUploadPhase = false;	// signal that this effect is uploading data to GPU
 	unsigned int used_objects = 0;	// counter to get total number of used objects and next available index
+	bool vr = false;                // signal vr stereo mode (no need to call xapp().ovrRendering)
 
 // effect methods / members:
 public:
