@@ -45,4 +45,45 @@ Example App mass2.cpp/.h used:
         o = objStore->addObject("default", "House", XMFLOAT3(100.0f, 1.0f, 1.0f), Meteor1Tex);
         objStore->gpuUploadPhaseEnd();
 ```
+#### Texture Memory Layout after gpuUploadPhase
 
+| TextureInfo *House*   |  GPU Mem   |
+| ------------- | -----:|
+| texSRV      |  100 |
+| descriptorTable      |    500 |
+
+| TextureInfo *Meteor*   |  GPU Mem   |
+| ------------- | -----:|
+| texSRV      |  200 |
+| descriptorTable      |    600 |
+
+
+| GPU Memory   |               |       | # Entries|GPU Mem Ref
+| -------------|:-------------:| -----:| --------:|--:
+||||
+||||
+||||
+| 100      | SRV *House*      |   Texture Data |
+||||
+| 200      | SRV *Meteor*      |   Texture Data |
+||||
+||||
+| 500      | DescriptorTable      ||  1|100
+||||
+| 600      | DescriptorTable      ||  1|200
+
+
+<!---
+
+| Tables        | Are           | Cool  |
+| ------------- |-------------:| -----:|
+| col 3 is      | right-aligned | $1600 |
+| col 2 is      | centered      |   $12 |
+| zebra stripes | are neat      |    $1 |
+
+Markdown | Less | Pretty
+--- | --- | ---
+*Still* | `renders` | **nicely**
+1 | 2 | 3
+
+-->
