@@ -142,7 +142,7 @@ xapp().objectStore.loadObject(L"meteor_single.b", "Meteor1");
 		o->material.specExp = 1.0f;       // no spec color
 		o->material.specIntensity = 0.0f; // no spec color
 		o->alpha = 1.0;
-		objStore->createDrawBundle(o);
+		//objStore->createDrawBundle(o);
 	}
 	initMeteorField();
 
