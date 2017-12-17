@@ -17,7 +17,7 @@
 
 View Matrices (later also object rotation and movement) are done in compute shader **MObjectCS.hlsl**
 
-## Control Flow
+## Init Phase
 
 Example App mass2.cpp/.h used:
 
@@ -27,7 +27,7 @@ Example App mass2.cpp/.h used:
 
 
 ```C++
-	MassTest2::init();
+    MassTest2::init();
         objStore->setMaxObjectCount(NUM_METEOR + 2);
         objStore->init();
         objStore->gpuUploadPhaseStart();
@@ -47,18 +47,24 @@ Example App mass2.cpp/.h used:
 ```
 #### Texture Memory Layout after gpuUploadPhase
 
-| TextureInfo *House*   |  GPU Mem   |
-| ------------- | -----:|
-| texSRV      |  100 |
-| descriptorTable      |    500 |
-
-| TextureInfo *Meteor*   |  GPU Mem   |
-| ------------- | -----:|
-| texSRV      |  200 |
-| descriptorTable      |    600 |
+Example data for two textures loaded: *House* and *Meteor*
+(all addresses are fake numbers)
 
 
-| GPU Memory   |               |       | # Entries|GPU Mem Ref
+| TextureInfo *House*   
+| ------------- | ---  | -----:|
+|**Field Name** | **Type** | **GPU Address**  |
+| texSRV      |  ShaderResourceView|100 |
+| descriptorTable |  DescriptorTable   |    500 |
+
+| TextureInfo *Meteor*  
+| ------------- | ---  | -----:|
+|**Field Name** | **Type** | **GPU Address**  |
+| texSRV        |ShaderResourceView|  200 |
+| descriptorTable     |  DescriptorTable  |    600 |
+
+
+| GPU Memory   |               |       | # Entries|GPU Reference
 | -------------|:-------------:| -----:| --------:|--:
 ||||
 ||||
@@ -72,6 +78,29 @@ Example App mass2.cpp/.h used:
 ||||
 | 600      | DescriptorTable      ||  1|200
 
+## Update Phase
+
+```C++
+    MassTest2::update();
+        xapp().lights.update();
+        objStore->update();
+```
+### Constant Buffers
+
+```C++
+    MeshObjectStore::init()
+        dxManager.createConstantBuffer(1, maxObjects+1, sizeof(cbv), L"mesheffect_cbvsingle_resource");
+        dxManager.createConstantBufferSet(0, 1, 1, sizeof(CBV_CS), L"mesheffect_cs_cbv_set");
+        dxManager.createGraphicsExecutionEnv(pipelineState.Get());
+        dxManager.createUploadBuffers();
+        setSingleCBVMode(1, maxObjects+1, sizeof(cbv), L"mesheffect_cbvsingle_resource", true);
+```
+
+| ConstantBuffer|```vector<ComPtr<ID3D12Resource>> singleCBVResources```|  class DXManager
+| ------------- | ---  | -----:|
+|**Attribute** | **Type and Remarks** | **Usage in MeshObject**  |
+| singleObjectSize        |size_t, must be multiple of 16 Bytes|  256 |
+| maxThreads        |# Threads, each needs its own constant buffer|  1 |
 
 <!---
 

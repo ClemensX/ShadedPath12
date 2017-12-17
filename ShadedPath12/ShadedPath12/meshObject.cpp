@@ -82,8 +82,6 @@ XMMATRIX MeshObjectStore::calcWVP(XMMATRIX &toWorld, XMMATRIX &vp) {
 	return vp * toWorld;
 }
 
-unordered_map<UINT8*, UINT8*> adds;
-unordered_map<unsigned int, unsigned int> objNums;
 
 void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp, int frameIndex, int eyeNum) {
 	assert(mo->objectNum > 0); // not properly added to store
@@ -163,8 +161,6 @@ void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr
 void MeshObjectStore::update()
 {
 	if (xapp().isShutdownMode()) return;
-	adds.clear();
-	objNums.clear();
 	xapp().stats.start("meshStoreUpdate");
 	assert(this->maxObjects > 0);	// setting of max object count missing
 	int frameIndex = xapp().getCurrentBackBufferIndex();
@@ -176,7 +172,7 @@ void MeshObjectStore::update()
 	CBV my_cbv;
 	CBV *cbv = &my_cbv;
 	prepareDraw(&xapp().vr);
-	xapp().lights.update();
+	//xapp().lights.update();
 	if (!vr || true) {
 		frameEffectData[frameIndex].vr_eyesm[0] = vr_eyes;
 		XMMATRIX vp = cam->worldViewProjection();
@@ -199,13 +195,10 @@ void MeshObjectStore::update()
 				//bulkInfos[0].end = 3;
 				updatePart(bulkInfos[0], cbv, mov, vp, frameIndex);
 				frameEffectData[frameIndex].updateMaterial = false;
-				// TODO only copy once to compute buffer? find better way than this hack
-				static int count = 0;
-				count++;
 				auto valid = dxManager.objectStateLists[frameIndex].isValid();
 				if (!valid /*count < 14*/ || frameEffectData[frameIndex].updateConstBuffers) {
-					//Log("update const for " << frameIndex << endl);
-					//Log("  update: " << group.first.c_str() << " [" << bulkInfos[0].start << ".." << bulkInfos[0].end << "]" << endl);
+					Log("update const for frameIndex " << frameIndex << endl);
+					Log("  update group: " << group.first.c_str() << " [" << bulkInfos[0].start << ".." << bulkInfos[0].end << "]" << endl);
 					dxManager.copyToComputeBuffer(frameData[frameIndex]);
 					frameEffectData[frameIndex].updateConstBuffers = false;
 				}
