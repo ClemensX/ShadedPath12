@@ -170,13 +170,15 @@ void XApp::destroy()
 	//CloseHandle(fenceEvent);
 #ifdef _DEBUG
 	//ThrowIfFailed(DXGIGetDebugInterface1(0, ));
-	typedef HRESULT(__stdcall *fPtr)(const IID&, void**);
-	HMODULE hDll = GetModuleHandleW(L"dxgidebug.dll");
-	fPtr DXGIGetDebugInterface = (fPtr)GetProcAddress(hDll, "DXGIGetDebugInterface");
-	IDXGIDebug *pDxgiDebug;
-	DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**)&pDxgiDebug);
+	if (!disableDX12Debug) {
+		typedef HRESULT(__stdcall *fPtr)(const IID&, void**);
+		HMODULE hDll = GetModuleHandleW(L"dxgidebug.dll");
+		fPtr DXGIGetDebugInterface = (fPtr)GetProcAddress(hDll, "DXGIGetDebugInterface");
+		IDXGIDebug *pDxgiDebug;
+		DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**)&pDxgiDebug);
 
-	//pDxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+		//pDxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+	}
 
 #endif
 }
@@ -224,8 +226,10 @@ void XApp::init()
 			} else {
 				Log("WARNING: Could not enable GPU validation - ID3D12Debug1 controller not available" << endl);
 			}
+			HRESULT getAnalysis = DXGIGetDebugInterface1(0, __uuidof(pGraphicsAnalysis), reinterpret_cast<void**>(&pGraphicsAnalysis));
+		} else {
+			Log("WARNING: Could not get D3D12 debug interface - ID3D12Debug controller not available" << endl);
 		}
-		HRESULT getAnalysis = DXGIGetDebugInterface1(0, __uuidof(pGraphicsAnalysis), reinterpret_cast<void**>(&pGraphicsAnalysis));
 	}
 #endif
 
@@ -252,11 +256,15 @@ void XApp::init()
 	//// Pipeline 
 
 	ComPtr<IDXGIFactory4> factory;
-	ThrowIfFailed(CreateDXGIFactory2(0
+	UINT debugFlags = 0;
+	if (!disableDX12Debug) {
+		debugFlags = 0;
 #ifdef _DEBUG
-		| DXGI_CREATE_FACTORY_DEBUG
+		debugFlags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
-		, IID_PPV_ARGS(&factory)));
+	}
+
+	ThrowIfFailed(CreateDXGIFactory2(debugFlags, IID_PPV_ARGS(&factory)));
 
 	if (warp)
 	{
