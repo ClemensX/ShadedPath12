@@ -96,11 +96,18 @@ Example data for two textures loaded: *House* and *Meteor*
         setSingleCBVMode(1, maxObjects+1, sizeof(cbv), L"mesheffect_cbvsingle_resource", true);
 ```
 
-| ConstantBuffer|```vector<ComPtr<ID3D12Resource>> singleCBVResources```|  class DXManager
+| ConstantBuffer mesheffect_cbvsingle_resource|```vector<ComPtr<ID3D12Resource>> singleCBVResources```|  class DXManager
 | ------------- | ---  | -----:|
 |**Attribute** | **Type and Remarks** | **Usage in MeshObject**  |
 | singleObjectSize        |size_t, must be multiple of 16 Bytes|  256 |
 | maxThreads        |# Threads, each needs its own constant buffer|  1 |
+| slotSize | singleObjectSize --> multiple of 256|256
+|totalSize | | slotSize * (maxObjects + 1)
+
+| ConstantBuffer mesheffect_cs_cbv_set|```vector<ComPtr<ID3D12Resource>> singleCBVResources```|  class DXManager
+| ------------- | ---  | -----:|
+|**Attribute** | **Type and Remarks** | **Usage in MeshObject**  |
+|totalSize | constant buffer for compute shader |80 (256)
 
 <!---
 
