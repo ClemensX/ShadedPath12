@@ -126,14 +126,6 @@ void DXManager::createGraphicsExecutionEnv(ID3D12PipelineState *ps)
 {
 	assert(device != nullptr);
 	graphics_ps = ps;
-	// Describe and create a shader resource view (SRV) and unordered
-	// access view (UAV) descriptor heap.
-	D3D12_DESCRIPTOR_HEAP_DESC srvUavHeapDesc = {};
-	srvUavHeapDesc.NumDescriptors = FrameCount;
-	srvUavHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	srvUavHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	ThrowIfFailed(device->CreateDescriptorHeap(&srvUavHeapDesc, IID_PPV_ARGS(&srvUavHeap)));
-	NAME_D3D12_OBJECT(srvUavHeap);
 	for (int n = 0; n < this->frameCount; n++) {
 		// Create compute resources.
 		D3D12_COMMAND_QUEUE_DESC queueDesc = { D3D12_COMMAND_LIST_TYPE_DIRECT, 0, D3D12_COMMAND_QUEUE_FLAG_NONE };
@@ -143,62 +135,6 @@ void DXManager::createGraphicsExecutionEnv(ID3D12PipelineState *ps)
 		// Command lists are created in the recording state, but there is nothing
 		// to record yet. The main loop expects it to be closed, so close it now.
 		ThrowIfFailed(commandLists[n]->Close());
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srvDesc.Format = DXGI_FORMAT_UNKNOWN;
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-		srvDesc.Buffer.FirstElement = 0;
-		srvDesc.Buffer.NumElements = maxObjects;
-		srvDesc.Buffer.StructureByteStride = slotSize;
-		srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-
-		CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle0(srvUavHeap->GetCPUDescriptorHandleForHeapStart(), n, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-		device->CreateShaderResourceView(singleCBVResources[n].Get(), &srvDesc, srvHandle0);
-
-		D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-		uavDesc.Format = DXGI_FORMAT_UNKNOWN;
-		uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-		uavDesc.Buffer.FirstElement = 0;
-		uavDesc.Buffer.NumElements = maxObjects;
-		uavDesc.Buffer.StructureByteStride = slotSize;
-		uavDesc.Buffer.CounterOffsetInBytes = 0;
-		uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
-
-		CD3DX12_CPU_DESCRIPTOR_HANDLE uavHandle0(srvUavHeap->GetCPUDescriptorHandleForHeapStart(), n, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-		device->CreateUnorderedAccessView(singleCBVResources[n].Get(), nullptr, &uavDesc, uavHandle0);
-
-		// cbv heaps: (because unlimited array does not work for root CBVs we have to use descriptor tables
-		D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc = {};
-		cbvHeapDesc.NumDescriptors = 12;
-		cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		ThrowIfFailed(device->CreateDescriptorHeap(&cbvHeapDesc, IID_PPV_ARGS(&cbvHeap[n])));
-		NAME_D3D12_OBJECT(cbvHeap[n]);
-		// now set cbv and srv in this heap:
-		UINT increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-		// SRV is first entry in descriptor heap: (wrong entry - must be overwritten before draw()
-		int heapIndex = 0;
-		auto handle1 = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[n]->GetCPUDescriptorHandleForHeapStart());
-		handle1.Offset(heapIndex, increment);
-		device->CreateShaderResourceView(singleCBVResources[n].Get(), &srvDesc, handle1);
-		//// CBV is second entry
-		heapIndex = 1;
-		auto handle2 = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[n]->GetCPUDescriptorHandleForHeapStart());
-		handle2.Offset(heapIndex, increment);
-		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-		cbvDesc.BufferLocation = singleCBVResources[n]->GetGPUVirtualAddress();
-		//cbvDesc.BufferLocation += 512;
-		cbvDesc.SizeInBytes = 256;
-		device->CreateConstantBufferView(&cbvDesc, handle2);
-		// 2nd cbv
-		heapIndex = 2;
-		auto handle3 = CD3DX12_CPU_DESCRIPTOR_HANDLE(cbvHeap[n]->GetCPUDescriptorHandleForHeapStart());
-		handle3.Offset(heapIndex, increment);
-		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc2;
-		cbvDesc2.BufferLocation = singleCBVResources[n]->GetGPUVirtualAddress();
-		cbvDesc2.BufferLocation += 256;
-		cbvDesc2.SizeInBytes = 256;
-		device->CreateConstantBufferView(&cbvDesc2, handle3);
 	}
 }
 
