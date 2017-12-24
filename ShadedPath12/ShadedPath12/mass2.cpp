@@ -4,8 +4,8 @@
 
 #define NUM_METEORXXX 400000
 #define NUM_METEORX 10000
-#define NUM_METEORXX 5000
-#define NUM_METEOR 10
+#define NUM_METEOR 5000
+#define NUM_METEORXX 10
 
 #define NUM_THREADS 1
 
@@ -141,6 +141,7 @@ xapp().objectStore.loadObject(L"meteor_single.b", "Meteor1");
 		o->material.ambient = XMFLOAT4(1, 1, 1, 1);
 		o->material.specExp = 1.0f;       // no spec color
 		o->material.specIntensity = 0.0f; // no spec color
+		o->material.isLightSource = 0.0f; // no light source
 		o->alpha = 1.0;
 		//objStore->createDrawBundle(o);
 	}
@@ -212,6 +213,7 @@ void MassTest2::initMeteorField() {
 	for (auto & w : *grp) {
 		w.get()->material.specExp = 1.0f;       // no spec color
 		w.get()->material.specIntensity = 0.0f; // no spec color
+		w.get()->material.isLightSource = 0.0f; // no light source
 		w.get()->material.ambient = XMFLOAT4(1, 1, 1, 1);
 		//if (w.get()->objectNum == 100) {
 		//	w.get()->pos() = XMFLOAT3(1, 1, 1);
@@ -229,6 +231,7 @@ void MassTest2::initMeteorField() {
 		for (auto & w : *grp) {
 			w.get()->material.specExp = 1.0f;       // no spec color
 			w.get()->material.specIntensity = 0.0f; // no spec color
+			w.get()->material.isLightSource = 0.0f; // no light source
 			w.get()->material.ambient = XMFLOAT4(1, 1, 1, 1);
 		}
 	}
