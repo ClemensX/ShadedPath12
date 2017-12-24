@@ -120,7 +120,7 @@ Update in MeshObjectStore:
  * prepare compute shader by uploading constants: view projection matrix, # of objects and first objectNum to be used
  * run compute shader
 
-| MeshObject Layout|MeshObjectStore.groups   
+| MeshObject Layout|MeshObjectStore.groups | |
 | ------------- | ---  | -----:|
 |**Index in group** | **ObjectNum** | **Group Name**  |
 | 0      |  1|default |
