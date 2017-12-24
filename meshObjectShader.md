@@ -78,15 +78,9 @@ Example data for two textures loaded: *House* and *Meteor*
 ||||
 | 600      | DescriptorTable      ||  1|200
 
-## Update Phase
-
-```C++
-    MassTest2::update();
-        xapp().lights.update();
-        objStore->update();
-```
 ### Constant Buffers
 
+All buffers are created for each render frame [0..2], so real memory consumption is 3 times the sizes give below
 ```C++
     MeshObjectStore::init()
         dxManager.createConstantBuffer(1, maxObjects+1, sizeof(cbv), L"mesheffect_cbvsingle_resource");
@@ -109,17 +103,41 @@ Example data for two textures loaded: *House* and *Meteor*
 |**Attribute** | **Type and Remarks** | **Usage in MeshObject**  |
 |totalSize | constant buffer for compute shader |80 (256)
 
-<!---
+**constantBufferUpload:**
+ * big buffer for all singleCBVResources (all 3 frames)
+ * used to memcpy() changed object data to GPU
 
-| Tables        | Are           | Cool  |
-| ------------- |-------------:| -----:|
-| col 3 is      | right-aligned | $1600 |
-| col 2 is      | centered      |   $12 |
-| zebra stripes | are neat      |    $1 |
+## Update Phase
 
-Markdown | Less | Pretty
---- | --- | ---
-*Still* | `renders` | **nicely**
-1 | 2 | 3
+```C++
+    MassTest2::update();
+        xapp().lights.update();
+        objStore->update();
+```
+Update in MeshObjectStore:
+ * each group (*default, house, meteor*) is handled seprartely
+ * all group objects are in one contiguous area 
+ * prepare compute shader by uploading constants: view projection matrix, # of objects and first objectNum to be used
+ * run compute shader
 
--->
+| MeshObject Layout|MeshObjectStore.groups   
+| ------------- | ---  | -----:|
+|**Index in group** | **ObjectNum** | **Group Name**  |
+| 0      |  1|default |
+| 0      |  2|house |
+| 1      |  3|house |
+| 2      |  4|house |
+| 3      |  5|house |
+| 4      |  6|house |
+| 0      |  7|meteor |
+| 1      |  8|meteor |
+| 2      |  9|meteor |
+| 3      |  10|meteor |
+| 4      |  11|meteor |
+
+### Compute Shader
+
+* copy changed object constant data to GPU for compute shader usage
+* object data should only be copied once, then changed by compute shader as needed (currently not implemented - objects are fixed in pos and rot)
+* currently the update from CPU mem to GPU mem for object data is a complete copy for **all** objects
+* system keeps track if all objects in all groups are already copied to GPU. Then no more copy will be done
