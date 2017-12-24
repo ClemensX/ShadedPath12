@@ -51,13 +51,13 @@ Example data for two textures loaded: *House* and *Meteor*
 (all addresses are fake numbers)
 
 
-| TextureInfo *House*   
+| TextureInfo *House*   |||
 | ------------- | ---  | -----:|
 |**Field Name** | **Type** | **GPU Address**  |
 | texSRV      |  ShaderResourceView|100 |
 | descriptorTable |  DescriptorTable   |    500 |
 
-| TextureInfo *Meteor*  
+| TextureInfo *Meteor*  |||
 | ------------- | ---  | -----:|
 |**Field Name** | **Type** | **GPU Address**  |
 | texSRV        |ShaderResourceView|  200 |
