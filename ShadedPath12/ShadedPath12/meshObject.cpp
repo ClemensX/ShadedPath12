@@ -113,6 +113,8 @@ void MeshObjectStore::updateOne(CBV const *cbv_read, MeshObject *mo, XMMATRIX vp
 
 void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr<MeshObject>>* mov, XMMATRIX vp, int frameIndex, int eyeNum)
 {
+	// enable for test data:
+	/*
 	XMFLOAT4 t = XMFLOAT4(1,2,3,0);
 	XMVECTOR tv = XMLoadFloat4(&t);
 	XMVECTOR qv = XMQuaternionRotationRollPitchYawFromVector(tv);
@@ -131,7 +133,7 @@ void MeshObjectStore::updatePart(BulkDivideInfo bi, CBV * cbv, vector<unique_ptr
 	XMFLOAT3 pos = XMFLOAT3(1, -2, 3);
 	XMFLOAT3 rot = XMFLOAT3(0, 0, 0);
 	XMMATRIX wvp = MeshObject::calcToWorld(pos, rot);
-	XMStoreFloat4x4(&frameEffectData[frameIndex].cbvCS.vp, wvp);
+	XMStoreFloat4x4(&frameEffectData[frameIndex].cbvCS.vp, wvp); */
 
 	// now the real thing:
 	XMStoreFloat4x4(&frameEffectData[frameIndex].cbvCS.vp, vp);
@@ -168,10 +170,10 @@ void MeshObjectStore::update()
 
 	frameEffectData[frameIndex].camera = xapp().camera;
 
-	Camera *cam = &frameEffectData[frameIndex].camera;
+	Camera *cam = &frameEffectData[frameIndex].camera; // copy global camera to local
 	CBV my_cbv;
 	CBV *cbv = &my_cbv;
-	prepareDraw(&xapp().vr);
+	prepareDraw(&xapp().vr); // copy viewports and scissor rects to vr fields
 	//xapp().lights.update();
 	if (!vr || true) {
 		frameEffectData[frameIndex].vr_eyesm[0] = vr_eyes;
