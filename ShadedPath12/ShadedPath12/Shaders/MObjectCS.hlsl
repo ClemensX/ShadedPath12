@@ -229,5 +229,6 @@ void main( uint3 DTid : SV_DispatchThreadID )
 		float4x4 toWorld = calcToWorld(pos, rot);
 		float4x4 wvp = mul(toWorld, cbvCS.vp); // change order for matrix mult
 		cbvResult[tile].wvp = wvp;
+		cbvResult[tile].world = toWorld;
 	//}
 }
