@@ -141,3 +141,45 @@ Update in MeshObjectStore:
 * object data should only be copied once, then changed by compute shader as needed (currently not implemented - objects are fixed in pos and rot)
 * currently the update from CPU mem to GPU mem for object data is a complete copy for **all** objects
 * system keeps track if all objects in all groups are already copied to GPU. Then no more copy will be done
+
+```C++
+struct ObjectConstantBuffer { // offset
+	float4x4 wvp;        //   0
+	float4x4 world;      //  64
+	float3   cameraPos;  // 128
+	float    alpha;      // 140
+	Material material;   // 144 (size 32) --> total 176
+	float4 fill[5];      // be aware of packing rules!! use float4 instead of float
+}; // total 32 + 144 = 176 ( + 80 = 256)
+// named ObjectConstantBuffer for historic reasons, is UAV here, really
+RWStructuredBuffer<ObjectConstantBuffer> cbvResult	: register(u0);	// UAV
+
+struct CSConstantBuffer { // offset
+	float4x4 vp;        //   0
+	uint     num_objects; // number of objects used in this call)
+	uint     start_objects; // index of first object)
+	float    fill[2];
+};
+CSConstantBuffer cbvCS: register(b0);
+```
+
+Compute shader operates on an array of ObjectConstantBuffer instances.
+One slot for each object with index == objectNum
+
+**Input:**
+ * vp: ViewProjection of current camera position
+ * position: get from cbvResult.cameraPos (hack, will be moved to input buffer)
+ * rotation: fixed in shader code (will be moved to input buffer)
+
+**Output:**
+ * cbvResult.wvp: World View Projection Matrix
+ * cbvResult.world: World Matrix (for use in normal calculations)
+
+### Vertex Shader
+
+simple shader that just applies world and wvp to all vertices
+
+### Pixel Shader
+
+calculate light and final pixel color
+
