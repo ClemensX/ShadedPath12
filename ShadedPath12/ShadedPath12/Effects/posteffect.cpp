@@ -377,6 +377,7 @@ void PostEffect::postDraw() {
 		//	D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, D3D12_RESOURCE_BARRIER_FLAG_NONE));
 		resourceStateHelper->toState(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, commandLists[frameIndex].Get());
 		ID3D12Resource *resource = xapp().renderTargets[frameIndex].Get();
+		//resource->SetName(L"current_renderTarget");
 		resourceStateHelper->toState(resource, D3D12_RESOURCE_STATE_COPY_DEST, commandLists[frameIndex].Get());
 		CD3DX12_TEXTURE_COPY_LOCATION Src(m_texture.Get(), 0);
 		CD3DX12_TEXTURE_COPY_LOCATION Dst(resource, 0);

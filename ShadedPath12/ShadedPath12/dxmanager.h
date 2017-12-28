@@ -123,6 +123,7 @@ public:
 	//ID3D12CommandAllocator *getGraphicsCommandAllocator() { return commandAllocators[currentFrame].Get(); };
 	ComPtr<ID3D12CommandAllocator> &getGraphicsCommandAllocatorComPtr() { return commandAllocators[currentFrame]; };
 	ComPtr<ID3D12GraphicsCommandList> &getGraphicsCommandListComPtr() { return commandLists[currentFrame]; };
+	ComPtr<ID3D12CommandQueue> commandQueues[3];
 private:
 	// FrameCount should be a copy of XApp::FrameCount, but we don't want to reference XApp from here
 	// That the size is the same as in XApp is checked in intializer
@@ -139,7 +140,7 @@ private:
 
 	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	// Graphics objects:
-	ComPtr<ID3D12CommandQueue> commandQueues[FrameCount];
+	
 	ComPtr<ID3D12CommandAllocator> commandAllocators[FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> commandLists[FrameCount];
 	ID3D12PipelineState *graphics_ps;
@@ -148,7 +149,7 @@ private:
 	ComPtr<ID3D12PipelineState> computePipelineState;
 	ComPtr<ID3D12RootSignature> computeRootSignature;
 	ComPtr<ID3D12CommandAllocator> computeAllocator[FrameCount];
-	ComPtr<ID3D12CommandQueue> computeCommandQueue[FrameCount];
+	//ComPtr<ID3D12CommandQueue> computeCommandQueue[FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> computeCommandList[FrameCount];
 
 	ID3D12Device *device = nullptr;

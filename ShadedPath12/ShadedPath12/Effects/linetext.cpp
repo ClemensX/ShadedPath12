@@ -338,6 +338,7 @@ int Linetext::addTextLine(XMFLOAT4 pos, string text, Plane plane) {
 }
 
 void Linetext::changeTextLine(int linenum, string text) {
+	if (xapp().disableLineShaders) return;
 	assert(linenum >= 0 && linenum < (int)lines.size());
 	Line oldline = lines.at(linenum);
 	Line newline;

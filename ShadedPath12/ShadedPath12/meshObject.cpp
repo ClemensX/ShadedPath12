@@ -581,11 +581,16 @@ void MeshObjectStore::postDraw()
 	int frameIndex = xapp().getCurrentBackBufferIndex();
 
 	ThrowIfFailed(dxManager.getGraphicsCommandListComPtr()->Close());
-	ID3D12CommandQueue* pCommandQueue = computeCommandQueue[frameIndex].Get();
+	ID3D12CommandQueue* pCommandQueue = dxManager.commandQueues[frameIndex].Get();
+	// TODO: in non-vr mode we draw directly to the back buffer which prevents using another queue
+	// so we need to switch to the main queue for executing the command list
+	// D3D12 ERROR: ID3D12CommandQueue::ExecuteCommandLists: A command list, which writes to a swapchain back buffer,
+	// may only be executed on the command queue associated with that buffer. [ STATE_SETTING ERROR #907: EXECUTECOMMANDLISTS_WRONGSWAPCHAINBUFFERREFERENCE]
+	if (!vr) pCommandQueue = xapp().commandQueue.Get();
+	//Log("queue = " << pCommandQueue << endl);
 	// Execute the command list.
 	ID3D12CommandList* ppCommandLists[] = { dxManager.getGraphicsCommandListComPtr().Get() };
-	xapp().commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists); // TODO use effect local queue here? 
-	//pCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	pCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 }
 
 void MeshObjectStore::drawInternal(BulkDivideInfoExt * bi, int eyeNum)
