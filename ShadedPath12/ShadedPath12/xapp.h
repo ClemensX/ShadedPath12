@@ -152,7 +152,7 @@ public:
 
 	int getCurrentBackBufferIndex() {
 		int frameIndex = 0;
-		if (!ovrRendering) {
+		if (!ovrRendering || true) {
 			frameIndex = swapChain->GetCurrentBackBufferIndex();
 		} else {
 			frameIndex = vr.getCurrentFrameBufferIndex();

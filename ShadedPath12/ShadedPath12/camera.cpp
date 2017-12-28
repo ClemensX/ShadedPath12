@@ -86,8 +86,8 @@ XMMATRIX Camera::worldViewProjection() {
 
 // called in OVR mode only:
 XMMATRIX Camera::worldViewProjection(XMFLOAT4X4 &proj_ovr, XMFLOAT4X4 &view_ovr) {
+	if (!ovrCamera) return worldViewProjection();
 	XMMATRIX p = XMLoadFloat4x4(&proj_ovr);
-	assert(ovrCamera);
 	XMMATRIX v = XMLoadFloat4x4(&view_ovr);
 	XMMATRIX wvp = v*p;
 	return XMMatrixTranspose(wvp);

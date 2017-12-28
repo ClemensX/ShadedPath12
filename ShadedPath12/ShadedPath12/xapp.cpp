@@ -461,6 +461,10 @@ void XApp::init()
 
 	camera.ovrCamera = true;
 	if (!ovrRendering) camera.ovrCamera = false;
+#if !defined(_OVR_)
+	// vr camera does not make sense without ovr enabled
+	camera.ovrCamera = false;
+#endif
 
 	gametime.init(1); // init to real time
 	camera.setSpeed(1.0f);
@@ -550,8 +554,8 @@ void XApp::calcBackbufferSizeAndAspectRatio()
 	backbufferHeight = 1080;
 	backbufferWidth = 1920;
 	if (ovrRendering) {
-		backbufferHeight = vr.getHeight();
-		backbufferWidth = vr.getWidth();
+		if (vr.getHeight() > 0) backbufferHeight = vr.getHeight();
+		if (vr.getWidth() > 0) backbufferWidth = vr.getWidth();
 	}
 	aspectRatio = static_cast<float>(backbufferWidth) / static_cast<float>(backbufferHeight);
 	viewport.MinDepth = 0.0f;

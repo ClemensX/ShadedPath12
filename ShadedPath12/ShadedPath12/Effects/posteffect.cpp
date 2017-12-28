@@ -111,7 +111,7 @@ void PostEffect::init()
 		ID3D12Resource * resource = xapp().renderTargets[n].Get();;
 		resourceStateHelper->add(resource, D3D12_RESOURCE_STATE_PRESENT);
 		// vr.texResources only needed in VR mode:
-		if (xapp().ovrRendering) {
+		if (xapp().ovrRendering && xapp().vr.texResource.size() > n) {
 			resource = xapp().vr.texResource[n];
 			resourceStateHelper->add(resource, D3D12_RESOURCE_STATE_PRESENT);
 		} 
@@ -251,7 +251,7 @@ void PostEffect::preDraw() {
 
 	// Indicate that the back buffer will now be used as pixel shader input.
 	ID3D12Resource *resource;
-	if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
+	if (!xapp().ovrRendering || xapp().vr.texResource.size() == 0) resource = xapp().renderTargets[frameIndex].Get();
 	else resource = xapp().vr.texResource[frameIndex];
 	D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
 	//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
@@ -280,7 +280,7 @@ void PostEffect::preDraw() {
 	// Indicate that the back buffer will be used as a render target.
 	//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	if (!xapp().ovrRendering) {
+	if (!xapp().ovrRendering || xapp().vr.texResource.size() == 0) {
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
 		commandLists[frameIndex]->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 	} else {
@@ -295,7 +295,7 @@ void PostEffect::draw()
 	preDraw();
 	commandLists[frameIndex]->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	ID3D12Resource *resource;
-	if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
+	if (!xapp().ovrRendering || xapp().vr.texResource.size() == 0) resource = xapp().renderTargets[frameIndex].Get();
 	else resource = xapp().vr.texResource[frameIndex];
 	if (true || xapp().ovrMirror) {
 		//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST,
@@ -357,7 +357,7 @@ void PostEffect::postDraw() {
 
 	// Indicate that the back buffer will now be used to present.
 	ID3D12Resource *resource;
-	if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
+	if (!xapp().ovrRendering || xapp().vr.texResource.size() == 0) resource = xapp().renderTargets[frameIndex].Get();
 	else resource = xapp().vr.texResource[frameIndex];
 	D3D12_RESOURCE_DESC rDesc = resource->GetDesc();
 	//commandLists[frameIndex]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_PRESENT,

@@ -570,7 +570,7 @@ void MeshObjectStore::preDraw()
 	//m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	dxManager.getGraphicsCommandListComPtr()->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 	ID3D12Resource *resource;
-	if (!vr) resource = xapp().renderTargets[frameIndex].Get();
+	if (!vr || xapp().vr.texResource.size() == 0) resource = xapp().renderTargets[frameIndex].Get();
 	else resource = xapp().vr.texResource[frameIndex];
 	xapp().handleRTVClearing(dxManager.getGraphicsCommandListComPtr().Get(), rtvHandle, dsvHandle, resource);
 
@@ -586,7 +586,7 @@ void MeshObjectStore::postDraw()
 	// so we need to switch to the main queue for executing the command list
 	// D3D12 ERROR: ID3D12CommandQueue::ExecuteCommandLists: A command list, which writes to a swapchain back buffer,
 	// may only be executed on the command queue associated with that buffer. [ STATE_SETTING ERROR #907: EXECUTECOMMANDLISTS_WRONGSWAPCHAINBUFFERREFERENCE]
-	if (!vr) pCommandQueue = xapp().commandQueue.Get();
+	if (!vr || xapp().vr.texResource.size() == 0) pCommandQueue = xapp().commandQueue.Get();
 	//Log("queue = " << pCommandQueue << endl);
 	// Execute the command list.
 	ID3D12CommandList* ppCommandLists[] = { dxManager.getGraphicsCommandListComPtr().Get() };

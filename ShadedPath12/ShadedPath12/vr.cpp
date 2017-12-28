@@ -268,6 +268,10 @@ void VR_Eyes::adjustEyeMatrix(XMMATRIX & m, Camera * cam, int eyeNum, VR* vr)
 	// camera update
 	//cam->projectionTransform(this, eyeNum);
 	m = cam->worldViewProjection(projOVR[eyeNum], viewOVR[eyeNum]);
+	// for disabled oculus rendering just copy regular camera wvp:
+	if (vr->texResource.size() == 0) {
+		m = xapp().camera.worldViewProjection();
+	}
 }
 
 void VR::adjustEyeMatrix(XMMATRIX &m, Camera *cam) {
@@ -453,7 +457,7 @@ void VR::submitFrame()
 	// Increment to use next texture, just before writing
 	int currentIndex;
 	ovr_GetTextureSwapChainCurrentIndex(session, textureSwapChain, &currentIndex);
-	assert(currentIndex == frameIndex);
+	//assert(currentIndex == frameIndex);
 	xapp->lastPresentedFrame = frameIndex;
 	//xapp->d3d11On12Device->AcquireWrappedResources(xapp->wrappedBackBuffers[frameIndex].GetAddressOf(), 1);
 	//xapp->d3d11DeviceContext->CopyResource(xapp->wrappedTextures[currentIndex].Get(), xapp->wrappedBackBuffers[frameIndex].Get());
@@ -461,12 +465,12 @@ void VR::submitFrame()
 	//xapp->d3d11DeviceContext->Flush();
 	//xapp->device->
 	//ovr_CommitTextureSwapChain(session, textureSwapChain);
-	ovr_CommitTextureSwapChain(session, textureSwapChain);
+	//ovr_CommitTextureSwapChain(session, textureSwapChain);
 	/*	pTextureSet->CurrentIndex = (pTextureSet->CurrentIndex + 1) % pTextureSet->TextureCount;
 	*/
 	// Submit frame with one layer we have.
 	ovrLayerHeader* layers = &layer.Header;
-	ovrResult       result = ovr_SubmitFrame(session, 0, nullptr, &layers, 1);
+	ovrResult       result = ovrSuccess; //ovr_SubmitFrame(session, 0, nullptr, &layers, 1);
 	bool isVisible = (result == ovrSuccess);
 }
 
