@@ -177,6 +177,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="sample1.h" />
     <ClInclude Include="sound.h" />
+    <ClInclude Include="stats.h" />
     <ClInclude Include="texture.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="vr.h" />
@@ -194,6 +195,7 @@
     <ClCompile Include="Effects\effectbase.cpp" />
     <ClCompile Include="gametime.cpp" />
     <ClCompile Include="sample1.cpp" />
+    <ClCompile Include="stats.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="winmain.cpp" />
     <ClCompile Include="stdafx.cpp">

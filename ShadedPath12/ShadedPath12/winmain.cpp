@@ -129,6 +129,8 @@ void handleRawInput(LPARAM lParam, XApp *xapp)
 	delete[] lpb;
 }
 
+XApp *xapp = nullptr;
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -148,8 +150,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	wstring wcmd = wstring(lpCmdLine);
 	string cmd = w2s(wcmd);
-	xapp().commandline = cmd;
-	xapp().parseCommandLine(xapp().commandline);
+	xapp = XApp::getInstance();
+	xapp->commandline = cmd;
+	xapp->parseCommandLine(xapp->commandline);
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -174,19 +177,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			DispatchMessage(&msg);
 
 			if (msg.message == WM_QUIT) {
-				xapp().setShutdownMode();
+				xapp->setShutdownMode();
 			}
 
-			if (xapp().isShudownFinished())
+			if (xapp->isShudownFinished())
 				break;
 		} else {
-			if (xapp().isShudownFinished())
+			if (xapp->isShudownFinished())
 				break;
-			xapp().update();
-			xapp().draw();
+			xapp->update();
+			xapp->draw();
 		}
 	}
-	xapp().destroy();
+	xapp->destroy();
 
 	// debug heap test
 	//_RPTF0(_CRT_WARN, "heap report test\n");
@@ -242,23 +245,23 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	hInst = hInstance; // Store instance handle in our global variable
 
     // Create the main window. 
-    string name = xapp().parameters["app"];
+    string name = xapp->parameters["app"];
     if (name.length() > 0) {
-		xapp().setRunningApp(name);
+		xapp->setRunningApp(name);
     }
-    Log("++++ " << xapp().parameters["w"].c_str() << endl);
-    bool isFullscreen = xapp().getBoolParam("fullscreen");
+    Log("++++ " << xapp->parameters["w"].c_str() << endl);
+    bool isFullscreen = xapp->getBoolParam("fullscreen");
     Log("isFullscreen: " << isFullscreen << endl);
-    int w = xapp().getIntParam("w", CW_USEDEFAULT);
-    int h = xapp().getIntParam("h", CW_USEDEFAULT);
-	xapp().ovrRendering = xapp().getBoolParam("vr");
-    Log("ovrRendering: " << xapp().ovrRendering << endl);
-	//xapp().vr.enabled = xapp().ovrRendering;  // vr stays off if this is commented - even if -vr command line is set
+    int w = xapp->getIntParam("w", CW_USEDEFAULT);
+    int h = xapp->getIntParam("h", CW_USEDEFAULT);
+	xapp->ovrRendering = xapp->getBoolParam("vr");
+    Log("ovrRendering: " << xapp->ovrRendering << endl);
+	//xapp->vr.enabled = xapp->ovrRendering;  // vr stays off if this is commented - even if -vr command line is set
 
-	xapp().warp = xapp().getBoolParam("warp", false);
-	xapp().disableDX11Debug = xapp().getBoolParam("disableDX11Debug", false);
-	xapp().disableDX12Debug = xapp().getBoolParam("disableDX12Debug", false);
-	xapp().disableLineShaders = xapp().getBoolParam("disableLineShaders", false);
+	xapp->warp = xapp->getBoolParam("warp", false);
+	xapp->disableDX11Debug = xapp->getBoolParam("disableDX11Debug", false);
+	xapp->disableDX12Debug = xapp->getBoolParam("disableDX12Debug", false);
+	xapp->disableLineShaders = xapp->getBoolParam("disableLineShaders", false);
 	
     int style;
     if (isFullscreen) {
@@ -275,8 +278,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
-   xapp().setHWND(hWnd);
-   xapp().init();
+   xapp->setHWND(hWnd);
+   xapp->init();
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
@@ -299,7 +302,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
 	case WM_INPUT:
-		handleRawInput(lParam, &xapp());
+		handleRawInput(lParam, xapp);
 		return 0;
 	case WM_COMMAND:
         {

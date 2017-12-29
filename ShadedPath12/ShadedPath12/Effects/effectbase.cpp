@@ -10,7 +10,7 @@ void EffectBase::createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> qu
 
 void EffectBase::waitForSyncPoint(FrameResource & f)
 {
-	//	int frameIndex = xapp().getCurrentBackBufferIndex();
+	//	int frameIndex = xapp->getCurrentBackBufferIndex();
 	UINT64 completed = f.fence->GetCompletedValue();
 	//Log("ev start " << frameIndex << " " << completed << " " << f.fenceValue << endl);
 	if (completed == -1) {
@@ -31,7 +31,7 @@ void EffectBase::waitForSyncPoint(FrameResource & f)
 void EffectBase::createConstantBuffer(size_t s, wchar_t * name)
 {
 	UINT cbvSize = calcConstantBufferSize((UINT)s);
-	//ThrowIfFailed(xapp().device->CreateCommittedResource(
+	//ThrowIfFailed(xapp->device->CreateCommittedResource(
 	//	&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 	//	D3D12_HEAP_FLAG_NONE, // do not set - dx12 does this automatically depending on resource type
 	//	&CD3DX12_RESOURCE_DESC::Buffer(cbvSize),
@@ -49,10 +49,10 @@ D3D12_GPU_VIRTUAL_ADDRESS EffectBase::getCBVVirtualAddress(int frame, int thread
 	// TODO correction for OVR mode
 	//assert(XApp::FrameCount*thread + frame <= singleCBVResources);
 	UINT64 plus = slotSize * objectIndex;
-	if (xapp().ovrRendering) {
+	if (xapp->ovrRendering) {
 		plus *= 2; // adjust for two eyes
 	}
-	if (xapp().ovrRendering && eyeNum == 1) {
+	if (xapp->ovrRendering && eyeNum == 1) {
 		plus += slotSize;
 	}
 	//UINT64 va = singleCBVResources[XApp::FrameCount*thread + frame]->GetGPUVirtualAddress() + plus;
@@ -69,10 +69,10 @@ UINT8* EffectBase::getCBVUploadAddress(int frame, int thread, UINT objectIndex, 
 		return this->cbvGPUDest;
 	}
 	UINT64 plus = slotSize * objectIndex;
-	if (xapp().ovrRendering) {
+	if (xapp->ovrRendering) {
 		plus *= 2; // adjust for two eyes
 	}
-	if (xapp().ovrRendering && eyeNum == 1) {
+	if (xapp->ovrRendering && eyeNum == 1) {
 		plus += slotSize;
 	}
 	//Log("vup " << (mem + plus) << endl);
@@ -88,10 +88,10 @@ UINT8* EffectBase::getMemUploadAddress(int frame, int thread, UINT objectIndex, 
 	//	return this->cbvGPUDest;
 	//}
 	UINT64 plus = slotSize * objectIndex;
-	if (xapp().ovrRendering) {
+	if (xapp->ovrRendering) {
 		plus *= 2; // adjust for two eyes
 	}
-	if (xapp().ovrRendering && eyeNum == 1) {
+	if (xapp->ovrRendering && eyeNum == 1) {
 		plus += slotSize;
 	}
 	//Log("vup " << (mem + plus) << endl);
@@ -106,9 +106,10 @@ void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSiz
 	D3D12_VERTEX_BUFFER_VIEW &vertexBufferView
 	)
 {
-	int frameIndex = xapp().getCurrentBackBufferIndex();
+	XApp *xapp = XApp::getInstance();
+	int frameIndex = xapp->getCurrentBackBufferIndex();
 	UINT vertexBufferSize = (UINT)bufferSize;
-	//ThrowIfFailed(xapp().device->CreateCommittedResource(
+	//ThrowIfFailed(xapp->device->CreateCommittedResource(
 	//	&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 	//	D3D12_HEAP_FLAG_NONE,
 	//	&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
@@ -118,7 +119,7 @@ void EffectBase::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSiz
 	//wstring vbName = wstring(L"vertexBuffer_") + baseName;
 	//vertexBuffer.Get()->SetName(vbName.c_str());
 
-	//ThrowIfFailed(xapp().device->CreateCommittedResource(
+	//ThrowIfFailed(xapp->device->CreateCommittedResource(
 	//	&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 	//	D3D12_HEAP_FLAG_NONE,
 	//	&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
@@ -156,9 +157,10 @@ void EffectBase::createAndUploadIndexBuffer(size_t bufferSize, void *data, ID3D1
 	D3D12_INDEX_BUFFER_VIEW &indexBufferView
 	)
 {
-	int frameIndex = xapp().getCurrentBackBufferIndex();
+	XApp *xapp = XApp::getInstance();
+	int frameIndex = xapp->getCurrentBackBufferIndex();
 	UINT indexBufferSize = (UINT)bufferSize;
-	//ThrowIfFailed(xapp().device->CreateCommittedResource(
+	//ThrowIfFailed(xapp->device->CreateCommittedResource(
 	//	&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 	//	D3D12_HEAP_FLAG_NONE,
 	//	&CD3DX12_RESOURCE_DESC::Buffer(indexBufferSize),
@@ -168,7 +170,7 @@ void EffectBase::createAndUploadIndexBuffer(size_t bufferSize, void *data, ID3D1
 	//wstring ibName = wstring(L"indexBuffer_") + baseName;
 	//indexBuffer.Get()->SetName(ibName.c_str());
 
-	//ThrowIfFailed(xapp().device->CreateCommittedResource(
+	//ThrowIfFailed(xapp->device->CreateCommittedResource(
 	//	&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 	//	D3D12_HEAP_FLAG_NONE,
 	//	&CD3DX12_RESOURCE_DESC::Buffer(indexBufferSize),

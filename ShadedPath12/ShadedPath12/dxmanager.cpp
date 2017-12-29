@@ -1,5 +1,12 @@
 #include "stdafx.h"
 
+// create manager for number of frames
+DXManager::DXManager(int frameCount) {
+	assert(frameCount == FrameCount);
+	this->frameCount = frameCount;
+	xapp = XApp::getInstance();
+};
+
 void DXManager::createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name) {
 	assert(maxObjects > 0);
 	this->maxObjects = maxObjects;
@@ -11,7 +18,7 @@ void DXManager::createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t si
 	totalSize = slotSize * maxObjects;
 	totalSize = calcConstantBufferSize((UINT)totalSize);
 	assert(totalSize == calcConstantBufferSize((UINT)totalSize));
-	if (xapp().ovrRendering) totalSize *= 2; // TODO: really needed?
+	if (xapp->ovrRendering) totalSize *= 2; // TODO: really needed?
 	for (unsigned int i = 0; i < this->frameCount * maxThreads; i++) {
 		ComPtr<ID3D12Resource> t;
 		singleCBVResources.push_back(move(t));
@@ -67,7 +74,7 @@ void DXManager::createConstantBufferSet(UINT setNum, UINT maxThreads, UINT maxOb
 	UINT totalSize = slotSize * maxObjects;
 	totalSize = calcConstantBufferSize((UINT)totalSize);
 	assert(totalSize == calcConstantBufferSize((UINT)totalSize));
-	if (xapp().ovrRendering) totalSize *= 2; // TODO: really needed?
+	if (xapp->ovrRendering) totalSize *= 2; // TODO: really needed?
 	setSize = this->frameCount * maxThreads;
 	for (unsigned int i = setSize * setNum + 0; i < setSize * (setNum+1); i++) {
 		ComPtr<ID3D12Resource> t;
@@ -141,10 +148,10 @@ void DXManager::createGraphicsExecutionEnv(ID3D12PipelineState *ps)
 UINT64 DXManager::getOffsetInConstantBuffer(UINT objectIndex, int eyeNum)
 {
 	UINT64 plus = slotSize * objectIndex;
-	if (xapp().ovrRendering) {
+	if (xapp->ovrRendering) {
 		plus *= 2; // adjust for two eyes
 	}
-	if (xapp().ovrRendering && eyeNum == 1) {
+	if (xapp->ovrRendering && eyeNum == 1) {
 		plus += slotSize;
 	}
 	return  plus;
@@ -190,7 +197,7 @@ void DXManager::copyToComputeBuffer(FrameResource & f)
 	EffectBase::createSyncPoint(f, commandQueues[currentFrame]);
 	EffectBase::waitForSyncPoint(f);
 	// signal updated const buffer: only objects already updated in GPU will be ok in compute buffer
-	if (!xapp().ovrRendering)
+	if (!xapp->ovrRendering)
 		assert(maxObjects == totalSize / slotSize);
 	else 
 		assert(maxObjects == (totalSize/2) / slotSize);

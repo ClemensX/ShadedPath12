@@ -5,7 +5,7 @@
 Sample1::Sample1() : XAppBase()
 {
 	myClass = string(typeid(*this).name());
-	xapp().registerApp(myClass, this);
+	xapp->registerApp(myClass, this);
 }
 
 
@@ -20,7 +20,7 @@ string Sample1::getWindowTitle() {
 void Sample1::init()
 {
 	Log("app init()" << endl);
-	float aspectRatio = xapp().aspectRatio;
+	float aspectRatio = xapp->aspectRatio;
 
 	// initialize game time to real time:
 	gameTime.init(1);
@@ -28,10 +28,10 @@ void Sample1::init()
 
 	float textSize = 0.5f;
 	float lineHeight = 2 * textSize;
-	xapp().world.setWorldSize(2048.0f, 382.0f, 2048.0f);
+	xapp->world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 
 
-	Grid *g = xapp().world.createWorldGrid(10.0f, -1.65f);
+	Grid *g = xapp->world.createWorldGrid(10.0f, -1.65f);
 	XMFLOAT3 myPoints[] = {
 		XMFLOAT3(0.1f, 0.1f, 0.1f)
 	};
@@ -52,18 +52,18 @@ void Sample1::update()
 		//if (xapp().pGraphicsAnalysis != nullptr) xapp().pGraphicsAnalysis->BeginCapture();
 		//Sleep(1000);
 
-		float aspectRatio = xapp().aspectRatio;
+		float aspectRatio = xapp->aspectRatio;
 		// add all intializer objects to vector:
 	}
 	// update info text:
 	string fr("Frame ");
 	stringstream ss;
-	ss << xapp().getFramenum();
+	ss << xapp->getFramenum();
 	fr.append(ss.str());
 
 	string fps_str("FPS ");
 	stringstream sss;
-	sss << xapp().fps;
+	sss << xapp->fps;
 	fps_str.append(sss.str());
 	// WVP is now updated automatically during draw()
 	//LinesEffect::CBV c;

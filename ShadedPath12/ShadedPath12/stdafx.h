@@ -188,6 +188,7 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 //#include "worldObject.h"
 //#include "vr.h"
 #include "applicationWindow.h"
+#include "stats.h"
 #include "xapp.h"
 #include "Effects\effectbase.h"
 //#include "Effects\lines.h"

@@ -2,6 +2,7 @@
 #include "xapp.h"
 
 XAppBase::XAppBase() {
+	xapp = XApp::getInstance();
 }
 
 XAppBase::~XAppBase() {
@@ -32,6 +33,8 @@ XApp::XApp() : /*camera(),*/ world(this) /*, vr(this)*/
 	mouseDx = 0;
 	mouseDy = 0;
 	framenum = 0;
+	appWindow.init(this);
+	stats.init(this);
 	//objectStore.xapp = this;
 	//hud.setXApp(this);
 }
@@ -129,7 +132,7 @@ void XApp::update() {
 }
 
 void XApp::draw() {
-	int frameIndex = xapp().getCurrentBackBufferIndex();
+	int frameIndex = getCurrentBackBufferIndex();
 	if (ovrRendering) {
 		//vr.startFrame();
 	}
@@ -149,9 +152,9 @@ void XApp::draw() {
 	if (ovrRendering) {
 		//vr.endFrame();
 		if (ovrMirror) {
-			int frameIndex = xapp().getCurrentBackBufferIndex();
+			int frameIndex = getCurrentBackBufferIndex();
 			lastPresentedFrame = frameIndex;
-			appWindow->present();
+			appWindow.present();
 			//ThrowIfFailedWithDevice(swapChain->Present(0, 0), xapp().device.Get());
 		}
 	}
@@ -273,19 +276,19 @@ void XApp::init()
 		ThrowIfFailed(factory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
 
 		// if this fails in debug run: enable win 10 dev mode
-		//ThrowIfFailed(D3D12CreateDevice(
-		//	warpAdapter.Get(),
-		//	D3D_FEATURE_LEVEL_11_0,
-		//	IID_PPV_ARGS(&device)
-		//	));
+		ThrowIfFailed(D3D12CreateDevice(
+			warpAdapter.Get(),
+			D3D_FEATURE_LEVEL_11_0,
+			IID_PPV_ARGS(&device)
+			));
 	}
 	else {
 		// if this fails in debug run: enable win 10 dev mode and/or disable d3d12 debug layer via command line parameter -disableDX12Debug 
-		//ThrowIfFailed(D3D12CreateDevice(
-		//	nullptr,
-		//	D3D_FEATURE_LEVEL_11_0,
-		//	IID_PPV_ARGS(&device)
-		//	));
+		ThrowIfFailed(D3D12CreateDevice(
+			nullptr,
+			D3D_FEATURE_LEVEL_11_0,
+			IID_PPV_ARGS(&device)
+			));
 	}
 
 	// disable auto alt-enter fullscreen switch (does leave an unresponsive window during debug sessions)
@@ -368,7 +371,7 @@ void XApp::init()
 
 void XApp::initPakFiles()
 {
-	wstring binFile = xapp().findFile(L"texture01.pak", XApp::TEXTUREPAK, false);
+	wstring binFile = findFile(L"texture01.pak", XApp::TEXTUREPAK, false);
 	if (binFile.size() == 0) {
 		Log("pak file texture01.pak not found!" << endl);
 		return;
@@ -642,11 +645,11 @@ void XApp::frameFinished() {
 // global instance:
 static XApp *xappPtr = nullptr;
 
-XApp& xapp() {
+XApp* XApp::getInstance() {
 	if (xappPtr == nullptr) {
 		xappPtr = new XApp();
 	}
-	return *xappPtr;
+	return xappPtr;
 }
 
 void xappDestroy() {
@@ -673,86 +676,3 @@ void XApp::handleRTVClearing(ID3D12GraphicsCommandList * commandList, D3D12_CPU_
 	}
 }
 
-void Stats::startUpdate(GameTime &gameTime)
-{
-	long long framenum = xapp().getFramenum();
-	if (frameNumStartGathering <= framenum && framenum < frameNumStartGathering + numFramesGathered) {
-		LARGE_INTEGER qwTime;
-		QueryPerformanceCounter(&qwTime);
-		LONGLONG now = qwTime.QuadPart;
-		started[framenum-frameNumStartGathering] = now;
-	}
-}
-
-void Stats::startDraw(GameTime &gameTime)
-{
-}
-
-void Stats::endUpdate(GameTime &gameTime)
-{
-}
-
-void Stats::endDraw(GameTime &gameTime)
-{
-	long long framenum = xapp().getFramenum();
-	if (frameNumStartGathering <= framenum && framenum < frameNumStartGathering + numFramesGathered) {
-		LARGE_INTEGER qwTime;
-		QueryPerformanceCounter(&qwTime);
-		LONGLONG now = qwTime.QuadPart;
-		ended[framenum - frameNumStartGathering] = now;
-	}
-}
-
-Stats::~Stats()
-{
-	//unsigned int hwc = thread::hardware_concurrency;
-	Log(" HW concurrency: " << thread::hardware_concurrency() << endl);
-	for (const auto &si : statTopics) {
-		const StatTopic *st = &si.second;
-		Log("" << getInfo(si.first));
-	}
-	//for (int i = 0; i < numFramesGathered; i++) {
-	//	Log("stat frame " << frameNumStartGathering + i << " " << started[i] - started[0] << " " << ended[i] - started[0] << endl);
-	//}
-}
-
-long long Stats::getNow() {
-	LARGE_INTEGER qwTime;
-	QueryPerformanceCounter(&qwTime);
-	LONGLONG now = qwTime.QuadPart;
-	return now;
-}
-
-wstring Stats::getInfo(string name)
-{
-	LARGE_INTEGER qwFrequency;
-	QueryPerformanceFrequency(&qwFrequency);
-	StatTopic *t = get(name);
-	if (t->called == 0L) {
-		t->called = 1;
-	}
-	long long average = t->cumulated / t->called;
-	// convert average to micro seconds
-	average *= 1000000;
-	average /= qwFrequency.QuadPart;
-	// total time in ms:
-	long long total = t->cumulated * 1000;
-	total /= qwFrequency.QuadPart;
-	wstringstream s;
-	s << "average " << s2w(name) << " microseconds(10^-6): " << average << " total [ms]: " << total << " called: " << t->called << endl ;
-	return s.str();
-}
-
-void Stats::start(string topic)
-{
-	StatTopic *t = &statTopics[topic];
-	t->curStart = getNow();
-}
-
-void Stats::end(string topic)
-{
-	StatTopic *t = &statTopics[topic];
-	long long duration = getNow() - t->curStart;
-	t->cumulated += duration;
-	t->called++;
-}

@@ -7,8 +7,9 @@
 class ApplicationWindow
 {
 public:
-	ApplicationWindow(XApp *xapp);
-	~ApplicationWindow();
+	void init(XApp *xapp);
 	void present();
+private:
+	XApp * xapp = nullptr;
 };
 

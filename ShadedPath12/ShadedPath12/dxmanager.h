@@ -1,5 +1,6 @@
 #pragma once
 
+class XApp;
 /*
  * Ultility class to store state attributes for 3d objects.
  * Used to store info if objects already stored on GPU / compute buffer
@@ -97,10 +98,7 @@ private:
 class DXManager {
 public:
 	// create manager for number of frames
-	DXManager(int frameCount) { 
-		assert(frameCount == FrameCount);
-		this->frameCount = frameCount;
-	};
+	DXManager(int frameCount);
 	void init(ID3D12Device *d) { device = d; };
 	void setCurrentFrame(int frameNum) { currentFrame = frameNum; };
 	// Buffer sets are identified by number, should start from 0
@@ -156,6 +154,7 @@ private:
 	vector<ComPtr<ID3D12Resource>> cbvSetResources; // for all numbered buffer sets
 	vector<UINT8*> cbvSetGPUDest;  // memcpy() changed cbv data to this address before draw()
 	UINT setSize = 0;
+	XApp *xapp;
 public:
 	ObjectStateList objectStateLists[FrameCount];
 };

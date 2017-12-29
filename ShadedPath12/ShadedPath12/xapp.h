@@ -1,6 +1,7 @@
 #pragma once
 
 class WorldObjectStore;
+class XApp;
 
 namespace Colors {
 	const XMFLOAT4 xm{ 1.0f, 0.0f, 1.0f, 1.0f };
@@ -43,7 +44,8 @@ public:
 
 protected:
 	string myClass;
-
+	XApp * xapp;
+private:
 };
 
 // Multi Scene Apps inherit from this:
@@ -55,36 +57,6 @@ class XAppMultiBase
 		virtual void initScenes() = 0;
 	protected:
 		vector<XAppBase *> apps;	// all apps maintained by this Mult-Scene App
-};
-
-// helper class for some statistics like frame timing 
-class Stats
-{
-public:
-	void startUpdate(GameTime &gameTime);
-	void startDraw(GameTime &gameTime);
-	void endUpdate(GameTime &gameTime);
-	void endDraw(GameTime &gameTime);
-
-	static const int numFramesGathered = 10 * 3;
-	static const int frameNumStartGathering = 10 * 3;
-	LONGLONG started[numFramesGathered] = { 0 };
-	LONGLONG ended[numFramesGathered] = { 0 };
-	virtual ~Stats();
-
-	// measure single methods ans similar
-	struct StatTopic {
-		string topicName;
-		long long cumulated;  // total time spent
-		long long called = 0; // number of calls so far
-		long long curStart;   // record current invocation time
-	};
-	unordered_map<string, StatTopic> statTopics;
-	void start(string topic);
-	void end(string topic);
-	StatTopic *get(string name) { return &statTopics[name]; };
-	long long getNow();
-	wstring getInfo(string name);
 };
 
 class XApp
@@ -220,15 +192,20 @@ private:
 	XAppBase *app = nullptr;
 	float clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
 
+	// new-engine
 	// pak files:
 	unordered_map<string, PakEntry> pak_content;
-	ApplicationWindow *appWindow;
+	ApplicationWindow appWindow;
+
 public:
 	// find entry in pak file, return nullptr if not found
 	PakEntry* findFileInPak(wstring filename);
 	long long getFramenum() { return framenum; };
+	// new-engine:
+	ComPtr<ID3D12Device> device;
+	static XApp *getInstance();
 };
 
 // reference to global instance:
-XApp& xapp();
+//XApp& xapp();
 void xappDestroy();
