@@ -61,23 +61,23 @@ FXMVECTOR reflectionVector
 	return vector + (2 * (p-vector));
 }
 
-struct TextElement;
-// provide helper class for fast vectors of several different types:
-// vectors never decrease in size, on return elemnts are already added, so that memory pointer to array may be used
-// returned size should be kept by app to hold current max value
-
-class VectorHelper {
-public:
-	size_t resize(vector<TextElement> &vec, size_t oldmax, size_t newmax) {
-		if (newmax <= oldmax) {
-			return oldmax;
-		}
-		vec.resize(newmax);
-		return newmax;
-	};
-};
-
-extern VectorHelper vectorHelper;
+//struct TextElement;
+//// provide helper class for fast vectors of several different types:
+//// vectors never decrease in size, on return elemnts are already added, so that memory pointer to array may be used
+//// returned size should be kept by app to hold current max value
+//
+//class VectorHelper {
+//public:
+//	size_t resize(vector<TextElement> &vec, size_t oldmax, size_t newmax) {
+//		if (newmax <= oldmax) {
+//			return oldmax;
+//		}
+//		vec.resize(newmax);
+//		return newmax;
+//	};
+//};
+//
+//extern VectorHelper vectorHelper;
 
 class Util {
 public:
@@ -92,13 +92,13 @@ public:
 	// the object's current rotation is applied to both points and object pos is added to get world coordinates for the beam
 	// returned beam is in world coordinates
 	// used WorldObjectmust have rotation specified with a quaternion
-	static void calcBeamFromObject(XMVECTOR *beamStart, XMVECTOR *beampoint2, WorldObject *o, XMVECTOR beamStartModelPose, XMVECTOR beamPoint2ModelPose);
+	//static void calcBeamFromObject(XMVECTOR *beamStart, XMVECTOR *beampoint2, WorldObject *o, XMVECTOR beamStartModelPose, XMVECTOR beamPoint2ModelPose);
 
 	// decide if a beam emitting from source worldObject is hitting a target Object
 	// using calcBeamFromObject(), see there for details
 	// hitting distance is how far the beam can miss (center of) target to be considered a hit.
 	// hitting distance defaults to 10 cm.
-	static bool isTargetHit(WorldObject *source, XMVECTOR beamStartModelPose, XMVECTOR beamPoint2ModelPose, WorldObject *target, float hittingDist = 0.1f);
+	//static bool isTargetHit(WorldObject *source, XMVECTOR beamStartModelPose, XMVECTOR beamPoint2ModelPose, WorldObject *target, float hittingDist = 0.1f);
 
 	// move control point to specific distance to start point along line formed by the two
 	// If you consider a beam starting from 1st point going through the second you will have the same beam afterwards, but the second crontrol 

@@ -93,7 +93,7 @@ public:
 	XApp();
 	~XApp();
 
-	string buildInfo = "Shaded Path 12 Engine V 0.1.3"; // version text
+	string buildInfo = "Shaded Path 12 Engine V 0.2.0"; // version text
 
 	void init();
 	void initPakFiles();
@@ -104,7 +104,7 @@ public:
 	void report();
 	void calcBackbufferSizeAndAspectRatio();
 	// signal shutdown - game loop will end in 3 frames
-	void setShutdownMode() { shutdownMode = true; shutdownFrameNumStart = framenum; };
+	void setShutdownMode() { shutdownMode = true; shutdownFrameNumStart = (UINT)framenum; };
 	bool isShutdownMode() { return shutdownMode; };
 	bool isShudownFinished() { return shutdownMode && (framenum > (shutdownFrameNumStart + 3)); };
 
@@ -142,21 +142,21 @@ public:
 	};
 	void handleRTVClearing(ID3D12GraphicsCommandList *commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle, D3D12_CPU_DESCRIPTOR_HANDLE dsv_handle, ID3D12Resource* resource);
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE getRTVHandle(int frameIndex) {
-#if defined(_OVR_)
-		if (ovrRendering) return vr.getRTVHandle(frameIndex);
-#endif
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescriptorSize);
-		return rtvHandle;
-	};
-
+//	CD3DX12_CPU_DESCRIPTOR_HANDLE getRTVHandle(int frameIndex) {
+//#if defined(_OVR_)
+//		if (ovrRendering) return vr.getRTVHandle(frameIndex);
+//#endif
+//		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, rtvDescriptorSize);
+//		return rtvHandle;
+//	};
+//
 	int getCurrentBackBufferIndex() {
 		int frameIndex = 0;
-		if (!ovrRendering || true) {
-			frameIndex = swapChain->GetCurrentBackBufferIndex();
-		} else {
-			frameIndex = vr.getCurrentFrameBufferIndex();
-		}
+		//if (!ovrRendering || true) {
+		//	frameIndex = swapChain->GetCurrentBackBufferIndex();
+		//} else {
+		//	frameIndex = vr.getCurrentFrameBufferIndex();
+		//}
 		return frameIndex;
 	}
 	// query virtual key definitions (VK_) from Winuser.h
@@ -185,26 +185,7 @@ public:
 	unsigned int backbufferWidth = 0, backbufferHeight = 0;
 	float aspectRatio;
 
-	// 
-	ComPtr<ID3D12Device> device;
-	ComPtr<ID3D11Device> d3d11Device;
-	ComPtr<ID3D11DeviceContext> d3d11DeviceContext;
-	ComPtr<ID3D11Device> reald3d11Device;
-	ComPtr<ID3D11DeviceContext> reald3d11DeviceContext;
-	ComPtr<ID3D11On12Device> d3d11On12Device;
-	ComPtr<ID3D12RootSignature> rootSignature;
 	static const UINT FrameCount = 3;
-	ComPtr<IDXGISwapChain3> swapChain;
-	ComPtr<ID3D12CommandQueue> commandQueue;
-	D3D12_VIEWPORT viewport;
-	D3D12_RECT scissorRect;
-	ComPtr<ID3D12DescriptorHeap> rtvHeap;  // Resource Target View Heap
-	UINT rtvDescriptorSize;
-	ComPtr<ID3D12Resource> renderTargets[FrameCount];
-	ComPtr<ID3D11Resource> wrappedBackBuffers[FrameCount];
-	ComPtr<ID3D11Texture2D> wrappedTextures[FrameCount];
-	ComPtr<ID3D12Resource> depthStencils[FrameCount];
-	ComPtr<ID3D12DescriptorHeap> dsvHeaps[FrameCount];
 	UINT lastPresentedFrame = 0;  // set directly before Present() to have 'old' frame number available
 	BYTE key_state[256];
 	int mouseDx;
@@ -215,13 +196,13 @@ public:
 
 	// Other framework instances:
 	TextureStore textureStore;
-	WorldObjectStore objectStore;
+	//WorldObjectStore objectStore;
 	Lights lights;
 	World world;
-	Camera camera;
+	//Camera camera;
 	GameTime gametime;
-	Sound sound;
-	VR vr;
+	//Sound sound;
+	//VR vr;
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
 	thread mythread;
 	Stats stats;

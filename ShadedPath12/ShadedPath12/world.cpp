@@ -12,30 +12,30 @@ World::~World() {
 }
 
 
-void makeline(LineDef &ld, XMFLOAT3 start, XMFLOAT3 end) {
-	ld.start = XMFLOAT3(start.x, start.y, start.z);
-	ld.end = XMFLOAT3(end.x, end.y, end.z);
-}
+//void makeline(LineDef &ld, XMFLOAT3 start, XMFLOAT3 end) {
+//	//ld.start = XMFLOAT3(start.x, start.y, start.z);
+//	//ld.end = XMFLOAT3(end.x, end.y, end.z);
+//}
 
 void World::drawBox(BoundingBox &box) {
 	XMFLOAT3 corners[8];
 	box.GetCorners(&corners[0]);
-	vector<LineDef> v;
-	LineDef line;
-	line.color = Colors::White;
-	makeline(line, corners[0], corners[1]);	v.push_back(line);
-	makeline(line, corners[1], corners[2]);	v.push_back(line);
-	makeline(line, corners[2], corners[3]);	v.push_back(line);
-	makeline(line, corners[3], corners[0]);	v.push_back(line);
-	makeline(line, corners[4], corners[5]);	v.push_back(line);
-	makeline(line, corners[5], corners[6]);	v.push_back(line);
-	makeline(line, corners[6], corners[7]);	v.push_back(line);
-	makeline(line, corners[7], corners[4]);	v.push_back(line);
-	makeline(line, corners[0], corners[4]);	v.push_back(line);
-	makeline(line, corners[1], corners[5]);	v.push_back(line);
-	makeline(line, corners[2], corners[6]);	v.push_back(line);
-	makeline(line, corners[3], corners[7]);	v.push_back(line);
-	linesEffect->addOneTime(v);
+	//vector<LineDef> v;
+	//LineDef line;
+	//line.color = Colors::White;
+	//makeline(line, corners[0], corners[1]);	v.push_back(line);
+	//makeline(line, corners[1], corners[2]);	v.push_back(line);
+	//makeline(line, corners[2], corners[3]);	v.push_back(line);
+	//makeline(line, corners[3], corners[0]);	v.push_back(line);
+	//makeline(line, corners[4], corners[5]);	v.push_back(line);
+	//makeline(line, corners[5], corners[6]);	v.push_back(line);
+	//makeline(line, corners[6], corners[7]);	v.push_back(line);
+	//makeline(line, corners[7], corners[4]);	v.push_back(line);
+	//makeline(line, corners[0], corners[4]);	v.push_back(line);
+	//makeline(line, corners[1], corners[5]);	v.push_back(line);
+	//makeline(line, corners[2], corners[6]);	v.push_back(line);
+	//makeline(line, corners[3], corners[7]);	v.push_back(line);
+	//linesEffect->addOneTime(v);
 }
 
 void World::drawCoordinateSystem(XMFLOAT4 point, string label, Linetext &linetextEffect, Dotcross& dotcrossEffect, float charHeight) {
@@ -48,20 +48,20 @@ void World::drawCoordinateSystem(XMFLOAT4 point, string label, Linetext &linetex
 	XMMATRIX rot = XMMatrixRotationRollPitchYaw(0, XM_PIDIV4, -XM_PIDIV4);
 	XMFLOAT4X4 r;
 	XMStoreFloat4x4(&r, rot);
-	int labelLine = linetextEffect.addTextLine(labelPos, label, Linetext::Plane::CS);
-	XMFLOAT4 xPos = point;
-	XMFLOAT4 yPos = point;
-	XMFLOAT4 zPos = point;
-	float b = charHeight * 3;
-	xPos.x += b;
-	int xLine = linetextEffect.addTextLine(xPos, "-> x", Linetext::XY);
-	yPos.y += b;
-	int yLine = linetextEffect.addTextLine(yPos, "-> y", Linetext::YX);
-	zPos.z += b;
-	int zLine = linetextEffect.addTextLine(zPos, "-> z", Linetext::ZY);
-	vector<XMFLOAT3> pts;
-	pts.push_back(XMFLOAT3(point.x, point.y, point.z));
-	dotcrossEffect.update(pts);
+	//int labelLine = linetextEffect.addTextLine(labelPos, label, Linetext::Plane::CS);
+	//XMFLOAT4 xPos = point;
+	//XMFLOAT4 yPos = point;
+	//XMFLOAT4 zPos = point;
+	//float b = charHeight * 3;
+	//xPos.x += b;
+	//int xLine = linetextEffect.addTextLine(xPos, "-> x", Linetext::XY);
+	//yPos.y += b;
+	//int yLine = linetextEffect.addTextLine(yPos, "-> y", Linetext::YX);
+	//zPos.z += b;
+	//int zLine = linetextEffect.addTextLine(zPos, "-> z", Linetext::ZY);
+	//vector<XMFLOAT3> pts;
+	//pts.push_back(XMFLOAT3(point.x, point.y, point.z));
+	//dotcrossEffect.update(pts);
 }
 
 void World::createGridXZ(Grid& grid, bool linesmode) {
@@ -80,28 +80,28 @@ void World::createGridXZ(Grid& grid, bool linesmode) {
 
 	float x, z;
 	if (linesmode == true) {
-		LineDef line;
-		line.color = Colors::Red;
-		for (int xcount = 0; xcount < xLineCount; xcount++) {
-			x = xstart + xcount * xdiff;
-			XMFLOAT3 p1(x, grid.center.y, zstart);
-			XMFLOAT3 p2(x, grid.center.y, zend);
-			line.start = p1;
-			line.end = p2;
-			grid.lines.push_back(line);
-			//grid.zLineEndpoints.push_back(p1);
-			//grid.zLineEndpoints.push_back(p2);
-		}
-		for (int zcount = 0; zcount < zLineCount; zcount++) {
-			z = zstart + zcount * zdiff;
-			XMFLOAT3 p1(xstart, grid.center.y, z);
-			XMFLOAT3 p2(xend, grid.center.y, z);
-			line.start = p1;
-			line.end = p2;
-			grid.lines.push_back(line);
-			//grid.xLineEndpoints.push_back(p1);
-			//grid.xLineEndpoints.push_back(p2);
-		}
+		//LineDef line;
+		//line.color = Colors::Red;
+		//for (int xcount = 0; xcount < xLineCount; xcount++) {
+		//	x = xstart + xcount * xdiff;
+		//	XMFLOAT3 p1(x, grid.center.y, zstart);
+		//	XMFLOAT3 p2(x, grid.center.y, zend);
+		//	line.start = p1;
+		//	line.end = p2;
+		//	grid.lines.push_back(line);
+		//	//grid.zLineEndpoints.push_back(p1);
+		//	//grid.zLineEndpoints.push_back(p2);
+		//}
+		//for (int zcount = 0; zcount < zLineCount; zcount++) {
+		//	z = zstart + zcount * zdiff;
+		//	XMFLOAT3 p1(xstart, grid.center.y, z);
+		//	XMFLOAT3 p2(xend, grid.center.y, z);
+		//	line.start = p1;
+		//	line.end = p2;
+		//	grid.lines.push_back(line);
+		//	//grid.xLineEndpoints.push_back(p1);
+		//	//grid.xLineEndpoints.push_back(p2);
+		//}
 	} else {
 		float du = 1.0f / (grid.widthCells);
 		float dv = 1.0f / (grid.depthCells);

@@ -2,11 +2,11 @@
 
 class Linetext;
 class Dotcross;
-struct LineDef;
+//struct LineDef;
 class XApp;
 class Mesh;
 class WorldObject;
-class Path;
+//class Path;
 class LinesEffect;
 
 struct Grid {
@@ -19,7 +19,7 @@ struct Grid {
 	//vector<XMFLOAT4> zLineEndpoints; // parallel to z axis
 	//vector<XMFLOAT4> xLineEndpoints; // parallel to x axis
 	// lines mode:
-	vector<LineDef> lines;
+	//vector<LineDef> lines;
 	// triangle mode with vertices and indexes:
 	vector<XMFLOAT3> vertices;
 	vector<XMFLOAT2> tex;  //texture coords, stretch texture over entire area
@@ -79,7 +79,7 @@ public:
 	//void createRandomTexture1DSRV(ComPtr<ID3D11ShaderResourceView> &randomTex);
 
 	// one central Path instance needed:
-	Path path;
+	//Path path;
 	//XApp* getApp() { return xapp; };
 
 	//unique_ptr<WorldObjectStore> objectStore;
