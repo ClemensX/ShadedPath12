@@ -222,6 +222,7 @@ private:
 
 	// pak files:
 	unordered_map<string, PakEntry> pak_content;
+	ApplicationWindow *appWindow;
 public:
 	// find entry in pak file, return nullptr if not found
 	PakEntry* findFileInPak(wstring filename);

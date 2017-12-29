@@ -151,6 +151,7 @@ void XApp::draw() {
 		if (ovrMirror) {
 			int frameIndex = xapp().getCurrentBackBufferIndex();
 			lastPresentedFrame = frameIndex;
+			appWindow->present();
 			//ThrowIfFailedWithDevice(swapChain->Present(0, 0), xapp().device.Get());
 		}
 	}

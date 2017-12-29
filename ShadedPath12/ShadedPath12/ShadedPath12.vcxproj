@@ -162,6 +162,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="applicationWindow.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="dds.h" />
@@ -187,6 +188,7 @@
     <ClInclude Include="xapp.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="applicationWindow.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="dxmanager.cpp" />
     <ClCompile Include="Effects\effectbase.cpp" />
