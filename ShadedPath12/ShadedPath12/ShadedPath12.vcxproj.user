@@ -5,7 +5,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>-vrX -app=MassTest2 -appX=TouchOdyssey -appX=Sample1 -appX=HangOn -appX=Logo -appX=ObjectViewer -appX=TestTextures -disableLineShaders -w=1024 -h=576</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-vr -app=Sample1 -w=1024 -h=576</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
