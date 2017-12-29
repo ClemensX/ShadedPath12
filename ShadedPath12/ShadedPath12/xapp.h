@@ -191,18 +191,18 @@ private:
 	string appName;
 
 	XAppBase *app = nullptr;
-	float clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
 
 	// new-engine
 	// pak files:
 	unordered_map<string, PakEntry> pak_content;
-	ApplicationWindow appWindow;
 
 public:
 	// find entry in pak file, return nullptr if not found
 	PakEntry* findFileInPak(wstring filename);
 	long long getFramenum() { return framenum; };
 	// new-engine:
+	float clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
+	ApplicationWindow appWindow;
 	ComPtr<ID3D12Device> device;
 	static XApp *getInstance();
 };

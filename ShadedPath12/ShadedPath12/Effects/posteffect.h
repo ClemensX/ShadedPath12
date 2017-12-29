@@ -2,7 +2,7 @@
 
 class PostEffect : EffectBase {
 public:
-	void init();
+	void init(XApp* xapp);
 	void init2();
 	void draw();
 	void preDraw();
@@ -24,4 +24,5 @@ private:
 	ComPtr<ID3D12DescriptorHeap> m_srvHeap;
 	ComPtr<ID3D12Resource> m_texture;
 	ID3D12DescriptorHeap *alternateFinalFrameHeap = nullptr;
+	XApp* xapp = nullptr;
 };

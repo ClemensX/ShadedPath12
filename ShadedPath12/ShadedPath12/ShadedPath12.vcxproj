@@ -169,6 +169,7 @@
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="dxmanager.h" />
     <ClInclude Include="Effects\effectbase.h" />
+    <ClInclude Include="Effects\posteffect.h" />
     <ClInclude Include="forward_structures.h" />
     <ClInclude Include="gametime.h" />
     <ClInclude Include="lights.h" />
@@ -196,6 +197,7 @@
     <ClCompile Include="gametime.cpp" />
     <ClCompile Include="sample1.cpp" />
     <ClCompile Include="stats.cpp" />
+    <ClCompile Include="texture.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="winmain.cpp" />
     <ClCompile Include="stdafx.cpp">

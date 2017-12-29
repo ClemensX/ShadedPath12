@@ -15,7 +15,7 @@ typedef TextureInfo* TextureID;
 class TextureStore {
 public:
 	// init d3d resources needed to initialize/upload textures later
-	void init();
+	void init(XApp *xapp);
 	// load texture upload to GPU, textures are referenced via id string
 	void loadTexture(wstring filename, string id);
 	TextureInfo *getTexture(string id);
@@ -26,5 +26,5 @@ private:
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
 	FrameResource updateFrameData;
-
+	XApp* xapp = nullptr;
 };

@@ -367,6 +367,7 @@ void XApp::init()
 	//camera.setSpeed(1.0f);
 
 	initPakFiles();
+	textureStore.init(this);
 
 	app->init();
 	app->update();

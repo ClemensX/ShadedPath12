@@ -196,5 +196,5 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 //#include "Effects\linetext.h"
 //#include "Effects\billboard.h"
 //#include "Effects\objecteffect.h"
-//#include "Effects\posteffect.h"
+#include "Effects\posteffect.h"
 //#include "meshObject.h"

@@ -106,6 +106,9 @@
     <ClInclude Include="stats.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Effects\posteffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -142,6 +145,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stats.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
