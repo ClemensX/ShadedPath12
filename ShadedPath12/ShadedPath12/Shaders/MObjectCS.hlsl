@@ -218,16 +218,19 @@ void main( uint3 DTid : SV_DispatchThreadID )
 	//for (uint tile = 0; tile < 50000; tile++)
 	//{
 		uint i = DTid.x;
+		ObjectConstantBuffer c;
 		//i += 2;
 		uint max = cbvCS.num_objects + cbvCS.start_objects;
 		uint tile = min(max, i + cbvCS.start_objects);
 		float4 rot = float4(0.15, 0.4, 0.2, 0);
 		float4 pos;
-		pos.x = cbvResult[tile].cameraPos.x;
-		pos.y = cbvResult[tile].cameraPos.y;
-		pos.z = cbvResult[tile].cameraPos.z;
+		c = cbvResult[tile];
+		pos.x = c.cameraPos.x;
+		pos.y = c.cameraPos.y;
+		pos.z = c.cameraPos.z;
 		float4x4 toWorld = calcToWorld(pos, rot);
 		float4x4 wvp = mul(toWorld, cbvCS.vp); // change order for matrix mult
+		cbvResult[tile] = c;
 		cbvResult[tile].wvp = wvp;
 		cbvResult[tile].world = toWorld;
 	//}
