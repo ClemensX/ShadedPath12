@@ -124,6 +124,7 @@ public:
 //
 	int getCurrentBackBufferIndex() {
 		int frameIndex = 0;
+		frameIndex = appWindow.GetCurrentBackBufferIndex();
 		//if (!ovrRendering || true) {
 		//	frameIndex = swapChain->GetCurrentBackBufferIndex();
 		//} else {

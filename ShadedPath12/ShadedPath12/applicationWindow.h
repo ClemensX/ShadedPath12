@@ -7,9 +7,14 @@
 class ApplicationWindow
 {
 public:
-	void init(XApp *xapp);
+	void init(XApp *xapp, ComPtr<IDXGIFactory4> &factory);
 	void present();
+	UINT GetCurrentBackBufferIndex();
+	void destroy();
 private:
 	XApp * xapp = nullptr;
+	static const UINT FrameCount = 3;
+	ComPtr<IDXGISwapChain3> swapChain;
+	ComPtr<ID3D12CommandQueue> commandQueue;
 };
 

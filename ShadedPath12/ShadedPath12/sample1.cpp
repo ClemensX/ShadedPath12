@@ -43,7 +43,7 @@ void Sample1::init()
 
 void Sample1::update()
 {
-	Log("app update()" << endl);
+	//Log("app update()" << endl);
 	gameTime.advanceTime();
 	LONGLONG now = gameTime.getRealTime();
 	static bool done = false;
@@ -73,7 +73,7 @@ void Sample1::update()
 
 void Sample1::draw()
 {
-	Log("app draw()" << endl);
+	//Log("app draw()" << endl);
 	//linesEffect.draw();
 	//dotcrossEffect.draw();
 	//textEffect.draw();

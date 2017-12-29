@@ -33,7 +33,7 @@ XApp::XApp() : /*camera(),*/ world(this) /*, vr(this)*/
 	mouseDx = 0;
 	mouseDy = 0;
 	framenum = 0;
-	appWindow.init(this);
+	//appWindow.init(this); done during init()
 	stats.init(this);
 	//objectStore.xapp = this;
 	//hud.setXApp(this);
@@ -141,6 +141,11 @@ void XApp::draw() {
 	//Log(" end " << frameIndex << " " << getFramenum() << endl);
 
 	// Present the frame, if in VR this was already done by oculus SDK
+	if (ovrMirror) {
+		UINT frameIndex = getCurrentBackBufferIndex();
+		lastPresentedFrame = frameIndex;
+		appWindow.present();
+	}
 	if (!ovrRendering) {
 		lastPresentedFrame = frameIndex;
 		if (isShutdownMode()) {
@@ -151,12 +156,6 @@ void XApp::draw() {
 
 	if (ovrRendering) {
 		//vr.endFrame();
-		if (ovrMirror) {
-			int frameIndex = getCurrentBackBufferIndex();
-			lastPresentedFrame = frameIndex;
-			appWindow.present();
-			//ThrowIfFailedWithDevice(swapChain->Present(0, 0), xapp().device.Get());
-		}
 	}
 	frameFinished();
 }
@@ -169,6 +168,7 @@ void XApp::destroy()
 	// Wait for the GPU to be done with all resources.
 	//WaitForGpu();
 	app->destroy();
+	appWindow.destroy();
 
 	//Sleep(150);
 	//CloseHandle(fenceEvent);
@@ -312,6 +312,9 @@ void XApp::init()
 	if (ovrRendering) {
 		//camera.aspectRatio /= 2.0f;
 	}
+
+	appWindow.init(this, factory);
+
 	//camera.projectionTransform();
 	// Describe the swap chain.
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
