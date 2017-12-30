@@ -206,3 +206,69 @@ void DXManager::copyToComputeBuffer(FrameResourceSimple & f)
 		objectStateLists[currentFrame].setObjectValidCompute(i, true);
 	}
 }
+
+// create resources for an app window
+void DXManager::createFrameResources(vector<AppWindowFrameResource>& res, int count, ComPtr<IDXGISwapChain3> &swapChain)
+{
+	Log("app window frame resources size: " << res.size() << endl);
+	for (int i = 0; i < count; i++) {
+		AppWindowFrameResource appwinres;
+		// Create descriptor heaps.
+		{
+			// Describe and create a render target view (RTV) descriptor heap.
+
+			D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
+			rtvHeapDesc.NumDescriptors = FrameCount;
+			rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+			rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+			ThrowIfFailed(xapp->device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&appwinres.rtvHeap)));
+			NAME_D3D12_OBJECT_SUFF(appwinres.rtvHeap, i);
+			appwinres.rtvDescriptorSize = xapp->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		}
+
+		// Create frame resources.
+		{
+			CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(appwinres.rtvHeap->GetCPUDescriptorHandleForHeapStart());
+
+			// Create a RTV
+			ThrowIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(&appwinres.renderTarget)));
+			xapp->device->CreateRenderTargetView(appwinres.renderTarget.Get(), nullptr, rtvHandle);
+			NAME_D3D12_OBJECT_SUFF(appwinres.renderTarget, i);
+			rtvHandle.Offset(1, appwinres.rtvDescriptorSize);
+			//ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
+
+			// Describe and create a depth stencil view (DSV) descriptor heap.
+			D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
+			dsvHeapDesc.NumDescriptors = 1;
+			dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+			dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+			ThrowIfFailed(xapp->device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&appwinres.dsvHeap)));
+			// Create the depth stencil view for each frame
+			D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
+			depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
+			depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+			depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+			D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+			depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+			depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+			depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+			ThrowIfFailed(xapp->device->CreateCommittedResource(
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+				D3D12_HEAP_FLAG_NONE,
+				&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, xapp->backbufferWidth, xapp->backbufferHeight, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+				D3D12_RESOURCE_STATE_DEPTH_WRITE,
+				&depthOptimizedClearValue,
+				IID_PPV_ARGS(&appwinres.depthStencil)
+			));
+
+			//NAME_D3D12_OBJECT(m_depthStencil);
+
+			xapp->device->CreateDepthStencilView(appwinres.depthStencil.Get(), &depthStencilDesc, appwinres.dsvHeap->GetCPUDescriptorHandleForHeapStart());
+			NAME_D3D12_OBJECT_SUFF(appwinres.depthStencil, i);
+		}
+		res.push_back(appwinres);
+	}
+	Log("app window frame resources size: " << res.size() << endl);
+}

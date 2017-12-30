@@ -99,6 +99,7 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 			s << L"depthStencil_xapp[" << n << "]";
 			depthStencils[n]->SetName(s.str().c_str());
 		}
+		dxmanager->createFrameResources(frameResources, FrameCount, swapChain);
 	}
 	// Create an empty root signature.
 	{
@@ -113,7 +114,7 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 	// Describe and create the graphics pipeline state object (PSO).
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
@@ -128,14 +129,7 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 	psoDesc.NumRenderTargets = 1;
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	psoDesc.SampleDesc.Count = 1;
-	//ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
 #include "CompiledShaders/PostVS.h"
-	//#include "CompiledShaders/PostPS.h"
-	// test shade library functions
-	//{
-	//D3DLoadModule() uses ID3D11Module
-	//ComPtr<ID3DBlob> vShader;
-	//ThrowIfFailed(D3DReadFileToBlob(L"", &vShader));
 	psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
 	ThrowIfFailed(xapp->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
 	ThrowIfFailed(xapp->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));

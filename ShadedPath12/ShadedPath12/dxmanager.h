@@ -99,6 +99,7 @@ class DXManager {
 public:
 	// create manager for number of frames
 	void init(XApp *xapp, int maxframeNum);
+	void createFrameResources(vector<AppWindowFrameResource> &res, int count, ComPtr<IDXGISwapChain3> &swapChain);
 	void setCurrentFrame(int frameNum) { currentFrame = frameNum; };
 	// Buffer sets are identified by number, should start from 0
 	void createConstantBufferSet(UINT setNum, UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name);

@@ -145,6 +145,12 @@ inline void SetName(ID3D12Object* pObject, LPCWSTR name)
 {
 	pObject->SetName(name);
 }
+inline void SetName(ID3D12Object* pObject, LPCWSTR name, int i)
+{
+	wstringstream s;
+	s << L"" << name << "_" << i;
+	pObject->SetName(s.str().c_str());
+}
 inline void SetNameIndexed(ID3D12Object* pObject, LPCWSTR name, UINT index)
 {
 	WCHAR fullName[50];
@@ -165,7 +171,10 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 // Naming helper for ComPtr<T>.
 // Assigns the name of the variable as the name of the object.
 // The indexed variant will include the index in the name of the object.
+#define NAME_D3D12_OBJECT_STR_HELPER(x) #x
+#define NAME_D3D12_OBJECT_STR(x) NAME_D3D12_OBJECT_STR_HELPER(x)
 #define NAME_D3D12_OBJECT(x) SetName(x.Get(), L#x)
+#define NAME_D3D12_OBJECT_SUFF(x,y) SetName(x.Get(), L#x, y)
 #define NAME_D3D12_OBJECT_INDEXED(x, n) SetNameIndexed(x[n].Get(), L#x, n)
 
 //#define DXGI_FORMAT_R8G8B8A8_UNORM_SRGB DXGI_FORMAT_R8G8B8A8_UNORM
@@ -176,6 +185,7 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 #include "d3dx12.h"
 #include "DDSTextureLoader.h"
 #include "forward_structures.h"
+#include "frameresource.h"
 #include "dxmanager.h"
 #include "texture.h"
 #include "gametime.h"

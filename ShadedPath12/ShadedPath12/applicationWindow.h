@@ -29,5 +29,6 @@ private:
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
 	FrameResourceSimple updateFrameData;
+	vector<AppWindowFrameResource> frameResources;
 };
 
