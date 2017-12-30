@@ -163,6 +163,9 @@ inline void SetNameIndexed(ID3D12Object* pObject, LPCWSTR name, UINT index)
 inline void SetName(ID3D12Object*, LPCWSTR)
 {
 }
+inline void SetName(ID3D12Object* pObject, LPCWSTR name, int i)
+{
+}
 inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 {
 }
