@@ -18,5 +18,6 @@ private:
 	static const UINT FrameCount = 3;
 	ComPtr<IDXGISwapChain3> swapChain;
 	vector<AppWindowFrameResource> frameResources;
+	ResourceStateHelper *resourceStateHelper = nullptr;
 };
 

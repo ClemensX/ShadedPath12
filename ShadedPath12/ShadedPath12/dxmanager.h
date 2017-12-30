@@ -68,11 +68,20 @@ public:
 		static ResourceStateHelper singleton;
 		return &singleton;
 	};
+	// add resource, fails if already addaed
 	void add(ID3D12Resource* res, D3D12_RESOURCE_STATES state) {
 		assert(resourceStates.count(res) == 0);
 		ResourceStateInfo si;
 		si.current_state = state;
 		resourceStates[res] = si;
+	};
+	// add resource with state, keeps old state if already added earlier
+	void addOrKeep(ID3D12Resource* res, D3D12_RESOURCE_STATES state) {
+		if (resourceStates.count(res) == 0) {
+			// new resource
+			add(res, state);
+		} 
+		// nothing to do if already added
 	};
 	void toState(ID3D12Resource* res, D3D12_RESOURCE_STATES state, ID3D12GraphicsCommandList *cl) {
 		assert(resourceStates.count(res) > 0);

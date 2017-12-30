@@ -4,7 +4,7 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 	assert(this->xapp == nullptr); // make sure we are only called once
 	this->xapp = xapp;
 	this->dxmanager = &xapp->dxmanager;
-
+	this->resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	// Describe and create the command queue.
 	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -49,6 +49,7 @@ void ApplicationWindow::present() {
 	if ((framenum % 300) == 0) {
 		Log("fps " << xapp->fps << " frame " << framenum << endl);
 	}
+	AppWindowFrameResource &res = frameResources.at(frameNum);
 
 	// get source resource from texture:
 	static bool done = false;
@@ -59,7 +60,8 @@ void ApplicationWindow::present() {
 		xapp->textureStore.loadTexture(L"dirt6_markings.dds", "markings");
 		HouseTex = xapp->textureStore.getTexture("markings");
 	}
-	AppWindowFrameResource &res = frameResources.at(frameNum);
+	resourceStateHelper->addOrKeep(res.renderTarget.Get(), D3D12_RESOURCE_STATE_COMMON);
+	resourceStateHelper->addOrKeep(HouseTex->texSRV.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 	// wait until GPU has finished with previous commandList
 	//Sleep(30);
@@ -73,15 +75,15 @@ void ApplicationWindow::present() {
 	CD3DX12_BOX box(0, 0, 512, 512);
 
 	//commandList->CopyResource(renderTargets[frameNum].Get(), HouseTex->texSRV.Get());
+	resourceStateHelper->toState(res.renderTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(res.rtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, res.rtvDescriptorSize);
-	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(res.renderTarget.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET));
 	commandList->ClearRenderTargetView(rtvHandle, xapp->clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(res.dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(HouseTex->texSRV.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE));
-	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(res.renderTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST));
+	resourceStateHelper->toState(HouseTex->texSRV.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, commandList);
+	resourceStateHelper->toState(res.renderTarget.Get(), D3D12_RESOURCE_STATE_COPY_DEST, commandList);
 	commandList->CopyTextureRegion(&dest, 0, 0, 0, &src, &box);
-	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(HouseTex->texSRV.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE ));
-	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(res.renderTarget.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COMMON));
+	resourceStateHelper->toState(HouseTex->texSRV.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, commandList);
+	resourceStateHelper->toState(res.renderTarget.Get(), D3D12_RESOURCE_STATE_COMMON, commandList);
 	ThrowIfFailed(commandList->Close());
 	ID3D12CommandList* ppCommandLists[] = { commandList };
 
