@@ -24,6 +24,7 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 	swapChainDesc.OutputWindow = xapp->getHWND();
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.Windowed = TRUE;
+	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
 	ComPtr<IDXGISwapChain> swapChain0; // we cannot use create IDXGISwapChain3 directly - create IDXGISwapChain, then call As() to map to IDXGISwapChain3
 	ThrowIfFailed(factory->CreateSwapChain(
@@ -45,6 +46,10 @@ void ApplicationWindow::present() {
 	//Log("xapp device " << xapp << " " << xapp->device.Get() << endl);
 	//Log("xapp device" << xapp << endl);
 	//Log("frame: " << xapp->getFramenum() << endl);
+	long long framenum = xapp->getFramenum();
+	if ((framenum % 300) == 0) {
+		Log("fps " << xapp->fps << " frame " << framenum << endl);
+	}
 
 	// get source resource from texture:
 	static bool done = false;
@@ -57,11 +62,18 @@ void ApplicationWindow::present() {
 	}
 	AppWindowFrameResource &res = frameResources.at(frameNum);
 
+	// Create synchronization objects and wait until assets have been uploaded to the GPU.
+	//Sleep(30);
+	DXManager::createSyncPoint(res, xapp->appWindow.commandQueue);
+	DXManager::waitForSyncPoint(res);
+	ID3D12GraphicsCommandList *commandList = res.commandList.Get();
+	ThrowIfFailed(res.commandAllocator->Reset());
+	ThrowIfFailed(commandList->Reset(res.commandAllocator.Get(), res.pipelineState.Get()));
+
 	CD3DX12_TEXTURE_COPY_LOCATION src(HouseTex->texSRV.Get(), 0);
 	CD3DX12_TEXTURE_COPY_LOCATION dest(res.renderTarget.Get(), 0);
 	CD3DX12_BOX box(0, 0, 512, 512);
 
-	ID3D12GraphicsCommandList *commandList = res.commandList.Get();//this->commandList.Get();
 	//commandList->CopyResource(renderTargets[frameNum].Get(), HouseTex->texSRV.Get());
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(res.rtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, res.rtvDescriptorSize);
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(res.renderTarget.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET));
@@ -77,14 +89,7 @@ void ApplicationWindow::present() {
 
 	xapp->appWindow.commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
-	// Create synchronization objects and wait until assets have been uploaded to the GPU.
-	//Sleep(30);
-	DXManager::createSyncPoint(res, xapp->appWindow.commandQueue);
-	DXManager::waitForSyncPoint(res);
-	ThrowIfFailed(res.commandAllocator->Reset());
-	ThrowIfFailed(commandList->Reset(res.commandAllocator.Get(), res.pipelineState.Get()));
-
-	ThrowIfFailedWithDevice(swapChain->Present(0, 0), xapp->device.Get());
+	ThrowIfFailedWithDevice(swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), xapp->device.Get());
 }
 
 UINT ApplicationWindow::GetCurrentBackBufferIndex() {
