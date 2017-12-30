@@ -168,6 +168,7 @@ public:
 	bool anyKeyDown = false;
 
 	// Other framework instances:
+	DXManager dxmanager;
 	TextureStore textureStore;
 	//WorldObjectStore objectStore;
 	Lights lights;

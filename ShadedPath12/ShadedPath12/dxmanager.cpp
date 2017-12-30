@@ -1,10 +1,11 @@
 #include "stdafx.h"
 
 // create manager for number of frames
-DXManager::DXManager(int frameCount) {
-	assert(frameCount == FrameCount);
+void DXManager::init(XApp *a, int maxframeNum) {
+	assert(FrameCount == maxframeNum);
 	this->frameCount = frameCount;
-	xapp = XApp::getInstance();
+	xapp = a;
+	device = xapp->device.Get();
 };
 
 void DXManager::createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name) {

@@ -14,6 +14,7 @@ public:
 	ComPtr<ID3D12CommandQueue> commandQueue;
 private:
 	XApp * xapp = nullptr;
+	DXManager *dxmanager = nullptr;
 	static const UINT FrameCount = 3;
 	ComPtr<IDXGISwapChain3> swapChain;
 	ComPtr<ID3D12DescriptorHeap> rtvHeap;  // Resource Target View Heap

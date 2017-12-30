@@ -98,8 +98,7 @@ private:
 class DXManager {
 public:
 	// create manager for number of frames
-	DXManager(int frameCount);
-	void init(ID3D12Device *d) { device = d; };
+	void init(XApp *xapp, int maxframeNum);
 	void setCurrentFrame(int frameNum) { currentFrame = frameNum; };
 	// Buffer sets are identified by number, should start from 0
 	void createConstantBufferSet(UINT setNum, UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name);

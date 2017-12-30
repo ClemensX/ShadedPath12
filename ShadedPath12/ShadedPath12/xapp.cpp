@@ -313,8 +313,6 @@ void XApp::init()
 		//camera.aspectRatio /= 2.0f;
 	}
 
-	appWindow.init(this, factory);
-
 	//camera.projectionTransform();
 	// Describe the swap chain.
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
@@ -367,6 +365,8 @@ void XApp::init()
 	//camera.setSpeed(1.0f);
 
 	initPakFiles();
+	dxmanager.init(this, XApp::FrameCount);
+	appWindow.init(this, factory);
 	textureStore.init(this);
 
 	app->init();
