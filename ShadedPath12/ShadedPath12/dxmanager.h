@@ -99,6 +99,8 @@ class DXManager {
 public:
 	// create manager for number of frames
 	void init(XApp *xapp, int maxframeNum);
+	static void createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue);
+	static void waitForSyncPoint(FrameResource &f);
 	void createFrameResources(vector<AppWindowFrameResource> &res, int count, ComPtr<IDXGISwapChain3> &swapChain);
 	void setCurrentFrame(int frameNum) { currentFrame = frameNum; };
 	// Buffer sets are identified by number, should start from 0
