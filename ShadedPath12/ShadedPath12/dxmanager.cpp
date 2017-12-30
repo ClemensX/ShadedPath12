@@ -299,6 +299,7 @@ void DXManager::createFrameResources(vector<AppWindowFrameResource>& res, int co
 #include "CompiledShaders/PostVS.h"
 		psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
 		ThrowIfFailed(xapp->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&appwinres.pipelineState)));
+		NAME_D3D12_OBJECT_SUFF(appwinres.pipelineState, i);
 		ThrowIfFailed(xapp->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&appwinres.commandAllocator)));
 		NAME_D3D12_OBJECT_SUFF(appwinres.commandAllocator, i);
 		ThrowIfFailed(xapp->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, appwinres.commandAllocator.Get(), appwinres.pipelineState.Get(), IID_PPV_ARGS(&appwinres.commandList)));
@@ -343,3 +344,15 @@ void DXManager::waitForSyncPoint(FrameResource & f)
 	}
 }
 
+void DXManager::waitGPU(FrameResource & res, ComPtr<ID3D12CommandQueue> queue)
+{
+	DXManager::createSyncPoint(res, queue);
+	DXManager::waitForSyncPoint(res);
+}
+
+void DXManager::destroy(vector<AppWindowFrameResource>& resources, ComPtr<ID3D12CommandQueue>& queue)
+{
+	for each (AppWindowFrameResource res in resources) {
+		waitGPU(res, queue);
+	}
+}

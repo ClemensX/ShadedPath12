@@ -101,7 +101,11 @@ public:
 	void init(XApp *xapp, int maxframeNum);
 	static void createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue);
 	static void waitForSyncPoint(FrameResource &f);
+	// cretae sync point and wit for completion
+	void waitGPU(FrameResource &res, ComPtr<ID3D12CommandQueue> queue);
 	void createFrameResources(vector<AppWindowFrameResource> &res, int count, ComPtr<IDXGISwapChain3> &swapChain);
+	// wait until all frames have finished GPU usage
+	void destroy(vector<AppWindowFrameResource> &res, ComPtr<ID3D12CommandQueue> &queue);
 	void setCurrentFrame(int frameNum) { currentFrame = frameNum; };
 	// Buffer sets are identified by number, should start from 0
 	void createConstantBufferSet(UINT setNum, UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name);

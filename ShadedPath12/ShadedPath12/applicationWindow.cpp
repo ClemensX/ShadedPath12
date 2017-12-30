@@ -40,7 +40,6 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 void ApplicationWindow::present() {
 	assert(xapp);
 	assert(xapp->device.Get());
-	if (xapp->isShutdownMode()) return;
 	UINT frameNum = GetCurrentBackBufferIndex();
 	//Log("app window present()" << endl);
 	//Log("xapp device " << xapp << " " << xapp->device.Get() << endl);
@@ -62,10 +61,9 @@ void ApplicationWindow::present() {
 	}
 	AppWindowFrameResource &res = frameResources.at(frameNum);
 
-	// Create synchronization objects and wait until assets have been uploaded to the GPU.
+	// wait until GPU has finished with previous commandList
 	//Sleep(30);
-	DXManager::createSyncPoint(res, xapp->appWindow.commandQueue);
-	DXManager::waitForSyncPoint(res);
+	dxmanager->waitGPU(res, commandQueue);
 	ID3D12GraphicsCommandList *commandList = res.commandList.Get();
 	ThrowIfFailed(res.commandAllocator->Reset());
 	ThrowIfFailed(commandList->Reset(res.commandAllocator.Get(), res.pipelineState.Get()));
@@ -97,7 +95,6 @@ UINT ApplicationWindow::GetCurrentBackBufferIndex() {
 }
 
 void ApplicationWindow::destroy() {
-	//commandQueue.ReleaseAndGetAddressOf();
-	//commandQueue.~ComPtr();
-	//swapChain.~ComPtr();
+	// wait until all frames have finished GPU usage
+	dxmanager->destroy(frameResources, commandQueue);
 }
