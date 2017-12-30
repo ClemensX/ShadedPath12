@@ -157,13 +157,14 @@ void ApplicationWindow::present() {
 	//Log("app window present()" << endl);
 	//Log("xapp device " << xapp << " " << xapp->device.Get() << endl);
 	//Log("xapp device" << xapp << endl);
-	Log("frame: " << xapp->getFramenum() << endl);
+	//Log("frame: " << xapp->getFramenum() << endl);
 
 	// get source resource from texture:
 	static bool done = false;
 	static TextureInfo *HouseTex = nullptr;
 	if (!done) {
 		done = true;
+		//xapp->textureStore.loadTexture(L"vac_09.dds", "markings"); wrong format
 		xapp->textureStore.loadTexture(L"dirt6_markings.dds", "markings");
 		HouseTex = xapp->textureStore.getTexture("markings");
 	}
