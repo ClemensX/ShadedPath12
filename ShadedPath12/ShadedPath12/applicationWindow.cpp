@@ -192,6 +192,7 @@ void ApplicationWindow::present() {
 	//Sleep(30);
 	EffectBase::createSyncPoint(updateFrameData, xapp->appWindow.commandQueue);
 	EffectBase::waitForSyncPoint(updateFrameData);
+	ThrowIfFailed(commandAllocator->Reset());
 	ThrowIfFailed(commandList->Reset(commandAllocator.Get(), pipelineState.Get()));
 
 	ThrowIfFailedWithDevice(swapChain->Present(0, 0), xapp->device.Get());
