@@ -1,14 +1,14 @@
 #include "stdafx.h"
 //#include "effectbase.h"
 
-void EffectBase::createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue)
+void EffectBase::createSyncPoint(FrameResourceSimple &f, ComPtr<ID3D12CommandQueue> queue)
 {
 	UINT64 threadFenceValue = InterlockedIncrement(&f.fenceValue);
 	ThrowIfFailed(queue->Signal(f.fence.Get(), threadFenceValue));
 	ThrowIfFailed(f.fence->SetEventOnCompletion(threadFenceValue, f.fenceEvent));
 }
 
-void EffectBase::waitForSyncPoint(FrameResource & f)
+void EffectBase::waitForSyncPoint(FrameResourceSimple & f)
 {
 	//	int frameIndex = xapp->getCurrentBackBufferIndex();
 	UINT64 completed = f.fence->GetCompletedValue();

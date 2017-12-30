@@ -25,6 +25,6 @@ private:
 	ComPtr<ID3D12GraphicsCommandList> commandList;
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
-	FrameResource updateFrameData;
+	FrameResourceSimple updateFrameData;
 	XApp* xapp = nullptr;
 };

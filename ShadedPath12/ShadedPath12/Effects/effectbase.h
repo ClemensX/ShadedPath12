@@ -6,10 +6,10 @@ protected:
 	//UINT64 fenceValues[XApp::FrameCount];
 	//void WaitForGpu();
 	// fences for update
-	FrameResource frameData[XApp::FrameCount];
+	FrameResourceSimple frameData[XApp::FrameCount];
 public:
-	static void createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue);
-	static void waitForSyncPoint(FrameResource &f);
+	static void createSyncPoint(FrameResourceSimple &f, ComPtr<ID3D12CommandQueue> queue);
+	static void waitForSyncPoint(FrameResourceSimple &f);
 protected:
 	ComPtr<ID3D12CommandAllocator> commandAllocators[XApp::FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> commandLists[XApp::FrameCount];

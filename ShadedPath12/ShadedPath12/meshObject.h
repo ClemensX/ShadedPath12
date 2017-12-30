@@ -149,7 +149,7 @@ private:
 	ComPtr<ID3D12RootSignature> rootSignature;
 	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
 	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
-	FrameResource updateFrameData;
+	FrameResourceSimple updateFrameData;
 	UINT cbvAlignedSize = 0;	// aligned size of cbv for using indexes into larger buffers (256 byte alignment)
 
 	// all data that needs to be frame local. No sync calls should be necessary

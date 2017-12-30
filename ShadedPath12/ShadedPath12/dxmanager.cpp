@@ -178,7 +178,7 @@ D3D12_GPU_VIRTUAL_ADDRESS DXManager::getCBVVirtualAddress(UINT objectIndex, int 
 	//return 0;
 }
 
-void DXManager::copyToComputeBuffer(FrameResource & f)
+void DXManager::copyToComputeBuffer(FrameResourceSimple & f)
 {
 	ThrowIfFailed(commandAllocators[currentFrame]->Reset());
 	ThrowIfFailed(commandLists[currentFrame]->Reset(commandAllocators[currentFrame].Get(), graphics_ps));
