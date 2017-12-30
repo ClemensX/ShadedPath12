@@ -298,6 +298,7 @@ void DXManager::createFrameResources(vector<AppWindowFrameResource>& res, int co
 		psoDesc.SampleDesc.Count = 1;
 #include "CompiledShaders/PostVS.h"
 		psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
+		//psoDesc.VS = { nullptr, 0 };
 		ThrowIfFailed(xapp->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&appwinres.pipelineState)));
 		NAME_D3D12_OBJECT_SUFF(appwinres.pipelineState, i);
 		ThrowIfFailed(xapp->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&appwinres.commandAllocator)));
