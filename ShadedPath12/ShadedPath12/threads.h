@@ -126,6 +126,10 @@ public:
 		}
 	}
 
+	~ThreadGroup() {
+		join_all();
+	}
+
 	std::size_t size() const { return threads.size(); }
 private:
 	std::vector<std::thread> threads;
