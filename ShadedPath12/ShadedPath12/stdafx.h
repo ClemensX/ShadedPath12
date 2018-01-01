@@ -28,6 +28,7 @@
 #include <locale>
 #include <codecvt>
 #include <mutex>
+#include <queue>
 #include <future>
 #include <condition_variable>
 #include <regex>
@@ -200,6 +201,7 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 //#include "camera.h"
 //#include "worldObject.h"
 //#include "vr.h"
+#include "threads.h"
 #include "applicationWindow.h"
 #include "stats.h"
 #include "xapp.h"

@@ -168,6 +168,9 @@ public:
 	bool anyKeyDown = false;
 
 	// Other framework instances:
+	RenderQueue renderQueue;
+	WorkerQueue workerQueue;
+	ThreadGroup workerThreads;
 	DXManager dxmanager;
 	TextureStore textureStore;
 	//WorldObjectStore objectStore;

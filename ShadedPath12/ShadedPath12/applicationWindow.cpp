@@ -35,6 +35,13 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 
 	ThrowIfFailed(swapChain0.As(&swapChain));
 	dxmanager->createFrameResources(frameResources, FrameCount, swapChain);
+	// run worker threads:
+	Command c;
+	//thread t1(&ApplicationWindow::present, this);
+	thread t1(&Command::execute, c);
+	t1.join();
+	//xapp->workerThreads.add_thread<Command>(&c.execute);
+
 }
 
 void ApplicationWindow::present() {

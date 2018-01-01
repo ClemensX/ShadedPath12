@@ -12,6 +12,7 @@ public:
 	UINT GetCurrentBackBufferIndex();
 	void destroy();
 	ComPtr<ID3D12CommandQueue> commandQueue;
+	static void task() {};
 private:
 	XApp * xapp = nullptr;
 	DXManager *dxmanager = nullptr;

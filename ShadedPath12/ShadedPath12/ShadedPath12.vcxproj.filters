@@ -112,6 +112,9 @@
     <ClInclude Include="frameresource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="threads.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -154,6 +157,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="frameresource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="threads.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

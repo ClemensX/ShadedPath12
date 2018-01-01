@@ -181,6 +181,7 @@
     <ClInclude Include="sound.h" />
     <ClInclude Include="stats.h" />
     <ClInclude Include="texture.h" />
+    <ClInclude Include="threads.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="vr.h" />
     <ClInclude Include="winmain.h" />
@@ -200,6 +201,7 @@
     <ClCompile Include="sample1.cpp" />
     <ClCompile Include="stats.cpp" />
     <ClCompile Include="texture.cpp" />
+    <ClCompile Include="threads.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="winmain.cpp" />
     <ClCompile Include="stdafx.cpp">
