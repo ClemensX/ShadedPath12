@@ -15,7 +15,8 @@ class Command {
 public:
 	CommandType type;
 	// run the content of this command in a thread
-	void execute();
+	void task(XApp *xapp);
+	virtual ~Command() {};
 };
 
 class RenderCommand : public Command {
@@ -106,37 +107,26 @@ private:
 	bool in_shutdown{ false };
 };
 
-// from 'Der C++ Programmierer', Listing 14.7, ISBN 978-3-446-44346-4
 class ThreadGroup {
 public:
 	ThreadGroup() = default;
 	ThreadGroup(const ThreadGroup&) = delete;
-
-	~ThreadGroup() {
-		for (const auto& pthread : pthreads) {
-			delete pthread;
-		}
-	}
-
 	ThreadGroup& operator=(const ThreadGroup&) = delete;
 
-	// create thread and start
-	template<typename F>
-	void add_thread(F& f) {
-		pthreads.push_back(new thread(ref(f)));
+	// store and start Thread
+	template <class Fn, class... Args>
+	void add_t(Fn&& F, Args&&... A) {
+		threads.emplace_back(std::thread(F, A...));
 	}
 
 	// wait for all threads to finish
 	void join_all() {
-		for (const auto& pthread : pthreads) {
-			pthread->join();
+		for (auto& t : threads) {
+			t.join();
 		}
 	}
 
-	size_t size() const {
-		return pthreads.size();
-	}
-
+	std::size_t size() const { return threads.size(); }
 private:
-	vector<thread*> pthreads;
+	std::vector<std::thread> threads;
 };

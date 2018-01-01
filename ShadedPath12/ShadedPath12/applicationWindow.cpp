@@ -1,5 +1,5 @@
 #include "stdafx.h"
-
+void test() {}
 void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 	assert(this->xapp == nullptr); // make sure we are only called once
 	this->xapp = xapp;
@@ -36,13 +36,15 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 	ThrowIfFailed(swapChain0.As(&swapChain));
 	dxmanager->createFrameResources(frameResources, FrameCount, swapChain);
 	// run worker threads:
-	Command c;
-	//thread t1(&ApplicationWindow::present, this);
-	thread t1(&Command::execute, c);
-	t1.join();
-	//xapp->workerThreads.add_thread<Command>(&c.execute);
-
+	WorkerCommand c;
+	xapp->workerThreads.add_t(&Command::task, c, xapp);
+	xapp->workerThreads.join_all();
+	//WorkerCommand c;
+	//xapp->workerCommands.push_back(c);
+	//xapp->workerThreads.add_t(&Command::task, c, xapp);
+	//xapp->workerThreads.join_all();
 }
+
 
 void ApplicationWindow::present() {
 	assert(xapp);

@@ -173,6 +173,8 @@ public:
 	ThreadGroup workerThreads;
 	DXManager dxmanager;
 	TextureStore textureStore;
+	RenderCommand renderCommand;  // only one needed
+	vector<WorkerCommand> workerCommands; // one for each thread
 	//WorldObjectStore objectStore;
 	Lights lights;
 	World world;
