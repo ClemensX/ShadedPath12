@@ -60,7 +60,9 @@ void ApplicationWindow::present() {
 		Log("fps " << xapp->fps << " frame " << framenum << endl);
 	}
 	AppWindowFrameResource &res = frameResources.at(frameNum);
-
+	WorkerCommand wc;
+	wc.type = CommandType::WorkerCopyTexture;
+	xapp->workerQueue.push(wc);
 	// get source resource from texture:
 	static bool done = false;
 	static TextureInfo *HouseTex = nullptr;
