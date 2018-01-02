@@ -1,5 +1,5 @@
 #include "stdafx.h"
-void test() {}
+
 void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 	assert(this->xapp == nullptr); // make sure we are only called once
 	this->xapp = xapp;

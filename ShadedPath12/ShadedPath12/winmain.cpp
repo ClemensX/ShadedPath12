@@ -178,7 +178,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 			if (msg.message == WM_QUIT) {
 				break;
-				//xapp->setShutdownMode();
+				xapp->setShutdownMode();
 			}
 
 			//if (xapp->isShudownFinished())

@@ -169,6 +169,8 @@ void XApp::destroy()
 	//WaitForGpu();
 	app->destroy();
 	appWindow.destroy();
+	renderQueue.shutdown();
+	workerQueue.shutdown();
 
 	//Sleep(150);
 	//CloseHandle(fenceEvent);
