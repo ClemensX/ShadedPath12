@@ -60,8 +60,9 @@ void ApplicationWindow::present() {
 		Log("fps " << xapp->fps << " frame " << framenum << endl);
 	}
 	AppWindowFrameResource &res = frameResources.at(frameNum);
-	WorkerCommand wc;
+	WorkerCopyTextureCommand wc;
 	wc.type = CommandType::WorkerCopyTexture;
+	wc.textureName = string("markings");
 	xapp->workerQueue.push(wc);
 	// get source resource from texture:
 	static bool done = false;

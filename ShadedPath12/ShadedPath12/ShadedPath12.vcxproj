@@ -170,6 +170,7 @@
     <ClInclude Include="dxmanager.h" />
     <ClInclude Include="Effects\effectbase.h" />
     <ClInclude Include="Effects\posteffect.h" />
+    <ClInclude Include="Effects\workerCopyTexture.h" />
     <ClInclude Include="forward_structures.h" />
     <ClInclude Include="frameresource.h" />
     <ClInclude Include="gametime.h" />
@@ -196,6 +197,7 @@
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="dxmanager.cpp" />
     <ClCompile Include="Effects\effectbase.cpp" />
+    <ClCompile Include="Effects\workerCopyTexture.cpp" />
     <ClCompile Include="frameresource.cpp" />
     <ClCompile Include="gametime.cpp" />
     <ClCompile Include="sample1.cpp" />

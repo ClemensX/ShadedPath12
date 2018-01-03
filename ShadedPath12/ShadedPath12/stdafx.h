@@ -206,6 +206,7 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 #include "stats.h"
 #include "xapp.h"
 #include "Effects\effectbase.h"
+#include "Effects\workerCopyTexture.h"
 //#include "Effects\lines.h"
 //#include "Effects\dotcross.h"
 //#include "Effects\linetext.h"

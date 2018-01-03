@@ -16,6 +16,7 @@ public:
 	CommandType type;
 	// run the content of this command in a thread
 	void task(XApp *xapp);
+	virtual void perform() { Log("perform base" << endl); };
 	virtual ~Command() {};
 };
 

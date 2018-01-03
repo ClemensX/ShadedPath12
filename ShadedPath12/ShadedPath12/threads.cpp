@@ -11,6 +11,7 @@ void Command::task(XApp * xapp)
 		while (cont) {
 			if (xapp->isShutdownMode()) break;
 			WorkerCommand command = worker.pop();
+			command.perform();
 			//Log("task popped" << endl);
 			//Log("task finished");
 		}
