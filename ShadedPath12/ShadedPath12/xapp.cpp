@@ -193,7 +193,6 @@ void XApp::init()
 {
 	//// Basic initialization
 	if (initialized) return;
-	initialized = true;
 
 	if (!ovrRendering) ovrMirror = false;
 	if (ovrRendering);// vr.init();
@@ -372,6 +371,7 @@ void XApp::init()
 	textureStore.init(this);
 
 	app->init();
+	initialized = true;
 	app->update();
 }
 

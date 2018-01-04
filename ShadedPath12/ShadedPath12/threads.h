@@ -18,6 +18,12 @@ public:
 	void task(XApp *xapp);
 	virtual void perform() { Log("perform base" << endl); };
 	virtual ~Command() {};
+	Command() {};
+protected:
+	// allow copy and move only for children (prevent object slicing)
+	Command(Command&&) = default;
+	Command(Command const&) = default;
+	Command& operator=(const Command&) = default;
 };
 
 class RenderCommand : public Command {
@@ -29,7 +35,6 @@ public:
 class WorkerCommand : public Command {
 public:
 	void * commandDetails = nullptr;
-
 };
 
 class RenderQueue {
@@ -108,6 +113,7 @@ private:
 	bool in_shutdown{ false };
 };
 
+// currently size() is not guarded against xapp->getMaxThreadCount(), but should fail on using comand vectors if index too high
 class ThreadGroup {
 public:
 	ThreadGroup() = default;

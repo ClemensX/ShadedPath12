@@ -11,7 +11,9 @@ void Command::task(XApp * xapp)
 		while (cont) {
 			if (xapp->isShutdownMode()) break;
 			WorkerCommand command = worker.pop();
-			command.perform();
+			WorkerCopyTextureCommand *real_command = (WorkerCopyTextureCommand *) command.commandDetails;
+			real_command->perform();
+			//command.perform();
 			//Log("task popped" << endl);
 			//Log("task finished");
 		}

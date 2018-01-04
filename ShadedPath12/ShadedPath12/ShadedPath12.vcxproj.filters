@@ -115,7 +115,7 @@
     <ClInclude Include="threads.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Effects\workerCopyTexture.h">
+    <ClInclude Include="Effects\copytexture.h">
       <Filter>Effects</Filter>
     </ClInclude>
   </ItemGroup>
@@ -165,7 +165,7 @@
     <ClCompile Include="threads.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Effects\workerCopyTexture.cpp">
+    <ClCompile Include="Effects\copytexture.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
   </ItemGroup>

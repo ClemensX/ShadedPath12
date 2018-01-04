@@ -39,10 +39,12 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 	//WorkerCommand c;
 	//xapp->workerThreads.add_t(&Command::task, c, xapp);
 	//xapp->workerThreads.join_all();
-	WorkerCommand c;
-	xapp->workerCommands.push_back(c);
-	WorkerCommand &ref_c = xapp->workerCommands.at(0);
-	xapp->workerThreads.add_t(&Command::task, ref_c, xapp);
+	WorkerCopyTextureCommand c;
+	//xapp->workerCommands.push_back(c);
+	//WorkerCommand &ref_c = xapp->workerCommands.at(0);
+	xapp->workerThreads.add_t(&Command::task, c, xapp);
+	xapp->workerThreads.add_t(&Command::task, c, xapp);
+	xapp->workerThreads.add_t(&Command::task, c, xapp);
 	//xapp->workerThreads.join_all();
 }
 
@@ -60,10 +62,13 @@ void ApplicationWindow::present() {
 		Log("fps " << xapp->fps << " frame " << framenum << endl);
 	}
 	AppWindowFrameResource &res = frameResources.at(frameNum);
-	WorkerCopyTextureCommand wc;
-	wc.type = CommandType::WorkerCopyTexture;
-	wc.textureName = string("markings");
-	xapp->workerQueue.push(wc);
+	// work with effect:
+
+	//
+	//WorkerCopyTextureCommand wc;
+	//wc.type = CommandType::WorkerCopyTexture;
+	//wc.textureName = string("markings");
+	//xapp->workerQueue.push(wc);
 	// get source resource from texture:
 	static bool done = false;
 	static TextureInfo *HouseTex = nullptr;

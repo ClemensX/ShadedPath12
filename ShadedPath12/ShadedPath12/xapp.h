@@ -173,7 +173,7 @@ public:
 	ThreadGroup workerThreads;
 	DXManager dxmanager;
 	TextureStore textureStore;
-	RenderCommand renderCommand;  // only one needed
+	//RenderCommand renderCommand;  // only one needed TODO delete
 	vector<WorkerCommand> workerCommands; // one for each thread
 	//WorldObjectStore objectStore;
 	Lights lights;
@@ -183,14 +183,22 @@ public:
 	//Sound sound;
 	//VR vr;
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
-	thread mythread;
+	//thread mythread;
 	Stats stats;
+	int getMaxThreadCount() { return maxThreadCount; }
+	// set max thread count
+	// if this is not set by application default of 0 will be used which will prevent most effects from being able to work at all
+	// may only be called during init phase
+	// will trigger a call to all effects to resize their thread resources
+	void setMaxThreadCount(int max) { maxThreadCount = max; }
+	bool inInitPhase() { return !initialized; }
 private:
 	bool shutdownMode = false;
 	UINT shutdownFrameNumStart;
 	long long framenum;
 	UINT frameIndex;
 	bool rtvCleared = false; // shaders can ask if ClearRenderTargetView still has to be called (usually only first shader needs to)
+	int maxThreadCount = 0;  // must be set by app
 
 	unordered_map<string, XAppBase *> appMap;
 	bool initialized = false;

@@ -16,6 +16,7 @@ private:
 	// Engine classes:
 	GameTime gameTime;
 	// used effects:
+	CopyTextureEffect copyTextureEffect;
 	//LinesEffect linesEffect;
 	//Dotcross dotcrossEffect;
 	//Linetext textEffect;
