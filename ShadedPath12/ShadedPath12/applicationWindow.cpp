@@ -36,16 +36,9 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 	ThrowIfFailed(swapChain0.As(&swapChain));
 	dxmanager->createFrameResources(frameResources, FrameCount, swapChain);
 	// run worker threads:
-	//WorkerCommand c;
-	//xapp->workerThreads.add_t(&Command::task, c, xapp);
-	//xapp->workerThreads.join_all();
-	WorkerCopyTextureCommand c;
-	//xapp->workerCommands.push_back(c);
-	//WorkerCommand &ref_c = xapp->workerCommands.at(0);
-	xapp->workerThreads.add_t(&Command::task, c, xapp);
-	xapp->workerThreads.add_t(&Command::task, c, xapp);
-	xapp->workerThreads.add_t(&Command::task, c, xapp);
-	//xapp->workerThreads.join_all();
+	xapp->workerThreads.add_t(Command::task, xapp);
+	xapp->workerThreads.add_t(Command::task, xapp);
+	xapp->workerThreads.add_t(Command::task, xapp);
 }
 
 

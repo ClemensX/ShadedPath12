@@ -2,7 +2,7 @@
 
 void Command::task(XApp * xapp)
 {
-	Log("execute command " << this << " xapp = " << xapp << endl);
+	Log("execute command  xapp = " << xapp << endl);
 	try {
 		//Sleep(5000);
 		WorkerQueue &worker = xapp->workerQueue;
@@ -10,12 +10,8 @@ void Command::task(XApp * xapp)
 		bool cont = true;
 		while (cont) {
 			if (xapp->isShutdownMode()) break;
-			WorkerCommand command = worker.pop();
-			WorkerCopyTextureCommand *real_command = (WorkerCopyTextureCommand *) command.commandDetails;
-			real_command->perform();
-			//command.perform();
-			//Log("task popped" << endl);
-			//Log("task finished");
+			WorkerCommand *command = worker.pop();
+			command->perform();
 		}
 	}
 	catch (char *s) {

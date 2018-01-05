@@ -28,6 +28,6 @@ void CopyTextureEffect::draw()
 	c->type = CommandType::WorkerCopyTexture;
 	c->textureName = string("markings");
 	c->commandDetails = c;
-	xapp->workerQueue.push(*c);
+	xapp->workerQueue.push(c);
 }
 
