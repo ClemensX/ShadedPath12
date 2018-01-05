@@ -30,6 +30,8 @@ void Sample1::init()
 	float lineHeight = 2 * textSize;
 	xapp->world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	xapp->setMaxThreadCount(3);
+	xapp->textureStore.loadTexture(L"dirt6_markings.dds", "markings");
+
 	copyTextureEffect.init();
 
 	Grid *g = xapp->world.createWorldGrid(10.0f, -1.65f);
@@ -75,7 +77,7 @@ void Sample1::update()
 void Sample1::draw()
 {
 	//Log("app draw()" << endl);
-	copyTextureEffect.draw();
+	copyTextureEffect.draw("markings");
 	//linesEffect.draw();
 	//dotcrossEffect.draw();
 	//textEffect.draw();

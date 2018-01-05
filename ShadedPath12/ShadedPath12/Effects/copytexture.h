@@ -3,13 +3,14 @@ class WorkerCopyTextureCommand : public WorkerCommand {
 public:
 	string textureName;
 	void perform();
+	XApp *xapp = nullptr;
 };
 
 class CopyTextureEffect {
 public:
 	void init();
 	void setThreadCount(int max);
-	void draw();
+	void draw(string textureName);
 private:
 	XApp *xapp = nullptr;
 	// used to resize WorkerCommands vector

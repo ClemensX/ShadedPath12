@@ -55,21 +55,14 @@ void ApplicationWindow::present() {
 		Log("fps " << xapp->fps << " frame " << framenum << endl);
 	}
 	AppWindowFrameResource &res = frameResources.at(frameNum);
-	// work with effect:
 
-	//
-	//WorkerCopyTextureCommand wc;
-	//wc.type = CommandType::WorkerCopyTexture;
-	//wc.textureName = string("markings");
-	//xapp->workerQueue.push(wc);
 	// get source resource from texture:
 	static bool done = false;
 	static TextureInfo *HouseTex = nullptr;
 	if (!done) {
 		done = true;
-		//xapp->textureStore.loadTexture(L"vac_09.dds", "markings"); wrong format
-		xapp->textureStore.loadTexture(L"dirt6_markings.dds", "markings");
 		HouseTex = xapp->textureStore.getTexture("markings");
+		assert(HouseTex->available);
 	}
 	resourceStateHelper->addOrKeep(res.renderTarget.Get(), D3D12_RESOURCE_STATE_COMMON);
 	resourceStateHelper->addOrKeep(HouseTex->texSRV.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);

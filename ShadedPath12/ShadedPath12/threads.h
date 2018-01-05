@@ -34,7 +34,7 @@ public:
 // each effect stores an array of its details objects that have the info on what do do
 class WorkerCommand : public Command {
 public:
-	void * commandDetails = nullptr;
+//	void * commandDetails = nullptr;
 };
 
 class RenderQueue {
