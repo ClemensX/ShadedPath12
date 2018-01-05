@@ -10,15 +10,16 @@ public:
 	void init(XApp *xapp, ComPtr<IDXGIFactory4> &factory);
 	void present();
 	UINT GetCurrentBackBufferIndex();
+	const AppWindowFrameResource * getCurrentFrameResource() { return &frameResources.at(GetCurrentBackBufferIndex()); }
 	void destroy();
 	ComPtr<ID3D12CommandQueue> commandQueue;
 	static void task() {};
+	ResourceStateHelper *resourceStateHelper = nullptr;
 private:
 	XApp * xapp = nullptr;
 	DXManager *dxmanager = nullptr;
 	static const UINT FrameCount = 3;
 	ComPtr<IDXGISwapChain3> swapChain;
 	vector<AppWindowFrameResource> frameResources;
-	ResourceStateHelper *resourceStateHelper = nullptr;
 };
 

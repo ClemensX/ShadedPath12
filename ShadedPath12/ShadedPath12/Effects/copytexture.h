@@ -4,6 +4,8 @@ public:
 	string textureName;
 	void perform();
 	XApp *xapp = nullptr;
+	ResourceStateHelper *resourceStateHelper = nullptr;
+	const AppWindowFrameResource *frameResource;
 };
 
 class CopyTextureEffect {

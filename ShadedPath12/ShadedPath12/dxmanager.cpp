@@ -213,6 +213,7 @@ void DXManager::createFrameResources(vector<AppWindowFrameResource>& res, int co
 	Log("app window frame resources size: " << res.size() << endl);
 	for (int i = 0; i < count; i++) {
 		AppWindowFrameResource appwinres;
+		appwinres.frameNum = i;
 		// Create descriptor heaps.
 		{
 			// Describe and create a render target view (RTV) descriptor heap.

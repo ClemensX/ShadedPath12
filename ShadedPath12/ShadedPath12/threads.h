@@ -16,6 +16,7 @@ public:
 	CommandType type;
 	// run the content of this command in a thread
 	static void task(XApp *xapp);
+	static void renderQueueTask(XApp *xapp);
 	virtual void perform() { Log("perform base" << endl); };
 	virtual ~Command() {};
 	Command() {};
@@ -39,7 +40,7 @@ public:
 
 class RenderQueue {
 public:
-	RenderCommand* pop() {
+	RenderCommand pop() {
 		unique_lock<mutex> lock(monitorMutex);
 		while (myqueue.empty()) {
 			cond.wait(lock);
@@ -48,13 +49,13 @@ public:
 			}
 		}
 		assert(myqueue.empty() == false);
-		RenderCommand *renderCommand = myqueue.front();
+		RenderCommand renderCommand = myqueue.front();
 		myqueue.pop();
 		cond.notify_one();
 		return renderCommand;
 	}
 
-	void push(RenderCommand *renderCommand) {
+	void push(RenderCommand renderCommand) {
 		unique_lock<mutex> lock(monitorMutex);
 		if (in_shutdown) {
 			throw "RenderQueue shutdown in push";
@@ -68,8 +69,11 @@ public:
 		cond.notify_all();
 	}
 
+	size_t size() {
+		return myqueue.size();
+	}
 private:
-	queue<RenderCommand*> myqueue;
+	queue<RenderCommand> myqueue;
 	mutex monitorMutex;
 	condition_variable cond;
 	bool in_shutdown{ false };
