@@ -5,7 +5,7 @@ public:
 	void perform();
 	XApp *xapp = nullptr;
 	ResourceStateHelper *resourceStateHelper = nullptr;
-	const AppWindowFrameResource *frameResource;
+	AppWindowFrameResource *frameResource;
 };
 
 class CopyTextureEffect {

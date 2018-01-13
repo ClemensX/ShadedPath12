@@ -30,6 +30,9 @@ protected:
 class RenderCommand : public Command {
 public:
 	ID3D12GraphicsCommandList * commandList = nullptr;
+	bool writesToSwapchain = false;
+	unsigned int frameNum;
+	AppWindowFrameResource *frameResource;
 };
 
 // each effect stores an array of its details objects that have the info on what do do

@@ -122,8 +122,8 @@ public:
 //		return rtvHandle;
 //	};
 //
-	int getCurrentBackBufferIndex() {
-		int frameIndex = 0;
+	unsigned int getCurrentBackBufferIndex() {
+		unsigned int frameIndex = 0;
 		frameIndex = appWindow.GetCurrentBackBufferIndex();
 		//if (!ovrRendering || true) {
 		//	frameIndex = swapChain->GetCurrentBackBufferIndex();

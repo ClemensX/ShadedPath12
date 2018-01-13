@@ -71,7 +71,7 @@ void ApplicationWindow::present() {
 
 	//// wait until GPU has finished with previous commandList
 	////Sleep(30);
-	dxmanager->waitGPU(res, commandQueue);
+	//dxmanager->waitGPU(res, commandQueue);
 	//ID3D12GraphicsCommandList *commandList = res.commandList.Get();
 	//ThrowIfFailed(res.commandAllocator->Reset());
 	//ThrowIfFailed(commandList->Reset(res.commandAllocator.Get(), res.pipelineState.Get()));
@@ -95,10 +95,10 @@ void ApplicationWindow::present() {
 
 	//xapp->appWindow.commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
-	ThrowIfFailedWithDevice(swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), xapp->device.Get());
+	//ThrowIfFailedWithDevice(swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), xapp->device.Get());
 }
 
-UINT ApplicationWindow::GetCurrentBackBufferIndex() {
+unsigned int ApplicationWindow::GetCurrentBackBufferIndex() {
 	return swapChain->GetCurrentBackBufferIndex();
 }
 

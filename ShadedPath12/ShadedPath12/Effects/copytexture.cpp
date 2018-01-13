@@ -7,6 +7,7 @@ void WorkerCopyTextureCommand::perform()
 	assert(tex->available);
 	auto res = frameResource;
 	auto dxmanager = xapp->dxmanager;
+	xapp->dxmanager.waitGPU(*frameResource, xapp->appWindow.commandQueue);
 	resourceStateHelper->addOrKeep(res->renderTarget.Get(), D3D12_RESOURCE_STATE_COMMON);
 	resourceStateHelper->addOrKeep(tex->texSRV.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
@@ -34,6 +35,9 @@ void WorkerCopyTextureCommand::perform()
 	ThrowIfFailed(commandList->Close());
 	RenderCommand rc;
 	rc.commandList = commandList;
+	rc.writesToSwapchain = true;
+	rc.frameNum = res->frameNum;
+	rc.frameResource = res;
 	xapp->renderQueue.push(rc);
 	Log(" render queue size: " << xapp->renderQueue.size() << " frame " << res->frameNum << endl);
 }
