@@ -111,3 +111,8 @@ public:
 		return XMVectorGetX(XMVector3Length(bv - av));
 	};
 };
+
+// log events to memory
+class MemLog {
+
+};

@@ -40,6 +40,7 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 	xapp->workerThreads.add_t(Command::task, xapp);
 	xapp->workerThreads.add_t(Command::task, xapp);
 	xapp->workerThreads.add_t(Command::task, xapp);
+	Log("main thread: " << this_thread::get_id() << endl);
 }
 
 
@@ -47,7 +48,7 @@ void ApplicationWindow::present() {
 	assert(xapp);
 	assert(xapp->device.Get());
 	UINT frameNum = GetCurrentBackBufferIndex();
-	Log("present() " << frameNum << endl);
+	//Log("present() t = " << this_thread::get_id() << " " << frameNum << endl);
 	//Log("app window present()" << endl);
 	//Log("xapp device " << xapp << " " << xapp->device.Get() << endl);
 	//Log("xapp device" << xapp << endl);

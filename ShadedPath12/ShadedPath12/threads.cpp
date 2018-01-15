@@ -2,7 +2,7 @@
 
 void Command::task(XApp * xapp)
 {
-	Log("execute command  xapp = " << xapp << endl);
+	Log("execute command t = " << this_thread::get_id() << " xapp = " << xapp << endl);
 	try {
 		//Sleep(5000);
 		WorkerQueue &worker = xapp->workerQueue;
@@ -22,7 +22,7 @@ void Command::task(XApp * xapp)
 
 void Command::renderQueueTask(XApp * xapp)
 {
-	Log("execute render queue command  xapp = " << xapp << endl);
+	Log("execute render queue command t = " << this_thread::get_id() << " xapp = " << xapp << endl);
 	try {
 		RenderQueue &render = xapp->renderQueue;
 		bool cont = true;
@@ -33,9 +33,9 @@ void Command::renderQueueTask(XApp * xapp)
 			unsigned int current_frame = xapp->getCurrentBackBufferIndex();
 			unsigned int render_command_frame = command.frameNum;
 			//assert(current_frame == render_command_frame);
-			Log("render queue frame: " << xapp->getCurrentBackBufferIndex() << endl);
+			Log("render queue t = " << this_thread::get_id() << " frame: " << current_frame << " render command frame: " << render_command_frame << endl);
 			// only render if swapchain and command list operate on same frame
-			if (current_frame == render_command_frame) {
+			if (true || current_frame == render_command_frame) {
 				//xapp->dxmanager.waitGPU(*command.frameResource, xapp->appWindow.commandQueue);
 				xapp->appWindow.commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 				ThrowIfFailedWithDevice(xapp->appWindow.swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), xapp->device.Get());

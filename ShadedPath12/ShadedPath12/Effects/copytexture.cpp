@@ -2,11 +2,11 @@
 
 void WorkerCopyTextureCommand::perform()
 {
-	//Log("perform() copy texture command" << endl);
-	TextureInfo *tex = xapp->textureStore.getTexture(textureName);
-	assert(tex->available);
 	auto res = frameResource;
 	auto dxmanager = xapp->dxmanager;
+	Log("perform() copy texture command t = " << this_thread::get_id() << " frame " << res->frameNum << endl);
+	TextureInfo *tex = xapp->textureStore.getTexture(textureName);
+	assert(tex->available);
 	xapp->dxmanager.waitGPU(*frameResource, xapp->appWindow.commandQueue);
 	resourceStateHelper->addOrKeep(res->renderTarget.Get(), D3D12_RESOURCE_STATE_COMMON);
 	resourceStateHelper->addOrKeep(tex->texSRV.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
@@ -39,7 +39,7 @@ void WorkerCopyTextureCommand::perform()
 	rc.frameNum = res->frameNum;
 	rc.frameResource = res;
 	xapp->renderQueue.push(rc);
-	Log(" render queue size: " << xapp->renderQueue.size() << " frame " << res->frameNum << endl);
+	Log(" copy texture command finished, t = " << this_thread::get_id() << " queue size: " << xapp->renderQueue.size() << " frame " << res->frameNum << endl);
 }
 
 void CopyTextureEffect::init()
