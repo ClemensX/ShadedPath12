@@ -40,7 +40,7 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 	xapp->workerThreads.add_t(Command::task, xapp);
 	xapp->workerThreads.add_t(Command::task, xapp);
 	xapp->workerThreads.add_t(Command::task, xapp);
-	Log("main thread: " << this_thread::get_id() << endl);
+	Log("main thread: " << ThreadInfo::thread_osid() << endl);
 }
 
 

@@ -156,3 +156,21 @@ public:
 		return osid;
 	}
 };
+
+enum FrameState { Free, Drawing, Executing };
+
+// hold all infos needed to syncronize render and command threads
+class ThreadState {
+private:
+	mutex stateMutex;
+	condition_variable drawSlotAvailable;
+	FrameState frameState[XApp::FrameCount];
+public:
+	void init() {
+		for (UINT i = 0; i < XApp::FrameCount; i++) {
+			frameState[i] = Free;
+		}
+	};
+	// wait until draw slot available and return slot index (0..2)
+	int waitForNextDrawSlot();
+};
