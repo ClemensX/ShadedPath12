@@ -148,3 +148,11 @@ public:
 private:
 	std::vector<std::thread> threads;
 };
+
+class ThreadInfo {
+public:
+	static DWORD thread_osid() {
+		DWORD osid = GetCurrentThreadId();
+		return osid;
+	}
+};
