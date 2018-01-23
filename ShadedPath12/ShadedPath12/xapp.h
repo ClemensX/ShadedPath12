@@ -41,6 +41,8 @@ public:
 	virtual void draw();
 	virtual void destroy();
 	virtual string getWindowTitle() = 0;
+	// current slot number - only to be manipulated by engine, never change in application code
+	int draw_slot = -1;
 
 protected:
 	string myClass;
@@ -171,6 +173,7 @@ public:
 	RenderQueue renderQueue;
 	WorkerQueue workerQueue;
 	ThreadGroup workerThreads;
+	ThreadState threadState;
 	DXManager dxmanager;
 	TextureStore textureStore;
 	//RenderCommand renderCommand;  // only one needed TODO delete

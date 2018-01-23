@@ -137,6 +137,8 @@ void XApp::draw() {
 		//vr.startFrame();
 	}
 	//Log("draw " << frameIndex);
+	int slot = threadState.waitForNextDrawSlot();
+	assert(slot == frameIndex);
 	app->draw();
 	//Log(" end " << frameIndex << " " << getFramenum() << endl);
 
@@ -367,6 +369,7 @@ void XApp::init()
 
 	initPakFiles();
 	dxmanager.init(this, XApp::FrameCount);
+	threadState.init();
 	appWindow.init(this, factory);
 	textureStore.init(this);
 

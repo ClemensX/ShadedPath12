@@ -20,6 +20,8 @@ public:
 	virtual void perform() { Log("perform base" << endl); };
 	virtual ~Command() {};
 	Command() {};
+	// each command must know on which frame (0..2) it operates
+	int draw_slot = -1;
 protected:
 	// allow copy and move only for children (prevent object slicing)
 	Command(Command&&) = default;
@@ -164,13 +166,37 @@ class ThreadState {
 private:
 	mutex stateMutex;
 	condition_variable drawSlotAvailable;
-	FrameState frameState[XApp::FrameCount];
+	FrameState frameState[DXManager::FrameCount];
+	int freeSlots = 0;
 public:
 	void init() {
-		for (UINT i = 0; i < XApp::FrameCount; i++) {
+		for (int i = 0; i < DXManager::FrameCount; i++) {
 			frameState[i] = Free;
 		}
+		freeSlots = DXManager::FrameCount;
 	};
 	// wait until draw slot available and return slot index (0..2)
-	int waitForNextDrawSlot();
+	int waitForNextDrawSlot() {
+		// lock needed for contition_variables
+		unique_lock<mutex> myLock(stateMutex);
+		// wait for at least one free slot
+		drawSlotAvailable.wait(myLock, [this]() {return freeSlots > 0; });
+
+		// now we run exclusively - freely set any state
+		// find the first free slot:
+		int free_slot = -1;
+		for (int i = 0; i < DXManager::FrameCount; i++) {
+			if (frameState[i] == Free) {
+				free_slot = i;
+				break;
+			}
+		}
+		assert(free_slot >= 0);
+		frameState[free_slot] = Drawing;
+		freeSlots--;
+
+		// leave critical section
+		myLock.unlock();
+		return free_slot;
+	};
 };

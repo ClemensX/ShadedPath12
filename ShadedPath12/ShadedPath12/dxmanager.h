@@ -137,10 +137,10 @@ public:
 	ComPtr<ID3D12CommandAllocator> &getGraphicsCommandAllocatorComPtr() { return commandAllocators[currentFrame]; };
 	ComPtr<ID3D12GraphicsCommandList> &getGraphicsCommandListComPtr() { return commandLists[currentFrame]; };
 	ComPtr<ID3D12CommandQueue> commandQueues[3];
-private:
 	// FrameCount should be a copy of XApp::FrameCount, but we don't want to reference XApp from here
 	// That the size is the same as in XApp is checked in intializer
 	static const UINT FrameCount = 3;
+private:
 	int currentFrame = 0;
 	int frameCount;
 	vector<ComPtr<ID3D12Resource>> singleCBVResources; // one for each thread and frame count
