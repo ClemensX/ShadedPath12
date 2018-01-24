@@ -132,19 +132,20 @@ void XApp::update() {
 }
 
 void XApp::draw() {
-	int frameIndex = getCurrentBackBufferIndex();
+	//int frameIndex = getCurrentBackBufferIndex();
 	if (ovrRendering) {
 		//vr.startFrame();
 	}
 	//Log("draw " << frameIndex);
-	int slot = threadState.waitForNextDrawSlot();
-	assert(slot == frameIndex);
+	int slot = threadState.waitForNextDrawSlot(app->draw_slot);
+	//assert(slot == frameIndex);
+	app->draw_slot = slot;
 	app->draw();
 	//Log(" end " << frameIndex << " " << getFramenum() << endl);
 
 	// Present the frame, if in VR this was already done by oculus SDK
 	if (ovrMirror) {
-		UINT frameIndex = getCurrentBackBufferIndex();
+		UINT frameIndex = appWindow.swapChain->GetCurrentBackBufferIndex();//getCurrentBackBufferIndex();
 		lastPresentedFrame = frameIndex;
 		appWindow.present();
 	}

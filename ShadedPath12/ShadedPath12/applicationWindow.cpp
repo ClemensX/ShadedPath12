@@ -47,7 +47,7 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 void ApplicationWindow::present() {
 	assert(xapp);
 	assert(xapp->device.Get());
-	UINT frameNum = GetCurrentBackBufferIndex();
+//	UINT frameNum = GetCurrentBackBufferIndex();
 	//Log("present() t = " << this_thread::get_id() << " " << frameNum << endl);
 	//Log("app window present()" << endl);
 	//Log("xapp device " << xapp << " " << xapp->device.Get() << endl);
@@ -57,7 +57,7 @@ void ApplicationWindow::present() {
 	if ((framenum % 300) == 0) {
 		Log("fps " << xapp->fps << " frame " << framenum << endl);
 	}
-	AppWindowFrameResource &res = frameResources.at(frameNum);
+//	AppWindowFrameResource &res = frameResources.at(frameNum);
 
 	// get source resource from texture:
 	static bool done = false;
@@ -99,9 +99,9 @@ void ApplicationWindow::present() {
 	//ThrowIfFailedWithDevice(swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), xapp->device.Get());
 }
 
-unsigned int ApplicationWindow::GetCurrentBackBufferIndex() {
-	return swapChain->GetCurrentBackBufferIndex();
-}
+//unsigned int ApplicationWindow::GetCurrentBackBufferIndex() {
+//	return swapChain->GetCurrentBackBufferIndex();
+//}
 
 void ApplicationWindow::destroy() {
 	// wait until all frames have finished GPU usage

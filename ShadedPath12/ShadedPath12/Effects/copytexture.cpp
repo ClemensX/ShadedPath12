@@ -62,14 +62,14 @@ void CopyTextureEffect::draw(string texName)
 {
 	assert(xapp->inInitPhase() == false);
 	// get ref to current command: (here just the frame number, may be more complicated in other effects)
-	int index = xapp->getCurrentBackBufferIndex();
+	int index = xapp->getCurrentApp()->draw_slot;//xapp->getCurrentBackBufferIndex();
 	WorkerCopyTextureCommand *c = &worker.at(index);
 	c->draw_slot = index;
 	c->type = CommandType::WorkerCopyTexture;
 	c->textureName = texName;
 	c->xapp = xapp;
 	c->resourceStateHelper = xapp->appWindow.resourceStateHelper;
-	c->frameResource = xapp->appWindow.getCurrentFrameResource();
+	c->frameResource = xapp->appWindow.getFrameResource(index);
 	assert(index == c->frameResource->frameNum);
 	//c->commandDetails = c;
 	xapp->workerQueue.push(c);

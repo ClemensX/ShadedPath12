@@ -124,16 +124,16 @@ public:
 //		return rtvHandle;
 //	};
 //
-	unsigned int getCurrentBackBufferIndex() {
-		unsigned int frameIndex = 0;
-		frameIndex = appWindow.GetCurrentBackBufferIndex();
-		//if (!ovrRendering || true) {
-		//	frameIndex = swapChain->GetCurrentBackBufferIndex();
-		//} else {
-		//	frameIndex = vr.getCurrentFrameBufferIndex();
-		//}
-		return frameIndex;
-	}
+	//unsigned int getCurrentBackBufferIndex() {
+	//	unsigned int frameIndex = 0;
+	//	frameIndex = appWindow.GetCurrentBackBufferIndex();
+	//	//if (!ovrRendering || true) {
+	//	//	frameIndex = swapChain->GetCurrentBackBufferIndex();
+	//	//} else {
+	//	//	frameIndex = vr.getCurrentFrameBufferIndex();
+	//	//}
+	//	return frameIndex;
+	//}
 	// query virtual key definitions (VK_) from Winuser.h
 	bool keyDown(BYTE key);
 
@@ -214,6 +214,7 @@ private:
 	unordered_map<string, PakEntry> pak_content;
 
 public:
+	XAppBase *getCurrentApp() { return app; };
 	// find entry in pak file, return nullptr if not found
 	PakEntry* findFileInPak(wstring filename);
 	long long getFramenum() { return framenum; };

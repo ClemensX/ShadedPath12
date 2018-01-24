@@ -167,36 +167,46 @@ private:
 	mutex stateMutex;
 	condition_variable drawSlotAvailable;
 	FrameState frameState[DXManager::FrameCount];
-	int freeSlots = 0;
 public:
 	void init() {
 		for (int i = 0; i < DXManager::FrameCount; i++) {
 			frameState[i] = Free;
 		}
-		freeSlots = DXManager::FrameCount;
 	};
+
 	// wait until draw slot available and return slot index (0..2)
-	int waitForNextDrawSlot() {
+	// slots are returned in order: 0,1,2,0,1,2,...
+	int waitForNextDrawSlot(int old_slot) {
 		// lock needed for contition_variables
 		unique_lock<mutex> myLock(stateMutex);
-		// wait for at least one free slot
-		drawSlotAvailable.wait(myLock, [this]() {return freeSlots > 0; });
+		// wait for next free slot
+		int next_slot = old_slot + 1;
+		if (next_slot >= DXManager::FrameCount) {
+			next_slot = 0;
+		}
+		drawSlotAvailable.wait(myLock, [this,next_slot]() {return frameState[next_slot] == Free; });
 
 		// now we run exclusively - freely set any state
-		// find the first free slot:
-		int free_slot = -1;
-		for (int i = 0; i < DXManager::FrameCount; i++) {
-			if (frameState[i] == Free) {
-				free_slot = i;
-				break;
-			}
-		}
-		assert(free_slot >= 0);
-		frameState[free_slot] = Drawing;
-		freeSlots--;
+		assert(frameState[next_slot] == Free);
+		frameState[next_slot] = Drawing;
 
 		// leave critical section
 		myLock.unlock();
-		return free_slot;
+		return next_slot;
+	};
+
+	// free draw slot. called right after swapChain->Present()
+	void freeDrawSlot(int i) {
+		// lock needed for contition_variables
+		unique_lock<mutex> myLock(stateMutex);
+		// now we run exclusively - freely set any state
+		// free given slot:
+		assert(frameState[i] == Drawing);
+		frameState[i] = Free;
+
+		// leave critical section
+		myLock.unlock();
+		// notify waiting threads that new slot is available
+		drawSlotAvailable.notify_one();
 	};
 };
