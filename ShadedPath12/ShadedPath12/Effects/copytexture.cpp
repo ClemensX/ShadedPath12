@@ -4,8 +4,7 @@ void WorkerCopyTextureCommand::perform()
 {
 	auto res = frameResource;
 	auto dxmanager = xapp->dxmanager;
-	//Log("perform() copy texture command t = " << this_thread::get_id() << " frame " << res->frameNum << endl);
-	Log("perform() copy texture command t = " << ThreadInfo::thread_osid() << " frame " << res->frameNum << endl);
+	//Log("perform() copy texture command t = " << ThreadInfo::thread_osid() << " frame " << res->frameNum << endl);
 	TextureInfo *tex = xapp->textureStore.getTexture(textureName);
 	assert(tex->available);
 	xapp->dxmanager.waitGPU(*frameResource, xapp->appWindow.commandQueue);
@@ -23,7 +22,6 @@ void WorkerCopyTextureCommand::perform()
 	CD3DX12_TEXTURE_COPY_LOCATION dest(res->renderTarget.Get(), 0);
 	CD3DX12_BOX box(0, 0, 512, 512);
 
-	//commandList->CopyResource(renderTargets[frameNum].Get(), HouseTex->texSRV.Get());
 	resourceStateHelper->toState(res->renderTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(res->rtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, res->rtvDescriptorSize);
 	commandList->ClearRenderTargetView(rtvHandle, xapp->clearColor, 0, nullptr);
@@ -41,8 +39,7 @@ void WorkerCopyTextureCommand::perform()
 	rc.framenum = this->framenum;
 	rc.frameResource = res;
 	xapp->renderQueue.push(rc);
-	//Log(" copy texture command finished, t = " << this_thread::get_id() << " queue size: " << xapp->renderQueue.size() << " frame " << res->frameNum << endl);
-	Log(" copy texture command finished, t = " << ThreadInfo::thread_osid() << " queue size: " << xapp->renderQueue.size() << " frame " << res->frameNum << endl);
+	//Log(" copy texture command finished, t = " << ThreadInfo::thread_osid() << " queue size: " << xapp->renderQueue.size() << " frame " << res->frameNum << endl);
 }
 
 void CopyTextureEffect::init()

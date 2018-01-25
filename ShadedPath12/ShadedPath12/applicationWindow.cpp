@@ -54,7 +54,7 @@ void ApplicationWindow::present() {
 	//Log("xapp device" << xapp << endl);
 	//Log("frame: " << xapp->getFramenum() << endl);
 	long long framenum = xapp->getFramenum();
-	if ((framenum % 300) == 0) {
+	if ((framenum % 10000) == 0) {
 		Log("fps " << xapp->fps << " frame " << framenum << endl);
 	}
 //	AppWindowFrameResource &res = frameResources.at(frameNum);
