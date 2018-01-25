@@ -48,7 +48,7 @@ void Command::renderQueueTask(XApp * xapp)
 					xapp->renderQueue.push(command);
 					// unlock this slot to enable next draw call
 					//xapp->threadState.freeDrawSlot(render_command_frame);
-					return;
+					continue;
 				}
 				assert(presentCount + 1 == command.framenum); // we cannot present out of order - fix render queue
 				//assert(render_command_frame == swapChainIndex);
