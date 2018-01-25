@@ -37,7 +37,8 @@ void WorkerCopyTextureCommand::perform()
 	RenderCommand rc;
 	rc.commandList = commandList;
 	rc.writesToSwapchain = true;
-	rc.frameNum = res->frameNum;
+	rc.frameNum = res->frameNum; // TODO rename!!!
+	rc.framenum = this->framenum;
 	rc.frameResource = res;
 	xapp->renderQueue.push(rc);
 	//Log(" copy texture command finished, t = " << this_thread::get_id() << " queue size: " << xapp->renderQueue.size() << " frame " << res->frameNum << endl);
@@ -63,8 +64,10 @@ void CopyTextureEffect::draw(string texName)
 	assert(xapp->inInitPhase() == false);
 	// get ref to current command: (here just the frame number, may be more complicated in other effects)
 	int index = xapp->getCurrentApp()->draw_slot;//xapp->getCurrentBackBufferIndex();
+	long long framenum = xapp->getCurrentApp()->framenum;
 	WorkerCopyTextureCommand *c = &worker.at(index);
 	c->draw_slot = index;
+	c->framenum = framenum;
 	c->type = CommandType::WorkerCopyTexture;
 	c->textureName = texName;
 	c->xapp = xapp;

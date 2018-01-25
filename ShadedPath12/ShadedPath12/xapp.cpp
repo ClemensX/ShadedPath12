@@ -140,6 +140,7 @@ void XApp::draw() {
 	int slot = threadState.waitForNextDrawSlot(app->draw_slot);
 	//assert(slot == frameIndex);
 	app->draw_slot = slot;
+	app->framenum = getFramenum();
 	app->draw();
 	//Log(" end " << frameIndex << " " << getFramenum() << endl);
 

@@ -43,6 +43,8 @@ public:
 	virtual string getWindowTitle() = 0;
 	// current slot number - only to be manipulated by engine, never change in application code
 	int draw_slot = -1;
+	// global absolute frame counter - only to be manipulated by engine, never change in application code
+	long long framenum = 0;
 
 protected:
 	string myClass;

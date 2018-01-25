@@ -22,6 +22,8 @@ public:
 	Command() {};
 	// each command must know on which frame (0..2) it operates
 	int draw_slot = -1;
+	// store absolute frame num to be able to sync on rendering
+	long long framenum = -1;
 protected:
 	// allow copy and move only for children (prevent object slicing)
 	Command(Command&&) = default;
