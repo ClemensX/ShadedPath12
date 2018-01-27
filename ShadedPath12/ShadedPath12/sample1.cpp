@@ -61,7 +61,7 @@ void Sample1::update()
 	// update info text:
 	string fr("Frame ");
 	stringstream ss;
-	ss << xapp->getFramenum();
+	ss << xapp->getAbsFrameCount();
 	fr.append(ss.str());
 
 	string fps_str("FPS ");

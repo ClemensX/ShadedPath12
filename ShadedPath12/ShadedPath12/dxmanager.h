@@ -107,7 +107,7 @@ private:
 class DXManager {
 public:
 	// create manager for number of frames
-	void init(XApp *xapp, int maxframeNum);
+	void init(XApp *xapp, int frameIndexes);
 	static void createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue);
 	static void waitForSyncPoint(FrameResource &f);
 	// cretae sync point and wit for completion
@@ -115,7 +115,7 @@ public:
 	void createFrameResources(vector<AppWindowFrameResource> &res, int count, ComPtr<IDXGISwapChain3> &swapChain);
 	// wait until all frames have finished GPU usage
 	void destroy(vector<AppWindowFrameResource> &res, ComPtr<ID3D12CommandQueue> &queue);
-	void setCurrentFrame(int frameNum) { currentFrame = frameNum; };
+	void setCurrentFrame(int frameIndex) { currentFrameIndex = frameIndex; };
 	// Buffer sets are identified by number, should start from 0
 	void createConstantBufferSet(UINT setNum, UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name);
 	void uploadConstantBufferSet(UINT setNum, size_t singleObjectSize, void *mem_source);
@@ -132,16 +132,16 @@ public:
 	// copy complete constant buffer to compute buffer
 	void copyToComputeBuffer(FrameResourceSimple & f);
 	D3D12_GPU_VIRTUAL_ADDRESS getCBVVirtualAddress(UINT objectIndex, int eyeNum);
-	ID3D12Resource *getConstantBuffer() { return singleCBVResources[currentFrame].Get(); };
+	ID3D12Resource *getConstantBuffer() { return singleCBVResources[currentFrameIndex].Get(); };
 	//ID3D12CommandAllocator *getGraphicsCommandAllocator() { return commandAllocators[currentFrame].Get(); };
-	ComPtr<ID3D12CommandAllocator> &getGraphicsCommandAllocatorComPtr() { return commandAllocators[currentFrame]; };
-	ComPtr<ID3D12GraphicsCommandList> &getGraphicsCommandListComPtr() { return commandLists[currentFrame]; };
+	ComPtr<ID3D12CommandAllocator> &getGraphicsCommandAllocatorComPtr() { return commandAllocators[currentFrameIndex]; };
+	ComPtr<ID3D12GraphicsCommandList> &getGraphicsCommandListComPtr() { return commandLists[currentFrameIndex]; };
 	ComPtr<ID3D12CommandQueue> commandQueues[3];
 	// FrameCount should be a copy of XApp::FrameCount, but we don't want to reference XApp from here
 	// That the size is the same as in XApp is checked in intializer
 	static const UINT FrameCount = 3;
 private:
-	int currentFrame = 0;
+	int currentFrameIndex = 0;
 	int frameCount;
 	vector<ComPtr<ID3D12Resource>> singleCBVResources; // one for each thread and frame count
 	UINT maxObjects = 0;	// max number of entities allowed in this buffer

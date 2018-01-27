@@ -23,7 +23,7 @@ public:
 	// each command must know on which frame (0..2) it operates
 	int draw_slot = -1;
 	// store absolute frame num to be able to sync on rendering
-	long long framenum = -1;
+	long long absFrameCount = -1;
 protected:
 	// allow copy and move only for children (prevent object slicing)
 	Command(Command&&) = default;
@@ -35,7 +35,7 @@ class RenderCommand : public Command {
 public:
 	ID3D12GraphicsCommandList * commandList = nullptr;
 	bool writesToSwapchain = false;
-	unsigned int frameNum;
+	unsigned int frameIndex;
 	AppWindowFrameResource *frameResource;
 };
 

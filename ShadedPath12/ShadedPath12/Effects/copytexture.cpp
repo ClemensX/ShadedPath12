@@ -4,7 +4,7 @@ void WorkerCopyTextureCommand::perform()
 {
 	auto res = frameResource;
 	auto dxmanager = xapp->dxmanager;
-	//Log("perform() copy texture command t = " << ThreadInfo::thread_osid() << " frame " << res->frameNum << endl);
+	//Log("perform() copy texture command t = " << ThreadInfo::thread_osid() << " frame " << res->frameIndex << endl);
 	TextureInfo *tex = xapp->textureStore.getTexture(textureName);
 	assert(tex->available);
 	xapp->dxmanager.waitGPU(*frameResource, xapp->appWindow.commandQueue);
@@ -35,11 +35,11 @@ void WorkerCopyTextureCommand::perform()
 	RenderCommand rc;
 	rc.commandList = commandList;
 	rc.writesToSwapchain = true;
-	rc.frameNum = res->frameNum; // TODO rename!!!
-	rc.framenum = this->framenum;
+	rc.frameIndex = res->frameIndex;
+	rc.absFrameCount = this->absFrameCount;
 	rc.frameResource = res;
 	xapp->renderQueue.push(rc);
-	//Log(" copy texture command finished, t = " << ThreadInfo::thread_osid() << " queue size: " << xapp->renderQueue.size() << " frame " << res->frameNum << endl);
+	//Log(" copy texture command finished, t = " << ThreadInfo::thread_osid() << " queue size: " << xapp->renderQueue.size() << " frame " << res->frameIndex << endl);
 }
 
 void CopyTextureEffect::init()
@@ -61,16 +61,16 @@ void CopyTextureEffect::draw(string texName)
 	assert(xapp->inInitPhase() == false);
 	// get ref to current command: (here just the frame number, may be more complicated in other effects)
 	int index = xapp->getCurrentApp()->draw_slot;//xapp->getCurrentBackBufferIndex();
-	long long framenum = xapp->getCurrentApp()->framenum;
+	long long absFrameCount = xapp->getCurrentApp()->absFrameCount;
 	WorkerCopyTextureCommand *c = &worker.at(index);
 	c->draw_slot = index;
-	c->framenum = framenum;
+	c->absFrameCount = absFrameCount;
 	c->type = CommandType::WorkerCopyTexture;
 	c->textureName = texName;
 	c->xapp = xapp;
 	c->resourceStateHelper = xapp->appWindow.resourceStateHelper;
 	c->frameResource = xapp->appWindow.getFrameResource(index);
-	assert(index == c->frameResource->frameNum);
+	assert(index == c->frameResource->frameIndex);
 	//c->commandDetails = c;
 	xapp->workerQueue.push(c);
 }

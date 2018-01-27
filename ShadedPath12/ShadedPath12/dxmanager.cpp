@@ -1,9 +1,9 @@
 #include "stdafx.h"
 
 // create manager for number of frames
-void DXManager::init(XApp *a, int maxframeNum) {
-	assert(FrameCount == maxframeNum);
-	this->frameCount = frameCount;
+void DXManager::init(XApp *a, int frameIndexes) {
+	assert(FrameCount == frameIndexes);
+	this->frameCount = frameIndexes;
 	xapp = a;
 	device = xapp->device.Get();
 };
@@ -54,7 +54,7 @@ void DXManager::createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t si
 D3D12_GPU_VIRTUAL_ADDRESS DXManager::getConstantBufferSetVirtualAddress(UINT setNum, int eyeNum)
 {
 	// frame related base address
-	D3D12_GPU_VIRTUAL_ADDRESS dest = cbvSetResources[setSize * setNum + currentFrame]->GetGPUVirtualAddress();
+	D3D12_GPU_VIRTUAL_ADDRESS dest = cbvSetResources[setSize * setNum + currentFrameIndex]->GetGPUVirtualAddress();
 	UINT64 plus = 0; // getOffsetInConstantBuffer(objectIndex, eyeNum);
 	return dest + plus;
 }
@@ -62,7 +62,7 @@ D3D12_GPU_VIRTUAL_ADDRESS DXManager::getConstantBufferSetVirtualAddress(UINT set
 void DXManager::uploadConstantBufferSet(UINT setNum, size_t singleObjectSize, void *mem_source)
 {
 	// frame related base address
-	UINT8 * dest = cbvSetGPUDest[setSize * setNum + currentFrame];
+	UINT8 * dest = cbvSetGPUDest[setSize * setNum + currentFrameIndex];
 	memcpy(dest, mem_source, singleObjectSize);
 }
 
@@ -161,17 +161,17 @@ UINT64 DXManager::getOffsetInConstantBuffer(UINT objectIndex, int eyeNum)
 void DXManager::upload(UINT objectIndex, int eyeNum, void * mem_source)
 {
 	// frame related base address
-	UINT8 * dest = constantBufferUploadCPU + currentFrame * totalSize;
+	UINT8 * dest = constantBufferUploadCPU + currentFrameIndex * totalSize;
 	// add individual object/eye
 	dest += getOffsetInConstantBuffer(objectIndex, eyeNum);
 	memcpy(dest, mem_source, slotSize);
-	objectStateLists[currentFrame].setObjectValidGPU(objectIndex, true);
+	objectStateLists[currentFrameIndex].setObjectValidGPU(objectIndex, true);
 }
 
 D3D12_GPU_VIRTUAL_ADDRESS DXManager::getCBVVirtualAddress(UINT objectIndex, int eyeNum)
 {
 	// frame related base address
-	D3D12_GPU_VIRTUAL_ADDRESS dest = singleCBVResources[currentFrame]->GetGPUVirtualAddress();
+	D3D12_GPU_VIRTUAL_ADDRESS dest = singleCBVResources[currentFrameIndex]->GetGPUVirtualAddress();
 	UINT64 plus = getOffsetInConstantBuffer(objectIndex, eyeNum);
 	//plus = 0;
 	return dest + plus;
@@ -180,22 +180,22 @@ D3D12_GPU_VIRTUAL_ADDRESS DXManager::getCBVVirtualAddress(UINT objectIndex, int 
 
 void DXManager::copyToComputeBuffer(FrameResourceSimple & f)
 {
-	ThrowIfFailed(commandAllocators[currentFrame]->Reset());
-	ThrowIfFailed(commandLists[currentFrame]->Reset(commandAllocators[currentFrame].Get(), graphics_ps));
+	ThrowIfFailed(commandAllocators[currentFrameIndex]->Reset());
+	ThrowIfFailed(commandLists[currentFrameIndex]->Reset(commandAllocators[currentFrameIndex].Get(), graphics_ps));
 	// Set necessary state.
 	//commandLists[currentFrame]->SetGraphicsRootSignature(rootSignature.Get());
-	UINT64 source_offset = currentFrame * totalSize;
-	resourceStateHelper->toState(singleCBVResources[currentFrame].Get(), D3D12_RESOURCE_STATE_COPY_DEST, commandLists[currentFrame].Get());
-	commandLists[currentFrame]->CopyBufferRegion(singleCBVResources[currentFrame].Get(), 0L, constantBufferUpload.Get(), source_offset, totalSize);
-	resourceStateHelper->toState(singleCBVResources[currentFrame].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandLists[currentFrame].Get());
+	UINT64 source_offset = currentFrameIndex * totalSize;
+	resourceStateHelper->toState(singleCBVResources[currentFrameIndex].Get(), D3D12_RESOURCE_STATE_COPY_DEST, commandLists[currentFrameIndex].Get());
+	commandLists[currentFrameIndex]->CopyBufferRegion(singleCBVResources[currentFrameIndex].Get(), 0L, constantBufferUpload.Get(), source_offset, totalSize);
+	resourceStateHelper->toState(singleCBVResources[currentFrameIndex].Get(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, commandLists[currentFrameIndex].Get());
 	//resourceStateHelper->toState(singleCBVResources[currentFrame].Get(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, commandLists[currentFrame].Get());
 	//commandLists[currentFrame]->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(singleCBVResources[currentFrame].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 
-	ThrowIfFailed(commandLists[currentFrame]->Close());
+	ThrowIfFailed(commandLists[currentFrameIndex]->Close());
 	// Execute the command list.
-	ID3D12CommandList* ppCommandLists[] = { commandLists[currentFrame].Get() };
-	commandQueues[currentFrame]->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-	EffectBase::createSyncPoint(f, commandQueues[currentFrame]);
+	ID3D12CommandList* ppCommandLists[] = { commandLists[currentFrameIndex].Get() };
+	commandQueues[currentFrameIndex]->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	EffectBase::createSyncPoint(f, commandQueues[currentFrameIndex]);
 	EffectBase::waitForSyncPoint(f);
 	// signal updated const buffer: only objects already updated in GPU will be ok in compute buffer
 	if (!xapp->ovrRendering)
@@ -203,7 +203,7 @@ void DXManager::copyToComputeBuffer(FrameResourceSimple & f)
 	else 
 		assert(maxObjects == (totalSize/2) / slotSize);
 	for (unsigned int i = 0; i < maxObjects; i++) {
-		objectStateLists[currentFrame].setObjectValidCompute(i, true);
+		objectStateLists[currentFrameIndex].setObjectValidCompute(i, true);
 	}
 }
 
@@ -213,7 +213,7 @@ void DXManager::createFrameResources(vector<AppWindowFrameResource>& res, int co
 	Log("app window frame resources size: " << res.size() << endl);
 	for (int i = 0; i < count; i++) {
 		AppWindowFrameResource appwinres;
-		appwinres.frameNum = i;
+		appwinres.frameIndex = i;
 		// Create descriptor heaps.
 		{
 			// Describe and create a render target view (RTV) descriptor heap.

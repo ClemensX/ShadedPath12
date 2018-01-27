@@ -32,7 +32,7 @@ XApp::XApp() : /*camera(),*/ world(this) /*, vr(this)*/
 	mouseTodo = true;
 	mouseDx = 0;
 	mouseDy = 0;
-	framenum = 0;
+	absFrameCount = 0;
 	//appWindow.init(this); done during init()
 	stats.init(this);
 	//objectStore.xapp = this;
@@ -44,12 +44,12 @@ XApp::~XApp()
 }
 
 void XApp::update() {
-	framenum++;
+	absFrameCount++;
 	GetKeyboardState(key_state);
 	LONGLONG old = gametime.getRealTime();
 	gametime.advanceTime();
 	double dt = gametime.getDeltaTime();
-	if ((framenum % 30) == 0) {
+	if ((absFrameCount % 30) == 0) {
 		// calculate fps every 30 frames
 		LONGLONG now = gametime.getRealTime();
 		double seconds = gametime.getSecondsBetween(old, now);
@@ -140,9 +140,9 @@ void XApp::draw() {
 	int slot = threadState.waitForNextDrawSlot(app->draw_slot);
 	//assert(slot == frameIndex);
 	app->draw_slot = slot;
-	app->framenum = getFramenum();
+	app->absFrameCount = getAbsFrameCount();
 	app->draw();
-	//Log(" end " << frameIndex << " " << getFramenum() << endl);
+	//Log(" end " << frameIndex << " " << getAbsFrameCount() << endl);
 
 	// Present the frame, if in VR this was already done by oculus SDK
 	if (ovrMirror) {
@@ -153,7 +153,7 @@ void XApp::draw() {
 	if (!ovrRendering) {
 		lastPresentedFrame = frameIndex;
 		if (isShutdownMode()) {
-			UINT n = shutdownFrameNumStart;
+			UINT n = shutdownAbsFrameStart;
 		}
 		//ThrowIfFailedWithDevice(swapChain->Present(0, 0), xapp().device.Get());
 	}

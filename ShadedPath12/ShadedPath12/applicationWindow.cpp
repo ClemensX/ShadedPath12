@@ -47,17 +47,17 @@ void ApplicationWindow::init(XApp *xapp, ComPtr<IDXGIFactory4> &factory) {
 void ApplicationWindow::present() {
 	assert(xapp);
 	assert(xapp->device.Get());
-//	UINT frameNum = GetCurrentBackBufferIndex();
-	//Log("present() t = " << this_thread::get_id() << " " << frameNum << endl);
+//	UINT frameIndex = GetCurrentBackBufferIndex();
+	//Log("present() t = " << this_thread::get_id() << " " << frameIndex << endl);
 	//Log("app window present()" << endl);
 	//Log("xapp device " << xapp << " " << xapp->device.Get() << endl);
 	//Log("xapp device" << xapp << endl);
-	//Log("frame: " << xapp->getFramenum() << endl);
-	long long framenum = xapp->getFramenum();
-	if ((framenum % 10000) == 0) {
-		Log("fps " << xapp->fps << " frame " << framenum << endl);
+	//Log("frame: " << xapp->getAbsFrameCount() << endl);
+	long long absFrameCount = xapp->getAbsFrameCount();
+	if ((absFrameCount % 10000) == 0) {
+		Log("fps " << xapp->fps << " frame " << absFrameCount << endl);
 	}
-//	AppWindowFrameResource &res = frameResources.at(frameNum);
+//	AppWindowFrameResource &res = frameResources.at(frameIndex);
 
 	// get source resource from texture:
 	static bool done = false;
@@ -81,7 +81,7 @@ void ApplicationWindow::present() {
 	//CD3DX12_TEXTURE_COPY_LOCATION dest(res.renderTarget.Get(), 0);
 	//CD3DX12_BOX box(0, 0, 512, 512);
 
-	////commandList->CopyResource(renderTargets[frameNum].Get(), HouseTex->texSRV.Get());
+	////commandList->CopyResource(renderTargets[frameIndex].Get(), HouseTex->texSRV.Get());
 	//resourceStateHelper->toState(res.renderTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
 	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(res.rtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, res.rtvDescriptorSize);
 	//commandList->ClearRenderTargetView(rtvHandle, xapp->clearColor, 0, nullptr);

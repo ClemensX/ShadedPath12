@@ -8,7 +8,7 @@ public:
 	void endDraw(GameTime &gameTime);
 
 	static const int numFramesGathered = 10 * 3;
-	static const int frameNumStartGathering = 10 * 3;
+	static const int absFrameCountStartGathering = 10 * 3;
 	LONGLONG started[numFramesGathered] = { 0 };
 	LONGLONG ended[numFramesGathered] = { 0 };
 	Stats();

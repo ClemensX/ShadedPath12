@@ -199,7 +199,7 @@ private:
 	ComPtr<ID3D12CommandAllocator> computeAllocator[XApp::FrameCount];
 	ComPtr<ID3D12CommandQueue> computeCommandQueue[XApp::FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> computeCommandList[XApp::FrameCount];
-	void computeMethod(UINT frameNum);
+	void computeMethod(UINT frameIndex);
 	DXManager dxManager;
 	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	ComPtr<ID3D12DescriptorHeap> mSrvDescriptorHeap;

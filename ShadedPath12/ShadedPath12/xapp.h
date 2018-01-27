@@ -44,7 +44,7 @@ public:
 	// current slot number - only to be manipulated by engine, never change in application code
 	int draw_slot = -1;
 	// global absolute frame counter - only to be manipulated by engine, never change in application code
-	long long framenum = 0;
+	long long absFrameCount = 0;
 
 protected:
 	string myClass;
@@ -80,9 +80,9 @@ public:
 	void report();
 	void calcBackbufferSizeAndAspectRatio();
 	// signal shutdown - game loop will end in 3 frames
-	void setShutdownMode() { shutdownMode = true; shutdownFrameNumStart = (UINT)framenum; };
+	void setShutdownMode() { shutdownMode = true; shutdownAbsFrameStart = (UINT)absFrameCount; };
 	bool isShutdownMode() { return shutdownMode; };
-	bool isShudownFinished() { return shutdownMode && (framenum > (shutdownFrameNumStart + 3)); };
+	bool isShudownFinished() { return shutdownMode && (absFrameCount > (shutdownAbsFrameStart + 3)); };
 
 	// asset handling
 	enum FileCategory { FX, TEXTURE, MESH, SOUND, TEXTUREPAK };
@@ -199,8 +199,8 @@ public:
 	bool inInitPhase() { return !initialized; }
 private:
 	bool shutdownMode = false;
-	UINT shutdownFrameNumStart;
-	long long framenum;
+	UINT shutdownAbsFrameStart;
+	long long absFrameCount;
 	UINT frameIndex;
 	bool rtvCleared = false; // shaders can ask if ClearRenderTargetView still has to be called (usually only first shader needs to)
 	int maxThreadCount = 0;  // must be set by app
@@ -219,7 +219,7 @@ public:
 	XAppBase *getCurrentApp() { return app; };
 	// find entry in pak file, return nullptr if not found
 	PakEntry* findFileInPak(wstring filename);
-	long long getFramenum() { return framenum; };
+	long long getAbsFrameCount() { return absFrameCount; };
 	// new-engine:
 	float clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
 	ApplicationWindow appWindow;

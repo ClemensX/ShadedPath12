@@ -6,12 +6,12 @@ Stats::Stats()
 
 void Stats::startUpdate(GameTime &gameTime)
 {
-	long long framenum = xapp->getFramenum();
-	if (frameNumStartGathering <= framenum && framenum < frameNumStartGathering + numFramesGathered) {
+	long long absFrameCount = xapp->getAbsFrameCount();
+	if (absFrameCountStartGathering <= absFrameCount && absFrameCount < absFrameCountStartGathering + numFramesGathered) {
 		LARGE_INTEGER qwTime;
 		QueryPerformanceCounter(&qwTime);
 		LONGLONG now = qwTime.QuadPart;
-		started[framenum - frameNumStartGathering] = now;
+		started[absFrameCount - absFrameCountStartGathering] = now;
 	}
 }
 
@@ -25,12 +25,12 @@ void Stats::endUpdate(GameTime &gameTime)
 
 void Stats::endDraw(GameTime &gameTime)
 {
-	long long framenum = xapp->getFramenum();
-	if (frameNumStartGathering <= framenum && framenum < frameNumStartGathering + numFramesGathered) {
+	long long absFrameCount = xapp->getAbsFrameCount();
+	if (absFrameCountStartGathering <= absFrameCount && absFrameCount < absFrameCountStartGathering + numFramesGathered) {
 		LARGE_INTEGER qwTime;
 		QueryPerformanceCounter(&qwTime);
 		LONGLONG now = qwTime.QuadPart;
-		ended[framenum - frameNumStartGathering] = now;
+		ended[absFrameCount - absFrameCountStartGathering] = now;
 	}
 }
 
@@ -43,7 +43,7 @@ Stats::~Stats()
 		Log("" << getInfo(si.first));
 	}
 	//for (int i = 0; i < numFramesGathered; i++) {
-	//	Log("stat frame " << frameNumStartGathering + i << " " << started[i] - started[0] << " " << ended[i] - started[0] << endl);
+	//	Log("stat frame " << absFrameCountStartGathering + i << " " << started[i] - started[0] << " " << ended[i] - started[0] << endl);
 	//}
 }
 
