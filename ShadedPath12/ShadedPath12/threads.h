@@ -14,8 +14,9 @@ enum CommandType { RenderCommandList, WorkerCopyTexture };
 class Command {
 public:
 	CommandType type;
-	// run the content of this command in a thread
+	// worker thread for running effect commands continuously
 	static void task(XApp *xapp);
+	// single worker thread for rendering to presentation back buffer
 	static void renderQueueTask(XApp *xapp);
 	virtual void perform() { Log("perform base" << endl); };
 	virtual ~Command() {};

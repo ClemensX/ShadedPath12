@@ -66,5 +66,15 @@ protected:
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
 	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	XApp* xapp;
+	void initFrameResources() {
+		for (int i = 0; i < XApp::FrameCount; i++) {
+
+		}
+	}
 public:
+};
+
+// clear effect, should be first effect called by an app
+class ClearEffect : EffectBase {
+
 };

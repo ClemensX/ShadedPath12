@@ -25,5 +25,12 @@ public:
 */
 class AppWindowFrameResource : public FrameResource {
 public:
+};
 
+/*
+ * AppWindowFrameResource.
+ * All resources needed for app window.
+ */
+class EffectFrameResource : public FrameResource {
+public:
 };
