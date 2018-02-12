@@ -66,9 +66,15 @@ protected:
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
 	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	XApp* xapp;
+	vector<EffectFrameResource> effectFrameResources;
+	virtual void initFrameResource(EffectFrameResource *effectFrameResource) = 0;
+	// init frame ressources for this effect, calls back to effect class for intitializing the fields
 	void initFrameResources() {
 		for (int i = 0; i < XApp::FrameCount; i++) {
-
+			EffectFrameResource effectFrameResource;
+			initFrameResource(&effectFrameResource);
+			effectFrameResources.push_back(effectFrameResource);
+			assert(effectFrameResources.size() == i + 1);
 		}
 	}
 public:
@@ -76,5 +82,6 @@ public:
 
 // clear effect, should be first effect called by an app
 class ClearEffect : EffectBase {
-
+	// Inherited via EffectBase
+	virtual void initFrameResource(EffectFrameResource * effectFrameResource) override;
 };

@@ -17,6 +17,7 @@ private:
 	GameTime gameTime;
 	// used effects:
 	CopyTextureEffect copyTextureEffect;
+	ClearEffect clearEffect;
 	//LinesEffect linesEffect;
 	//Dotcross dotcrossEffect;
 	//Linetext textEffect;

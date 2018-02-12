@@ -128,3 +128,9 @@ EffectBase::~EffectBase()
 	}
 }
 
+
+// simple clear effect
+
+void ClearEffect::initFrameResource(EffectFrameResource * effectFrameResource)
+{
+}
