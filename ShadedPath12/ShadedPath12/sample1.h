@@ -16,6 +16,7 @@ private:
 	// Engine classes:
 	GameTime gameTime;
 	// used effects:
+	GlobalEffect globalEffect;
 	CopyTextureEffect copyTextureEffect;
 	ClearEffect clearEffect;
 	//LinesEffect linesEffect;

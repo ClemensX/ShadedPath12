@@ -32,6 +32,8 @@ void Sample1::init()
 	xapp->setMaxThreadCount(3);
 	xapp->textureStore.loadTexture(L"dirt6_markings.dds", "markings");
 
+	globalEffect.init();
+	clearEffect.init();
 	copyTextureEffect.init();
 
 	Grid *g = xapp->world.createWorldGrid(10.0f, -1.65f);
@@ -77,6 +79,7 @@ void Sample1::update()
 void Sample1::draw()
 {
 	//Log("app draw()" << endl);
+	clearEffect.draw();
 	copyTextureEffect.draw("markings");
 	//linesEffect.draw();
 	//dotcrossEffect.draw();

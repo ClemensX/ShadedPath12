@@ -67,12 +67,12 @@ protected:
 	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	XApp* xapp;
 	vector<EffectFrameResource> effectFrameResources;
-	virtual void initFrameResource(EffectFrameResource *effectFrameResource) = 0;
+	virtual void initFrameResource(EffectFrameResource *effectFrameResource, int frameIndex) = 0;
 	// init frame ressources for this effect, calls back to effect class for intitializing the fields
 	void initFrameResources() {
 		for (int i = 0; i < XApp::FrameCount; i++) {
 			EffectFrameResource effectFrameResource;
-			initFrameResource(&effectFrameResource);
+			initFrameResource(&effectFrameResource, i);
 			effectFrameResources.push_back(effectFrameResource);
 			assert(effectFrameResources.size() == i + 1);
 		}
@@ -83,5 +83,17 @@ public:
 // clear effect, should be first effect called by an app
 class ClearEffect : EffectBase {
 	// Inherited via EffectBase
-	virtual void initFrameResource(EffectFrameResource * effectFrameResource) override;
+	virtual void initFrameResource(EffectFrameResource * effectFrameResource, int frameIndex) override;
+public:
+	void init();
+	void draw();
+};
+
+// global effect, render target for all other effects
+class GlobalEffect : EffectBase {
+	// Inherited via EffectBase
+	virtual void initFrameResource(EffectFrameResource * effectFrameResource, int frameIndex) override;
+public:
+	void init();
+	void draw();
 };
