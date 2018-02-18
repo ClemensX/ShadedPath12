@@ -149,16 +149,7 @@ void ClearEffect::draw()
 
 void GlobalEffect::initFrameResource(EffectFrameResource * effectFrameResource, int frameIndex)
 {
-	// Describe and create a render target view (RTV) descriptor heap.
-
-	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-	rtvHeapDesc.NumDescriptors = 1;
-	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	ThrowIfFailed(xapp->device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&effectFrameResource->rtvHeap)));
-	NAME_D3D12_OBJECT_SUFF(effectFrameResource->rtvHeap, frameIndex);
-	//appwinres.rtvDescriptorSize = xapp->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
+	// create depth/stencil buffer and render texture
 	// Describe and create a depth stencil view (DSV) descriptor heap.
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
 	dsvHeapDesc.NumDescriptors = 1;
@@ -167,13 +158,12 @@ void GlobalEffect::initFrameResource(EffectFrameResource * effectFrameResource, 
 	ThrowIfFailed(xapp->device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&effectFrameResource->dsvHeap)));
  
 	// depth stencil
-	// Create the depth stencil view for each frame
 	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
 	depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
 	depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
 
-	// create the render target texture
+	// create the depth/stencil texture
 	xapp->device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
@@ -184,6 +174,30 @@ void GlobalEffect::initFrameResource(EffectFrameResource * effectFrameResource, 
 	);
 	xapp->device->CreateDepthStencilView(effectFrameResource->depthStencil.Get(), &depthStencilDesc, effectFrameResource->dsvHeap->GetCPUDescriptorHandleForHeapStart());
 	NAME_D3D12_OBJECT_SUFF(effectFrameResource->depthStencil, frameIndex);
+
+	// Describe and create a render target view (RTV) descriptor heap.
+	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
+	rtvHeapDesc.NumDescriptors = 1;
+	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	ThrowIfFailed(xapp->device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&effectFrameResource->rtvHeap)));
+	NAME_D3D12_OBJECT_SUFF(effectFrameResource->rtvHeap, frameIndex);
+	effectFrameResource->rtvDescriptorSize = xapp->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+	// create the depth/stencil texture
+	xapp->device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, xapp->backbufferWidth, xapp->backbufferHeight, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
+		D3D12_RESOURCE_STATE_RENDER_TARGET,
+		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_R8G8B8A8_UNORM, xapp->clearColor),
+		IID_PPV_ARGS(&effectFrameResource->renderTarget)
+	);
+
+	// create the render target view from the heap desc and render texture:
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(effectFrameResource->rtvHeap->GetCPUDescriptorHandleForHeapStart());
+	xapp->device->CreateRenderTargetView(effectFrameResource->renderTarget.Get(), nullptr, rtvHandle);
+	rtvHandle.Offset(1, effectFrameResource->rtvDescriptorSize);
 }
 
 void GlobalEffect::init()
