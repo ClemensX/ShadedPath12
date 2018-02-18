@@ -137,7 +137,9 @@ void ClearEffect::initFrameResource(EffectFrameResource * effectFrameResource, i
 
 void ClearEffect::init()
 {
-	xapp = XApp::getInstance();
+	this->xapp = XApp::getInstance();
+	this->dxmanager = &xapp->dxmanager;
+	this->resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	EffectBase::initFrameResources();
 }
 
@@ -194,18 +196,35 @@ void GlobalEffect::initFrameResource(EffectFrameResource * effectFrameResource, 
 		IID_PPV_ARGS(&effectFrameResource->renderTarget)
 	);
 
+	resourceStateHelper->add(effectFrameResource->renderTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 	// create the render target view from the heap desc and render texture:
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(effectFrameResource->rtvHeap->GetCPUDescriptorHandleForHeapStart());
 	xapp->device->CreateRenderTargetView(effectFrameResource->renderTarget.Get(), nullptr, rtvHandle);
 	rtvHandle.Offset(1, effectFrameResource->rtvDescriptorSize);
+	dxmanager->createPSO(*effectFrameResource, frameIndex);
 }
 
 void GlobalEffect::init()
 {
-	xapp = XApp::getInstance();
+	this->xapp = XApp::getInstance();
+	this->dxmanager = &xapp->dxmanager;
+	this->resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	EffectBase::initFrameResources();
+	assert(xapp->inInitPhase() == true);
+	setThreadCount(xapp->getMaxThreadCount());
+}
+
+void GlobalEffect::setThreadCount(int max)
+{
+	assert(xapp != nullptr);
+	assert(xapp->inInitPhase() == true);
+	worker.resize(max);
 }
 
 void GlobalEffect::draw()
+{
+}
+
+void WorkerGlobalCopyTextureCommand::perform()
 {
 }

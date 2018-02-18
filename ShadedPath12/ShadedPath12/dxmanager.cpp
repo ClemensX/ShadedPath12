@@ -206,6 +206,55 @@ void DXManager::copyToComputeBuffer(FrameResourceSimple & f)
 		objectStateLists[currentFrameIndex].setObjectValidCompute(i, true);
 	}
 }
+void DXManager::createPSO(EffectFrameResource &res, int frameIndex)
+{
+	// Create an empty root signature.
+	{
+		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+		rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		ComPtr<ID3DBlob> signature;
+		ComPtr<ID3DBlob> error;
+		ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
+		ThrowIfFailed(xapp->device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&res.rootSignature)));
+	}
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+	// Describe and create the graphics pipeline state object (PSO).
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+	psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
+	psoDesc.pRootSignature = res.rootSignature.Get();
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.DepthStencilState.DepthEnable = FALSE;
+	psoDesc.DepthStencilState.StencilEnable = FALSE;
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.NumRenderTargets = 1;
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	psoDesc.SampleDesc.Count = 1;
+#include "CompiledShaders/PostVS.h"
+	psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
+	//psoDesc.VS = { nullptr, 0 };
+	ThrowIfFailed(xapp->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&res.pipelineState)));
+	NAME_D3D12_OBJECT_SUFF(res.pipelineState, frameIndex);
+	ThrowIfFailed(xapp->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&res.commandAllocator)));
+	NAME_D3D12_OBJECT_SUFF(res.commandAllocator, frameIndex);
+	ThrowIfFailed(xapp->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, res.commandAllocator.Get(), res.pipelineState.Get(), IID_PPV_ARGS(&res.commandList)));
+	NAME_D3D12_OBJECT_SUFF(res.commandList, frameIndex);
+	res.commandList->Close();
+	ThrowIfFailed(xapp->device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&res.fence)));
+	NAME_D3D12_OBJECT_SUFF(res.fence, frameIndex);
+	res.fenceValue = 0;
+	res.fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+	if (res.fenceEvent == nullptr) {
+		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+	}
+
+}
 
 // create resources for an app window
 void DXManager::createFrameResources(vector<AppWindowFrameResource>& res, int count, ComPtr<IDXGISwapChain3> &swapChain)

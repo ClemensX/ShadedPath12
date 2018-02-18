@@ -65,7 +65,8 @@ protected:
 	virtual ~EffectBase();
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
 	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
-	XApp* xapp;
+	XApp * xapp = nullptr;
+	DXManager *dxmanager = nullptr;
 	vector<EffectFrameResource> effectFrameResources;
 	virtual void initFrameResource(EffectFrameResource *effectFrameResource, int frameIndex) = 0;
 	// init frame ressources for this effect, calls back to effect class for intitializing the fields
@@ -89,11 +90,23 @@ public:
 	void draw();
 };
 
+class WorkerGlobalCopyTextureCommand : public WorkerCommand {
+public:
+	void perform();
+	XApp *xapp = nullptr;
+	ResourceStateHelper *resourceStateHelper = nullptr;
+	AppWindowFrameResource *appFrameResource;
+	EffectFrameResource *effectFrameResource;
+};
+
 // global effect, render target for all other effects
 class GlobalEffect : EffectBase {
 	// Inherited via EffectBase
 	virtual void initFrameResource(EffectFrameResource * effectFrameResource, int frameIndex) override;
 public:
 	void init();
+	void setThreadCount(int max);
 	void draw();
+private:
+	vector<WorkerGlobalCopyTextureCommand> worker;
 };

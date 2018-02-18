@@ -131,6 +131,7 @@ public:
 	void upload(UINT objectIndex, int eyeNum, void* mem_source);
 	// copy complete constant buffer to compute buffer
 	void copyToComputeBuffer(FrameResourceSimple & f);
+	void createPSO(EffectFrameResource & res, int frameIndex);
 	D3D12_GPU_VIRTUAL_ADDRESS getCBVVirtualAddress(UINT objectIndex, int eyeNum);
 	ID3D12Resource *getConstantBuffer() { return singleCBVResources[currentFrameIndex].Get(); };
 	//ID3D12CommandAllocator *getGraphicsCommandAllocator() { return commandAllocators[currentFrame].Get(); };
