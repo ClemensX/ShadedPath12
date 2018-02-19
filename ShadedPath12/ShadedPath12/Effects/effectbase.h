@@ -69,6 +69,7 @@ protected:
 	DXManager *dxmanager = nullptr;
 	vector<EffectFrameResource> effectFrameResources;
 	virtual void initFrameResource(EffectFrameResource *effectFrameResource, int frameIndex) = 0;
+	EffectFrameResource * getFrameResource(int i) { return &effectFrameResources.at(i); }
 	// init frame ressources for this effect, calls back to effect class for intitializing the fields
 	void initFrameResources() {
 		for (int i = 0; i < XApp::FrameCount; i++) {

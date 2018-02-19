@@ -202,6 +202,7 @@ void GlobalEffect::initFrameResource(EffectFrameResource * effectFrameResource, 
 	xapp->device->CreateRenderTargetView(effectFrameResource->renderTarget.Get(), nullptr, rtvHandle);
 	rtvHandle.Offset(1, effectFrameResource->rtvDescriptorSize);
 	dxmanager->createPSO(*effectFrameResource, frameIndex);
+	effectFrameResource->frameIndex = frameIndex;
 }
 
 void GlobalEffect::init()
@@ -221,10 +222,28 @@ void GlobalEffect::setThreadCount(int max)
 	worker.resize(max);
 }
 
+// copy finished frame to app window
 void GlobalEffect::draw()
 {
+	// get index and abs frame number
+	int index = xapp->getCurrentApp()->draw_slot;//xapp->getCurrentBackBufferIndex();
+	long long absFrameCount = xapp->getCurrentApp()->absFrameCount;
+	WorkerGlobalCopyTextureCommand *c = &worker.at(index);
+	c->draw_slot = index;
+	c->absFrameCount = absFrameCount;
+	//c->type = CommandType::WorkerCopyTexture; do not set - still working? TODO
+	//c->textureName = texName;
+	c->xapp = xapp;
+	c->resourceStateHelper = resourceStateHelper;
+	c->appFrameResource = xapp->appWindow.getFrameResource(index);
+	c->effectFrameResource = getFrameResource(index);
+	assert(index == c->appFrameResource->frameIndex);
+	assert(index == c->effectFrameResource->frameIndex);
+	//c->commandDetails = c;
+	xapp->workerQueue.push(c);
 }
 
 void WorkerGlobalCopyTextureCommand::perform()
 {
+	//Log("perform()" << endl);
 }

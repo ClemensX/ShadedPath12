@@ -81,6 +81,7 @@ void Sample1::draw()
 	//Log("app draw()" << endl);
 	clearEffect.draw();
 	copyTextureEffect.draw("markings");
+	globalEffect.draw();
 	//linesEffect.draw();
 	//dotcrossEffect.draw();
 	//textEffect.draw();
