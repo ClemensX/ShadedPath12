@@ -379,7 +379,7 @@ void DXManager::waitForSyncPoint(FrameResource & f)
 {
 	//	int frameIndex = xapp->getCurrentBackBufferIndex();
 	UINT64 completed = f.fence->GetCompletedValue();
-	//Log("ev start " << frameIndex << " " << completed << " " << f.fenceValue << endl);
+	//Log("ev start " << f.frameIndex << " " << completed << " " << f.fenceValue << endl);
 	if (completed == -1) {
 		Error(L"fence.GetCompletedValue breakdown");
 	}

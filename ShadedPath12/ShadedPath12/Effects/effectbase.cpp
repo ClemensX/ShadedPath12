@@ -246,5 +246,6 @@ void GlobalEffect::draw()
 void WorkerGlobalCopyTextureCommand::perform()
 {
 	//Log("perform()" << endl);
+	// can't do wait if no command list has been executed: comment out for now
 	//xapp->dxmanager.waitGPU(*appFrameResource, xapp->appWindow.commandQueue);
 }
