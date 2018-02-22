@@ -248,4 +248,38 @@ void WorkerGlobalCopyTextureCommand::perform()
 	//Log("perform()" << endl);
 	// can't do wait if no command list has been executed: comment out for now
 	//xapp->dxmanager.waitGPU(*appFrameResource, xapp->appWindow.commandQueue);
+	auto res = this->effectFrameResource;
+	ID3D12GraphicsCommandList *commandList = res->commandList.Get();
+	ThrowIfFailed(res->commandAllocator->Reset());
+	ThrowIfFailed(commandList->Reset(res->commandAllocator.Get(), res->pipelineState.Get()));
+
+	float red[4]   = { 1.0f, 0.0f, 0.0f, 1.0f };
+	float green[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
+	float blue[4]  = { 0.0f, 0.0f, 1.0f, 1.0f };
+	float *clearColor;
+	switch (res->frameIndex)
+	{
+	case 0:
+		clearColor = red;
+		break;
+	case 1:
+		clearColor = green;
+		break;
+	default:
+		clearColor = blue;
+		break;
+	}
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(res->rtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, res->rtvDescriptorSize);
+	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	commandList->ClearDepthStencilView(res->dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	commandList->CopyResource(appFrameResource->renderTarget.Get(), res->renderTarget.Get());
+
+	ThrowIfFailed(commandList->Close());
+	RenderCommand rc;
+	rc.commandList = commandList;
+	rc.writesToSwapchain = true;
+	rc.frameIndex = res->frameIndex;
+	rc.absFrameCount = this->absFrameCount;
+	rc.frameResource = nullptr;//res;
+	xapp->renderQueue.push(rc);
 }
