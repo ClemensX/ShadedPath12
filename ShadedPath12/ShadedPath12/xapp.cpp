@@ -380,6 +380,19 @@ void XApp::init()
 	app->update();
 }
 
+void XApp::startWorkerThreads(int numThreads)
+{
+	assert(0 < numThreads && numThreads < 10);
+	// run render thread:
+	workerThreads.add_t(Command::renderQueueTask, this);
+	// run worker threads:
+	for (int i = 0; i < numThreads; i++) {
+		workerThreads.add_t(Command::task, this);
+	}
+	Log("Worker Threads started: " << numThreads << endl);
+	//Log("main thread: " << ThreadInfo::thread_osid() << endl);
+}
+
 void XApp::initPakFiles()
 {
 	wstring binFile = findFile(L"texture01.pak", XApp::TEXTUREPAK, false);

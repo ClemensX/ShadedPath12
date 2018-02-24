@@ -35,6 +35,7 @@ void Sample1::init()
 	globalEffect.init();
 	clearEffect.init();
 	copyTextureEffect.init();
+	xapp->startWorkerThreads(3);
 
 	Grid *g = xapp->world.createWorldGrid(10.0f, -1.65f);
 	XMFLOAT3 myPoints[] = {

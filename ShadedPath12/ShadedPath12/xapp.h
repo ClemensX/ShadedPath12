@@ -216,6 +216,8 @@ private:
 	unordered_map<string, PakEntry> pak_content;
 
 public:
+	// start threads: one render thread and the number of worker threads given in numThreads
+	void startWorkerThreads(int numThreads);
 	XAppBase *getCurrentApp() { return app; };
 	// find entry in pak file, return nullptr if not found
 	PakEntry* findFileInPak(wstring filename);
