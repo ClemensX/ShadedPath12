@@ -286,6 +286,8 @@ void DXManager::createFrameResources(vector<AppWindowFrameResource>& res, int co
 			NAME_D3D12_OBJECT_SUFF(appwinres.renderTarget, i);
 			rtvHandle.Offset(1, appwinres.rtvDescriptorSize);
 			//ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
+			resourceStateHelper->add(appwinres.renderTarget.Get(), D3D12_RESOURCE_STATE_PRESENT);
+
 
 			// Describe and create a depth stencil view (DSV) descriptor heap.
 			D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};

@@ -171,7 +171,7 @@ void GlobalEffect::initFrameResource(EffectFrameResource * effectFrameResource, 
 		D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, xapp->backbufferWidth, xapp->backbufferHeight, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, xapp->clearColor),
+		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.0f, 0),
 		IID_PPV_ARGS(&effectFrameResource->depthStencil)
 	);
 	xapp->device->CreateDepthStencilView(effectFrameResource->depthStencil.Get(), &depthStencilDesc, effectFrameResource->dsvHeap->GetCPUDescriptorHandleForHeapStart());
@@ -186,7 +186,7 @@ void GlobalEffect::initFrameResource(EffectFrameResource * effectFrameResource, 
 	NAME_D3D12_OBJECT_SUFF(effectFrameResource->rtvHeap, frameIndex);
 	effectFrameResource->rtvDescriptorSize = xapp->device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	// create the depth/stencil texture
+	// create the render target texture
 	xapp->device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
@@ -247,7 +247,7 @@ void WorkerGlobalCopyTextureCommand::perform()
 {
 	//Log("perform()" << endl);
 	// can't do wait if no command list has been executed: comment out for now
-	//xapp->dxmanager.waitGPU(*appFrameResource, xapp->appWindow.commandQueue);
+	xapp->dxmanager.waitGPU(*appFrameResource, xapp->appWindow.commandQueue);
 	auto res = this->effectFrameResource;
 	ID3D12GraphicsCommandList *commandList = res->commandList.Get();
 	ThrowIfFailed(res->commandAllocator->Reset());
@@ -269,10 +269,28 @@ void WorkerGlobalCopyTextureCommand::perform()
 		clearColor = blue;
 		break;
 	}
+
+	// get rid of debug layer warning CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
+	clearColor = xapp->clearColor;
+
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(res->rtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, res->rtvDescriptorSize);
 	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(res->dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-	commandList->CopyResource(appFrameResource->renderTarget.Get(), res->renderTarget.Get());
+
+	resourceStateHelper->toState(appFrameResource->renderTarget.Get(), D3D12_RESOURCE_STATE_COPY_DEST, commandList);
+	resourceStateHelper->toState(res->renderTarget.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, commandList);
+
+	//commandList->CopyResource(appFrameResource->renderTarget.Get(), res->renderTarget.Get());
+	//
+	CD3DX12_TEXTURE_COPY_LOCATION src(res->renderTarget.Get(), 0);
+	CD3DX12_TEXTURE_COPY_LOCATION dest(appFrameResource->renderTarget.Get(), 0);
+	//CD3DX12_BOX box(0, 0, 512, 512);
+
+	commandList->CopyTextureRegion(&dest, 0, 0, 0, &src, nullptr);
+
+	resourceStateHelper->toState(appFrameResource->renderTarget.Get(), D3D12_RESOURCE_STATE_PRESENT, commandList);
+	resourceStateHelper->toState(res->renderTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+	//
 
 	ThrowIfFailed(commandList->Close());
 	RenderCommand rc;
