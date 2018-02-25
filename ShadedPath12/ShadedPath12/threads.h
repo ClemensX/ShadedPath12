@@ -43,7 +43,11 @@ public:
 // each effect stores an array of its details objects that have the info on what do do
 class WorkerCommand : public Command {
 public:
-//	void * commandDetails = nullptr;
+	WorkerThreadState requiredThreadState;
+	EffectFrameResource * effectFrameResource;
+	// check if this command has the right required state compared to current effectFrameResouce state
+	// will be pushed back to queue if not
+	bool isValidSequence();
 };
 
 class RenderQueue {

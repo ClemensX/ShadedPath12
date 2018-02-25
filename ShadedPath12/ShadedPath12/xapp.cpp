@@ -380,8 +380,9 @@ void XApp::init()
 	app->update();
 }
 
-void XApp::startWorkerThreads(int numThreads)
+void XApp::startWorkerThreads()
 {
+	int numThreads = this->getMaxThreadCount();
 	assert(0 < numThreads && numThreads < 10);
 	// run render thread:
 	workerThreads.add_t(Command::renderQueueTask, this);

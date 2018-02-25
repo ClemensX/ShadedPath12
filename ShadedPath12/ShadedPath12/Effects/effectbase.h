@@ -1,4 +1,3 @@
-
 class EffectBase {
 protected:
 	//HANDLE fenceEvent;
@@ -10,6 +9,7 @@ protected:
 public:
 	static void createSyncPoint(FrameResourceSimple &f, ComPtr<ID3D12CommandQueue> queue);
 	static void waitForSyncPoint(FrameResourceSimple &f);
+	EffectFrameResource * getFrameResource(int i) { return &effectFrameResources.at(i); }
 protected:
 	ComPtr<ID3D12CommandAllocator> commandAllocators[XApp::FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> commandLists[XApp::FrameCount];
@@ -69,7 +69,6 @@ protected:
 	DXManager *dxmanager = nullptr;
 	vector<EffectFrameResource> effectFrameResources;
 	virtual void initFrameResource(EffectFrameResource *effectFrameResource, int frameIndex) = 0;
-	EffectFrameResource * getFrameResource(int i) { return &effectFrameResources.at(i); }
 	// init frame ressources for this effect, calls back to effect class for intitializing the fields
 	void initFrameResources() {
 		for (int i = 0; i < XApp::FrameCount; i++) {
@@ -82,26 +81,16 @@ protected:
 public:
 };
 
-// clear effect, should be first effect called by an app
-class ClearEffect : EffectBase {
-	// Inherited via EffectBase
-	virtual void initFrameResource(EffectFrameResource * effectFrameResource, int frameIndex) override;
-public:
-	void init();
-	void draw();
-};
-
 class WorkerGlobalCopyTextureCommand : public WorkerCommand {
 public:
 	void perform();
 	XApp *xapp = nullptr;
 	ResourceStateHelper *resourceStateHelper = nullptr;
 	AppWindowFrameResource *appFrameResource;
-	EffectFrameResource *effectFrameResource;
 };
 
 // global effect, render target for all other effects
-class GlobalEffect : EffectBase {
+class GlobalEffect : public EffectBase {
 	// Inherited via EffectBase
 	virtual void initFrameResource(EffectFrameResource * effectFrameResource, int frameIndex) override;
 public:
@@ -111,3 +100,24 @@ public:
 private:
 	vector<WorkerGlobalCopyTextureCommand> worker;
 };
+
+// clear effect, should be first effect called by an app
+
+class WorkerClearCommand : public WorkerCommand {
+public:
+	void perform();
+	XApp *xapp = nullptr;
+	ResourceStateHelper *resourceStateHelper = nullptr;
+};
+
+class ClearEffect : public EffectBase {
+	// Inherited via EffectBase
+	virtual void initFrameResource(EffectFrameResource * effectFrameResource, int frameIndex) override;
+public:
+	void init(GlobalEffect *globalEffect);
+	void draw();
+private:
+	vector<WorkerClearCommand> worker;
+	GlobalEffect *globalEffect;
+};
+

@@ -169,6 +169,7 @@ public:
 	int mouseDy;
 	bool mouseTodo;
 	int fps;
+	long pushedBackWorkerCommands = 0;
 	bool anyKeyDown = false;
 
 	// Other framework instances:
@@ -216,8 +217,8 @@ private:
 	unordered_map<string, PakEntry> pak_content;
 
 public:
-	// start threads: one render thread and the number of worker threads given in numThreads
-	void startWorkerThreads(int numThreads);
+	// start threads: one render thread and the number of worker threads set by setMaxThreadCount()
+	void startWorkerThreads();
 	XAppBase *getCurrentApp() { return app; };
 	// find entry in pak file, return nullptr if not found
 	PakEntry* findFileInPak(wstring filename);

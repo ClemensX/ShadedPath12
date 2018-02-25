@@ -33,9 +33,9 @@ void Sample1::init()
 	xapp->textureStore.loadTexture(L"dirt6_markings.dds", "markings");
 
 	globalEffect.init();
-	clearEffect.init();
+	clearEffect.init(&globalEffect);
 	copyTextureEffect.init();
-	xapp->startWorkerThreads(3);
+	xapp->startWorkerThreads();
 
 	Grid *g = xapp->world.createWorldGrid(10.0f, -1.65f);
 	XMFLOAT3 myPoints[] = {

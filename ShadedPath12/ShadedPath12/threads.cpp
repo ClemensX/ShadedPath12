@@ -7,12 +7,18 @@ void Command::task(XApp * xapp)
 	try {
 		//Sleep(5000);
 		WorkerQueue &worker = xapp->workerQueue;
-		RenderQueue &render = xapp->renderQueue;
 		bool cont = true;
 		while (cont) {
 			if (xapp->isShutdownMode()) break;
 			WorkerCommand *command = worker.pop();
-			command->perform();
+			if (command->isValidSequence()) {
+				command->perform();
+			} else {
+				// we are out of order: reinsert this command into the queue
+				//Log("reinserting worker command to queue " << command.absFrameCount << endl);
+				xapp->pushedBackWorkerCommands++;
+				worker.push(command);
+			}
 		}
 	}
 	catch (char *s) {
@@ -64,4 +70,12 @@ void Command::renderQueueTask(XApp * xapp)
 		Log("task finshing due to exception: " << s << endl);
 	}
 	Log("task finshed" << endl);
+}
+
+bool WorkerCommand::isValidSequence()
+{
+	if (this->effectFrameResource->workerThreadState == this->requiredThreadState) {
+		return true;
+	}
+	return false;
 }

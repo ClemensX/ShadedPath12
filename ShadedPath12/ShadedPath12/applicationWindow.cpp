@@ -55,7 +55,7 @@ void ApplicationWindow::present() {
 	//Log("frame: " << xapp->getAbsFrameCount() << endl);
 	long long absFrameCount = xapp->getAbsFrameCount();
 	if ((absFrameCount % 10000) == 0) {
-		Log("fps " << xapp->fps << " frame " << absFrameCount << endl);
+		Log("fps " << xapp->fps << " frame " << absFrameCount  << " pushed back commands: " << xapp->pushedBackWorkerCommands << endl);
 	}
 //	AppWindowFrameResource &res = frameResources.at(frameIndex);
 

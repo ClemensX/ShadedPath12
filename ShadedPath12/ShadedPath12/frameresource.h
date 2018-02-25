@@ -1,3 +1,12 @@
+
+enum WorkerThreadState {
+	// no regular render commands will be executed, thy will be put back to queue instead
+	// only ClearEffect will be allowed
+	InitFrame,
+	Render,
+	FinishFrame
+};
+
 /*
  * FrameResource - Base class for all frame resources.
  * All Thread and Frame related data goes here.
@@ -17,6 +26,7 @@ public:
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
 	unsigned int frameIndex;
+	WorkerThreadState workerThreadState;
 };
 
 /*

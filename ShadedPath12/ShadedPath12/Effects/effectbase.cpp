@@ -129,25 +129,79 @@ EffectBase::~EffectBase()
 }
 
 
-// simple clear effect
+// simple clear effect, should be first effect called by app
 
 void ClearEffect::initFrameResource(EffectFrameResource * effectFrameResource, int frameIndex)
 {
 }
 
-void ClearEffect::init()
+void ClearEffect::init(GlobalEffect *globalEffect)
 {
+	this->globalEffect = globalEffect;
 	this->xapp = XApp::getInstance();
 	this->dxmanager = &xapp->dxmanager;
 	this->resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
-	EffectBase::initFrameResources();
+	assert(xapp->inInitPhase() == true);
+	worker.resize(xapp->getMaxThreadCount() < 3 ? 3 : xapp->getMaxThreadCount());
 }
 
-void ClearEffect::draw()
+void ClearEffect::draw() {
+	// get index and abs frame number
+	int index = xapp->getCurrentApp()->draw_slot;//xapp->getCurrentBackBufferIndex();
+	long long absFrameCount = xapp->getCurrentApp()->absFrameCount;
+	WorkerClearCommand *c = &worker.at(index);
+	c->draw_slot = index;
+	c->absFrameCount = absFrameCount;
+	//c->type = CommandType::WorkerCopyTexture; do not set - still working? TODO
+	//c->textureName = texName;
+	c->xapp = xapp;
+	c->resourceStateHelper = resourceStateHelper;
+	// reuse frame resource from GlobEffect, not our own un-initialized one
+	c->effectFrameResource = globalEffect->getFrameResource(index);
+	c->requiredThreadState = WorkerThreadState::InitFrame;
+	assert(index == c->effectFrameResource->frameIndex);
+	xapp->workerQueue.push(c);
+
+}
+
+void WorkerClearCommand::perform()
 {
+	//Log("clear.perform() " << draw_slot << endl);
+	// can't do wait if no command list has been executed: comment out for now
+	xapp->dxmanager.waitGPU(*effectFrameResource, xapp->appWindow.commandQueue);
+	auto res = this->effectFrameResource;
+	ID3D12GraphicsCommandList *commandList = res->commandList.Get();
+	ThrowIfFailed(res->commandAllocator->Reset());
+	ThrowIfFailed(commandList->Reset(res->commandAllocator.Get(), res->pipelineState.Get()));
+
+	float red[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+	float green[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
+	float blue[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	float *clearColor;
+	switch (res->frameIndex)
+	{
+	case 0:
+		clearColor = red;
+		break;
+	case 1:
+		clearColor = green;
+		break;
+	default:
+		clearColor = blue;
+		break;
+	}
+
+	// get rid of debug layer warning CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
+	clearColor = xapp->clearColor;
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(res->rtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, res->rtvDescriptorSize);
+	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	commandList->ClearDepthStencilView(res->dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	res->workerThreadState = WorkerThreadState::Render;
 }
 
-// global effect
+// global effect, should be last effect called by app
+// wil copy render texture to app window
 
 void GlobalEffect::initFrameResource(EffectFrameResource * effectFrameResource, int frameIndex)
 {
@@ -203,7 +257,9 @@ void GlobalEffect::initFrameResource(EffectFrameResource * effectFrameResource, 
 	rtvHandle.Offset(1, effectFrameResource->rtvDescriptorSize);
 	dxmanager->createPSO(*effectFrameResource, frameIndex);
 	effectFrameResource->frameIndex = frameIndex;
+	effectFrameResource->workerThreadState = WorkerThreadState::InitFrame;
 }
+
 
 void GlobalEffect::init()
 {
@@ -219,7 +275,7 @@ void GlobalEffect::setThreadCount(int max)
 {
 	assert(xapp != nullptr);
 	assert(xapp->inInitPhase() == true);
-	worker.resize(max);
+	worker.resize(max < 3 ? 3 : max);
 }
 
 // copy finished frame to app window
@@ -239,44 +295,17 @@ void GlobalEffect::draw()
 	c->effectFrameResource = getFrameResource(index);
 	assert(index == c->appFrameResource->frameIndex);
 	assert(index == c->effectFrameResource->frameIndex);
+	c->requiredThreadState = WorkerThreadState::Render;
+
 	//c->commandDetails = c;
 	xapp->workerQueue.push(c);
 }
 
 void WorkerGlobalCopyTextureCommand::perform()
 {
-	//Log("perform()" << endl);
-	// can't do wait if no command list has been executed: comment out for now
-	xapp->dxmanager.waitGPU(*appFrameResource, xapp->appWindow.commandQueue);
+	//Log("copy.perform() " << draw_slot << endl);
 	auto res = this->effectFrameResource;
 	ID3D12GraphicsCommandList *commandList = res->commandList.Get();
-	ThrowIfFailed(res->commandAllocator->Reset());
-	ThrowIfFailed(commandList->Reset(res->commandAllocator.Get(), res->pipelineState.Get()));
-
-	float red[4]   = { 1.0f, 0.0f, 0.0f, 1.0f };
-	float green[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
-	float blue[4]  = { 0.0f, 0.0f, 1.0f, 1.0f };
-	float *clearColor;
-	switch (res->frameIndex)
-	{
-	case 0:
-		clearColor = red;
-		break;
-	case 1:
-		clearColor = green;
-		break;
-	default:
-		clearColor = blue;
-		break;
-	}
-
-	// get rid of debug layer warning CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
-	clearColor = xapp->clearColor;
-
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(res->rtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, res->rtvDescriptorSize);
-	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-	commandList->ClearDepthStencilView(res->dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-
 	resourceStateHelper->toState(appFrameResource->renderTarget.Get(), D3D12_RESOURCE_STATE_COPY_DEST, commandList);
 	resourceStateHelper->toState(res->renderTarget.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, commandList);
 
@@ -300,4 +329,5 @@ void WorkerGlobalCopyTextureCommand::perform()
 	rc.absFrameCount = this->absFrameCount;
 	rc.frameResource = nullptr;//res;
 	xapp->renderQueue.push(rc);
+	res->workerThreadState = WorkerThreadState::InitFrame;
 }
