@@ -43,11 +43,13 @@ public:
 // each effect stores an array of its details objects that have the info on what do do
 class WorkerCommand : public Command {
 public:
+	XApp * xapp = nullptr;
 	WorkerThreadState requiredThreadState;
 	EffectFrameResource * effectFrameResource;
 	// check if this command has the right required state compared to current effectFrameResouce state
 	// will be pushed back to queue if not
 	bool isValidSequence();
+	void addPushedBackCount();
 };
 
 class RenderQueue {
@@ -95,15 +97,26 @@ class WorkerQueue {
 public:
 	WorkerCommand* pop() {
 		unique_lock<mutex> lock(monitorMutex);
-		while (myqueue.empty()) {
-			cond.wait(lock);
-			if (in_shutdown) {
-				throw "WorkerQueue shutdown in pop";
+		bool valid = true;
+		WorkerCommand *workerCommand;
+		do {
+			while (myqueue.empty()) {
+				cond.wait(lock);
+				if (in_shutdown) {
+					throw "WorkerQueue shutdown in pop";
+				}
 			}
-		}
-		assert(myqueue.empty() == false);
-		WorkerCommand *workerCommand = myqueue.front();
-		myqueue.pop();
+			assert(myqueue.empty() == false);
+			workerCommand = myqueue.front();
+			myqueue.pop();
+			if (!workerCommand->isValidSequence()) {
+				valid = false;
+				myqueue.push(workerCommand);
+			 	workerCommand->addPushedBackCount();
+			} else {
+				valid = true;
+			}
+		} while (!valid);
 		cond.notify_one();
 		return workerCommand;
 	}

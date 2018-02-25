@@ -198,6 +198,7 @@ public:
 	// will trigger a call to all effects to resize their thread resources
 	void setMaxThreadCount(int max) { maxThreadCount = max; }
 	bool inInitPhase() { return !initialized; }
+	atomic<WorkerThreadState> workerThreadStates[FrameCount];
 private:
 	bool shutdownMode = false;
 	UINT shutdownAbsFrameStart;

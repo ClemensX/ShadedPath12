@@ -14,6 +14,7 @@ void Command::task(XApp * xapp)
 			if (command->isValidSequence()) {
 				command->perform();
 			} else {
+				assert(false);
 				// we are out of order: reinsert this command into the queue
 				//Log("reinserting worker command to queue " << command.absFrameCount << endl);
 				xapp->pushedBackWorkerCommands++;
@@ -74,8 +75,13 @@ void Command::renderQueueTask(XApp * xapp)
 
 bool WorkerCommand::isValidSequence()
 {
-	if (this->effectFrameResource->workerThreadState == this->requiredThreadState) {
+	if (this->xapp->workerThreadStates[this->draw_slot] == this->requiredThreadState) {
 		return true;
 	}
 	return false;
+}
+
+void WorkerCommand::addPushedBackCount()
+{
+	xapp->pushedBackWorkerCommands++;
 }

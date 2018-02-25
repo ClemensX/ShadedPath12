@@ -197,7 +197,8 @@ void WorkerClearCommand::perform()
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(res->rtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, res->rtvDescriptorSize);
 	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(res->dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-	res->workerThreadState = WorkerThreadState::Render;
+	xapp->workerThreadStates[res->frameIndex] = WorkerThreadState::Render;
+	//Log("clear.perform() " << draw_slot << endl);
 }
 
 // global effect, should be last effect called by app
@@ -257,7 +258,7 @@ void GlobalEffect::initFrameResource(EffectFrameResource * effectFrameResource, 
 	rtvHandle.Offset(1, effectFrameResource->rtvDescriptorSize);
 	dxmanager->createPSO(*effectFrameResource, frameIndex);
 	effectFrameResource->frameIndex = frameIndex;
-	effectFrameResource->workerThreadState = WorkerThreadState::InitFrame;
+	xapp->workerThreadStates[frameIndex] = WorkerThreadState::InitFrame;
 }
 
 
@@ -303,7 +304,6 @@ void GlobalEffect::draw()
 
 void WorkerGlobalCopyTextureCommand::perform()
 {
-	//Log("copy.perform() " << draw_slot << endl);
 	auto res = this->effectFrameResource;
 	ID3D12GraphicsCommandList *commandList = res->commandList.Get();
 	resourceStateHelper->toState(appFrameResource->renderTarget.Get(), D3D12_RESOURCE_STATE_COPY_DEST, commandList);
@@ -321,6 +321,8 @@ void WorkerGlobalCopyTextureCommand::perform()
 	resourceStateHelper->toState(res->renderTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
 	//
 
+	//Log("copy.perform() " << draw_slot << " abs " << this->absFrameCount << endl);
+	assert(xapp->workerThreadStates[res->frameIndex] == WorkerThreadState::Render);
 	ThrowIfFailed(commandList->Close());
 	RenderCommand rc;
 	rc.commandList = commandList;
@@ -329,5 +331,5 @@ void WorkerGlobalCopyTextureCommand::perform()
 	rc.absFrameCount = this->absFrameCount;
 	rc.frameResource = nullptr;//res;
 	xapp->renderQueue.push(rc);
-	res->workerThreadState = WorkerThreadState::InitFrame;
+	xapp->workerThreadStates[res->frameIndex] = WorkerThreadState::InitFrame;
 }

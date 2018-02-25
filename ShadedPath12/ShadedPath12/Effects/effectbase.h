@@ -84,7 +84,6 @@ public:
 class WorkerGlobalCopyTextureCommand : public WorkerCommand {
 public:
 	void perform();
-	XApp *xapp = nullptr;
 	ResourceStateHelper *resourceStateHelper = nullptr;
 	AppWindowFrameResource *appFrameResource;
 };
@@ -106,7 +105,6 @@ private:
 class WorkerClearCommand : public WorkerCommand {
 public:
 	void perform();
-	XApp *xapp = nullptr;
 	ResourceStateHelper *resourceStateHelper = nullptr;
 };
 
