@@ -111,6 +111,7 @@ public:
 			myqueue.pop();
 			if (!workerCommand->isValidSequence()) {
 				valid = false;
+				// TODO this is practically active wait - use backup queue or else...
 				myqueue.push(workerCommand);
 			 	workerCommand->addPushedBackCount();
 			} else {
