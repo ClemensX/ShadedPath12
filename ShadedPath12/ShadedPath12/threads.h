@@ -93,7 +93,47 @@ private:
 	bool in_shutdown{ false };
 };
 
+// helper struct of data needed per frame for queue handling
+struct QueueFrameState {
+	WorkerThreadState state;
+	list<int> initSlots;
+	list<int> renderSlots;
+	list<int> finalizeSlots;
+};
+
+// we need one queue for all frames, to be able to assign a free thread slot efficiently
 class WorkerQueue {
+public:
+	// set number of slots to max thread count
+	void init(int maxSlots, int maxFrames) {
+		state = WorkerThreadState::InitFrame;
+		commands.resize(maxSlots);
+		for (int i = 0; i < maxSlots; i++) {
+			freeSlots.push_front(i);
+		}
+		qframeStates.resize(maxFrames);
+		for (auto& state : qframeStates) {
+			state.state = WorkerThreadState::InitFrame;
+		}
+	};
+	WorkerCommand* pop();
+	void push(WorkerCommand *workerCommand);
+	void shutdown() {
+		in_shutdown = true;
+		cond.notify_all();
+	}
+private:
+	WorkerThreadState state;
+	vector<WorkerCommand*> commands;
+	vector<QueueFrameState> qframeStates;
+	// all lists index into command vector:
+	list<int> freeSlots;
+	mutex monitorMutex;
+	condition_variable cond;
+	bool in_shutdown{ false };
+};
+
+class OldWorkerQueue {
 public:
 	WorkerCommand* pop() {
 		unique_lock<mutex> lock(monitorMutex);

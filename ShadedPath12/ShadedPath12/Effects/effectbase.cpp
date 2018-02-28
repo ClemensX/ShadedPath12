@@ -267,6 +267,7 @@ void GlobalEffect::init()
 	this->xapp = XApp::getInstance();
 	this->dxmanager = &xapp->dxmanager;
 	this->resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
+	xapp->workerQueue.init(xapp->getMaxThreadCount(), xapp->FrameCount);
 	EffectBase::initFrameResources();
 	assert(xapp->inInitPhase() == true);
 	setThreadCount(xapp->getMaxThreadCount());

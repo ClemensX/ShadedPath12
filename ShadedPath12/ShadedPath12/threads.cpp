@@ -85,3 +85,12 @@ void WorkerCommand::addPushedBackCount()
 {
 	xapp->pushedBackWorkerCommands++;
 }
+
+void WorkerQueue::push(WorkerCommand * workerCommand)
+{
+}
+
+WorkerCommand * WorkerQueue::pop()
+{
+	return nullptr;
+}
