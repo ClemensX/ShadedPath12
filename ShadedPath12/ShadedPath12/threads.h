@@ -46,6 +46,7 @@ public:
 	XApp * xapp = nullptr;
 	WorkerThreadState requiredThreadState;
 	EffectFrameResource * effectFrameResource;
+	int commandIndex; // index to WorkerQueue
 	// check if this command has the right required state compared to current effectFrameResouce state
 	// will be pushed back to queue if not
 	bool isValidSequence();
@@ -93,22 +94,25 @@ private:
 	bool in_shutdown{ false };
 };
 
-// helper struct of data needed per frame for queue handling
+// helper struct of data needed for queue handling (one for each frame)
 struct QueueFrameState {
 	WorkerThreadState state;
+	long long absFrameCount = -1;
 	list<int> initSlots;
 	list<int> renderSlots;
 	list<int> finalizeSlots;
+	list<int> working;
 };
 
 // we need one queue for all frames, to be able to assign a free thread slot efficiently
 class WorkerQueue {
 public:
 	// set number of slots to max thread count
-	void init(int maxSlots, int maxFrames) {
-		state = WorkerThreadState::InitFrame;
-		commands.resize(maxSlots);
-		for (int i = 0; i < maxSlots; i++) {
+	void init(int maxSlots, int maxFrames, int neededCommandSlots) {
+		// we need at least frames * neededCommandSlots places to store commands
+		int commandSlots = maxFrames * neededCommandSlots;
+		commands.resize(commandSlots);
+		for (int i = 0; i < commandSlots; i++) {
 			freeSlots.push_front(i);
 		}
 		qframeStates.resize(maxFrames);
@@ -118,19 +122,21 @@ public:
 	};
 	WorkerCommand* pop();
 	void push(WorkerCommand *workerCommand);
+	void endCommand(WorkerCommand *workerCommand);
 	void shutdown() {
 		in_shutdown = true;
 		cond.notify_all();
 	}
 private:
-	WorkerThreadState state;
+	// all lists index into command vector:
 	vector<WorkerCommand*> commands;
 	vector<QueueFrameState> qframeStates;
-	// all lists index into command vector:
 	list<int> freeSlots;
 	mutex monitorMutex;
 	condition_variable cond;
 	bool in_shutdown{ false };
+	int handleRenderSlot();
+	int handleInitSlot();
 };
 
 class OldWorkerQueue {
@@ -245,9 +251,11 @@ public:
 		if (next_slot >= DXManager::FrameCount) {
 			next_slot = 0;
 		}
+		Log("wait for next draw slot: " << next_slot << endl);
 		drawSlotAvailable.wait(myLock, [this,next_slot]() {return frameState[next_slot] == Free; });
 
 		// now we run exclusively - freely set any state
+		Log(" got next draw slot: " << next_slot << endl);
 		assert(frameState[next_slot] == Free);
 		frameState[next_slot] = Drawing;
 
@@ -267,6 +275,7 @@ public:
 
 		// leave critical section
 		myLock.unlock();
+		Log(" freed draw slot: " << i << endl);
 		// notify waiting threads that new slot is available
 		drawSlotAvailable.notify_one();
 	};

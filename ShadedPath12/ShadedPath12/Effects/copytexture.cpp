@@ -38,12 +38,14 @@ void WorkerCopyTextureCommand::perform()
 	rc.frameIndex = res->frameIndex;
 	rc.absFrameCount = this->absFrameCount;
 	rc.frameResource = res;
+	Log(" copy texture command finished, frame = " << res->frameIndex << endl);
 	xapp->renderQueue.push(rc);
 	//Log(" copy texture command finished, t = " << ThreadInfo::thread_osid() << " queue size: " << xapp->renderQueue.size() << " frame " << res->frameIndex << endl);
 }
 
-void CopyTextureEffect::init()
+void CopyTextureEffect::init(GlobalEffect *globalEffect)
 {
+	EffectBase::init(globalEffect);
 	xapp = XApp::getInstance();
 	assert(xapp->inInitPhase() == true);
 	setThreadCount(xapp->getMaxThreadCount());
@@ -73,5 +75,9 @@ void CopyTextureEffect::draw(string texName)
 	assert(index == c->frameResource->frameIndex);
 	//c->commandDetails = c;
 	xapp->workerQueue.push(c);
+}
+
+void CopyTextureEffect::initFrameResource(EffectFrameResource * effectFrameResource, int frameIndex)
+{
 }
 

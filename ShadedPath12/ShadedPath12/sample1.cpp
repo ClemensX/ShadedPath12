@@ -29,13 +29,13 @@ void Sample1::init()
 	float textSize = 0.5f;
 	float lineHeight = 2 * textSize;
 	xapp->world.setWorldSize(2048.0f, 382.0f, 2048.0f);
-	xapp->setMaxThreadCount(3);
+	xapp->setMaxThreadCount(1);
 	xapp->textureStore.loadTexture(L"dirt6_markings.dds", "markings");
 
 	globalEffect.init();
 	clearEffect.init(&globalEffect);
-	copyTextureEffect.init();
-	xapp->startWorkerThreads();
+	copyTextureEffect.init(&globalEffect);
+	globalEffect.endInitPhase();
 
 	Grid *g = xapp->world.createWorldGrid(10.0f, -1.65f);
 	XMFLOAT3 myPoints[] = {

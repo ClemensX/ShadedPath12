@@ -8,11 +8,16 @@ public:
 	AppWindowFrameResource *frameResource;
 };
 
-class CopyTextureEffect {
+class CopyTextureEffect : EffectBase {
 public:
-	void init();
+	void init(GlobalEffect *globalEffect);
 	void setThreadCount(int max);
 	void draw(string textureName);
+	void initFrameResource(EffectFrameResource * effectFrameResource, int frameIndex);
+	// Inherited via EffectBase
+	virtual int neededCommandSlots() override {
+		return 1;
+	}
 private:
 	XApp *xapp = nullptr;
 	// used to resize WorkerCommands vector

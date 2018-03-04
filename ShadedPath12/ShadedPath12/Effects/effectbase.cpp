@@ -128,6 +128,11 @@ EffectBase::~EffectBase()
 	}
 }
 
+void EffectBase::init(GlobalEffect * globalEffect)
+{
+	assert(globalEffect != nullptr);
+	globalEffect->addNeededCommandSlots(this->neededCommandSlots());
+}
 
 // simple clear effect, should be first effect called by app
 
@@ -137,6 +142,7 @@ void ClearEffect::initFrameResource(EffectFrameResource * effectFrameResource, i
 
 void ClearEffect::init(GlobalEffect *globalEffect)
 {
+	EffectBase::init(globalEffect);
 	this->globalEffect = globalEffect;
 	this->xapp = XApp::getInstance();
 	this->dxmanager = &xapp->dxmanager;
@@ -146,6 +152,7 @@ void ClearEffect::init(GlobalEffect *globalEffect)
 }
 
 void ClearEffect::draw() {
+	assert(globalEffect->isInitPhaseEnded());
 	// get index and abs frame number
 	int index = xapp->getCurrentApp()->draw_slot;//xapp->getCurrentBackBufferIndex();
 	long long absFrameCount = xapp->getCurrentApp()->absFrameCount;
@@ -198,7 +205,7 @@ void WorkerClearCommand::perform()
 	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(res->dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	xapp->workerThreadStates[res->frameIndex] = WorkerThreadState::Render;
-	//Log("clear.perform() " << draw_slot << endl);
+	Log("clear.perform() " << draw_slot << endl);
 }
 
 // global effect, should be last effect called by app
@@ -267,10 +274,17 @@ void GlobalEffect::init()
 	this->xapp = XApp::getInstance();
 	this->dxmanager = &xapp->dxmanager;
 	this->resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
-	xapp->workerQueue.init(xapp->getMaxThreadCount(), xapp->FrameCount);
 	EffectBase::initFrameResources();
 	assert(xapp->inInitPhase() == true);
 	setThreadCount(xapp->getMaxThreadCount());
+}
+
+void GlobalEffect::endInitPhase()
+{
+	initPhaseEnded = true;
+	assert(xapp->workerThreads.size() == 0); // init phase not properly ended, start threads after init phase
+	xapp->workerQueue.init(xapp->getMaxThreadCount(), xapp->FrameCount, getNeededCommandSlots());
+	xapp->startWorkerThreads();
 }
 
 void GlobalEffect::setThreadCount(int max)
@@ -283,6 +297,7 @@ void GlobalEffect::setThreadCount(int max)
 // copy finished frame to app window
 void GlobalEffect::draw()
 {
+	assert(initPhaseEnded);
 	// get index and abs frame number
 	int index = xapp->getCurrentApp()->draw_slot;//xapp->getCurrentBackBufferIndex();
 	long long absFrameCount = xapp->getCurrentApp()->absFrameCount;
@@ -302,6 +317,7 @@ void GlobalEffect::draw()
 	//c->commandDetails = c;
 	xapp->workerQueue.push(c);
 }
+
 
 void WorkerGlobalCopyTextureCommand::perform()
 {
@@ -331,6 +347,7 @@ void WorkerGlobalCopyTextureCommand::perform()
 	rc.frameIndex = res->frameIndex;
 	rc.absFrameCount = this->absFrameCount;
 	rc.frameResource = nullptr;//res;
+	Log(" copy texture command finished, frame = " << res->frameIndex << endl);
 	xapp->renderQueue.push(rc);
 	xapp->workerThreadStates[res->frameIndex] = WorkerThreadState::InitFrame;
 }

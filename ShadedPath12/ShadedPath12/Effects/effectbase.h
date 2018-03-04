@@ -1,3 +1,4 @@
+class GlobalEffect;
 class EffectBase {
 protected:
 	//HANDLE fenceEvent;
@@ -10,6 +11,8 @@ public:
 	static void createSyncPoint(FrameResourceSimple &f, ComPtr<ID3D12CommandQueue> queue);
 	static void waitForSyncPoint(FrameResourceSimple &f);
 	EffectFrameResource * getFrameResource(int i) { return &effectFrameResources.at(i); }
+	virtual int neededCommandSlots() = 0;
+	void init(GlobalEffect *globalEffect);
 protected:
 	ComPtr<ID3D12CommandAllocator> commandAllocators[XApp::FrameCount];
 	ComPtr<ID3D12GraphicsCommandList> commandLists[XApp::FrameCount];
@@ -94,10 +97,24 @@ class GlobalEffect : public EffectBase {
 	virtual void initFrameResource(EffectFrameResource * effectFrameResource, int frameIndex) override;
 public:
 	void init();
+	void endInitPhase();
+	bool isInitPhaseEnded() { return initPhaseEnded; }
 	void setThreadCount(int max);
 	void draw();
+	// Inherited via EffectBase
+	virtual int neededCommandSlots() override {
+		return 1;
+	}
+	void addNeededCommandSlots(int n) {	
+		countNeededCommandSlots += n;
+		Log("command slots needed increased to " << countNeededCommandSlots << endl);
+	}
+	int getNeededCommandSlots() { return countNeededCommandSlots; }
 private:
 	vector<WorkerGlobalCopyTextureCommand> worker;
+	// counter for ALL effects:
+	int countNeededCommandSlots = 0;
+	bool initPhaseEnded = false;
 };
 
 // clear effect, should be first effect called by an app
@@ -114,6 +131,10 @@ class ClearEffect : public EffectBase {
 public:
 	void init(GlobalEffect *globalEffect);
 	void draw();
+	// Inherited via EffectBase
+	virtual int neededCommandSlots() override {
+		return 1;
+	}
 private:
 	vector<WorkerClearCommand> worker;
 	GlobalEffect *globalEffect;
