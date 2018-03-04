@@ -137,6 +137,7 @@ private:
 	bool in_shutdown{ false };
 	int handleRenderSlot();
 	int handleInitSlot();
+	bool isSlotAvailable();
 };
 
 class OldWorkerQueue {

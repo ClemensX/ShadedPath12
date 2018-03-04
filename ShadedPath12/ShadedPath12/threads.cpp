@@ -170,18 +170,36 @@ int WorkerQueue::handleRenderSlot()
 	return -1;
 }
 
+bool WorkerQueue::isSlotAvailable()
+{
+	for (auto&& state : qframeStates)
+	{
+		if (state.state == Render) {
+			if (state.renderSlots.size() > 0) {
+				return true;
+			}
+		}
+		if (state.state == InitFrame) {
+			if (state.initSlots.size() > 0) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 WorkerCommand * WorkerQueue::pop()
 {
 	unique_lock<mutex> lock(monitorMutex);
 	bool valid = true;
 	WorkerCommand *workerCommand;
 	do {
-		//while (true) {
+		while (!isSlotAvailable()) {
 			cond.wait(lock);
 			if (in_shutdown) {
 				throw "WorkerQueue shutdown in pop";
 			}
-		//}
+		}
 		// look for next command, depending on state of the frames
 		int found = handleRenderSlot();
 		if (found < 0) {
