@@ -116,6 +116,23 @@ void WorkerQueue::push(WorkerCommand * workerCommand)
 			commands[free_slot] = workerCommand;
 			return;
 		}
+	} else if (state.state == Render) {
+		assert(state.renderSlots.size() == 0);
+		if (workerCommand->requiredThreadState == Render) {
+			state.renderSlots.push_front(free_slot);
+			commands[free_slot] = workerCommand;
+			return;
+		}
+		else if (workerCommand->requiredThreadState == InitFrame) {
+			// store next InitFrame command
+			assert(state.working.size() > 0);
+			assert(state.initSlots.size() == 0);
+			state.initSlots.push_front(free_slot);
+			commands[free_slot] = workerCommand;
+			state.absFrameCount = workerCommand->absFrameCount;
+			cond.notify_one();
+			return;
+		}
 	}
 	// if we reached here we could not handle the push request
 	assert(false);
@@ -235,10 +252,10 @@ void WorkerQueue::endCommand(WorkerCommand * workerCommand)
 		// initFrame ended: switch to Render state
 		assert(workerCommand->requiredThreadState == InitFrame); // nothing else should end during init phase
 		if (workerCommand->requiredThreadState == InitFrame) {
-			assert(state.working.size() == 1 && state.working.front() == workerCommand->commandIndex);
-			int found = state.working.front();
-			state.working.pop_front();
-			freeSlots.push_front(found);
+			//assert(state.working.size() == 1 && state.working.front() == workerCommand->commandIndex);
+			int slot = workerCommand->commandIndex;
+			state.working.remove(slot);
+			freeSlots.push_front(slot);
 			state.state = Render;
 			cond.notify_one();
 			return;

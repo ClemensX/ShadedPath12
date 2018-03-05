@@ -252,11 +252,11 @@ public:
 		if (next_slot >= DXManager::FrameCount) {
 			next_slot = 0;
 		}
-		Log("wait for next draw slot: " << next_slot << endl);
+		//Log("wait for next draw slot: " << next_slot << endl);
 		drawSlotAvailable.wait(myLock, [this,next_slot]() {return frameState[next_slot] == Free; });
 
 		// now we run exclusively - freely set any state
-		Log(" got next draw slot: " << next_slot << endl);
+		//Log(" got next draw slot: " << next_slot << endl);
 		assert(frameState[next_slot] == Free);
 		frameState[next_slot] = Drawing;
 
@@ -276,7 +276,7 @@ public:
 
 		// leave critical section
 		myLock.unlock();
-		Log(" freed draw slot: " << i << endl);
+		//Log(" freed draw slot: " << i << endl);
 		// notify waiting threads that new slot is available
 		drawSlotAvailable.notify_one();
 	};
