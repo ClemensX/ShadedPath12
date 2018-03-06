@@ -172,10 +172,24 @@ int WorkerQueue::handleInitSlot()
 // find oldest render slot
 int WorkerQueue::handleRenderSlot()
 {
+	long long oldest = -1;
+	// find oldest valid entry first:
 	for (auto&& state : qframeStates)
 	{
 		if (state.state == Render) {
 			if (state.renderSlots.size() > 0) {
+				// we have an init slot
+				if (oldest < 0 || (state.absFrameCount < oldest)) {
+					oldest = state.absFrameCount;
+				}
+			}
+		}
+	}
+	if (oldest < 0) return -1;
+	for (auto&& state : qframeStates)
+	{
+		if (state.state == Render) {
+			if (state.renderSlots.size() > 0 && state.absFrameCount == oldest) {
 				// render slot available
 				int found = state.renderSlots.front();
 				state.working.push_front(found);

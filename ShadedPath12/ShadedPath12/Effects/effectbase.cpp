@@ -199,7 +199,7 @@ void WorkerClearCommand::perform()
 	}
 
 	// get rid of debug layer warning CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
-	//clearColor = xapp->clearColor;
+	clearColor = xapp->clearColor;
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(res->rtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, res->rtvDescriptorSize);
 	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
