@@ -41,3 +41,7 @@ tools/texture/dds_files/**
 /ShadedPath12/ShadedPath12.VC.db
 /ShadedPath12/ShadedPath12.VC.VC.opendb
 /ShadedPath12/ShadedPath12/xapp_run.log
+
+# Test Framework
+ShadedPath12/packages/**
+ShadedPath12/ShadedPathTest/x64
