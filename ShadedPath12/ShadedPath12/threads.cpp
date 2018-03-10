@@ -52,7 +52,7 @@ void Command::renderQueueTask(XApp * xapp)
 				auto swapChainIndex = xapp->appWindow.swapChain->GetCurrentBackBufferIndex();
 				if (presentCount + 1 < command.absFrameCount) {
 					// we are out of order: reinsert this render command into the queue
-					//Log("reinserting render frame to queue " << command.absFrameCount << endl);
+					Log("reinserting render frame to queue " << command.absFrameCount << endl);
 					xapp->renderQueue.push(command);
 					continue;
 				}
@@ -252,6 +252,7 @@ WorkerCommand * WorkerQueue::pop()
 		} else {
 			valid = false;
 		}
+		if (!valid) { Log("invalid" << endl); }
 	} while (!valid);
 	cond.notify_one();
 	return workerCommand;

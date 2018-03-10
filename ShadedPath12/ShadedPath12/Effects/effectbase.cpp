@@ -199,7 +199,7 @@ void WorkerClearCommand::perform()
 	}
 
 	// get rid of debug layer warning CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
-	clearColor = xapp->clearColor;
+	//clearColor = xapp->clearColor;
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(res->rtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, res->rtvDescriptorSize);
 	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
@@ -322,6 +322,7 @@ void GlobalEffect::draw()
 void WorkerGlobalCopyTextureCommand::perform()
 {
 	auto res = this->effectFrameResource;
+	Log(" copy texture command begin, frame = " << res->frameIndex << endl);
 	ID3D12GraphicsCommandList *commandList = res->commandList.Get();
 	resourceStateHelper->toState(appFrameResource->renderTarget.Get(), D3D12_RESOURCE_STATE_COPY_DEST, commandList);
 	resourceStateHelper->toState(res->renderTarget.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, commandList);
@@ -347,7 +348,9 @@ void WorkerGlobalCopyTextureCommand::perform()
 	rc.frameIndex = res->frameIndex;
 	rc.absFrameCount = this->absFrameCount;
 	rc.frameResource = nullptr;//res;
-	Log(" copy texture command finished, frame = " << res->frameIndex << endl);
+	//Log(" copy texture command finished, frame = " << res->frameIndex << endl);
+	//Log("push..");
 	xapp->renderQueue.push(rc);
+	//Log("done" << endl);
 	xapp->workerThreadStates[res->frameIndex] = WorkerThreadState::InitFrame;
 }
