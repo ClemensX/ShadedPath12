@@ -12,15 +12,11 @@ TEST(RenderThreads, Init) {
 	EXPECT_TRUE(true);
 }
 
-TEST(NewQueue, Init) {
-	SingleQueue queue;
-}
-
 TEST(NewQueue, Basic) {
 	SingleQueue queue;
 	EXPECT_EQ(queue.getState(), QueueState::Undefined);
 	queue.sync();
-	EXPECT_EQ(queue.getState(), QueueState::SyncRequest);
+	EXPECT_EQ(queue.getState(), QueueState::Synced);
 }
 
 class WorkerTestCommand : public WorkerCommand {
@@ -62,11 +58,12 @@ TEST(NewQueue, FullCircle) {
 	std::cerr << "start FullCircle test " << std::endl;
 	SingleQueue queue;
 	queue.sync();
-	EXPECT_EQ(queue.getState(), QueueState::SyncRequest);
+	EXPECT_EQ(queue.getState(), QueueState::Synced);
 	WorkerTestCommand cmd;
 	init(&queue);
 	queue.push(&cmd);
 	Sleep(1);
 	queue.shutdown();
-	ASSERT_TRUE(false);
+	Sleep(100);
+	ASSERT_TRUE(true);
 }
