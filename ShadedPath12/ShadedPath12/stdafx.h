@@ -106,6 +106,13 @@ inline void LogFile(const WCHAR *s) {
 #define LogCond(y,x)
 #endif
 
+#define LogF(x)\
+{\
+	wstringstream s1764;  s1764 << x; \
+	LogFile(s1764.str().c_str()); \
+}
+
+
 inline void ThrowIfFailedWithDevice(HRESULT hr, ID3D12Device *device)
 {
 	if (FAILED(hr))

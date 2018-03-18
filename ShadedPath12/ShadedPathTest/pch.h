@@ -8,3 +8,4 @@
 #include "gtest/gtest.h"
 #include "../ShadedPath12/stdafx.h"
 #include "queue.h"
+#include "renderplan.h"

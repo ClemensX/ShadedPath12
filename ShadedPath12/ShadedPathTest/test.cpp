@@ -67,3 +67,25 @@ TEST(NewQueue, FullCircle) {
 	Sleep(100);
 	ASSERT_TRUE(true);
 }
+
+// RenderPlans
+TEST(RenderPlan, Init) {
+	RenderPlan plan;
+	plan.addRender(1)->addSync()->finish();
+	LogF(plan.describe().c_str());
+	ASSERT_STREQ("Render(1) Sync Finish ", plan.describe().c_str());
+}
+
+TEST(RenderPlan, Copy) {
+	RenderPlan plan;
+	plan.addRender(1)->addSync()->finish();
+	// copy into other plan:
+	RenderPlan plan2 = plan;
+	ASSERT_STREQ(plan.describe().c_str(), plan2.describe().c_str());
+	// change new plan and compare:
+	plan2.stepRef(0).numCommands = 3;
+	LogF(plan.describe().c_str() << endl);
+	LogF(plan2.describe().c_str() << endl);
+	ASSERT_STRNE(plan.describe().c_str(), plan2.describe().c_str());
+
+}
