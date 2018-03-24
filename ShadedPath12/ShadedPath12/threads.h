@@ -47,6 +47,7 @@ public:
 	WorkerThreadState requiredThreadState;
 	EffectFrameResource * effectFrameResource;
 	int commandIndex; // index to WorkerQueue
+	int renderPhase;  // connect to RenderPlan: phase number, when this command should be excecuted
 	// check if this command has the right required state compared to current effectFrameResouce state
 	// will be pushed back to queue if not
 	bool isValidSequence();
