@@ -22,7 +22,9 @@ TEST(NewQueue, Basic) {
 class WorkerTestCommand : public WorkerCommand {
 public:
 	void perform() {
+		LogF("WorkerTestCommand.Perform" << endl);
 		Sleep(5);
+		LogF("WorkerTestCommand.End" << endl);
 	};
 	ResourceStateHelper *resourceStateHelper = nullptr;
 };
@@ -105,6 +107,7 @@ TEST(RenderPlan, Exceute) {
 	queue.push(&cmd, 0);
 	Sleep(10);
 	queue.shutdown();
+	LogF("was queue.shutdown" << endl);
 	Sleep(100);
 	ASSERT_TRUE(true);
 }

@@ -38,7 +38,11 @@ WorkerCommand * SingleQueue::pop()
 {
 	unique_lock<mutex> lock(monitorMutex);
 	while (!isSlotAvailable()) {
-		cond.wait(lock);
+		LogF("pop wait " << in_shutdown << endl);
+		if (!in_shutdown) {
+			cond.wait(lock);
+			LogF("pop waking" << endl);
+		}
 		if (in_shutdown) {
 			LogF("queue shutdown" << endl);
 			throw "WorkerQueue shutdown in pop";
