@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "xapp.h"
 
 XAppBase::XAppBase() {
 	xapp = XApp::getInstance();
@@ -128,6 +127,16 @@ void XApp::update() {
 		} else {
 			app->update();
 		}
+	}
+}
+
+void XApp::importFrameFromRenderToApp()
+{
+	// Present the frame in app window, unless mirror is deactivated
+	if (ovrMirror) {
+		UINT frameIndex = appWindow.swapChain->GetCurrentBackBufferIndex();//getCurrentBackBufferIndex();
+		lastPresentedFrame = frameIndex;
+		appWindow.present();
 	}
 }
 
@@ -371,6 +380,7 @@ void XApp::init()
 
 	initPakFiles();
 	dxmanager.init(this, XApp::FrameCount);
+	renderControl.init(this);
 	threadState.init();
 	appWindow.init(this, factory);
 	textureStore.init(this);

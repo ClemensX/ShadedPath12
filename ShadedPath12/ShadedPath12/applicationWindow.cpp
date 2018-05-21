@@ -57,6 +57,9 @@ void ApplicationWindow::present() {
 	if ((absFrameCount % 10000) == 0) {
 		Log("fps " << xapp->fps << " frame " << absFrameCount  << " pushed back commands: " << xapp->pushedBackWorkerCommands << endl);
 	}
+	// 
+	ID3D12Resource * sourceFrame = xapp->renderControl.getNextFrame();
+
 //	AppWindowFrameResource &res = frameResources.at(frameIndex);
 
 	// get source resource from texture:

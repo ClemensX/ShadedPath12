@@ -51,7 +51,7 @@ static void testTask(SingleQueue *queue) {
 
 void init(SingleQueue *queue) {
 	for (int i = 0; i < numThreads; i++) {
-		std::cerr << "start thread " << i << std::endl;
+		LogF("start thread " << i << std::endl);
 		workerThreads.add_t(testTask, queue);
 	}
 }

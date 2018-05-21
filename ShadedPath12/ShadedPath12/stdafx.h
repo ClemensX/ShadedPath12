@@ -209,6 +209,7 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 //#include "worldObject.h"
 //#include "vr.h"
 #include "threads.h"
+#include "rendercontrol.h"
 #include "applicationWindow.h"
 #include "stats.h"
 #include "xapp.h"

@@ -173,6 +173,7 @@ public:
 	bool anyKeyDown = false;
 
 	// Other framework instances:
+	RenderControl renderControl;
 	RenderQueue renderQueue;
 	WorkerQueue workerQueue;
 	ThreadGroup workerThreads;
@@ -218,6 +219,8 @@ private:
 	unordered_map<string, PakEntry> pak_content;
 
 public:
+	// copy finished frame from render to app window
+	void importFrameFromRenderToApp();
 	// start threads: one render thread and the number of worker threads set by setMaxThreadCount()
 	void startWorkerThreads();
 	XAppBase *getCurrentApp() { return app; };

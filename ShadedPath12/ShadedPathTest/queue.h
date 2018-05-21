@@ -8,7 +8,7 @@ enum QueueState {
 };
 
 // Execute a single RenderPlan from start to finish
-// execute commands and sync them, threds are assigned per frame, no global thread pool for all frames
+// execute commands and sync them, threads are assigned per frame, no global thread pool for all frames
 class SingleQueue {
 public:
 	SingleQueue();
@@ -26,7 +26,6 @@ public:
 	// add command slot: queue can only work on commands added here
 	void addCommandSlot(WorkerCommand *workerCommand);
 	void endCommand(WorkerCommand *workerCommand);
-	bool isSlotAvailable();
 	void shutdown() {
 		in_shutdown = true;
 		cond.notify_all();
@@ -45,5 +44,6 @@ private:
 	condition_variable cond;
 	// re-evaluate state (called after every change to the queue)
 	void stateUpdate();
+	bool isSlotAvailable();
 	RenderPlan plan;
 };

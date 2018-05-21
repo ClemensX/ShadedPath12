@@ -186,8 +186,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		} else {
 			//if (xapp->isShudownFinished())
 			//	break;
-			xapp->update();
-			xapp->draw();
+			//xapp->update();
+			//xapp->draw();
+			xapp->importFrameFromRenderToApp();
 		}
 	}
 	xapp->destroy();

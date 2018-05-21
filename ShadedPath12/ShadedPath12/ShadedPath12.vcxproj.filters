@@ -118,6 +118,9 @@
     <ClInclude Include="Effects\copytexture.h">
       <Filter>Effects</Filter>
     </ClInclude>
+    <ClInclude Include="rendercontrol.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -167,6 +170,9 @@
     </ClCompile>
     <ClCompile Include="Effects\copytexture.cpp">
       <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="rendercontrol.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
