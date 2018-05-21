@@ -217,6 +217,8 @@ private:
 	// new-engine
 	// pak files:
 	unordered_map<string, PakEntry> pak_content;
+	// increase frame count by one and recalc fps
+	void updateFrameStats();
 
 public:
 	// copy finished frame from render to app window

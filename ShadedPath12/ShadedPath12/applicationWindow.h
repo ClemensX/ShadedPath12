@@ -10,7 +10,7 @@ public:
 	void init(XApp *xapp, ComPtr<IDXGIFactory4> &factory);
 	void present();
 	//UINT GetCurrentBackBufferIndex();
-	AppWindowFrameResource * getCurrentFrameResource() { return &frameResources.at(swapChain->GetCurrentBackBufferIndex()); }
+	AppWindowFrameResource & getCurrentFrameResource() { return frameResources.at(swapChain->GetCurrentBackBufferIndex()); }
 	AppWindowFrameResource * getFrameResource(int i) { return &frameResources.at(i); }
 	void destroy();
 	ComPtr<ID3D12CommandQueue> commandQueue;

@@ -42,8 +42,21 @@ XApp::~XApp()
 {
 }
 
-void XApp::update() {
+void XApp::updateFrameStats() {
 	absFrameCount++;
+	LONGLONG old = gametime.getRealTime();
+	gametime.advanceTime();
+	double dt = gametime.getDeltaTime();
+	if ((absFrameCount % 30) == 0) {
+		// calculate fps every 30 frames
+		LONGLONG now = gametime.getRealTime();
+		double seconds = gametime.getSecondsBetween(old, now);
+		fps = (int)(1 / seconds);
+	}
+}
+
+void XApp::update() {
+	//absFrameCount++;
 	GetKeyboardState(key_state);
 	LONGLONG old = gametime.getRealTime();
 	gametime.advanceTime();
@@ -132,6 +145,7 @@ void XApp::update() {
 
 void XApp::importFrameFromRenderToApp()
 {
+	updateFrameStats();
 	// Present the frame in app window, unless mirror is deactivated
 	if (ovrMirror) {
 		UINT frameIndex = appWindow.swapChain->GetCurrentBackBufferIndex();//getCurrentBackBufferIndex();
