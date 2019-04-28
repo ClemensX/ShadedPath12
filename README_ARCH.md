@@ -1,7 +1,7 @@
 # ShadedPath12 Architecture (branch new_engine3)
 DirectX 12 Framework and Applications for Oculus Rift
 
-![Alt text](https://g.gravizo.com/svg?https%3A%2F%2Fraw.githubusercontent.com%2FClemensX%2FShadedPath12%2Fnew_engine3%2FREADME_ARCH.md
+![Alt text](https://g.gravizo.com/svg?https%3A%2F%2Fraw.githubusercontent.com%2FClemensX%2FShadedPath12%2Fnew_engine3%2FREADME_ARCH.md)
   digraph G {
     aize ="4,4";
     main [shape=box];
