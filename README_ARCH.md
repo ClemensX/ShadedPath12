@@ -5,21 +5,29 @@ DirectX 12 Framework and Applications for Oculus Rift
 
 <details> 
 <summary></summary>
-overview  
-  digraph G {
-    aize ="4,4";
-    main [shape=box];
-    main -> parse [weight=8];
-    parse -> execute;
-    main -> init [style=dotted];
-    main -> cleanup;
-    execute -> { make_string; printf}
-    init -> make_string;
-    edge [color=red];
-    main -> printf [style=bold,label="100 times"];
-    make_string [label="make a string"];
-    node [shape=box,style=filled,color=".7 .3 1.0"];
-    execute -> compare;
-  }
-overview  
+@startuml component
+actor client
+node app
+database db
+
+db -> app
+app -> client
+@enduml
 </details>
+
+### Activity
+```plantuml
+@startuml
+|Application|
+start
+:init;
+|Pipeline|
+:configure;
+|Frame 1|
+:initRender;
+|Application|
+:update;
+:draw;
+stop
+@enduml
+```
