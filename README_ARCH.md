@@ -19,15 +19,33 @@ app -> client
 ```plantuml
 @startuml
 |Application|
-start
-:init;
 |Pipeline|
-:configure;
-|Frame 1|
-:initRender;
-|Application|
-:update;
-:draw;
-stop
+|Frame|
+start
+    |Application|
+    :init;
+    |Pipeline|
+    :configure;
+    |Frame|
+    :initRender;
+    |Application|
+    :update;
+    :draw;
+    |Pipeline|
+    :addDrawRequest;
+    split
+        |Application|
+        stop
+    split again
+        |Pipeline|
+        :prepareFrame;
+        |Frame|
+        :draw;
+        |Pipeline|
+        :storeImage;
+        |Application|
+        :processImage;
+        stop
+    end split
 @enduml
 ```
