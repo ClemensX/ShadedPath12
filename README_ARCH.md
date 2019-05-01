@@ -21,8 +21,8 @@ app -> client
 |Application|
 |Pipeline|
 |Frame|
-start
     |Application|
+    start
     :init;
     |Pipeline|
     :configure;
