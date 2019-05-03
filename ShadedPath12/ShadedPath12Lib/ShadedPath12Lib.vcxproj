@@ -39,7 +39,6 @@
     <ClCompile Include="..\ShadedPath12\texture.cpp" />
     <ClCompile Include="..\ShadedPath12\threads.cpp" />
     <ClCompile Include="..\ShadedPath12\util.cpp" />
-    <ClCompile Include="..\ShadedPath12\winmain.cpp" />
     <ClCompile Include="..\ShadedPath12\world.cpp" />
     <ClCompile Include="..\ShadedPath12\xapp.cpp" />
   </ItemGroup>

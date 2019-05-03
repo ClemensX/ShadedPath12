@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "sample1.h"
 #include "pipeline.h"
 
 XAppBase::XAppBase() {
@@ -27,7 +28,8 @@ void XAppBase::destroy() {
 
 XApp::XApp() : /*camera(),*/ world(this) /*, vr(this)*/
 {
-	Pipeline p;
+	//Pipeline p;
+	//Sample1 s;
 	//camera.init();
 	requestHeight = requestWidth = 0;
 	mouseTodo = true;

@@ -97,7 +97,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions);_OVRXXX_</PreprocessorDefinitions>
@@ -160,62 +160,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="applicationWindow.h" />
-    <ClInclude Include="camera.h" />
-    <ClInclude Include="d3dx12.h" />
-    <ClInclude Include="dds.h" />
-    <ClInclude Include="DDSTextureLoader.h" />
-    <ClInclude Include="dxmanager.h" />
-    <ClInclude Include="Effects\effectbase.h" />
-    <ClInclude Include="Effects\posteffect.h" />
-    <ClInclude Include="Effects\copytexture.h" />
-    <ClInclude Include="forward_structures.h" />
-    <ClInclude Include="frameresource.h" />
-    <ClInclude Include="gametime.h" />
-    <ClInclude Include="lights.h" />
-    <ClInclude Include="meshObject.h" />
-    <ClInclude Include="path.h" />
-    <ClInclude Include="rendercontrol.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="sample1.h" />
-    <ClInclude Include="sound.h" />
-    <ClInclude Include="stats.h" />
-    <ClInclude Include="texture.h" />
-    <ClInclude Include="threads.h" />
-    <ClInclude Include="util.h" />
-    <ClInclude Include="vr.h" />
-    <ClInclude Include="winmain.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
-    <ClInclude Include="world.h" />
-    <ClInclude Include="worldObject.h" />
-    <ClInclude Include="xapp.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="applicationWindow.cpp" />
-    <ClCompile Include="DDSTextureLoader.cpp" />
-    <ClCompile Include="dxmanager.cpp" />
-    <ClCompile Include="Effects\effectbase.cpp" />
-    <ClCompile Include="Effects\copytexture.cpp" />
-    <ClCompile Include="frameresource.cpp" />
-    <ClCompile Include="gametime.cpp" />
-    <ClCompile Include="rendercontrol.cpp" />
-    <ClCompile Include="sample1.cpp" />
-    <ClCompile Include="stats.cpp" />
-    <ClCompile Include="texture.cpp" />
-    <ClCompile Include="threads.cpp" />
-    <ClCompile Include="util.cpp" />
-    <ClCompile Include="winmain.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="world.cpp" />
-    <ClCompile Include="xapp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ShadedPath.rc" />
@@ -359,7 +303,11 @@
   <ItemGroup>
     <ProjectReference Include="..\ShadedPath12Lib\ShadedPath12Lib.vcxproj">
       <Project>{83969a09-0de1-4a58-bed1-a6dd3da797bb}</Project>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="winmain.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

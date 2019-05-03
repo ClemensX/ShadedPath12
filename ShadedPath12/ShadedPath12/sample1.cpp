@@ -95,4 +95,6 @@ void Sample1::destroy()
 	//linesEffect.destroy();
 }
 
+//#pragma init_seg(lib)
+//#pragma init_seg(".CRT$XCT")
 static Sample1 sample1;

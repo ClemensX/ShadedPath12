@@ -75,9 +75,6 @@
     <ClCompile Include="..\ShadedPath12\util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\ShadedPath12\winmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ShadedPath12\world.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

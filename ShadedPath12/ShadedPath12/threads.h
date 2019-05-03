@@ -61,6 +61,7 @@ public:
 		while (myqueue.empty()) {
 			cond.wait(lock);
 			if (in_shutdown) {
+				Log("RenderQueue shutdown in pop");
 				throw "RenderQueue shutdown in pop";
 			}
 		}

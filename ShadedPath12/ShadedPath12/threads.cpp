@@ -11,7 +11,10 @@ void Command::task(XApp * xapp)
 		while (cont) {
 			if (xapp->isShutdownMode()) break;
 			WorkerCommand *command = worker.pop();
-			if (command->isValidSequence()) {
+			if (command == nullptr) {
+				// queue ended (program termination)
+				cont = false;
+			} else if (command->isValidSequence()) {
 				command->perform();
 				worker.endCommand(command);
 			} else {
@@ -228,7 +231,9 @@ WorkerCommand * WorkerQueue::pop()
 		while (!isSlotAvailable()) {
 			cond.wait(lock);
 			if (in_shutdown) {
-				throw "WorkerQueue shutdown in pop";
+				Log("WorkerQueue shutdown in pop");
+				return workerCommand;
+				//throw "WorkerQueue shutdown in pop";
 			}
 		}
 		// look for next command, depending on state of the frames
