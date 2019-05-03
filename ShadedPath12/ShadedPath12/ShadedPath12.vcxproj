@@ -356,6 +356,11 @@
     <None Include="Shaders\Object.hlsli" />
     <None Include="Shaders\Post.hlsli" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ShadedPath12Lib\ShadedPath12Lib.vcxproj">
+      <Project>{83969a09-0de1-4a58-bed1-a6dd3da797bb}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

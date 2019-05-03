@@ -29,7 +29,7 @@ public:
 
 	// get absolute number of seconds (and fractions)
 	// NEVER user time values as float: precision is not enough and you will get same time value for actually different times
-	double GameTime::getTimeAbsSeconds();
+	double getTimeAbsSeconds();
 
 	// get delta in seconds since last time
 	double getDeltaTime();

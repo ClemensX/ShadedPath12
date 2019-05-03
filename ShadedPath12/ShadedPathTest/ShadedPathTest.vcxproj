@@ -54,12 +54,12 @@
     <ClCompile Include="testne3.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ShadedPath12\ShadedPath12.vcxproj">
-      <Project>{b85aba67-f40c-40bf-9329-6b46fe15e677}</Project>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\ShadedPath12Lib\ShadedPath12Lib.vcxproj">
+      <Project>{83969a09-0de1-4a58-bed1-a6dd3da797bb}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -96,6 +96,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

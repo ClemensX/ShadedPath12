@@ -223,7 +223,7 @@ WorkerCommand * WorkerQueue::pop()
 {
 	unique_lock<mutex> lock(monitorMutex);
 	bool valid = true;
-	WorkerCommand *workerCommand;
+	WorkerCommand *workerCommand = nullptr;
 	do {
 		while (!isSlotAvailable()) {
 			cond.wait(lock);

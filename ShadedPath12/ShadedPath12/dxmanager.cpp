@@ -405,7 +405,7 @@ void DXManager::waitGPU(FrameResource & res, ComPtr<ID3D12CommandQueue> queue)
 
 void DXManager::destroy(vector<AppWindowFrameResource>& resources, ComPtr<ID3D12CommandQueue>& queue)
 {
-	for each (AppWindowFrameResource res in resources) {
+	for (auto& res : resources) {
 		waitGPU(res, queue);
 	}
 }
