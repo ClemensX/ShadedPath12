@@ -1,6 +1,14 @@
 #include "stdafx.h"
-#include "pipeline.h"
 
+
+PipelineConfig::PipelineConfig()
+{
+}
+
+
+PipelineConfig::~PipelineConfig()
+{
+}
 
 Pipeline::Pipeline()
 {

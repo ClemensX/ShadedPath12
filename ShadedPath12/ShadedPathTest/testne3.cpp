@@ -7,5 +7,9 @@ TEST(TestNewEngine3, Empty) {
 }
 
 TEST(TestNewEngine3, Init) {
-	Pipeline p;
+	Pipeline pipeline;
+	auto pc = pipeline.getPipelineConfig();
+	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
+	EXPECT_EQ(2048.0f, pc.getSizeX());
+	EXPECT_EQ(382.0f, pc.getSizeY());
 }
