@@ -1,3 +1,8 @@
+# Important Note
+This branch is now abandoned - I began a new engine version here: https://github.com/ClemensX/ShadedPath12/tree/master2
+
+Until the new version has catched up with functionality this version here will stay as the master branch.
+
 # ShadedPath12
 DirectX 12 Framework and Applications for Oculus Rift
 
