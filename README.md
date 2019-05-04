@@ -1,9 +1,11 @@
 # ShadedPath12
 DirectX 12 Framework and Applications for Oculus Rift
 
-**Latest Update:** Fixed Hands/Controller rendering: Some Oculus Platform SDK features require a complicated registration process. This prevented non-registered users from being able to download and render Avatar parts like hands or controllers. Fixed by using other API to request avatar specification without using Platform SDK.
+## Upcoming Changes in this branch
 
-There are a number of new classes where I began work to rewrite object rendering. Goal is to have a better code structure and better performance. If you want to look at this experimental code see mass2.cpp and MeshObject.cpp.
+* Abandon Oculus PC SDK in favor of OpenVR: While I liked the concept of using the lowest level API there is for Oculus Rift I now decided that going to OpenVR and support all PC HMDs at once makes more sense. As far as I can see DirectX 12 support is there and probably a lot more developers use OpenVR than Oculus PC SDK. Seems like a low enough C++ API so that I don't fear losing any speed. Hopefully it is better documented than Oculus PC SDK. It will be a long time until I restart with VR code anyway - so this decision will be again reviewed later, when the new engine is matured far enough to include VR functionality.
+* Test Driven Development (TDD): One conclusion from my previous approach is that it is very hard to maintain engine code with having just visual sample applications to test its functionality. This time I will include tests right from the start. Not sure how far I can go with this, but idea is to have the whole engine code independent from actually rendering to HMD or screen. The engine should provide Frame data in memory or stored in files to enable comparing with expected results. More details on this in architecture link below over time while figure things out. 
+* The old master branch is now abandoned but will stay for a long time until I have catched up with functionality here
 
 [Architecture](README_ARCH.md)
 
@@ -94,6 +96,11 @@ See below for command line switches. Use them in VC++ via right click on project
 * **Sample1** Draw a lot of lines to mark the floor and ceiling of the world, some lines of text and a coordinate system at the origin point.
 
 # Features for 0.1.3
+
+**Update History:** Fixed Hands/Controller rendering: Some Oculus Platform SDK features require a complicated registration process. This prevented non-registered users from being able to download and render Avatar parts like hands or controllers. Fixed by using other API to request avatar specification without using Platform SDK.
+
+There are a number of new classes where I began work to rewrite object rendering. Goal is to have a better code structure and better performance. If you want to look at this experimental code see mass2.cpp and MeshObject.cpp.
+
 
 [Details for MeshObject rendering](meshObjectShader.md)
 
