@@ -9,6 +9,7 @@ TEST(TestNewEngine, Empty) {
 void initPipeline(Pipeline& pipeline) {
 	auto& pc = pipeline.getPipelineConfig();
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
+	pc.setFrameBufferSize(10);
 	pipeline.init();
 }
 

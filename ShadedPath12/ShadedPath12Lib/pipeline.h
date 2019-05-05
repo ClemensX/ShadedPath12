@@ -9,10 +9,13 @@ public:
 	float getSizeY() { return sizey; };
 	float getSizeZ() { return sizez; };
 	int getWaitTimeout() { return wait_timeout_ms; };
+	void setFrameBufferSize(size_t size) { frameBufferSize = size; };
+	size_t getFrameBufferSize() { return frameBufferSize; };
 private:
 	// world size in absolute units around origin, e.g. x is from -x to x
 	float sizex = 0.0f, sizey = 0.0f, sizez = 0.0f;
 	int wait_timeout_ms = 100; // check for interruption 10 times per second
+	size_t frameBufferSize = 0;
 };
 
 class Pipeline
@@ -40,6 +43,7 @@ private:
 	long long frameNum = 0;
 	boolean running = false;
 	boolean shutdown_mode = false;
+	FrameBuffer frameBuffer;
 };
 
 // pipeline queue for runner thread:
