@@ -81,6 +81,9 @@
     <ClCompile Include="..\ShadedPath12\xapp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="frame.cpp">
+      <Filter>Source Files\NE3</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ShadedPath12\sample1.h">
@@ -175,6 +178,9 @@
     </ClInclude>
     <ClInclude Include="..\ShadedPath12\rendercontrol.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="frame.h">
+      <Filter>Source Files\NE3</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -41,6 +41,7 @@
     <ClCompile Include="..\ShadedPath12\util.cpp" />
     <ClCompile Include="..\ShadedPath12\world.cpp" />
     <ClCompile Include="..\ShadedPath12\xapp.cpp" />
+    <ClCompile Include="frame.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ShadedPath12\applicationWindow.h" />
@@ -74,6 +75,7 @@
     <ClInclude Include="..\ShadedPath12\world.h" />
     <ClInclude Include="..\ShadedPath12\worldObject.h" />
     <ClInclude Include="..\ShadedPath12\xapp.h" />
+    <ClInclude Include="frame.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\ShadedPath12\Shaders\BillboardPS.hlsl">
