@@ -19,63 +19,60 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\ShadedPath12\applicationWindow.cpp" />
-    <ClCompile Include="..\ShadedPath12\DDSTextureLoader.cpp" />
-    <ClCompile Include="..\ShadedPath12\dxmanager.cpp" />
-    <ClCompile Include="..\ShadedPath12\Effects\copytexture.cpp" />
-    <ClCompile Include="..\ShadedPath12\Effects\effectbase.cpp" />
-    <ClCompile Include="..\ShadedPath12\frameresource.cpp" />
-    <ClCompile Include="..\ShadedPath12\gametime.cpp" />
-    <ClCompile Include="..\ShadedPath12\pipeline.cpp" />
-    <ClCompile Include="..\ShadedPath12\rendercontrol.cpp" />
-    <ClCompile Include="..\ShadedPath12\sample1.cpp" />
-    <ClCompile Include="..\ShadedPath12\stats.cpp" />
-    <ClCompile Include="..\ShadedPath12\stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\texture.cpp" />
-    <ClCompile Include="..\ShadedPath12\threads.cpp" />
-    <ClCompile Include="..\ShadedPath12\util.cpp" />
-    <ClCompile Include="..\ShadedPath12\world.cpp" />
-    <ClCompile Include="..\ShadedPath12\xapp.cpp" />
+    <ClCompile Include="applicationWindow.cpp" />
+    <ClCompile Include="DDSTextureLoader.cpp" />
+    <ClCompile Include="dxmanager.cpp" />
+    <ClCompile Include="Effects\copytexture.cpp" />
+    <ClCompile Include="Effects\effectbase.cpp" />
     <ClCompile Include="frame.cpp" />
+    <ClCompile Include="frameresource.cpp" />
+    <ClCompile Include="gametime.cpp" />
+    <ClCompile Include="pipeline.cpp" />
+    <ClCompile Include="rendercontrol.cpp" />
+    <ClCompile Include="sample1.cpp" />
+    <ClCompile Include="stats.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="texture.cpp" />
+    <ClCompile Include="threads.cpp" />
+    <ClCompile Include="util.cpp" />
+    <ClCompile Include="world.cpp" />
+    <ClCompile Include="xapp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\ShadedPath12\applicationWindow.h" />
-    <ClInclude Include="..\ShadedPath12\camera.h" />
-    <ClInclude Include="..\ShadedPath12\d3dx12.h" />
-    <ClInclude Include="..\ShadedPath12\dds.h" />
-    <ClInclude Include="..\ShadedPath12\DDSTextureLoader.h" />
-    <ClInclude Include="..\ShadedPath12\dxmanager.h" />
-    <ClInclude Include="..\ShadedPath12\Effects\copytexture.h" />
-    <ClInclude Include="..\ShadedPath12\Effects\effectbase.h" />
-    <ClInclude Include="..\ShadedPath12\Effects\posteffect.h" />
-    <ClInclude Include="..\ShadedPath12\forward_structures.h" />
-    <ClInclude Include="..\ShadedPath12\frameresource.h" />
-    <ClInclude Include="..\ShadedPath12\gametime.h" />
-    <ClInclude Include="..\ShadedPath12\lights.h" />
-    <ClInclude Include="..\ShadedPath12\meshObject.h" />
-    <ClInclude Include="..\ShadedPath12\path.h" />
-    <ClInclude Include="..\ShadedPath12\pipeline.h" />
     <ClInclude Include="..\ShadedPath12\rendercontrol.h" />
     <ClInclude Include="..\ShadedPath12\Resource.h" />
-    <ClInclude Include="..\ShadedPath12\sample1.h" />
-    <ClInclude Include="..\ShadedPath12\sound.h" />
-    <ClInclude Include="..\ShadedPath12\stats.h" />
-    <ClInclude Include="..\ShadedPath12\stdafx.h" />
     <ClInclude Include="..\ShadedPath12\targetver.h" />
-    <ClInclude Include="..\ShadedPath12\texture.h" />
-    <ClInclude Include="..\ShadedPath12\threads.h" />
-    <ClInclude Include="..\ShadedPath12\util.h" />
-    <ClInclude Include="..\ShadedPath12\vr.h" />
     <ClInclude Include="..\ShadedPath12\winmain.h" />
-    <ClInclude Include="..\ShadedPath12\world.h" />
-    <ClInclude Include="..\ShadedPath12\worldObject.h" />
-    <ClInclude Include="..\ShadedPath12\xapp.h" />
+    <ClInclude Include="applicationWindow.h" />
+    <ClInclude Include="camera.h" />
+    <ClInclude Include="d3dx12.h" />
+    <ClInclude Include="dds.h" />
+    <ClInclude Include="DDSTextureLoader.h" />
+    <ClInclude Include="dxmanager.h" />
+    <ClInclude Include="Effects\copytexture.h" />
+    <ClInclude Include="Effects\effectbase.h" />
+    <ClInclude Include="Effects\posteffect.h" />
+    <ClInclude Include="forward_structures.h" />
     <ClInclude Include="frame.h" />
+    <ClInclude Include="frameresource.h" />
+    <ClInclude Include="gametime.h" />
+    <ClInclude Include="lights.h" />
+    <ClInclude Include="meshObject.h" />
+    <ClInclude Include="path.h" />
+    <ClInclude Include="pipeline.h" />
+    <ClInclude Include="sample1.h" />
+    <ClInclude Include="sound.h" />
+    <ClInclude Include="stats.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="texture.h" />
+    <ClInclude Include="threads.h" />
+    <ClInclude Include="util.h" />
+    <ClInclude Include="vr.h" />
+    <ClInclude Include="world.h" />
+    <ClInclude Include="worldObject.h" />
+    <ClInclude Include="xapp.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\ShadedPath12\Shaders\BillboardPS.hlsl">

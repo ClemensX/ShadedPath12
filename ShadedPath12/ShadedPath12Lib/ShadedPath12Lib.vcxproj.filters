@@ -30,157 +30,157 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\ShadedPath12\sample1.cpp">
-      <Filter>Apps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\Effects\effectbase.cpp">
-      <Filter>Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\Effects\copytexture.cpp">
-      <Filter>Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\DDSTextureLoader.cpp">
-      <Filter>textures</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\pipeline.cpp">
-      <Filter>Source Files\NE3</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\applicationWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\dxmanager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\frameresource.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\gametime.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\rendercontrol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\stats.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\texture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\threads.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\world.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ShadedPath12\xapp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="frame.cpp">
       <Filter>Source Files\NE3</Filter>
     </ClCompile>
+    <ClCompile Include="pipeline.cpp">
+      <Filter>Source Files\NE3</Filter>
+    </ClCompile>
+    <ClCompile Include="applicationWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dxmanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="frameresource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gametime.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rendercontrol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stats.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="threads.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="world.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xapp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sample1.cpp">
+      <Filter>Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="Effects\copytexture.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="Effects\effectbase.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="DDSTextureLoader.cpp">
+      <Filter>textures</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\ShadedPath12\sample1.h">
-      <Filter>Apps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\Effects\effectbase.h">
-      <Filter>Effects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\Effects\posteffect.h">
-      <Filter>Effects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\Effects\copytexture.h">
-      <Filter>Effects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\dds.h">
-      <Filter>textures</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\DDSTextureLoader.h">
-      <Filter>textures</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\applicationWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\d3dx12.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\dxmanager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\forward_structures.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\frameresource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\gametime.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\lights.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\meshObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\path.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\ShadedPath12\Resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\sound.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\stats.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\ShadedPath12\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\ShadedPath12\texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\threads.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\util.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\vr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\ShadedPath12\winmain.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\world.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\worldObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\xapp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\pipeline.h">
-      <Filter>Source Files\NE3</Filter>
     </ClInclude>
     <ClInclude Include="..\ShadedPath12\rendercontrol.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="frame.h">
       <Filter>Source Files\NE3</Filter>
+    </ClInclude>
+    <ClInclude Include="pipeline.h">
+      <Filter>Source Files\NE3</Filter>
+    </ClInclude>
+    <ClInclude Include="applicationWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dx12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dxmanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="forward_structures.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="frameresource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gametime.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lights.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="meshObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="path.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stats.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="threads.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="world.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="worldObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xapp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sound.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sample1.h">
+      <Filter>Apps</Filter>
+    </ClInclude>
+    <ClInclude Include="Effects\copytexture.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="Effects\effectbase.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="Effects\posteffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="dds.h">
+      <Filter>textures</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader.h">
+      <Filter>textures</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

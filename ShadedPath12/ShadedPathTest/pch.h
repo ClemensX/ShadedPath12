@@ -6,6 +6,6 @@
 #pragma once
 #pragma warning(disable : 4996)
 #include "gtest/gtest.h"
-#include "../ShadedPath12/stdafx.h"
+#include "../ShadedPath12Lib/stdafx.h"
 #include "renderplan.h"
 #include "queue.h"

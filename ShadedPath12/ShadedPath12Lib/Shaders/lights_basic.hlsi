@@ -1,0 +1,49 @@
+
+
+#define MAX_AMBIENT 1
+#define MAX_DIRECTIONAL 3
+#define MAX_POINT 10
+#define MAX_SPOT 10
+
+struct AmbientLight {
+	float4 ambient;
+	float4 pos;
+	float4 used_fill;
+};
+
+struct DirectionalLight {
+	float4 color;
+	float4 pos;
+	float4 used_fill;
+};
+
+struct PointLight {
+	float4 color;
+	float4 pos;
+	float  range_reciprocal; // 1/range, range is max effective distance to light source
+	float  used;
+	float2 used_fill;
+};
+
+struct SpotLight {
+	float4 level;
+	float4 pos;
+	float4 used_fill;
+};
+
+struct Material {
+    float4 ambient;       // only .rgb used                             0
+	float  specExp;       // 1 for no specular color                   16
+	float  specIntensity; // 0 for no specular color                   20
+	float  isLightSource; // 1.0 for light source (== draw bright)     24
+	float fill2;//                                                     28
+}; // total: 32
+
+// Changes here NEED to be reflected in lights.hlsi !!!
+struct CBVLights {
+	//Material material;
+    AmbientLight ambientLights[MAX_AMBIENT];
+	DirectionalLight directionalLights[MAX_DIRECTIONAL];
+	PointLight pointLights[MAX_POINT];
+	SpotLight spotLights[MAX_SPOT];
+};
