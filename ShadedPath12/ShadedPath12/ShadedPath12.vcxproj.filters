@@ -46,12 +46,6 @@
     <FxCompile Include="Shaders\LinePS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\PostPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\PostVS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\DotcrossVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
@@ -91,9 +85,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Line.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Shaders\Post.hlsli">
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\Dotcross.hlsli">

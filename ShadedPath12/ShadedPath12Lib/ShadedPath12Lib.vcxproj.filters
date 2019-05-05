@@ -184,84 +184,84 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\ShadedPath12\Shaders\BillboardPS.hlsl">
+    <FxCompile Include="Shaders\PostPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\BillboardVS.hlsl">
+    <FxCompile Include="Shaders\PostVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\DotcrossGS.hlsl">
+    <FxCompile Include="Shaders\BillboardPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\DotcrossPS.hlsl">
+    <FxCompile Include="Shaders\BillboardVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\DotcrossVS.hlsl">
+    <FxCompile Include="Shaders\DotcrossGS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\LinePS.hlsl">
+    <FxCompile Include="Shaders\DotcrossPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\LinetextGS.hlsl">
+    <FxCompile Include="Shaders\DotcrossVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\LinetextVS.hlsl">
+    <FxCompile Include="Shaders\LinePS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\LineVS.hlsl">
+    <FxCompile Include="Shaders\LinetextGS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\MObjectCS.hlsl">
+    <FxCompile Include="Shaders\LinetextVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\MObjectPS.hlsl">
+    <FxCompile Include="Shaders\LineVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\MObjectVS.hlsl">
+    <FxCompile Include="Shaders\MObjectCS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\ObjectPS.hlsl">
+    <FxCompile Include="Shaders\MObjectPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\ObjectVS.hlsl">
+    <FxCompile Include="Shaders\MObjectVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\PostPS.hlsl">
+    <FxCompile Include="Shaders\ObjectPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="..\ShadedPath12\Shaders\PostVS.hlsl">
+    <FxCompile Include="Shaders\ObjectVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\ShadedPath12\Shaders\Billboard.hlsli">
+    <None Include="Shaders\Post.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\ShadedPath12\Shaders\Dotcross.hlsli">
+    <None Include="Shaders\Billboard.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\ShadedPath12\Shaders\lights.hlsi">
+    <None Include="Shaders\Dotcross.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\ShadedPath12\Shaders\lights_basic.hlsi">
+    <None Include="Shaders\lights.hlsi">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\ShadedPath12\Shaders\lights_old.hlsi">
+    <None Include="Shaders\lights_basic.hlsi">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\ShadedPath12\Shaders\Line.hlsli">
+    <None Include="Shaders\lights_old.hlsi">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\ShadedPath12\Shaders\Linetext.hlsli">
+    <None Include="Shaders\Line.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\ShadedPath12\Shaders\MObject.hlsli">
+    <None Include="Shaders\Linetext.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\ShadedPath12\Shaders\Object.hlsli">
+    <None Include="Shaders\MObject.hlsli">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\ShadedPath12\Shaders\Post.hlsli">
+    <None Include="Shaders\Object.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
