@@ -28,13 +28,17 @@ void Pipeline::finallyProcessed(long long frameNumProcessed)
 {
 }
 
-void Pipeline::waitForFinishedFrame(long long frameNum)
+Frame* Pipeline::waitForFinishedFrame(long long frameNum)
 {
 	if (!running) {
 		LogF("Pipeline not running\n");
 	}
+	return nullptr;
 }
 
-void Pipeline::run()
+void Pipeline::run(Pipeline* pipeline_instance)
 {
+	pipeline_instance->setRunning(true);
+	auto v = pipeline_instance->queue.pop();
+	pipeline_instance->setRunning(false);
 }

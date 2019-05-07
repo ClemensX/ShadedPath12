@@ -1,4 +1,48 @@
 #pragma once
+// pipeline queue for runner thread:
+class PipelineQueue {
+public:
+	Frame* pop() {
+		unique_lock<mutex> lock(monitorMutex);
+		while (myqueue.empty()) {
+			cond.wait_for(lock, chrono::milliseconds(3000));
+			LogF("PipelineQueue wait suspended\n");
+			if (in_shutdown) {
+				LogF("PipelineQueue shutdown in pop\n");
+				return nullptr;
+			}
+		}
+		assert(myqueue.empty() == false);
+		Frame *frame = myqueue.front();
+		myqueue.pop();
+		cond.notify_one();
+		return frame;
+	}
+
+	void push(Frame *frame) {
+		unique_lock<mutex> lock(monitorMutex);
+		if (in_shutdown) {
+			throw "RenderQueue shutdown in push";
+		}
+		myqueue.push(frame);
+		cond.notify_one();
+	}
+
+	void shutdown() {
+		in_shutdown = true;
+		cond.notify_all();
+	}
+
+	size_t size() {
+		return myqueue.size();
+	}
+private:
+	queue<Frame*> myqueue;
+	mutex monitorMutex;
+	condition_variable cond;
+	bool in_shutdown{ false };
+};
+
 class PipelineConfig
 {
 public:
@@ -31,59 +75,21 @@ public:
 	// signal that a frame has been fully processed and all associated resources can be freed
 	void finallyProcessed(long long frameNumProcessed);
 	// wait for a specific frame to be ready for consumption. May wait forever if this frame is never generated.
-	void waitForFinishedFrame(long long frameNum);
+	Frame* waitForFinishedFrame(long long frameNum);
 	// Is this pipeline running? 
 	boolean isRunning() { return running; }
+	// set run mode
+	void setRunning(boolean isRunning) { running = isRunning; }
 	// enable shutdown mode: The run thread will dry out and terminate
-	void shutdown() { shutdown_mode = true; }
+	void shutdown() { shutdown_mode = true; queue.shutdown(); }
 	// start the processing thread in the background and return immediately. May only be called once
-	void run();
+	static void run(Pipeline *pipeline_instance);
+	PipelineQueue queue;
+	FrameBuffer frameBuffer;
 private:
 	PipelineConfig pipelineConfig;
 	long long frameNum = 0;
 	boolean running = false;
 	boolean shutdown_mode = false;
-	FrameBuffer frameBuffer;
 };
 
-// pipeline queue for runner thread:
-class PipelineQueue {
-public:
-	RenderCommand pop() {
-		unique_lock<mutex> lock(monitorMutex);
-		while (myqueue.empty()) {
-			cond.wait(lock);
-			if (in_shutdown) {
-				Log("PipelineQueue shutdown in pop");
-			}
-		}
-		assert(myqueue.empty() == false);
-		RenderCommand renderCommand = myqueue.front();
-		myqueue.pop();
-		cond.notify_one();
-		return renderCommand;
-	}
-
-	void push(RenderCommand renderCommand) {
-		unique_lock<mutex> lock(monitorMutex);
-		if (in_shutdown) {
-			throw "RenderQueue shutdown in push";
-		}
-		myqueue.push(renderCommand);
-		cond.notify_one();
-	}
-
-	void shutdown() {
-		in_shutdown = true;
-		cond.notify_all();
-	}
-
-	size_t size() {
-		return myqueue.size();
-	}
-private:
-	queue<RenderCommand> myqueue;
-	mutex monitorMutex;
-	condition_variable cond;
-	bool in_shutdown{ false };
-};
