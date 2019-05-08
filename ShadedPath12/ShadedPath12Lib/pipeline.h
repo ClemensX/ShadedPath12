@@ -75,18 +75,26 @@ public:
 	// signal that a frame has been fully processed and all associated resources can be freed
 	void finallyProcessed(long long frameNumProcessed);
 	// wait for a specific frame to be ready for consumption. May wait forever if this frame is never generated.
-	Frame* waitForFinishedFrame(long long frameNum);
+	// removed: application code must be able to deal with any returned frame...
+	//Frame* waitForFinishedFrame(long long frameNum);
+
 	// Is this pipeline running? 
 	boolean isRunning() { return running; }
 	// set run mode
 	void setRunning(boolean isRunning) { running = isRunning; }
+	// Is pipeline in shutdown mode? 
+	boolean isShutdown() { return shutdown_mode; }
 	// enable shutdown mode: The run thread will dry out and terminate
 	void shutdown() { shutdown_mode = true; queue.shutdown(); }
 	// start the processing thread in the background and return immediately. May only be called once
-	static void run(Pipeline *pipeline_instance);
+	static void run(Pipeline* pipeline_instance);
+	// wait until next frame is available, null returned on shutdown
+	Frame* getNextFrame() { return frameBuffer.getNextFrame(); }
+	// add a fully rendered frame to the framebuffer
+	void pushRenderedFrame(Frame* frame) { queue.push(frame); }
+private:
 	PipelineQueue queue;
 	FrameBuffer frameBuffer;
-private:
 	PipelineConfig pipelineConfig;
 	long long frameNum = 0;
 	boolean running = false;

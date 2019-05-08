@@ -34,6 +34,10 @@ TEST(TestNewEngine, ShutdownWhileWaitingForFrame) {
 
 	// cleanup and shutdown
 	pipeline.shutdown();
+	// we need to wait until all threads are terminated
+	this_thread::sleep_for(chrono::milliseconds(50));
+	EXPECT_FALSE(pipeline.isRunning());
+	LogF("finished" << endl);
 }
 
 TEST(TestNewEngine, FrameCreation) {
@@ -46,14 +50,17 @@ TEST(TestNewEngine, FrameCreation) {
 	this_thread::sleep_for(chrono::milliseconds(50));
 	EXPECT_TRUE(pipeline.isRunning());
 	// all up and running - now produce a frame
-	Frame* frame = pipeline.frameBuffer.getNextFrame();
+	Frame* frame = pipeline.getNextFrame();
 	frame->absFrameNumber = curFrame;
-	pipeline.queue.push(frame);
+	pipeline.pushRenderedFrame(frame);
+	this_thread::sleep_for(chrono::milliseconds(50));
+
+	// consume frame
+	Frame* renderedFrame = pipeline.getNextFrame();
+	EXPECT_NE(nullptr, renderedFrame);
+	EXPECT_EQ(0LL, renderedFrame->absFrameNumber);
 
 	// cleanup and shutdown
 	pipeline.shutdown();
-	Frame* finishedFrame = pipeline.waitForFinishedFrame(curFrame);
-	EXPECT_NE(nullptr, finishedFrame);
-	EXPECT_EQ(0LL, finishedFrame->absFrameNumber);
 
 }
