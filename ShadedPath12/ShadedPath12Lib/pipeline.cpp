@@ -24,8 +24,9 @@ void Pipeline::init()
 	frameBuffer.resize(getPipelineConfig().getFrameBufferSize());
 }
 
-void Pipeline::finallyProcessed(long long frameNumProcessed)
+void Pipeline::finallyProcessed(Frame* frame)
 {
+	frameBuffer.returnFrame(frame);
 }
 
 /*Frame* Pipeline::waitForFinishedFrame(long long frameNum)
@@ -50,7 +51,7 @@ void Pipeline::run(Pipeline* pipeline_instance)
 			break;
 		}
 		LogF("pipeline received frame: " << v->absFrameNumber << endl);
-		//pipeline_instance->frameBuffer.getNextFrame();
+		//pipeline_instance->frameBuffer.getNextFrameSlot();
 	}
 	pipeline_instance->setRunning(false);
 }

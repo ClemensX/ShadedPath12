@@ -6,11 +6,13 @@ TEST(TestNewEngine, Empty) {
   EXPECT_TRUE(true);
 }
 
-// run tests with a 10 frame buffer
+#define NUM_SLOTS 100
+
+// run tests with NUM_SLOTS sized frame buffer
 void initPipeline(Pipeline& pipeline) {
 	auto& pc = pipeline.getPipelineConfig();
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
-	pc.setFrameBufferSize(10);
+	pc.setFrameBufferSize(NUM_SLOTS);
 	pipeline.init();
 }
 
@@ -50,15 +52,47 @@ TEST(TestNewEngine, FrameCreation) {
 	this_thread::sleep_for(chrono::milliseconds(50));
 	EXPECT_TRUE(pipeline.isRunning());
 	// all up and running - now produce a frame
-	Frame* frame = pipeline.getNextFrame();
+	Frame* frame = pipeline.getNextFrameSlot();
 	frame->absFrameNumber = curFrame;
 	pipeline.pushRenderedFrame(frame);
 	this_thread::sleep_for(chrono::milliseconds(50));
 
 	// consume frame
-	Frame* renderedFrame = pipeline.getNextFrame();
+	Frame* renderedFrame = pipeline.getNextFrameSlot();
 	EXPECT_NE(nullptr, renderedFrame);
 	EXPECT_EQ(0LL, renderedFrame->absFrameNumber);
+
+	// cleanup and shutdown
+	pipeline.shutdown();
+
+}
+
+TEST(TestNewEngine, FrameBuffer) {
+	Pipeline pipeline;
+	initPipeline(pipeline);
+	ThreadGroup threads;
+	threads.add_t(Pipeline::run, &pipeline);
+	this_thread::sleep_for(chrono::milliseconds(50));
+	EXPECT_TRUE(pipeline.isRunning());
+	// all up and running - now produce and consume frames
+	Frame* frames[NUM_SLOTS];
+	for (int i = 0; i < NUM_SLOTS; i++) {
+		frames[i] = pipeline.getNextFrameSlot();
+		long long curFrame = pipeline.getCurrentFrameNumber();
+		frames[i]->absFrameNumber = curFrame;
+		//pipeline.pushRenderedFrame(frame);
+	}
+	EXPECT_EQ(0, pipeline.currentlyFreeSlots());
+	// produce frames:
+	for (int i = 0; i < NUM_SLOTS; i++) {
+		pipeline.pushRenderedFrame(frames[i]);
+	}
+	// consume frames:
+	for (int i = 0; i < NUM_SLOTS; i++) {
+		pipeline.finallyProcessed(frames[i]);
+	}
+	EXPECT_EQ(NUM_SLOTS, pipeline.currentlyFreeSlots());
+	this_thread::sleep_for(chrono::milliseconds(50));
 
 	// cleanup and shutdown
 	pipeline.shutdown();

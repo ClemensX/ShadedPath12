@@ -2,6 +2,7 @@
 // pipeline queue for runner thread:
 class PipelineQueue {
 public:
+	// wait until next frame has finished rendering
 	Frame* pop() {
 		unique_lock<mutex> lock(monitorMutex);
 		while (myqueue.empty()) {
@@ -13,18 +14,20 @@ public:
 			}
 		}
 		assert(myqueue.empty() == false);
-		Frame *frame = myqueue.front();
+		Frame * frame = myqueue.front();
 		myqueue.pop();
 		cond.notify_one();
 		return frame;
 	}
 
+	// push finished frame
 	void push(Frame *frame) {
 		unique_lock<mutex> lock(monitorMutex);
 		if (in_shutdown) {
 			throw "RenderQueue shutdown in push";
 		}
 		myqueue.push(frame);
+		LogF("PipelineQueue length " << myqueue.size() << endl);
 		cond.notify_one();
 	}
 
@@ -36,6 +39,7 @@ public:
 	size_t size() {
 		return myqueue.size();
 	}
+
 private:
 	queue<Frame*> myqueue;
 	mutex monitorMutex;
@@ -73,7 +77,7 @@ public:
 	// return current frame number. This is the highest fame number that has not yet been finally processed.
 	long long getCurrentFrameNumber() { return frameNum; }
 	// signal that a frame has been fully processed and all associated resources can be freed
-	void finallyProcessed(long long frameNumProcessed);
+	void finallyProcessed(Frame* frame);
 	// wait for a specific frame to be ready for consumption. May wait forever if this frame is never generated.
 	// removed: application code must be able to deal with any returned frame...
 	//Frame* waitForFinishedFrame(long long frameNum);
@@ -88,10 +92,14 @@ public:
 	void shutdown() { shutdown_mode = true; queue.shutdown(); }
 	// start the processing thread in the background and return immediately. May only be called once
 	static void run(Pipeline* pipeline_instance);
-	// wait until next frame is available, null returned on shutdown
-	Frame* getNextFrame() { return frameBuffer.getNextFrame(); }
+	// wait until next frame is available to render to, null returned on shutdown
+	Frame* getNextFrameSlot() { return frameBuffer.getNextFrameSlot(); }
 	// add a fully rendered frame to the framebuffer
 	void pushRenderedFrame(Frame* frame) { queue.push(frame); }
+	size_t currentlyFreeSlots() {
+		return frameBuffer.currentlyFreeSlots();
+	}
+
 private:
 	PipelineQueue queue;
 	FrameBuffer frameBuffer;
