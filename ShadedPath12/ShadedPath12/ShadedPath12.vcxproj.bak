@@ -81,7 +81,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);D:\msvc\dev\repos\SP12\OVRPlatformSDK\Include;C:\dev\repos\OVRPlatformSDK\Include;$(ProjectDir)\$(Platform)\$(Configuration)\Output\$(ProjectName);$(ProjectDir)\..\ShadedPath12Lib</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\$(Platform)\$(Configuration)\Output\$(ProjectName);C:\dev\repos\OVRPlatformSDK\Include;D:\msvc\dev\repos\SP12\OVRPlatformSDK\Include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
