@@ -1,0 +1,7 @@
+Frame c'tor
+Frame c'tor
+Frame c'tor
+Pipeline::init
+pipeline initiaized via LogF
+pipeline run
+PipelineQueue wait suspended

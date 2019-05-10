@@ -4,26 +4,46 @@
 #include "stdafx.h"
 #include "PerfTest.h"
 
-#define NUM_SLOTS 3
+#define FRAME_BUFFER_SIZE 3
+#define FRAMES_COUNT 10
+
+// TODO now orchestrate frame creation in multiple tests
 
 // run tests with NUM_SLOTS sized frame buffer
 void initPipeline(Pipeline& pipeline) {
 	auto& pc = pipeline.getPipelineConfig();
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
-	pc.setFrameBufferSize(NUM_SLOTS);
+	pc.setFrameBufferSize(FRAME_BUFFER_SIZE);
 	pipeline.init();
 	LogF("pipeline initiaized via LogF" << endl);
 }
 
+static void produceFrames(Pipeline* pipeline) {
+	cout << "produce frames" << endl;
+	for (int i = 0; i < FRAMES_COUNT; i++) {
+		cout << "P " << i << endl;
+		//pipeline->
+	}
+}
 
+static void consumeFrames(Pipeline* pipeline) {
+	cout << "consume frames" << endl;
+	for (int i = 0; i < FRAMES_COUNT; i++) {
+		cout << "C " << i << endl;
+	}
+}
 
 int main()
 {
-    std::cout << "Hello World!\n"; 
+    std::cout << "ShadedPath12 Performance Tests\n"; 
 	Pipeline pipeline;
 	initPipeline(pipeline);
-	LogF("test " << endl);
-	std::cout << "End\n";
+	ThreadGroup threads;
+	threads.add_t(Pipeline::run, &pipeline);
+	cout << "pipeline thread started " << endl;
+
+	threads.add_t(produceFrames, &pipeline);
+	threads.add_t(consumeFrames, &pipeline);
 }
 
 
