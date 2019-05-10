@@ -22,6 +22,8 @@ Pipeline::~Pipeline()
 void Pipeline::init()
 {
 	frameBuffer.resize(getPipelineConfig().getFrameBufferSize());
+	Log("Pipeline::init" << endl);
+	LogF("Pipeline::init" << endl);
 }
 
 void Pipeline::finallyProcessed(Frame* frame)
