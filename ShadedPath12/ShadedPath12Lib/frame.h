@@ -23,6 +23,9 @@ public:
 		free_slots = size;
 	}
 
+	// size of frame buffer. Usually 1 - 3
+	int size() { return (int)frames.size(); }
+
 	// get next free slot, block if currently no free slot until one is available
 	// returning null means shutdown
 	Frame* getNextFrameSlot() {
@@ -63,6 +66,11 @@ public:
 	void shutdown() {
 		in_shutdown = true;
 		cond.notify_all();
+	}
+
+	// unsynchronized getter for Frame. Use in simple mode when FrameBuffe does not need synchronization
+	Frame* getFrame(int slot) {
+		return &frames[slot];
 	}
 
 private:

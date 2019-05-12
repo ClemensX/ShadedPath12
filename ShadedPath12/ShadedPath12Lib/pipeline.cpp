@@ -24,6 +24,7 @@ void Pipeline::init()
 	frameBuffer.resize(getPipelineConfig().getFrameBufferSize());
 	Log("Pipeline::init" << endl);
 	LogF("Pipeline::init" << endl);
+	initialized = true;
 }
 
 void Pipeline::finallyProcessed(Frame* frame)
@@ -56,4 +57,38 @@ void Pipeline::run(Pipeline* pipeline_instance)
 		//pipeline_instance->frameBuffer.getNextFrameSlot();
 	}
 	pipeline_instance->setRunning(false);
+}
+
+void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
+{
+	while (!pipeline->isShutdown()) {
+		auto frameNum = pipeline->getNextFrameNumber();
+		// if next line is commentd out we see garbled text because of multile threads writing
+		//cout << "run frame slot " << slot << " frame " << frameNum << endl;
+		frame->absFrameNumber = frameNum;
+		frame->slot = slot;
+		// frame now considered processed
+		// call synchronized present method
+		pipeline->consumer(frame, pipeline);
+	}
+}
+
+void Pipeline::startRenderThreads()
+{
+	if (!initialized) {
+		Error(L"cannot start render threads: pipeline not initialized\n");
+		return;
+	}
+	if (consumer == nullptr) {
+		Error(L"cannot start render threads: no frame consumer specified\n");
+		return;
+	}
+	for (int i = 0; i < frameBuffer.size(); i++) {
+		threads.add_t(runFrameSlot, this, frameBuffer.getFrame(i), i);
+	}
+}
+
+void Pipeline::waitUntilShutdown()
+{
+	threads.join_all();
 }

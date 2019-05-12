@@ -15,21 +15,23 @@ void initPipeline(Pipeline& pipeline) {
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	pc.setFrameBufferSize(FRAME_BUFFER_SIZE);
 	pipeline.init();
-	LogF("pipeline initiaized via LogF" << endl);
+	LogF("pipeline initialized via LogF" << endl);
 }
 
 // static void methods are used in threaded code
 static mutex monitorMutex;
-static bool in_shutdown{ false };
 static long long skipped = 0; // count skipped frames
 static long long last_processed = -1; // last processed frame number
 
 // after a frame has been processed this is called to consume it
 // (present or store usually)
-// after that the buffer slot should be freed
-static void presentFrame(Frame* frame) {
+static void presentFrame(Frame* frame, Pipeline *pipeline) {
 	unique_lock<mutex> lock(monitorMutex);
 	//cout << "present frame slot " << frame->slot << " frame " << frame->absFrameNumber << endl;
+	if (frame->absFrameNumber >= (FRAMES_COUNT - 1)) {
+		//cout << "pipeline should shutdown" << endl;
+		pipeline->shutdown();
+	}
 	if (frame->absFrameNumber < last_processed) {
 		// received an out-of-order frame: discard
 		skipped++;
@@ -41,44 +43,16 @@ static void presentFrame(Frame* frame) {
 	last_processed = frame->absFrameNumber;
 }
 
-static void runFrameSlot(Pipeline *pipeline, Frame* frame, int slot) {
-	boolean shutdown = false;
-	while (!shutdown) {
-		auto frameNum = pipeline->getNextFrameNumber();
-		// if next line is commentd out we see garbled text because of multile threads writing
-		//cout << "run frame slot " << slot << " frame " << frameNum << endl;
-		frame->absFrameNumber = frameNum;
-		frame->slot = slot;
-		// frame now considered processed
-		// call synchronized present method
-		presentFrame(frame);
-		if (frameNum >= (FRAMES_COUNT-1)) {
-			shutdown = true;
-		}
-	}
-}
-
 int main()
 {
     std::cout << "ShadedPath12 Performance Tests\n"; 
 	Pipeline pipeline;
 	initPipeline(pipeline);
-	ThreadGroup threads;
-	//threads.add_t(Pipeline::run, &pipeline);
-	//cout << "pipeline thread started " << endl;
-
-	//threads.add_t(produceFrames, &pipeline);
-	//threads.add_t(consumeFrames, &pipeline);
-
 	// start timer
 	auto t0 = chrono::high_resolution_clock::now();
-	// create as many frames as we will have parallel threads producing them
-	Frame frames[3];
-	threads.add_t(runFrameSlot, &pipeline, &frames[0], 0);
-	threads.add_t(runFrameSlot, &pipeline, &frames[1], 1);
-	threads.add_t(runFrameSlot, &pipeline, &frames[2], 2);
-	//this_thread::sleep_for(chrono::milliseconds(200));
-	threads.join_all();
+	pipeline.setFinishedFrameConsumer(presentFrame);
+	pipeline.startRenderThreads();
+	pipeline.waitUntilShutdown();
 	// stop timer
 	auto t1 = chrono::high_resolution_clock::now();
 	cout << "Empty Frame throughput ( " << FRAMES_COUNT << " frames): " << chrono::duration_cast<chrono::milliseconds>(t1 - t0).count() << " ms\n";

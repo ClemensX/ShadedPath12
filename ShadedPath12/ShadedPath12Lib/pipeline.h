@@ -102,13 +102,23 @@ public:
 	size_t currentlyFreeSlots() {
 		return frameBuffer.currentlyFreeSlots();
 	}
-
+	// set function to be called after frame has been fully created.
+	void setFinishedFrameConsumer(function<void(Frame*,Pipeline*)> consumer) { this->consumer = consumer; }
+	// start rendering 
+	void startRenderThreads();
+	// Wait until pipeline has ended rendering. Needed for console apps that have no event loop
+	void waitUntilShutdown();
 private:
+	// Pipeline part of creating a frame
+	static void runFrameSlot(Pipeline* pipeline, Frame* frame, int slot);
 	PipelineQueue queue;
 	FrameBuffer frameBuffer;
 	PipelineConfig pipelineConfig;
 	atomic<long long> frameNum = 0;
 	boolean running = false;
 	boolean shutdown_mode = false;
+	function<void(Frame*,Pipeline*)> consumer = nullptr;
+	boolean initialized = false;
+	ThreadGroup threads;
 };
 
