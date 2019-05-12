@@ -208,7 +208,9 @@ public:
 	// wait for all threads to finish
 	void join_all() {
 		for (auto& t : threads) {
-			t.join();
+			if (t.joinable()) {
+				t.join();
+			}
 		}
 	}
 

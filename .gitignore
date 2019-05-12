@@ -47,3 +47,5 @@ tools/texture/dds_files/**
 # Test Framework
 ShadedPath12/packages/**
 ShadedPath12/ShadedPathTest/x64
+
+xapp_run.log

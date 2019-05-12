@@ -74,7 +74,10 @@ public:
 	PipelineConfig& getPipelineConfig() { return pipelineConfig; }
 	// Initialize default pipeline with framecount 0 and one FrameBuffer
 	void init();
-	// return current frame number. This is the highest fame number that has not yet been finally processed.
+	// return next frame number. Frame numbers ar increased by 1 with every call to this method. 
+	// Only be called once for every frame
+	long long getNextFrameNumber() { return frameNum++; }
+	// return current frame number. This is the highest frame number that has not yet been finally processed.
 	long long getCurrentFrameNumber() { return frameNum; }
 	// signal that a frame has been fully processed and all associated resources can be freed
 	void finallyProcessed(Frame* frame);
@@ -104,7 +107,7 @@ private:
 	PipelineQueue queue;
 	FrameBuffer frameBuffer;
 	PipelineConfig pipelineConfig;
-	long long frameNum = 0;
+	atomic<long long> frameNum = 0;
 	boolean running = false;
 	boolean shutdown_mode = false;
 };

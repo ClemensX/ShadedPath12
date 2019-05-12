@@ -8,6 +8,7 @@ public:
 	virtual ~Frame();
 	long long absFrameNumber = 0LL;
 	boolean inUse = false;
+	int slot; // frame buffer slot used to render this (usually 0-2)
 };
 
 // Frame storage. Get access in a round-robin manner. 
@@ -42,7 +43,7 @@ public:
 		return frame;
 	}
 
-	// return frame, any resources should be already detached so fram is ready to be overwritten by next usage
+	// return frame, any resources should be already detached so frame is ready to be overwritten by next usage
 	void returnFrame(Frame* frame) {
 		unique_lock<mutex> lock(monitorMutex);
 		if (in_shutdown) {
