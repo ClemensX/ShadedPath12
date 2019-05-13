@@ -23,7 +23,7 @@ void Pipeline::init()
 {
 	frameBuffer.resize(getPipelineConfig().getFrameBufferSize());
 	Log("Pipeline::init" << endl);
-	LogF("Pipeline::init" << endl);
+	LogF("Pipeline::init with LogF" << endl);
 	initialized = true;
 }
 
@@ -65,12 +65,24 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 		auto frameNum = pipeline->getNextFrameNumber();
 		// if next line is commentd out we see garbled text because of multile threads writing
 		//cout << "run frame slot " << slot << " frame " << frameNum << endl;
+		frame->renderStartTime = chrono::high_resolution_clock::now();
 		frame->absFrameNumber = frameNum;
 		frame->slot = slot;
 		// frame now considered processed
 		// call synchronized present method
 		pipeline->consumer(frame, pipeline);
+		pipeline->updateStatistics(frame);
 	}
+}
+
+void Pipeline::updateStatistics(Frame* frame)
+{
+	auto t1 = chrono::high_resolution_clock::now();
+	frame->renderDuration = chrono::duration_cast<chrono::microseconds>(t1 - frame->renderStartTime).count();
+	cumulatedFrameRenderDuration += frame->renderDuration;
+	Log("cumulated " << cumulatedFrameRenderDuration);
+	averageFrameRenderDuration = cumulatedFrameRenderDuration / (frame->absFrameNumber + 1);
+	Log(" average " << averageFrameRenderDuration << endl);
 }
 
 void Pipeline::startRenderThreads()

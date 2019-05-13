@@ -108,6 +108,8 @@ public:
 	void startRenderThreads();
 	// Wait until pipeline has ended rendering. Needed for console apps that have no event loop
 	void waitUntilShutdown();
+	// get cumulated statistics message
+	string getStatistics() { stringstream s; s << "created " << (frameNum + 1) << " frames with average [microseconds] to render: " << averageFrameRenderDuration << endl; return s.str(); }
 private:
 	// Pipeline part of creating a frame
 	static void runFrameSlot(Pipeline* pipeline, Frame* frame, int slot);
@@ -120,5 +122,9 @@ private:
 	function<void(Frame*,Pipeline*)> consumer = nullptr;
 	boolean initialized = false;
 	ThreadGroup threads;
+	long long averageFrameRenderDuration; // microseconds
+	long long cumulatedFrameRenderDuration; // microseconds
+protected:
+	void updateStatistics(Frame* frame);
 };
 

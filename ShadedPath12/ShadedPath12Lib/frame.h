@@ -9,6 +9,9 @@ public:
 	long long absFrameNumber = 0LL;
 	boolean inUse = false;
 	int slot; // frame buffer slot used to render this (usually 0-2)
+	chrono::time_point<chrono::high_resolution_clock> renderStartTime;
+	//chrono::duration<chrono::microseconds> renderDuration; // render duration in microseconds
+	long long renderDuration; // render duration in microseconds
 };
 
 // Frame storage. Get access in a round-robin manner. 
