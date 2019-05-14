@@ -110,6 +110,7 @@ public:
 	void waitUntilShutdown();
 	// get cumulated statistics message
 	string getStatistics() { stringstream s; s << "created " << (frameNum + 1) << " frames with average [microseconds] to render: " << averageFrameRenderDuration << endl; return s.str(); }
+	void updateStatistics(Frame* frame);
 private:
 	// Pipeline part of creating a frame
 	static void runFrameSlot(Pipeline* pipeline, Frame* frame, int slot);
@@ -125,6 +126,5 @@ private:
 	long long averageFrameRenderDuration; // microseconds
 	long long cumulatedFrameRenderDuration; // microseconds
 protected:
-	void updateStatistics(Frame* frame);
 };
 

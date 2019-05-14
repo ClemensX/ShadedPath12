@@ -44,6 +44,7 @@ void EmptyFrames::presentFrame(Frame* frame, Pipeline* pipeline) {
 	cout << "present frame slot " << frame->slot << " frame " << frame->absFrameNumber << endl;
 	// TODO
 	last_processed = frame->absFrameNumber;
+	pipeline->updateStatistics(frame);
 }
 
 void EmptyFrames::runTest() {

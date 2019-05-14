@@ -71,7 +71,7 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 		// frame now considered processed
 		// call synchronized present method
 		pipeline->consumer(frame, pipeline);
-		pipeline->updateStatistics(frame);
+		//pipeline->updateStatistics(frame);
 	}
 }
 
