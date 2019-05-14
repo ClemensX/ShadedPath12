@@ -59,6 +59,9 @@ public:
 	int getWaitTimeout() { return wait_timeout_ms; };
 	void setFrameBufferSize(size_t size) { frameBufferSize = size; };
 	size_t getFrameBufferSize() { return frameBufferSize; };
+	// all drawing takes place in backbuffer - output to whatever size the window currently has is only last step
+	unsigned int backbufferWidth = 0, backbufferHeight = 0;
+	float aspectRatio;
 private:
 	// world size in absolute units around origin, e.g. x is from -x to x
 	float sizex = 0.0f, sizey = 0.0f, sizez = 0.0f;

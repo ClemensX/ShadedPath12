@@ -154,10 +154,12 @@
   <ItemGroup>
     <ClCompile Include="emptyframes.cpp" />
     <ClCompile Include="PerfTest.cpp" />
+    <ClCompile Include="simple2dframe.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="emptyframes.h" />
     <ClInclude Include="PerfTest.h" />
+    <ClInclude Include="simple2dframe.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ShadedPath12Lib\ShadedPath12Lib.vcxproj">

@@ -21,12 +21,18 @@
     <ClCompile Include="emptyframes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="simple2dframe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PerfTest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emptyframes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="simple2dframe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

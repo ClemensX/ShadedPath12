@@ -13,6 +13,8 @@ void initPipeline(Pipeline& pipeline) {
 	auto& pc = pipeline.getPipelineConfig();
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	pc.setFrameBufferSize(NUM_SLOTS);
+	pc.backbufferWidth = 200;
+	pc.backbufferHeight = 100;
 	pipeline.init();
 }
 

@@ -21,6 +21,12 @@ Pipeline::~Pipeline()
 
 void Pipeline::init()
 {
+	auto pc = getPipelineConfig();
+	// some plausibility checks:
+	if (pc.getFrameBufferSize() <= 0) Error(L"Frame buffer size cannot be 0");
+	if (pc.backbufferWidth <= 0) Error(L"backbuffer width cannot be 0");
+	if (pc.backbufferHeight <= 0) Error(L"backbuffer height cannot be 0");
+
 	frameBuffer.resize(getPipelineConfig().getFrameBufferSize());
 	Log("Pipeline::init" << endl);
 	LogF("Pipeline::init with LogF" << endl);

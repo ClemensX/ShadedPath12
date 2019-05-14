@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="applicationWindow.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
+    <ClCompile Include="dxglobal.cpp" />
     <ClCompile Include="dxmanager.cpp" />
     <ClCompile Include="Effects\copytexture.cpp" />
     <ClCompile Include="Effects\effectbase.cpp" />
@@ -51,6 +52,7 @@
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="dds.h" />
     <ClInclude Include="DDSTextureLoader.h" />
+    <ClInclude Include="dxglobal.h" />
     <ClInclude Include="dxmanager.h" />
     <ClInclude Include="Effects\copytexture.h" />
     <ClInclude Include="Effects\effectbase.h" />

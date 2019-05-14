@@ -84,6 +84,9 @@
     <ClCompile Include="DDSTextureLoader.cpp">
       <Filter>textures</Filter>
     </ClCompile>
+    <ClCompile Include="dxglobal.cpp">
+      <Filter>Source Files\NE3</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ShadedPath12\Resource.h">
@@ -181,6 +184,9 @@
     </ClInclude>
     <ClInclude Include="DDSTextureLoader.h">
       <Filter>textures</Filter>
+    </ClInclude>
+    <ClInclude Include="dxglobal.h">
+      <Filter>Source Files\NE3</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

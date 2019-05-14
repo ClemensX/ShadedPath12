@@ -60,6 +60,8 @@ using namespace DirectX;
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "xaudio2")
+#pragma comment(lib, "Dwrite.lib")
+#pragma comment(lib, "d2d1.lib")
 //d2d1.lib;dwrite.lib;d3d11.lib;d3d12.lib;dxgi.lib;
 
 #define _CRTDBG_MAP_ALLOC
@@ -194,8 +196,11 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 #include <x3daudio.h>
 //#include "sound.h"
 #include "d3dx12.h"
+#include "d2d1_3.h"
+#include "dwrite_3.h"
 #include "DDSTextureLoader.h"
 #include "forward_structures.h"
+#include "dxglobal.h"
 #include "frameresource.h"
 #include "dxmanager.h"
 #include "texture.h"
