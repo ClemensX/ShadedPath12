@@ -152,9 +152,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="emptyframes.cpp" />
     <ClCompile Include="PerfTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="emptyframes.h" />
     <ClInclude Include="PerfTest.h" />
   </ItemGroup>
   <ItemGroup>

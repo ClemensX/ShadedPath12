@@ -80,9 +80,9 @@ void Pipeline::updateStatistics(Frame* frame)
 	auto t1 = chrono::high_resolution_clock::now();
 	frame->renderDuration = chrono::duration_cast<chrono::microseconds>(t1 - frame->renderStartTime).count();
 	cumulatedFrameRenderDuration += frame->renderDuration;
-	Log("cumulated " << cumulatedFrameRenderDuration);
+	//Log("cumulated " << cumulatedFrameRenderDuration);
 	averageFrameRenderDuration = cumulatedFrameRenderDuration / (frame->absFrameNumber + 1);
-	Log(" average " << averageFrameRenderDuration << endl);
+	//Log(" average " << averageFrameRenderDuration << endl);
 }
 
 void Pipeline::startRenderThreads()
