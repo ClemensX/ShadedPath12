@@ -10,6 +10,9 @@ Simple2dFrame::Simple2dFrame()
 
 Simple2dFrame::~Simple2dFrame()
 {
+	if (texture != nullptr) {
+		texture->Release();
+	}
 }
 
 // run tests with NUM_SLOTS sized frame buffer
@@ -23,6 +26,19 @@ void Simple2dFrame::init() {
 	Log("pipeline initialized via" << endl);
 	dxGlobal.init();
 	//dxGlobal.initSwapChain(&pipeline);
+	// create d2d texture:
+	D3D11_TEXTURE2D_DESC desc{};
+	desc.Width = 256;
+	desc.Height = 256;
+	desc.MipLevels = desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.SampleDesc.Count = 1;
+	desc.Usage = D3D11_USAGE_STAGING;//D3D11_USAGE_DYNAMIC;  // CPU and GPU read/write
+	desc.BindFlags = 0; // D3D11_BIND_RENDER_TARGET;// D3D11_BIND_SHADER_RESOURCE  -- no bind flags for staging texture
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE| D3D11_CPU_ACCESS_READ;
+	desc.MiscFlags = 0;
+
+	ThrowIfFailed(dxGlobal.device11->CreateTexture2D(&desc, NULL, &texture));
 }
 
 // static void methods are used in threaded code

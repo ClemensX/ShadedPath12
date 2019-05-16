@@ -14,5 +14,6 @@ private:
 	static void presentFrame(Frame* frame, Pipeline* pipeline);
 	Pipeline pipeline;
 	DXGlobal dxGlobal;
+	ID3D11Texture2D* texture = nullptr;  // 2d texture used for drawing to with D2D
 };
 

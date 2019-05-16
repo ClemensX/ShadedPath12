@@ -68,7 +68,7 @@ void DXGlobal::init()
 	ThrowIfFailed(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue)));
 	commandQueue->SetName(L"commandQueue_dxGlobal");
 
-	UINT d3d11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+	UINT d3d11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT| D3D11_CREATE_DEVICE_DEBUG;
 	D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
 	// Create an 11 device wrapped around the 12 device and share 12's command queue.
 	ThrowIfFailed(D3D11On12CreateDevice(
