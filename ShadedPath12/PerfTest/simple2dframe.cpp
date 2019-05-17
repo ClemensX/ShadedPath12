@@ -59,7 +59,7 @@ void Simple2dFrame::init() {
 	ThrowIfFailed(dxGlobal.d2dFactory->CreateDxgiSurfaceRenderTarget(dxgiSurface, &props, &d2RenderTarget));
 	// create brush
 	ID2D1SolidColorBrush* whiteBrush = nullptr;
-	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White),&whiteBrush));
+	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red),&whiteBrush));
 	// draw to texture:
 	d2RenderTarget->BeginDraw();
 	d2RenderTarget->DrawRectangle(D2D1::RectF(50.0f, 50.0f, desc.Width - 50.0f, desc.Height - 50.0f), whiteBrush);
