@@ -72,3 +72,12 @@ XMVECTOR Util::movePointToDistance(XMVECTOR start, XMVECTOR controlPoint, float 
 //	if (d < 0) return false; // wrong direction
 //	return d <= hittingDist;
 //}
+
+void Util::DumpBMPFile(string  filename, DXGI_FORMAT format, void *mem, UINT rowLengthInBytes, UINT totalLengthInBytes) {
+	LogF("dumping\n");
+	ios_base::openmode mode;
+	mode = ios_base::out;
+	std::ofstream out("dump.bmp", mode);  // remember: folders do not work here, unless they are pre-generated
+	out << "test hugo\n";
+	out.close();
+}

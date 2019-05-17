@@ -110,6 +110,8 @@ public:
 		XMVECTOR bv = XMLoadFloat3(b);
 		return XMVectorGetX(XMVector3Length(bv - av));
 	};
+
+	static void DumpBMPFile(string filename, DXGI_FORMAT format, void* mem, UINT rowLengthInBytes, UINT totalLengthInBytes);
 };
 
 // log events to memory

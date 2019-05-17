@@ -13,6 +13,15 @@ Simple2dFrame::~Simple2dFrame()
 	if (texture != nullptr) {
 		texture->Release();
 	}
+	if (dxgiSurface != nullptr) {
+		dxgiSurface->Release();
+	}
+	if (d2RenderTarget != nullptr) {
+		d2RenderTarget->Release();
+	}
+	//if (d2RenderTarget != nullptr) {
+	//	d2RenderTarget->Release();
+	//}
 }
 
 // run tests with NUM_SLOTS sized frame buffer
@@ -33,12 +42,58 @@ void Simple2dFrame::init() {
 	desc.MipLevels = desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.SampleDesc.Count = 1;
-	desc.Usage = D3D11_USAGE_STAGING;//D3D11_USAGE_DYNAMIC;  // CPU and GPU read/write
-	desc.BindFlags = 0; // D3D11_BIND_RENDER_TARGET;// D3D11_BIND_SHADER_RESOURCE  -- no bind flags for staging texture
+	//desc.Usage = D3D11_USAGE_STAGING;//D3D11_USAGE_DYNAMIC;  // CPU and GPU read/write
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	//desc.BindFlags = 0; // D3D11_BIND_RENDER_TARGET;// D3D11_BIND_SHADER_RESOURCE  -- no bind flags for staging texture
+	desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE| D3D11_CPU_ACCESS_READ;
 	desc.MiscFlags = 0;
 
 	ThrowIfFailed(dxGlobal.device11->CreateTexture2D(&desc, NULL, &texture));
+
+	ThrowIfFailed(texture->QueryInterface(&dxgiSurface));
+	D2D1_RENDER_TARGET_PROPERTIES props =
+		D2D1::RenderTargetProperties(
+			D2D1_RENDER_TARGET_TYPE_DEFAULT,
+			D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED));
+	ThrowIfFailed(dxGlobal.d2dFactory->CreateDxgiSurfaceRenderTarget(dxgiSurface, &props, &d2RenderTarget));
+	// create brush
+	ID2D1SolidColorBrush* whiteBrush = nullptr;
+	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White),&whiteBrush));
+	// draw to texture:
+	d2RenderTarget->BeginDraw();
+	d2RenderTarget->DrawRectangle(D2D1::RectF(50.0f, 50.0f, desc.Width - 50.0f, desc.Height - 50.0f), whiteBrush);
+	ThrowIfFailed(d2RenderTarget->EndDraw());
+	whiteBrush->Release();
+
+	// GPU texture to read bitmap data:
+	//D3D11_TEXTURE2D_DESC desc{};
+	desc.Width = 256;
+	desc.Height = 256;
+	desc.MipLevels = desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.SampleDesc.Count = 1;
+	desc.Usage = D3D11_USAGE_STAGING;//D3D11_USAGE_DYNAMIC;  // CPU and GPU read/write
+	//desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = 0; // D3D11_BIND_RENDER_TARGET;// D3D11_BIND_SHADER_RESOURCE  -- no bind flags for staging texture
+	//desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	//desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
+	desc.MiscFlags = 0;
+
+	ThrowIfFailed(dxGlobal.device11->CreateTexture2D(&desc, NULL, &textureCPU));
+	dxGlobal.deviceContext11->CopyResource(textureCPU, texture);
+	D3D11_MAPPED_SUBRESOURCE mapInfo;
+	mapInfo.RowPitch;
+	ThrowIfFailed(dxGlobal.deviceContext11->Map(
+		textureCPU,
+		0,
+		D3D11_MAP_READ,
+		0,
+		&mapInfo
+	));
+	Util::DumpBMPFile("pic1.bmp", DXGI_FORMAT_R8G8B8A8_UNORM, mapInfo.pData, mapInfo.RowPitch, mapInfo.DepthPitch);
+	dxGlobal.deviceContext11->Unmap(textureCPU, 0);
+	textureCPU->Release();
 }
 
 // static void methods are used in threaded code

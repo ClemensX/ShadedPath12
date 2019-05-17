@@ -15,5 +15,9 @@ private:
 	Pipeline pipeline;
 	DXGlobal dxGlobal;
 	ID3D11Texture2D* texture = nullptr;  // 2d texture used for drawing to with D2D
+	IDXGISurface* dxgiSurface = nullptr;
+	ID2D1RenderTarget* d2RenderTarget;
+
+	ID3D11Texture2D* textureCPU = nullptr;  // 2d texture used for reading bitmap data from GPU to CPU
 };
 
