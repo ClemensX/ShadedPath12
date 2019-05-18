@@ -19,5 +19,7 @@ private:
 	ID2D1RenderTarget* d2RenderTarget;
 
 	ID3D11Texture2D* textureCPU = nullptr;  // 2d texture used for reading bitmap data from GPU to CPU
+	IDWriteFactory* pDWriteFactory_;
+	IDWriteTextFormat* pTextFormat_;
 };
 

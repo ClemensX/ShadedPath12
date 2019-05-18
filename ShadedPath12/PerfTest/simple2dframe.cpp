@@ -55,16 +55,53 @@ void Simple2dFrame::init() {
 	D2D1_RENDER_TARGET_PROPERTIES props =
 		D2D1::RenderTargetProperties(
 			D2D1_RENDER_TARGET_TYPE_DEFAULT,
-			D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED));
+			D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_IGNORE));
 	ThrowIfFailed(dxGlobal.d2dFactory->CreateDxgiSurfaceRenderTarget(dxgiSurface, &props, &d2RenderTarget));
 	// create brush
 	ID2D1SolidColorBrush* whiteBrush = nullptr;
-	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Red),&whiteBrush));
+	ID2D1SolidColorBrush* redBrush = nullptr;
+	D2D1::ColorF red(1, 0, 0, 1);  // fully opaque red
+	D2D1::ColorF wh(1, 1, 1, 1);  // fully opaque white
+	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(red, &redBrush));
+	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(wh, &whiteBrush));
+
+	// prepare text
+	ThrowIfFailed(DWriteCreateFactory(
+		DWRITE_FACTORY_TYPE_SHARED,
+		__uuidof(IDWriteFactory),
+		reinterpret_cast<IUnknown * *>(&pDWriteFactory_)
+	));
+	static const WCHAR msc_fontName[] = L"Verdana";
+	static const FLOAT msc_fontSize = 50;
+	ThrowIfFailed(pDWriteFactory_->CreateTextFormat(
+		msc_fontName,
+		NULL,
+		DWRITE_FONT_WEIGHT_NORMAL,
+		DWRITE_FONT_STYLE_NORMAL,
+		DWRITE_FONT_STRETCH_NORMAL,
+		msc_fontSize,
+		L"", //locale
+		&pTextFormat_
+	));
+	pTextFormat_->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+	pTextFormat_->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+	static const WCHAR sc_helloWorld[] = L"Hello, World!";
+
 	// draw to texture:
 	d2RenderTarget->BeginDraw();
-	d2RenderTarget->DrawRectangle(D2D1::RectF(50.0f, 50.0f, desc.Width - 50.0f, desc.Height - 50.0f), whiteBrush);
+	d2RenderTarget->DrawRectangle(D2D1::RectF(50.0f, 50.0f, desc.Width - 50.0f, desc.Height - 50.0f), redBrush);
+	d2RenderTarget->FillRectangle(D2D1::RectF(5.0f, 5.0f, desc.Width - 150.0f, desc.Height - 150.0f), redBrush);
+	d2RenderTarget->DrawText(
+		sc_helloWorld,
+		ARRAYSIZE(sc_helloWorld) - 1,
+		pTextFormat_,
+		D2D1::RectF(0, 0, desc.Width, desc.Height),
+		whiteBrush
+	);
+
 	ThrowIfFailed(d2RenderTarget->EndDraw());
 	whiteBrush->Release();
+	redBrush->Release();
 
 	// GPU texture to read bitmap data:
 	//D3D11_TEXTURE2D_DESC desc{};
