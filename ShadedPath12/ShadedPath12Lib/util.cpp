@@ -73,21 +73,16 @@ XMVECTOR Util::movePointToDistance(XMVECTOR start, XMVECTOR controlPoint, float 
 //	return d <= hittingDist;
 //}
 
-void Util::DumpBMPFile(string  filename, DXGI_FORMAT format, void *mem, UINT rowLengthInBytes, UINT totalLengthInBytes) {
-	LogF("dumping\n");
-	generateBitmapImage((unsigned char*)mem, 256, 256, rowLengthInBytes, format, "dumpit.bmp");
-	ios_base::openmode mode;
-	mode = ios_base::out;
-	std::ofstream out("dump.bmp", mode);  // remember: folders do not work here, unless they are pre-generated
-	out << "test hugo\n";
-	out.close();
+void Util::DumpBMPFile(string  filename, DXGI_FORMAT format, void *mem, UINT rowLengthInBytes, int height, int width) {
+	generateBitmapImage((unsigned char*)mem, height, width, rowLengthInBytes, format, filename);
+	//std::ofstream out("dump.bmp", mode);  // remember: folders do not work here, unless they are pre-generated
 }
 
 
 
 
 
-void Util::generateBitmapImage(unsigned char* image, int height, int width, int pitch, DXGI_FORMAT format, const char* imageFileName) {
+void Util::generateBitmapImage(unsigned char* image, int height, int width, int pitch, DXGI_FORMAT format, string imageFileName) {
 
 	if (format != DXGI_FORMAT_R8G8B8A8_UNORM) {
 		Error(L"unknown pixel format");
@@ -107,7 +102,7 @@ void Util::generateBitmapImage(unsigned char* image, int height, int width, int 
 	int i, j;
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
-			getBMPPixelValueFromImage_DXGI_FORMAT_R8G8B8A8_UNORM(&pixel[0], j, i, pitch, image);
+			getBMPPixelValueFromImage_DXGI_FORMAT_R8G8B8A8_UNORM(&pixel[0], j, height-1-i, pitch, image);
 			out.write((const char*)& pixel[0], bytesPerPixel);
 		}
 		//out.write((const char*)(image + (i * pitch /*width*bytesPerPixel*/)), bytesPerPixel * width);
