@@ -1,15 +1,6 @@
 #include "stdafx.h"
 
-void Dx2D::DumpBMPFile(string  filename, DXGI_FORMAT format, void* mem, UINT rowLengthInBytes, int height, int width) {
-	generateBitmapImage((unsigned char*)mem, height, width, rowLengthInBytes, format, filename);
-	//std::ofstream out("dump.bmp", mode);  // remember: folders do not work here, unless they are pre-generated
-}
-
-
-
-
-
-void Dx2D::generateBitmapImage(unsigned char* image, int height, int width, int pitch, DXGI_FORMAT format, string imageFileName) {
+void Dx2D::exportBMP(void* image, int height, int width, int pitch, DXGI_FORMAT format, string imageFileName) {
 
 	if (format != DXGI_FORMAT_R8G8B8A8_UNORM) {
 		Error(L"unknown pixel format");
@@ -29,7 +20,7 @@ void Dx2D::generateBitmapImage(unsigned char* image, int height, int width, int 
 	int i, j;
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
-			getBMPPixelValueFromImage_DXGI_FORMAT_R8G8B8A8_UNORM(&pixel[0], j, height - 1 - i, pitch, image);
+			getBMPPixelValueFromImage_DXGI_FORMAT_R8G8B8A8_UNORM(&pixel[0], j, height - 1 - i, pitch, (unsigned char*)image);
 			out.write((const char*)& pixel[0], bytesPerPixel);
 		}
 		//out.write((const char*)(image + (i * pitch /*width*bytesPerPixel*/)), bytesPerPixel * width);
@@ -41,7 +32,7 @@ void Dx2D::generateBitmapImage(unsigned char* image, int height, int width, int 
 
 void Dx2D::getBMPPixelValueFromImage_DXGI_FORMAT_R8G8B8A8_UNORM(char* dest, int x, int y, int pitch, unsigned char* image)
 {
-	memcpy(dest, (image + (x * bytesPerPixel) + (y * pitch /*width*bytesPerPixel*/)), bytesPerPixel);
+	memcpy(dest, (image + ((long long)x * bytesPerPixel) + (((long long)y) * pitch /*width*bytesPerPixel*/)), bytesPerPixel);
 	// dest: [0] == blue, [1] == green, [2] = red, [3] = 0 (reserved)
 	dest[3] = dest[0]; // save for later
 	dest[0] = dest[2]; //blue
@@ -52,13 +43,6 @@ void Dx2D::getBMPPixelValueFromImage_DXGI_FORMAT_R8G8B8A8_UNORM(char* dest, int 
 
 unsigned char* Dx2D::createBitmapFileHeader(int height, int width, int pitch, int paddingSize) {
 	int fileSize = fileHeaderSize + infoHeaderSize + (/*bytesPerPixel*width*/pitch + paddingSize) * height;
-
-	static unsigned char fileHeader[] = {
-		0,0, /// signature
-		0,0,0,0, /// image file size in bytes
-		0,0,0,0, /// reserved
-		0,0,0,0, /// start of pixel array
-	};
 
 	fileHeader[0] = (unsigned char)('B');
 	fileHeader[1] = (unsigned char)('M');
@@ -72,19 +56,6 @@ unsigned char* Dx2D::createBitmapFileHeader(int height, int width, int pitch, in
 }
 
 unsigned char* Dx2D::createBitmapInfoHeader(int height, int width) {
-	static unsigned char infoHeader[] = {
-		0,0,0,0, /// header size
-		0,0,0,0, /// image width
-		0,0,0,0, /// image height
-		0,0, /// number of color planes
-		0,0, /// bits per pixel
-		0,0,0,0, /// compression
-		0,0,0,0, /// image size
-		0,0,0,0, /// horizontal resolution
-		0,0,0,0, /// vertical resolution
-		0,0,0,0, /// colors in color table
-		0,0,0,0, /// important color count
-	};
 
 	infoHeader[0] = (unsigned char)(infoHeaderSize);
 	infoHeader[4] = (unsigned char)(width);

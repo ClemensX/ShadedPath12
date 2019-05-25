@@ -128,7 +128,9 @@ void Simple2dFrame::init() {
 		0,
 		&mapInfo
 	));
-	Dx2D::DumpBMPFile("pic1.bmp", DXGI_FORMAT_R8G8B8A8_UNORM, mapInfo.pData, mapInfo.RowPitch, desc.Height, desc.Width);
+	//Dx2D::DumpBMPFile("pic1.bmp", DXGI_FORMAT_R8G8B8A8_UNORM, mapInfo.pData, mapInfo.RowPitch, desc.Height, desc.Width);
+	Dx2D d2d;
+	d2d.exportBMP(mapInfo.pData, desc.Height, desc.Width, mapInfo.RowPitch, DXGI_FORMAT_R8G8B8A8_UNORM, "pic1.bmp");
 	dxGlobal.deviceContext11->Unmap(textureCPU, 0);
 	textureCPU->Release();
 }
