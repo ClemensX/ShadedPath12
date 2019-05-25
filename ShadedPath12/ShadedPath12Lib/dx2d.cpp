@@ -1,5 +1,86 @@
 #include "stdafx.h"
 
+void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_)
+{
+	this->fd = fd_;
+	this->dxGlobal = dxGlobal_;
+	// create d2d texture:
+	auto &desc = fd->desc;
+	desc.Width = 256;
+	desc.Height = 256;
+	desc.MipLevels = desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.SampleDesc.Count = 1;
+	//desc.Usage = D3D11_USAGE_STAGING;//D3D11_USAGE_DYNAMIC;  // CPU and GPU read/write
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	//desc.BindFlags = 0; // D3D11_BIND_RENDER_TARGET;// D3D11_BIND_SHADER_RESOURCE  -- no bind flags for staging texture
+	desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
+	desc.MiscFlags = 0;
+
+	ThrowIfFailed(dxGlobal->device11->CreateTexture2D(&desc, NULL, &fd->texture));
+
+	// GPU texture to read bitmap data:
+	//D3D11_TEXTURE2D_DESC desc{};
+	desc.Width = 256;
+	desc.Height = 256;
+	desc.MipLevels = desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.SampleDesc.Count = 1;
+	desc.Usage = D3D11_USAGE_STAGING;//D3D11_USAGE_DYNAMIC;  // CPU and GPU read/write
+	//desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = 0; // D3D11_BIND_RENDER_TARGET;// D3D11_BIND_SHADER_RESOURCE  -- no bind flags for staging texture
+	//desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	//desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
+	desc.MiscFlags = 0;
+
+	ThrowIfFailed(dxGlobal->device11->CreateTexture2D(&desc, NULL, &fd->textureCPU));
+
+	ThrowIfFailed(fd->texture->QueryInterface(&fd->dxgiSurface));
+	D2D1_RENDER_TARGET_PROPERTIES props =
+		D2D1::RenderTargetProperties(
+			D2D1_RENDER_TARGET_TYPE_DEFAULT,
+			D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_IGNORE));
+	ThrowIfFailed(dxGlobal->d2dFactory->CreateDxgiSurfaceRenderTarget(fd->dxgiSurface, &props, &fd->d2RenderTarget));
+	// prepare DWrite factory
+	ThrowIfFailed(DWriteCreateFactory(
+		DWRITE_FACTORY_TYPE_SHARED,
+		__uuidof(IDWriteFactory),
+		reinterpret_cast<IUnknown * *>(&fd->pDWriteFactory_)
+	));
+}
+
+void Dx2D::copyTextureToCPUAndExport(string filename)
+{
+	dxGlobal->deviceContext11->CopyResource(fd->textureCPU, fd->texture);
+	D3D11_MAPPED_SUBRESOURCE mapInfo;
+	mapInfo.RowPitch;
+	ThrowIfFailed(dxGlobal->deviceContext11->Map(
+		fd->textureCPU,
+		0,
+		D3D11_MAP_READ,
+		0,
+		&mapInfo
+	));
+	exportBMP(mapInfo.pData, fd->desc.Height, fd->desc.Width, mapInfo.RowPitch, DXGI_FORMAT_R8G8B8A8_UNORM, filename);
+	dxGlobal->deviceContext11->Unmap(fd->textureCPU, 0);
+}
+
+ID2D1RenderTarget* Dx2D::getRenderTarget()
+{
+	return fd->d2RenderTarget;
+}
+
+IDWriteFactory* Dx2D::getWriteFactory()
+{
+	return fd->pDWriteFactory_;
+}
+
+const D3D11_TEXTURE2D_DESC* Dx2D::getTextureDesc()
+{
+	return &fd->desc;
+}
+
 void Dx2D::exportBMP(void* image, int height, int width, int pitch, DXGI_FORMAT format, string imageFileName) {
 
 	if (format != DXGI_FORMAT_R8G8B8A8_UNORM) {
@@ -70,4 +151,23 @@ unsigned char* Dx2D::createBitmapInfoHeader(int height, int width) {
 	infoHeader[14] = (unsigned char)(bytesPerPixel * 8);
 
 	return infoHeader;
+}
+
+Dx2D::~Dx2D()
+{
+	if (fd->texture != nullptr) {
+		fd->texture->Release();
+	}
+	if (fd->dxgiSurface != nullptr) {
+		fd->dxgiSurface->Release();
+	}
+	if (fd->d2RenderTarget != nullptr) {
+		fd->d2RenderTarget->Release();
+	}
+	//if (d2RenderTarget != nullptr) {
+	//	d2RenderTarget->Release();
+	//}
+	if (fd->textureCPU != nullptr) {
+		fd->textureCPU->Release();
+	}
 }

@@ -1,8 +1,17 @@
+struct FrameDataD2D;
+
 // Utility class for BMP graphics format and Direct2D
 // Each thread needs its own instance!
 // partly adapted from https://stackoverflow.com/questions/2654480/writing-bmp-image-in-pure-c-c-without-other-libraries
 class Dx2D {
 public:
+	virtual ~Dx2D();
+	void init(DXGlobal* dxGlobal, FrameDataD2D* fd);
+	ID2D1RenderTarget* getRenderTarget();
+	IDWriteFactory* getWriteFactory();
+	const D3D11_TEXTURE2D_DESC* getTextureDesc();
+	// copy texture from GPU mem to CPU mem and export it as BMP file
+	void copyTextureToCPUAndExport(string filename);
 	// write Direct2D image to file in BMP format
 	void exportBMP(void* image, int height, int width, int pitch, DXGI_FORMAT format, string imageFileName);
 private:
@@ -31,4 +40,19 @@ private:
 		0,0,0,0, /// colors in color table
 		0,0,0,0, /// important color count
 	};
+	DXGlobal *dxGlobal;
+	FrameDataD2D* fd;
+};
+
+// per farme resources for this effect
+struct FrameDataD2D {
+private:
+	ID3D11Texture2D* texture = nullptr;  // 2d texture used for drawing to with D2D
+	IDXGISurface* dxgiSurface = nullptr;
+	ID2D1RenderTarget* d2RenderTarget;
+
+	ID3D11Texture2D* textureCPU = nullptr;  // 2d texture used for reading bitmap data from GPU to CPU
+	IDWriteFactory* pDWriteFactory_;
+	D3D11_TEXTURE2D_DESC desc{};
+	friend class Dx2D;
 };

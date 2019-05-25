@@ -10,18 +10,6 @@ Simple2dFrame::Simple2dFrame()
 
 Simple2dFrame::~Simple2dFrame()
 {
-	if (texture != nullptr) {
-		texture->Release();
-	}
-	if (dxgiSurface != nullptr) {
-		dxgiSurface->Release();
-	}
-	if (d2RenderTarget != nullptr) {
-		d2RenderTarget->Release();
-	}
-	//if (d2RenderTarget != nullptr) {
-	//	d2RenderTarget->Release();
-	//}
 }
 
 // run tests with NUM_SLOTS sized frame buffer
@@ -34,46 +22,22 @@ void Simple2dFrame::init() {
 	pipeline.init();
 	Log("pipeline initialized via" << endl);
 	dxGlobal.init();
+	Dx2D d2d;
+	d2d.init(&dxGlobal, &fd_d2d);
 	//dxGlobal.initSwapChain(&pipeline);
-	// create d2d texture:
-	D3D11_TEXTURE2D_DESC desc{};
-	desc.Width = 256;
-	desc.Height = 256;
-	desc.MipLevels = desc.ArraySize = 1;
-	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.SampleDesc.Count = 1;
-	//desc.Usage = D3D11_USAGE_STAGING;//D3D11_USAGE_DYNAMIC;  // CPU and GPU read/write
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	//desc.BindFlags = 0; // D3D11_BIND_RENDER_TARGET;// D3D11_BIND_SHADER_RESOURCE  -- no bind flags for staging texture
-	desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE| D3D11_CPU_ACCESS_READ;
-	desc.MiscFlags = 0;
-
-	ThrowIfFailed(dxGlobal.device11->CreateTexture2D(&desc, NULL, &texture));
-
-	ThrowIfFailed(texture->QueryInterface(&dxgiSurface));
-	D2D1_RENDER_TARGET_PROPERTIES props =
-		D2D1::RenderTargetProperties(
-			D2D1_RENDER_TARGET_TYPE_DEFAULT,
-			D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_IGNORE));
-	ThrowIfFailed(dxGlobal.d2dFactory->CreateDxgiSurfaceRenderTarget(dxgiSurface, &props, &d2RenderTarget));
 	// create brush
 	ID2D1SolidColorBrush* whiteBrush = nullptr;
 	ID2D1SolidColorBrush* redBrush = nullptr;
 	D2D1::ColorF red(1, 0, 0, 1);  // fully opaque red
 	D2D1::ColorF wh(1, 1, 1, 1);  // fully opaque white
+	auto d2RenderTarget = d2d.getRenderTarget();
 	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(red, &redBrush));
 	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(wh, &whiteBrush));
 
-	// prepare text
-	ThrowIfFailed(DWriteCreateFactory(
-		DWRITE_FACTORY_TYPE_SHARED,
-		__uuidof(IDWriteFactory),
-		reinterpret_cast<IUnknown * *>(&pDWriteFactory_)
-	));
 	static const WCHAR msc_fontName[] = L"Verdana";
 	static const FLOAT msc_fontSize = 50;
-	ThrowIfFailed(pDWriteFactory_->CreateTextFormat(
+	auto writeFactory = d2d.getWriteFactory();
+	ThrowIfFailed(writeFactory->CreateTextFormat(
 		msc_fontName,
 		NULL,
 		DWRITE_FONT_WEIGHT_NORMAL,
@@ -89,50 +53,21 @@ void Simple2dFrame::init() {
 
 	// draw to texture:
 	d2RenderTarget->BeginDraw();
-	d2RenderTarget->DrawRectangle(D2D1::RectF(50.0f, 50.0f, desc.Width - 50.0f, desc.Height - 50.0f), redBrush);
-	d2RenderTarget->FillRectangle(D2D1::RectF(5.0f, 5.0f, desc.Width - 150.0f, desc.Height - 150.0f), redBrush);
+	auto desc = d2d.getTextureDesc();
+	d2RenderTarget->DrawRectangle(D2D1::RectF(50.0f, 50.0f, desc->Width - 50.0f, desc->Height - 50.0f), redBrush);
+	d2RenderTarget->FillRectangle(D2D1::RectF(5.0f, 5.0f, desc->Width - 150.0f, desc->Height - 150.0f), redBrush);
 	d2RenderTarget->DrawText(
 		sc_helloWorld,
 		ARRAYSIZE(sc_helloWorld) - 1,
 		pTextFormat_,
-		D2D1::RectF(0.0f, 0.0f, (float)desc.Width, (float)desc.Height),
+		D2D1::RectF(0.0f, 0.0f, (float)desc->Width, (float)desc->Height),
 		whiteBrush
 	);
 
 	ThrowIfFailed(d2RenderTarget->EndDraw());
 	whiteBrush->Release();
 	redBrush->Release();
-
-	// GPU texture to read bitmap data:
-	//D3D11_TEXTURE2D_DESC desc{};
-	desc.Width = 256;
-	desc.Height = 256;
-	desc.MipLevels = desc.ArraySize = 1;
-	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.SampleDesc.Count = 1;
-	desc.Usage = D3D11_USAGE_STAGING;//D3D11_USAGE_DYNAMIC;  // CPU and GPU read/write
-	//desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = 0; // D3D11_BIND_RENDER_TARGET;// D3D11_BIND_SHADER_RESOURCE  -- no bind flags for staging texture
-	//desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	//desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
-	desc.MiscFlags = 0;
-
-	ThrowIfFailed(dxGlobal.device11->CreateTexture2D(&desc, NULL, &textureCPU));
-	dxGlobal.deviceContext11->CopyResource(textureCPU, texture);
-	D3D11_MAPPED_SUBRESOURCE mapInfo;
-	mapInfo.RowPitch;
-	ThrowIfFailed(dxGlobal.deviceContext11->Map(
-		textureCPU,
-		0,
-		D3D11_MAP_READ,
-		0,
-		&mapInfo
-	));
-	//Dx2D::DumpBMPFile("pic1.bmp", DXGI_FORMAT_R8G8B8A8_UNORM, mapInfo.pData, mapInfo.RowPitch, desc.Height, desc.Width);
-	Dx2D d2d;
-	d2d.exportBMP(mapInfo.pData, desc.Height, desc.Width, mapInfo.RowPitch, DXGI_FORMAT_R8G8B8A8_UNORM, "pic1.bmp");
-	dxGlobal.deviceContext11->Unmap(textureCPU, 0);
-	textureCPU->Release();
+	d2d.copyTextureToCPUAndExport("pic1.bmp");
 }
 
 // static void methods are used in threaded code
