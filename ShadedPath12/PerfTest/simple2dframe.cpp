@@ -23,7 +23,7 @@ void Simple2dFrame::init() {
 	Log("pipeline initialized via" << endl);
 	dxGlobal.init();
 	Dx2D d2d;
-	d2d.init(&dxGlobal, &fd_d2d);
+	d2d.init(&dxGlobal, &fd[0].d2d);
 	//dxGlobal.initSwapChain(&pipeline);
 	// create brush
 	ID2D1SolidColorBrush* whiteBrush = nullptr;
