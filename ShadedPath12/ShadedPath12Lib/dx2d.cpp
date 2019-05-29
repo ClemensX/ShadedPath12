@@ -1,9 +1,10 @@
 #include "stdafx.h"
 
-void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_)
+void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_, FrameDataGeneral* fd_general_)
 {
 	this->fd = fd_;
 	this->dxGlobal = dxGlobal_;
+	this->fd_general = fd_general_;
 	// create d2d texture:
 	auto &desc = fd->desc;
 	desc.Width = 256;
@@ -52,10 +53,10 @@ void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_)
 
 void Dx2D::copyTextureToCPUAndExport(string filename)
 {
-	dxGlobal->deviceContext11->CopyResource(fd->textureCPU, fd->texture);
+	fd_general->deviceContext11->CopyResource(fd->textureCPU, fd->texture);
 	D3D11_MAPPED_SUBRESOURCE mapInfo;
 	mapInfo.RowPitch;
-	ThrowIfFailed(dxGlobal->deviceContext11->Map(
+	ThrowIfFailed(fd_general->deviceContext11->Map(
 		fd->textureCPU,
 		0,
 		D3D11_MAP_READ,
@@ -63,7 +64,7 @@ void Dx2D::copyTextureToCPUAndExport(string filename)
 		&mapInfo
 	));
 	exportBMP(mapInfo.pData, fd->desc.Height, fd->desc.Width, mapInfo.RowPitch, DXGI_FORMAT_R8G8B8A8_UNORM, filename);
-	dxGlobal->deviceContext11->Unmap(fd->textureCPU, 0);
+	fd_general->deviceContext11->Unmap(fd->textureCPU, 0);
 }
 
 ID2D1RenderTarget* Dx2D::getRenderTarget()

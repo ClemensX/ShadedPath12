@@ -70,7 +70,7 @@ void DXGlobal::init()
 
 	UINT d3d11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT| D3D11_CREATE_DEVICE_DEBUG;
 	D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
-	// Create an 11 device wrapped around the 12 device and share 12's command queue.
+/*	// Create an 11 device wrapped around the 12 device and share 12's command queue.
 	ThrowIfFailed(D3D11On12CreateDevice(
 		device.Get(),
 		d3d11DeviceFlags,
@@ -83,7 +83,7 @@ void DXGlobal::init()
 		&deviceContext11,
 		nullptr
 	));
-
+*/
 	// Query the 11On12 device from the 11 device.
 	ThrowIfFailed(device11.As(&device11On12));
 
@@ -97,6 +97,24 @@ void DXGlobal::init()
 		ThrowIfFailed(d2dDevice->CreateDeviceContext(deviceOptions, &d2dDeviceContext));
 		ThrowIfFailed(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &dWriteFactory));
 	}
+}
+
+void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd) {
+	UINT d3d11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG;
+	D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
+	// Create an 11 device wrapped around the 12 device and share 12's command queue.
+	ThrowIfFailed(D3D11On12CreateDevice(
+		device.Get(),
+		d3d11DeviceFlags,
+		nullptr,
+		0,
+		reinterpret_cast<IUnknown * *>(commandQueue.GetAddressOf()),
+		1,
+		0,
+		&device11,
+		&fd->deviceContext11,
+		nullptr
+	));
 }
 
 void DXGlobal::initSwapChain(Pipeline* pipeline)

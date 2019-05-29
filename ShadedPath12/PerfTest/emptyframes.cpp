@@ -31,7 +31,7 @@ static long long last_processed = -1; // last processed frame number
 void EmptyFrames::presentFrame(Frame* frame, Pipeline* pipeline) {
 	unique_lock<mutex> lock(monitorMutex);
 	//cout << "present frame slot " << frame->slot << " frame " << frame->absFrameNumber << endl;
-	if (frame->absFrameNumber >= (FRAMES_COUNT - 1)) {
+	if (frame->absFrameNumber >= (FRAME_COUNT - 1)) {
 		//cout << "pipeline should shutdown" << endl;
 		pipeline->shutdown();
 	}
@@ -57,7 +57,7 @@ void EmptyFrames::runTest() {
 	pipeline.waitUntilShutdown();
 	// stop timer
 	auto t1 = chrono::high_resolution_clock::now();
-	cout << "Empty Frame throughput ( " << FRAMES_COUNT << " frames): " << chrono::duration_cast<chrono::milliseconds>(t1 - t0).count() << " ms\n";
+	cout << "Empty Frame throughput ( " << FRAME_COUNT << " frames): " << chrono::duration_cast<chrono::milliseconds>(t1 - t0).count() << " ms\n";
 	cout << "  Skipped out-of-order frames: " << skipped << endl;
 
 	cout << pipeline.getStatistics();

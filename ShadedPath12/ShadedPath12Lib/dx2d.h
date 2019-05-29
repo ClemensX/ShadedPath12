@@ -6,7 +6,7 @@ struct FrameDataD2D;
 class Dx2D {
 public:
 	virtual ~Dx2D();
-	void init(DXGlobal* dxGlobal, FrameDataD2D* fd);
+	void init(DXGlobal* dxGlobal, FrameDataD2D* fd, FrameDataGeneral* fd_general_);
 	ID2D1RenderTarget* getRenderTarget();
 	IDWriteFactory* getWriteFactory();
 	const D3D11_TEXTURE2D_DESC* getTextureDesc();
@@ -42,6 +42,7 @@ private:
 	};
 	DXGlobal *dxGlobal;
 	FrameDataD2D* fd;
+	FrameDataGeneral* fd_general;
 };
 
 // per farme resources for this effect

@@ -74,6 +74,8 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 		frame->renderStartTime = chrono::high_resolution_clock::now();
 		frame->absFrameNumber = frameNum;
 		frame->slot = slot;
+		// let application draw:
+		pipeline->drawCallback(frame, pipeline, pipeline->applicationFrameData);
 		// frame now considered processed
 		// call synchronized present method
 		{

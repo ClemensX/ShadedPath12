@@ -107,7 +107,9 @@ public:
 	}
 	// set function to be called after frame has been fully created.
 	// the pipeline will make sure that calls to this method will be synchronized (only 1 thread at a time)
-	void setFinishedFrameConsumer(function<void(Frame*,Pipeline*)> consumer) { this->consumer = consumer; }
+	void setFinishedFrameConsumer(function<void(Frame*, Pipeline*)> consumer) { this->consumer = consumer; }
+	void setApplicationFrameData(void* data) { applicationFrameData = data; };
+	void setCallbackDraw(function<void(Frame*, Pipeline*, void* afd)> callback) { this->drawCallback = callback; }
 	// start rendering 
 	void startRenderThreads();
 	// Wait until pipeline has ended rendering. Needed for console apps that have no event loop
@@ -124,7 +126,9 @@ private:
 	atomic<long long> frameNum = 0;
 	boolean running = false;
 	boolean shutdown_mode = false;
-	function<void(Frame*,Pipeline*)> consumer = nullptr;
+	function<void(Frame*, Pipeline*)> consumer = nullptr;
+	function<void(Frame*, Pipeline*, void* afd)> drawCallback = nullptr;
+	void* applicationFrameData = nullptr; // used to pass pointer of app data back during callbacks
 	boolean initialized = false;
 	ThreadGroup threads;
 	long long averageFrameRenderDuration; // microseconds
