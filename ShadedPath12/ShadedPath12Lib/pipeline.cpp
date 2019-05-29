@@ -76,7 +76,10 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 		frame->slot = slot;
 		// frame now considered processed
 		// call synchronized present method
-		pipeline->consumer(frame, pipeline);
+		{
+			unique_lock<mutex> lock(pipeline->appSyncMutex);
+			pipeline->consumer(frame, pipeline);
+		}
 		//pipeline->updateStatistics(frame);
 	}
 }

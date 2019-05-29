@@ -106,6 +106,7 @@ public:
 		return frameBuffer.currentlyFreeSlots();
 	}
 	// set function to be called after frame has been fully created.
+	// the pipeline will make sure that calls to this method will be synchronized (only 1 thread at a time)
 	void setFinishedFrameConsumer(function<void(Frame*,Pipeline*)> consumer) { this->consumer = consumer; }
 	// start rendering 
 	void startRenderThreads();
@@ -128,6 +129,7 @@ private:
 	ThreadGroup threads;
 	long long averageFrameRenderDuration; // microseconds
 	long long cumulatedFrameRenderDuration; // microseconds
+	mutex appSyncMutex; // to synchronize callbacks to application
 protected:
 };
 

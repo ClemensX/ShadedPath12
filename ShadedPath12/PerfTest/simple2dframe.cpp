@@ -71,14 +71,14 @@ void Simple2dFrame::init() {
 }
 
 // static void methods are used in threaded code
-static mutex monitorMutex;
+//static mutex monitorMutex;
 static long long skipped = 0; // count skipped frames
 static long long last_processed = -1; // last processed frame number
 
 // after a frame has been processed this is called to consume it
 // (present or store usually)
 void Simple2dFrame::presentFrame(Frame* frame, Pipeline* pipeline) {
-	unique_lock<mutex> lock(monitorMutex);
+	//unique_lock<mutex> lock(monitorMutex);
 	//cout << "present frame slot " << frame->slot << " frame " << frame->absFrameNumber << endl;
 	if (frame->absFrameNumber >= (FRAMES_COUNT - 1)) {
 		//cout << "pipeline should shutdown" << endl;
