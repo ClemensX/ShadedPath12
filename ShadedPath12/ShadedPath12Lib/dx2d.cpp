@@ -19,7 +19,7 @@ void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_, FrameDataGeneral* fd_gen
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
 	desc.MiscFlags = 0;
 
-	ThrowIfFailed(dxGlobal->device11->CreateTexture2D(&desc, NULL, &fd->texture));
+	ThrowIfFailed(fd_general->device11->CreateTexture2D(&desc, NULL, &fd->texture));
 
 	// GPU texture to read bitmap data:
 	//D3D11_TEXTURE2D_DESC desc{};
@@ -35,14 +35,14 @@ void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_, FrameDataGeneral* fd_gen
 	//desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
 	desc.MiscFlags = 0;
 
-	ThrowIfFailed(dxGlobal->device11->CreateTexture2D(&desc, NULL, &fd->textureCPU));
+	ThrowIfFailed(fd_general->device11->CreateTexture2D(&desc, NULL, &fd->textureCPU));
 
 	ThrowIfFailed(fd->texture->QueryInterface(&fd->dxgiSurface));
 	D2D1_RENDER_TARGET_PROPERTIES props =
 		D2D1::RenderTargetProperties(
 			D2D1_RENDER_TARGET_TYPE_DEFAULT,
 			D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_IGNORE));
-	ThrowIfFailed(dxGlobal->d2dFactory->CreateDxgiSurfaceRenderTarget(fd->dxgiSurface, &props, &fd->d2RenderTarget));
+	ThrowIfFailed(fd->d2dFactory->CreateDxgiSurfaceRenderTarget(fd->dxgiSurface, &props, &fd->d2RenderTarget));
 	// prepare DWrite factory
 	ThrowIfFailed(DWriteCreateFactory(
 		DWRITE_FACTORY_TYPE_SHARED,

@@ -48,6 +48,10 @@ private:
 // per farme resources for this effect
 struct FrameDataD2D {
 private:
+	ComPtr<ID2D1Factory3> d2dFactory;
+	ComPtr<ID2D1Device2> d2dDevice;
+	ComPtr<ID2D1DeviceContext2> d2dDeviceContext;
+	ComPtr<IDWriteFactory> dWriteFactory;
 	ID3D11Texture2D* texture = nullptr;  // 2d texture used for drawing to with D2D
 	IDXGISurface* dxgiSurface = nullptr;
 	ID2D1RenderTarget* d2RenderTarget;
@@ -56,4 +60,5 @@ private:
 	IDWriteFactory* pDWriteFactory_;
 	D3D11_TEXTURE2D_DESC desc{};
 	friend class Dx2D;
+	friend class DXGlobal;
 };

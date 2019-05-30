@@ -74,7 +74,7 @@ void Simple2dFrame::init() {
 		Dx2D* d2d = &afd[i].d2d;
 		FrameDataD2D *fd2d = &afd[i].d2d_fd;
 		auto x = &afd[i].fd_general;
-		dxGlobal.initFrameBufferResources(x);
+		dxGlobal.initFrameBufferResources(x, fd2d);
 		d2d->init(&dxGlobal, fd2d, x);
 	}
 }
@@ -95,8 +95,10 @@ void Simple2dFrame::presentFrame(Frame* frame, Pipeline* pipeline) {
 		return;
 	}
 	// normal in-order frame: process
-	cout << "present frame slot " << frame->slot << " frame " << frame->absFrameNumber << endl;
+	//cout << "present frame slot " << frame->slot << " frame " << frame->absFrameNumber << endl;
 	// TODO
+	//d2d->copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
+
 	last_processed = frame->absFrameNumber;
 	pipeline->updateStatistics(frame);
 }
@@ -110,7 +112,7 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	AppFrameData *afd = (AppFrameData *) data;
 	FrameDataD2D *fd = &afd[frame->slot].d2d_fd;
 	Dx2D *d2d = &afd[frame->slot].d2d;
-	cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
+	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
 
 	// create brush
 	ID2D1SolidColorBrush* whiteBrush = nullptr;
@@ -156,7 +158,7 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	whiteBrush->Release();
 	redBrush->Release();
 	d2d->copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
-	cout << "  END draw() for frame: " << frame->absFrameNumber << " slot" << frame->slot << endl;
+	//cout << "  END draw() for frame: " << frame->absFrameNumber << " slot" << frame->slot << endl;
 }
 
 void Simple2dFrame::runTest() {

@@ -1,5 +1,6 @@
 class Pipeline;
 struct FrameDataGeneral;
+struct FrameDataD2D;
 // global DirectX parameters
 struct DXGlobalParam{
 	bool ovrRendering = false;   // use split screen ovr rendering
@@ -24,7 +25,7 @@ struct DXGlobalParam{
 class DXGlobal {
 public:
 	void init();
-	void initFrameBufferResources(FrameDataGeneral* fd);
+	void initFrameBufferResources(FrameDataGeneral* fd, FrameDataD2D* fd_d2d);
 	void initSwapChain(Pipeline *pipeline);
 	DXGlobalParam config;
 	ComPtr<IDXGIFactory4> factory;
@@ -32,16 +33,11 @@ public:
 	ComPtr<ID3D12Device> device;
 	ComPtr<ID3D12CommandQueue> commandQueue;
 	ComPtr<IDXGISwapChain3> swapChain;
-	ComPtr<ID3D11Device> device11;
-	//ComPtr<ID3D11DeviceContext> deviceContext11;
-	ComPtr<ID3D11On12Device> device11On12;
-	ComPtr<ID2D1Factory3> d2dFactory;
-	ComPtr<ID2D1Device2> d2dDevice;
-	ComPtr<ID2D1DeviceContext2> d2dDeviceContext;
-	ComPtr<IDWriteFactory> dWriteFactory;
 };
 
 // Frame data unrelated to a specific effect that needs to be unique for each slot
 struct FrameDataGeneral {
 	ComPtr<ID3D11DeviceContext> deviceContext11; // cannot use D3D11 DeviceContext in multi-thread code
+	ComPtr<ID3D11Device> device11;
+	ComPtr<ID3D11On12Device> device11On12;
 };
