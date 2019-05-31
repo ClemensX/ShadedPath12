@@ -1,4 +1,27 @@
 #pragma once
+// all user frame data classes have to inherit this
+struct AppFrameDataBase
+{
+	virtual ~AppFrameDataBase() {};
+};
+
+// manage app frame data
+class AppFrameDataManager
+{
+public:
+	// get pointer to app frame data by slot. data usually points to first element of app frame data array
+	AppFrameDataBase* getAppDataForSlot(int slotNum) { return data[slotNum]; };
+	void setAppDataForSlot(AppFrameDataBase* ad, int slotNum) {
+		if (data.size() < (slotNum + 1)) {
+			data.resize(slotNum + 1);
+		}
+		data[slotNum] = ad;
+	};
+	virtual ~AppFrameDataManager() {};
+private:
+	vector<AppFrameDataBase*> data;
+};
+
 class Frame
 {
 public:
@@ -9,9 +32,11 @@ public:
 	long long absFrameNumber = 0LL;
 	boolean inUse = false;
 	int slot; // frame buffer slot used to render this (usually 0-2)
+	AppFrameDataBase* frameData = nullptr;
 	chrono::time_point<chrono::high_resolution_clock> renderStartTime;
 	//chrono::duration<chrono::microseconds> renderDuration; // render duration in microseconds
 	long long renderDuration; // render duration in microseconds
+
 };
 
 // Frame storage. Get access in a round-robin manner. 
