@@ -35,28 +35,15 @@ void Simple2dFrame::init() {
 	}
 }
 
-// static void methods are used in threaded code
-static long long skipped = 0; // count skipped frames
-static long long last_processed = -1; // last processed frame number
-
 void Simple2dFrame::presentFrame(Frame* frame, Pipeline* pipeline) {
 	//cout << "present frame slot " << frame->slot << " frame " << frame->absFrameNumber << endl;
 	if (frame->absFrameNumber >= (FRAME_COUNT - 1)) {
 		//cout << "pipeline should shutdown" << endl;
 		pipeline->shutdown();
 	}
-	if (frame->absFrameNumber < last_processed) {
-		// received an out-of-order frame: discard
-		skipped++;
-		return;
-	}
-	// normal in-order frame: process
-	//cout << "present frame slot " << frame->slot << " frame " << frame->absFrameNumber << endl;
-	// TODO
-	//d2d->copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
-
-	last_processed = frame->absFrameNumber;
-	pipeline->updateStatistics(frame);
+	// copy frame to HD
+	AppFrameData* af = (AppFrameData *) pipeline->afManager.getAppDataForSlot(frame->slot);
+	af->d2d.copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
 }
 
 void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
@@ -68,6 +55,9 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	AppFrameData* afd = (AppFrameData*)frame->frameData;
 	FrameDataD2D *fd = &afd->d2d_fd;
 	Dx2D *d2d = &afd->d2d;
+	//fd->d2RenderTarget->
+	float col[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+	afd->fd_general.deviceContext11->ClearRenderTargetView(d2d->getRenderTargetView(), col);
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
 
 	// create brush
@@ -75,6 +65,7 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	ID2D1SolidColorBrush* redBrush = nullptr;
 	D2D1::ColorF red(1, 0, 0, 1);  // fully opaque red
 	D2D1::ColorF wh(1, 1, 1, 1);  // fully opaque white
+	D2D1::ColorF black(0, 0, 0, 1);  // fully opaque black
 	auto d2RenderTarget = d2d->getRenderTarget();
 	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(red, &redBrush));
 	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(wh, &whiteBrush));
@@ -99,6 +90,8 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 
 	// draw to texture:
 	d2RenderTarget->BeginDraw();
+	//d2RenderTarget->Clear(black);
+	//d2RenderTarget->Clear(NULL);
 	auto desc = d2d->getTextureDesc();
 	d2RenderTarget->DrawRectangle(D2D1::RectF(50.0f, 50.0f, desc->Width - 50.0f, desc->Height - 50.0f), redBrush);
 	d2RenderTarget->FillRectangle(D2D1::RectF(5.0f, 5.0f, desc->Width - 150.0f, desc->Height - 150.0f), redBrush);
@@ -113,8 +106,9 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	ThrowIfFailed(d2RenderTarget->EndDraw());
 	whiteBrush->Release();
 	redBrush->Release();
-	d2d->copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
+	//d2d->copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
 	//cout << "  END draw() for frame: " << frame->absFrameNumber << " slot" << frame->slot << endl;
+	d2d->drawStatisticsOverlay(frame, pipeline);
 }
 
 void Simple2dFrame::runTest() {
@@ -129,8 +123,8 @@ void Simple2dFrame::runTest() {
 	pipeline.waitUntilShutdown();
 	// stop timer
 	auto t1 = chrono::high_resolution_clock::now();
-	cout << "Empty Frame throughput ( " << FRAME_COUNT << " frames): " << chrono::duration_cast<chrono::milliseconds>(t1 - t0).count() << " ms\n";
-	cout << "  Skipped out-of-order frames: " << skipped << endl;
+	//cout << "Empty Frame throughput ( " << FRAME_COUNT << " frames): " << chrono::duration_cast<chrono::milliseconds>(t1 - t0).count() << " ms\n";
+	//cout << "  Skipped out-of-order frames: " << skipped << endl;
 
 	cout << pipeline.getStatistics();
 }

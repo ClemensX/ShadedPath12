@@ -1,4 +1,5 @@
 struct FrameDataD2D;
+class Frame;
 
 // Utility class for BMP graphics format and Direct2D
 // Each thread needs its own instance!
@@ -8,12 +9,15 @@ public:
 	virtual ~Dx2D();
 	void init(DXGlobal* dxGlobal, FrameDataD2D* fd, FrameDataGeneral* fd_general_);
 	ID2D1RenderTarget* getRenderTarget();
+	ID3D11RenderTargetView* getRenderTargetView();
 	IDWriteFactory* getWriteFactory();
 	const D3D11_TEXTURE2D_DESC* getTextureDesc();
 	// copy texture from GPU mem to CPU mem and export it as BMP file
 	void copyTextureToCPUAndExport(string filename);
 	// write Direct2D image to file in BMP format
 	void exportBMP(void* image, int height, int width, int pitch, DXGI_FORMAT format, string imageFileName);
+	// add FPS and counter to picture
+	void drawStatisticsOverlay(Frame* frame, Pipeline* pipeline);
 private:
 	static const int bytesPerPixel = 4; /// red, green, blue
 	static const int fileHeaderSize = 14;
@@ -54,7 +58,8 @@ private:
 	ComPtr<IDWriteFactory> dWriteFactory;
 	ID3D11Texture2D* texture = nullptr;  // 2d texture used for drawing to with D2D
 	IDXGISurface* dxgiSurface = nullptr;
-	ID2D1RenderTarget* d2RenderTarget;
+	ID2D1RenderTarget* d2RenderTarget = nullptr;
+	ID3D11RenderTargetView* d2Rtv = nullptr;
 
 	ID3D11Texture2D* textureCPU = nullptr;  // 2d texture used for reading bitmap data from GPU to CPU
 	IDWriteFactory* pDWriteFactory_;

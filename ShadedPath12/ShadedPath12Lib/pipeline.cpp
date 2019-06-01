@@ -81,7 +81,16 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 		// call synchronized present method
 		{
 			unique_lock<mutex> lock(pipeline->appSyncMutex);
-			pipeline->consumer(frame, pipeline);
+			pipeline->inSyncCode = true;
+			if (frame->absFrameNumber < pipeline->last_processed) {
+				// received an out-of-order frame: discard
+				pipeline->skipped++;
+			} else {
+				pipeline->consumer(frame, pipeline);
+				pipeline->last_processed = frame->absFrameNumber;
+			}
+			pipeline->updateStatistics(frame);
+			pipeline->inSyncCode = false;
 		}
 		//pipeline->updateStatistics(frame);
 	}
@@ -89,12 +98,21 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 
 void Pipeline::updateStatistics(Frame* frame)
 {
+	assert(inSyncCode);
 	auto t1 = chrono::high_resolution_clock::now();
 	frame->renderDuration = chrono::duration_cast<chrono::microseconds>(t1 - frame->renderStartTime).count();
+	lastFrameRenderDuration = frame->renderDuration;
 	cumulatedFrameRenderDuration += frame->renderDuration;
 	//Log("cumulated " << cumulatedFrameRenderDuration);
 	averageFrameRenderDuration = cumulatedFrameRenderDuration / (frame->absFrameNumber + 1);
 	//Log(" average " << averageFrameRenderDuration << endl);
+	//total processed frames:
+	long long tot = (frame->absFrameNumber + 1) - skipped;
+	// total run milli seconds:
+	auto totalMs = chrono::duration_cast<chrono::milliseconds>(t1 - pipelineStartTime).count();
+	if (tot > 0) {
+		totalFPS = (long)((1000L * tot) / totalMs);
+	}
 }
 
 void Pipeline::startRenderThreads()
@@ -107,6 +125,7 @@ void Pipeline::startRenderThreads()
 		Error(L"cannot start render threads: no frame consumer specified\n");
 		return;
 	}
+	pipelineStartTime = chrono::high_resolution_clock::now();
 	for (int i = 0; i < frameBuffer.size(); i++) {
 		threads.add_t(runFrameSlot, this, frameBuffer.getFrame(i), i);
 	}

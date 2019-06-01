@@ -21,6 +21,11 @@ void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_, FrameDataGeneral* fd_gen
 
 	ThrowIfFailed(fd_general->device11->CreateTexture2D(&desc, NULL, &fd->texture));
 
+	ThrowIfFailed(fd_general->device11->CreateRenderTargetView(
+		fd->texture,
+		NULL, //const D3D11_RENDER_TARGET_VIEW_DESC * pDesc,
+		&fd->d2Rtv
+	));
 	// GPU texture to read bitmap data:
 	//D3D11_TEXTURE2D_DESC desc{};
 	desc.Width = 256;
@@ -70,6 +75,11 @@ void Dx2D::copyTextureToCPUAndExport(string filename)
 ID2D1RenderTarget* Dx2D::getRenderTarget()
 {
 	return fd->d2RenderTarget;
+}
+
+ID3D11RenderTargetView* Dx2D::getRenderTargetView()
+{
+	return fd->d2Rtv;
 }
 
 IDWriteFactory* Dx2D::getWriteFactory()
@@ -165,10 +175,62 @@ Dx2D::~Dx2D()
 	if (fd->d2RenderTarget != nullptr) {
 		fd->d2RenderTarget->Release();
 	}
+	if (fd->d2Rtv != nullptr) {
+		fd->d2Rtv->Release();
+	}
 	//if (d2RenderTarget != nullptr) {
 	//	d2RenderTarget->Release();
 	//}
 	if (fd->textureCPU != nullptr) {
 		fd->textureCPU->Release();
 	}
+}
+
+void Dx2D::drawStatisticsOverlay(Frame* frame, Pipeline* pipeline)
+{
+	//AppFrameDataBase* afd = frame->frameData;
+	FrameDataD2D* fd = this->fd;
+	Dx2D* d2d = this;
+	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
+
+	// create brush
+	ID2D1SolidColorBrush* whiteBrush = nullptr;
+	D2D1::ColorF wh(1, 1, 1, 1);  // fully opaque white
+	auto d2RenderTarget = d2d->getRenderTarget();
+	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(wh, &whiteBrush));
+
+	static const WCHAR msc_fontName[] = L"Verdana";
+	static const FLOAT msc_fontSize = 10;
+	auto writeFactory = d2d->getWriteFactory();
+	IDWriteTextFormat* pTextFormat_;
+	ThrowIfFailed(writeFactory->CreateTextFormat(
+		msc_fontName,
+		NULL,
+		DWRITE_FONT_WEIGHT_NORMAL,
+		DWRITE_FONT_STYLE_NORMAL,
+		DWRITE_FONT_STRETCH_NORMAL,
+		msc_fontSize,
+		L"", //locale
+		&pTextFormat_
+	));
+	pTextFormat_->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+	pTextFormat_->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+	wstringstream s;
+	s << "# " << (frame->absFrameNumber) << " last render [micros] " << pipeline->lastFrameRenderDuration << " tot FPS " << pipeline->totalFPS << endl;
+	//return s.str();
+	//static const WCHAR sc_fps[] = L"FPS: 30";
+
+	// draw to texture:
+	d2RenderTarget->BeginDraw();
+	auto desc = d2d->getTextureDesc();
+	d2RenderTarget->DrawText(
+		s.str().c_str(),
+		(UINT32)s.str().length(),
+		pTextFormat_,
+		D2D1::RectF(0.0f, 0.0f, (float)desc->Width, 10.0f),
+		whiteBrush
+	);
+
+	ThrowIfFailed(d2RenderTarget->EndDraw());
+	whiteBrush->Release();
 }
