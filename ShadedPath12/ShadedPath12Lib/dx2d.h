@@ -7,7 +7,7 @@ class Frame;
 class Dx2D {
 public:
 	virtual ~Dx2D();
-	void init(DXGlobal* dxGlobal, FrameDataD2D* fd, FrameDataGeneral* fd_general_);
+	void init(DXGlobal* dxGlobal, FrameDataD2D* fd, FrameDataGeneral* fd_general_, Pipeline *pipeline);
 	ID2D1RenderTarget* getRenderTarget();
 	ID3D11RenderTargetView* getRenderTargetView();
 	IDWriteFactory* getWriteFactory();

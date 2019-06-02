@@ -1,14 +1,15 @@
 #include "stdafx.h"
 
-void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_, FrameDataGeneral* fd_general_)
+void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_, FrameDataGeneral* fd_general_, Pipeline* pipeline)
 {
 	this->fd = fd_;
 	this->dxGlobal = dxGlobal_;
 	this->fd_general = fd_general_;
+	auto config = pipeline->getPipelineConfig();
 	// create d2d texture:
 	auto &desc = fd->desc;
-	desc.Width = 256;
-	desc.Height = 256;
+	desc.Width = config.backbufferWidth;
+	desc.Height = config.backbufferHeight;
 	desc.MipLevels = desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.SampleDesc.Count = 1;
@@ -28,8 +29,8 @@ void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_, FrameDataGeneral* fd_gen
 	));
 	// GPU texture to read bitmap data:
 	//D3D11_TEXTURE2D_DESC desc{};
-	desc.Width = 256;
-	desc.Height = 256;
+	desc.Width = config.backbufferWidth;
+	desc.Height = config.backbufferHeight;
 	desc.MipLevels = desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.SampleDesc.Count = 1;

@@ -31,7 +31,7 @@ void Simple2dFrame::init() {
 		FrameDataD2D *fd2d = &fd->d2d_fd;
 		FrameDataGeneral *fd_gen = &fd->fd_general;
 		dxGlobal.initFrameBufferResources(fd_gen, fd2d);
-		d2d->init(&dxGlobal, fd2d, fd_gen);
+		d2d->init(&dxGlobal, fd2d, fd_gen, &pipeline);
 	}
 }
 
