@@ -5,7 +5,7 @@
 Sample1::Sample1() : XAppBase()
 {
 	myClass = string(typeid(*this).name());
-	xapp->registerApp(myClass, this);
+	//xapp->registerApp(myClass, this);
 }
 
 
@@ -97,4 +97,4 @@ void Sample1::destroy()
 
 //#pragma init_seg(lib)
 //#pragma init_seg(".CRT$XCT")
-static Sample1 sample1;
+//static Sample1 sample1;
