@@ -110,7 +110,13 @@ public:
 		XMVECTOR bv = XMLoadFloat3(b);
 		return XMVectorGetX(XMVector3Length(bv - av));
 	};
-
+	BYTE key_state[256];
+	int mouseDx;
+	int mouseDy;
+	bool mouseTodo;
+	void updateKeyboardState();
+	bool keyDown(BYTE key);
+	bool anyKeyDown = false;
 };
 
 // log events to memory

@@ -73,3 +73,41 @@ XMVECTOR Util::movePointToDistance(XMVECTOR start, XMVECTOR controlPoint, float 
 //	return d <= hittingDist;
 //}
 
+void Util::updateKeyboardState()
+{
+	BOOL result = GetKeyboardState(key_state);
+	if (result == 0) {
+		Log("ERROR GetKeyboardState");
+		return;
+	}
+	for (BYTE b = 1; b < 255; b++) {
+		if (keyDown(b)) {
+			//Log("key down");
+			switch (b) {
+				// prevent toggle keys from triggering keydown state
+			case VK_CAPITAL:
+			case VK_NUMLOCK:
+			case VK_SCROLL:
+				// nothing to do
+				break;
+			default: anyKeyDown = true;
+			}
+		}
+	}
+	// handle keyboard input
+	if (keyDown('W') || keyDown(VK_UP))
+		Log("W");// camera.walk(dt);
+	if (keyDown('S') || keyDown(VK_DOWN))
+		;// camera.walk(-dt);
+	if (keyDown('D') || keyDown(VK_RIGHT))
+		;// camera.strafe(dt);
+	if (keyDown('A') || keyDown(VK_LEFT))
+		;// camera.strafe(-dt);
+
+
+}
+
+bool Util::keyDown(BYTE key) {
+	return (key_state[key] & 0x80) != 0;
+}
+
