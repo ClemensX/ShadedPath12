@@ -103,28 +103,6 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 	}
 }
 
-void DXGlobal::initSwapChain(Pipeline* pipeline)
+void DXGlobal::initSwapChain(Pipeline* pipeline, HWND hwnd)
 {
-	auto pc = pipeline->getPipelineConfig();
-	// Describe the swap chain.
-	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-	swapChainDesc.BufferCount = (UINT) pc.getFrameBufferSize();
-	swapChainDesc.BufferDesc.Width = pc.backbufferWidth;
-	swapChainDesc.BufferDesc.Height = pc.backbufferHeight;
-	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-	swapChainDesc.OutputWindow = 0;// xapp->getHWND();
-	swapChainDesc.SampleDesc.Count = 1;
-	swapChainDesc.Windowed = TRUE;
-	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-
-	ComPtr<IDXGISwapChain> swapChain0; // we cannot use create IDXGISwapChain3 directly - create IDXGISwapChain, then call As() to map to IDXGISwapChain3
-	ThrowIfFailed(factory->CreateSwapChain(
-		commandQueue.Get(),		// Swap chain needs the queue so that it can force a flush on it.
-		&swapChainDesc,
-		&swapChain0
-	));
-
-	ThrowIfFailed(swapChain0.As(&swapChain));
 }

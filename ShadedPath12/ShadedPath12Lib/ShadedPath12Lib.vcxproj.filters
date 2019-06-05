@@ -90,6 +90,9 @@
     <ClCompile Include="dx2d.cpp">
       <Filter>Source Files\NE3</Filter>
     </ClCompile>
+    <ClCompile Include="launcher.cpp">
+      <Filter>Source Files\NE3</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ShadedPath12\Resource.h">
@@ -192,6 +195,9 @@
       <Filter>Source Files\NE3</Filter>
     </ClInclude>
     <ClInclude Include="dx2d.h">
+      <Filter>Source Files\NE3</Filter>
+    </ClInclude>
+    <ClInclude Include="launcher.h">
       <Filter>Source Files\NE3</Filter>
     </ClInclude>
   </ItemGroup>

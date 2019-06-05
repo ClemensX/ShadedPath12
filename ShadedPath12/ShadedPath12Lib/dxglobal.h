@@ -26,7 +26,7 @@ class DXGlobal {
 public:
 	void init();
 	void initFrameBufferResources(FrameDataGeneral* fd, FrameDataD2D* fd_d2d);
-	void initSwapChain(Pipeline *pipeline);
+	void initSwapChain(Pipeline* pipeline, HWND hwnd);
 	DXGlobalParam config;
 	ComPtr<IDXGIFactory4> factory;
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session

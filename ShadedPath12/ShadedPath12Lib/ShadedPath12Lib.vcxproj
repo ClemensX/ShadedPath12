@@ -29,6 +29,7 @@
     <ClCompile Include="frame.cpp" />
     <ClCompile Include="frameresource.cpp" />
     <ClCompile Include="gametime.cpp" />
+    <ClCompile Include="launcher.cpp" />
     <ClCompile Include="pipeline.cpp" />
     <ClCompile Include="rendercontrol.cpp" />
     <ClCompile Include="sample1.cpp" />
@@ -63,6 +64,7 @@
     <ClInclude Include="frame.h" />
     <ClInclude Include="frameresource.h" />
     <ClInclude Include="gametime.h" />
+    <ClInclude Include="launcher.h" />
     <ClInclude Include="lights.h" />
     <ClInclude Include="meshObject.h" />
     <ClInclude Include="path.h" />

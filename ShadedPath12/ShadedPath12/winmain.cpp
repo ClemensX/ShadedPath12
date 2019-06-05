@@ -150,6 +150,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	wstring wcmd = wstring(lpCmdLine);
 	string cmd = w2s(wcmd);
+	Launcher launcher;
+	launcher.init();
 	//xapp = XApp::getInstance();
 	//xapp->commandline = cmd;
 	//xapp->parseCommandLine(xapp->commandline);
