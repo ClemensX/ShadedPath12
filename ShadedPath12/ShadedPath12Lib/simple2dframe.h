@@ -17,10 +17,10 @@ public:
 	Simple2dFrame();
 	virtual ~Simple2dFrame();
 	void runTest();
+	void init();
 private:
 	static const int FRAME_BUFFER_SIZE = 3;
 	static const int FRAME_COUNT = 10;
-	void init();
 	// after a frame has been processed this is called to consume it
 	// (present or store usually)
 	// this call is synced by pipeline, so only 1 thread at any time running this method

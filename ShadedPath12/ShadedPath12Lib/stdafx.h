@@ -221,7 +221,6 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 #include "xapp.h"
 #include "frame.h"
 #include "pipeline.h"
-#include "launcher.h"
 #include "Effects\effectbase.h"
 #include "Effects\copytexture.h"
 //#include "Effects\lines.h"
@@ -231,3 +230,5 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 //#include "Effects\objecteffect.h"
 #include "Effects\posteffect.h"
 //#include "meshObject.h"
+#include "simple2dframe.h"
+#include "launcher.h"

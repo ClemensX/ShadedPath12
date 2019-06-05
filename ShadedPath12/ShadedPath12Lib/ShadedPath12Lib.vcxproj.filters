@@ -93,6 +93,12 @@
     <ClCompile Include="launcher.cpp">
       <Filter>Source Files\NE3</Filter>
     </ClCompile>
+    <ClCompile Include="emptyframes.cpp">
+      <Filter>Apps</Filter>
+    </ClCompile>
+    <ClCompile Include="simple2dframe.cpp">
+      <Filter>Apps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ShadedPath12\Resource.h">
@@ -199,6 +205,12 @@
     </ClInclude>
     <ClInclude Include="launcher.h">
       <Filter>Source Files\NE3</Filter>
+    </ClInclude>
+    <ClInclude Include="emptyframes.h">
+      <Filter>Apps</Filter>
+    </ClInclude>
+    <ClInclude Include="simple2dframe.h">
+      <Filter>Apps</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2,4 +2,5 @@
 
 void Launcher::init()
 {
+	simple2dFrame.init();
 }

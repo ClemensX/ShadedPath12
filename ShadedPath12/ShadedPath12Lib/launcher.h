@@ -7,5 +7,6 @@ class Launcher
 {
 public:
 	void init();
+	Simple2dFrame simple2dFrame;
 };
 
