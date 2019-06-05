@@ -11,6 +11,7 @@ HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 Util util;
+HWND hwnd;										// window handle
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -166,7 +167,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         return FALSE;
     }
-
+	launcher.initWindow(hwnd);
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_SHADEDPATH12));
 
 	MSG msg = { 0 };
@@ -275,10 +276,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     else {
 	    style = WS_OVERLAPPEDWINDOW;
     }
-    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+    hwnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, CW_USEDEFAULT, w, h, nullptr, nullptr, hInstance, nullptr);
 
-   if (!hWnd)
+   if (!hwnd)
    {
       return FALSE;
    }
@@ -286,8 +287,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    //xapp->setHWND(hWnd);
    //xapp->init();
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+   ShowWindow(hwnd, nCmdShow);
+   UpdateWindow(hwnd);
 
    return TRUE;
 }

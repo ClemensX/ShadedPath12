@@ -18,6 +18,7 @@ public:
 	virtual ~Simple2dFrame();
 	void runTest();
 	void init();
+	void initWindow(HWND hwnd);
 private:
 	static const int FRAME_BUFFER_SIZE = 3;
 	static const int FRAME_COUNT = 10;

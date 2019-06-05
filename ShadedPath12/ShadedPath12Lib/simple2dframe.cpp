@@ -35,6 +35,11 @@ void Simple2dFrame::init() {
 	}
 }
 
+void Simple2dFrame::initWindow(HWND hwnd)
+{
+	dxGlobal.initSwapChain(&pipeline, hwnd);
+}
+
 void Simple2dFrame::presentFrame(Frame* frame, Pipeline* pipeline) {
 	//cout << "present frame slot " << frame->slot << " frame " << frame->absFrameNumber << endl;
 	if (frame->absFrameNumber >= (FRAME_COUNT - 1)) {
