@@ -168,6 +168,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 	launcher.initWindow(hwnd);
+	launcher.start();
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_SHADEDPATH12));
 
 	MSG msg = { 0 };
@@ -180,6 +181,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			DispatchMessage(&msg);
 
 			if (msg.message == WM_QUIT) {
+				launcher.stop();
 				break;
 				//xapp->setShutdownMode();
 			}

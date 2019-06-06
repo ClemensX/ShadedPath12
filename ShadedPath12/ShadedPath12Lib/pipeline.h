@@ -128,7 +128,7 @@ private:
 	PipelineConfig pipelineConfig;
 	atomic<long long> frameNum = 0;
 	boolean running = false;
-	boolean shutdown_mode = false;
+	atomic<boolean> shutdown_mode = false;
 	function<void(Frame*, Pipeline*)> consumer = nullptr;
 	function<void(Frame*, Pipeline*, void* afd)> drawCallback = nullptr;
 	void* applicationFrameData = nullptr; // used to pass pointer of app data back during callbacks

@@ -42,13 +42,17 @@ void Simple2dFrame::initWindow(HWND hwnd)
 
 void Simple2dFrame::presentFrame(Frame* frame, Pipeline* pipeline) {
 	//cout << "present frame slot " << frame->slot << " frame " << frame->absFrameNumber << endl;
-	if (frame->absFrameNumber >= (FRAME_COUNT - 1)) {
-		//cout << "pipeline should shutdown" << endl;
-		pipeline->shutdown();
+	if (isAutomatedTestMode) {
+		if (frame->absFrameNumber >= (FRAME_COUNT - 1)) {
+			//cout << "pipeline should shutdown" << endl;
+			pipeline->shutdown();
+		}
 	}
 	// copy frame to HD
 	AppFrameData* af = (AppFrameData *) pipeline->afManager.getAppDataForSlot(frame->slot);
-	af->d2d.copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
+	if (isAutomatedTestMode || frame->absFrameNumber % 10000 == 0) {
+		af->d2d.copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
+	}
 }
 
 void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
@@ -99,7 +103,8 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	//d2RenderTarget->Clear(NULL);
 	auto desc = d2d->getTextureDesc();
 	d2RenderTarget->DrawRectangle(D2D1::RectF(50.0f, 50.0f, desc->Width - 50.0f, desc->Height - 50.0f), redBrush);
-	d2RenderTarget->FillRectangle(D2D1::RectF(5.0f, 5.0f, desc->Width - 150.0f, desc->Height - 150.0f), redBrush);
+	// fillrectangle produces memeory leaks and leads to device removed error
+	//d2RenderTarget->FillRectangle(D2D1::RectF(5.0f, 5.0f, desc->Width - 150.0f, desc->Height - 150.0f), redBrush);
 	d2RenderTarget->DrawText(
 		sc_helloWorld,
 		ARRAYSIZE(sc_helloWorld) - 1,
@@ -109,6 +114,7 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	);
 
 	ThrowIfFailed(d2RenderTarget->EndDraw());
+	pTextFormat_->Release();
 	whiteBrush->Release();
 	redBrush->Release();
 	//d2d->copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
@@ -118,10 +124,11 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 
 void Simple2dFrame::runTest() {
 	std::cout << "ShadedPath12 Performance Test: Simple2dFrame\n";
+	isAutomatedTestMode = true;
 	init();
 	// start timer
 	auto t0 = chrono::high_resolution_clock::now();
-	pipeline.setFinishedFrameConsumer(presentFrame);
+	pipeline.setFinishedFrameConsumer(bind(&Simple2dFrame::presentFrame, this, placeholders::_1, placeholders::_2));
 	pipeline.setApplicationFrameData(&afd);
 	pipeline.setCallbackDraw(draw);
 	pipeline.startRenderThreads();
@@ -132,4 +139,19 @@ void Simple2dFrame::runTest() {
 	//cout << "  Skipped out-of-order frames: " << skipped << endl;
 
 	cout << pipeline.getStatistics();
+}
+
+void Simple2dFrame::start() {
+	Log("Simple2dFrame UI mode started\n");
+	pipeline.setFinishedFrameConsumer(bind(&Simple2dFrame::presentFrame, this, placeholders::_1, placeholders::_2));
+	pipeline.setApplicationFrameData(&afd);
+	pipeline.setCallbackDraw(draw);
+	pipeline.startRenderThreads();
+}
+
+void Simple2dFrame::stop() {
+	pipeline.shutdown();
+	pipeline.waitUntilShutdown();
+	Log("Simple2dFrame and pipeline stopped\n");
+	Log(s2w(pipeline.getStatistics()));
 }

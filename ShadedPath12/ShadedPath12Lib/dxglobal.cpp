@@ -52,7 +52,7 @@ void DXGlobal::init()
 		// if this fails in debug run: enable win 10 dev mode and/or disable d3d12 debug layer via command line parameter -disableDX12Debug 
 		ThrowIfFailed(D3D12CreateDevice(
 			nullptr,
-			D3D_FEATURE_LEVEL_11_0,
+			D3D_FEATURE_LEVEL_12_1,
 			IID_PPV_ARGS(&device)
 		));
 	}
@@ -68,25 +68,26 @@ void DXGlobal::init()
 	ThrowIfFailed(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue)));
 	commandQueue->SetName(L"commandQueue_dxGlobal");
 
-	UINT d3d11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT| D3D11_CREATE_DEVICE_DEBUG;
-	D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
 }
 
 void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d2d) {
 	UINT d3d11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG;
 	D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
+	d2dFactoryOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 	// Create an 11 device wrapped around the 12 device and share 12's command queue.
+	D3D_FEATURE_LEVEL fl[] = { D3D_FEATURE_LEVEL_12_1 };
+	D3D_FEATURE_LEVEL retLevel;
 	ThrowIfFailed(D3D11On12CreateDevice(
 		device.Get(),
 		d3d11DeviceFlags,
-		nullptr,
-		0,
+		fl,
+		1,
 		reinterpret_cast<IUnknown * *>(commandQueue.GetAddressOf()),
 		1,
 		0,
 		&fd->device11,
 		&fd->deviceContext11,
-		nullptr
+		&retLevel
 	));
 	// Query the 11On12 device from the 11 device.
 	ThrowIfFailed(fd->device11.As(&fd->device11On12));

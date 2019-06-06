@@ -69,6 +69,7 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 {
 	while (!pipeline->isShutdown()) {
 		auto frameNum = pipeline->getNextFrameNumber();
+		LogF("Pipeline::runFrameSlot " << frameNum << endl);
 		// if next line is commentd out we see garbled text because of multile threads writing
 		//cout << "run frame slot " << slot << " frame " << frameNum << endl;
 		frame->renderStartTime = chrono::high_resolution_clock::now();

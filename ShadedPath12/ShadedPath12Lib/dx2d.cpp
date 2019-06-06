@@ -234,4 +234,5 @@ void Dx2D::drawStatisticsOverlay(Frame* frame, Pipeline* pipeline)
 
 	ThrowIfFailed(d2RenderTarget->EndDraw());
 	whiteBrush->Release();
+	pTextFormat_->Release();
 }
