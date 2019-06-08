@@ -234,3 +234,45 @@ void DXGlobal::initSwapChain(Pipeline* pipeline, HWND hwnd)
 
 	ThrowIfFailed(swapChain0.As(&swapChain));
 }
+
+void DXGlobal::createSyncPoint(FrameDataGeneral& f, ComPtr<ID3D12CommandQueue> queue)
+{
+	UINT64 threadFenceValue = InterlockedIncrement(&f.fenceValue);
+	ThrowIfFailed(queue->Signal(f.fence.Get(), threadFenceValue));
+	ThrowIfFailed(f.fence->SetEventOnCompletion(threadFenceValue, f.fenceEvent));
+}
+
+void DXGlobal::waitForSyncPoint(FrameDataGeneral& f)
+{
+	//	int frameIndex = xapp->getCurrentBackBufferIndex();
+	UINT64 completed = f.fence->GetCompletedValue();
+	//Log("ev start " << f.frameIndex << " " << completed << " " << f.fenceValue << endl);
+	if (completed == -1) {
+		Error(L"fence.GetCompletedValue breakdown");
+	}
+	if (completed > 100000) {
+		//Log("ev MAX " << completed << " " << f.fenceValue << endl);
+	}
+	if (completed <= f.fenceValue)
+	{
+		WaitForSingleObject(f.fenceEvent, INFINITE);
+	}
+	else {
+		//Log("ev " << completed << " " << f.fenceValue << endl);
+	}
+}
+
+void DXGlobal::waitGPU(FrameDataGeneral& res, ComPtr<ID3D12CommandQueue> queue)
+{
+	DXGlobal::createSyncPoint(res, queue);
+	DXGlobal::waitForSyncPoint(res);
+}
+
+void DXGlobal::destroy(Pipeline *pipeline)
+{
+	auto conf = pipeline->getPipelineConfig();
+	for (int i = 0; i < conf.getFrameBufferSize(); i++) {
+	AppFrameData* af = (AppFrameData*)pipeline->afManager.getAppDataForSlot(i);
+		waitGPU(af->fd_general, commandQueue);
+	}
+}

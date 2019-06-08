@@ -10,6 +10,8 @@ Simple2dFrame::Simple2dFrame()
 
 Simple2dFrame::~Simple2dFrame()
 {
+	// wait until all frames have finished GPU usage
+	dxGlobal.destroy(&pipeline);
 }
 
 // run tests with NUM_SLOTS sized frame buffer
@@ -45,14 +47,37 @@ void Simple2dFrame::initWindow(HWND hwnd)
 
 void Simple2dFrame::presentFrame(Frame* frame, Pipeline* pipeline) {
 	//cout << "present frame slot " << frame->slot << " frame " << frame->absFrameNumber << endl;
+	//AppFrameData* af = (AppFrameData*)pipeline->afManager.getAppDataForSlot(frame->slot);
+	// we need to get the app data for the current back buffer:
+	int slot = dxGlobal.swapChain->GetCurrentBackBufferIndex();
+	AppFrameData* af = (AppFrameData*)pipeline->afManager.getAppDataForSlot(slot);
 	if (isAutomatedTestMode) {
 		if (frame->absFrameNumber >= (FRAME_COUNT - 1)) {
 			//cout << "pipeline should shutdown" << endl;
 			pipeline->shutdown();
 		}
 	}
+	// wait for last frame with this index to be finished:
+	dxGlobal.waitGPU(af->fd_general, dxGlobal.commandQueue);
+	// d3d12 present:
+	ID3D12GraphicsCommandList* commandList = af->fd_general.commandList.Get();
+	ThrowIfFailed(af->fd_general.commandAllocator->Reset());
+	ThrowIfFailed(commandList->Reset(af->fd_general.commandAllocator.Get(), af->fd_general.pipelineState.Get()));
+	auto resourceStateHelper = dxGlobal.resourceStateHelper;
+	resourceStateHelper->toState(af->fd_general.renderTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(af->fd_general.rtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, af->fd_general.rtvDescriptorSize);
+	commandList->ClearRenderTargetView(rtvHandle, dxGlobal.clearColor, 0, nullptr);
+	commandList->ClearDepthStencilView(af->fd_general.dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	resourceStateHelper->toState(af->fd_general.renderTarget.Get(), D3D12_RESOURCE_STATE_COMMON, commandList);
+	ThrowIfFailed(commandList->Close());
+	ID3D12CommandList* ppCommandLists[] = { commandList };
+
+	dxGlobal.commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+	ThrowIfFailedWithDevice(dxGlobal.swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), dxGlobal.device.Get());
+
+
 	// copy frame to HD
-	AppFrameData* af = (AppFrameData *) pipeline->afManager.getAppDataForSlot(frame->slot);
 	if (isAutomatedTestMode || frame->absFrameNumber % 10000 == 0) {
 		af->d2d.copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
 	}
@@ -69,7 +94,7 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	Dx2D *d2d = &afd->d2d;
 	//fd->d2RenderTarget->
 	float col[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-	afd->fd_general.deviceContext11->ClearRenderTargetView(d2d->getRenderTargetView(), col);
+	//afd->fd_general.deviceContext11->ClearRenderTargetView(d2d->getRenderTargetView(), col); // we should clear RT from dx12 part
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
 
 	// create brush
