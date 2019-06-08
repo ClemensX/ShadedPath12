@@ -19,7 +19,7 @@ public:
 	// automated non-UI Test run for perfomance measurement 
 	void runTest();
 	// first initialization - has to be called first
-	void init();
+	void init(HWND hwnd = 0);
 	// window initialization - only needs to be called for UI app
 	void initWindow(HWND hwnd);
 	// start pipeline and rendering threads

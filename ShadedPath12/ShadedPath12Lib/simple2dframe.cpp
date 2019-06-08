@@ -13,7 +13,7 @@ Simple2dFrame::~Simple2dFrame()
 }
 
 // run tests with NUM_SLOTS sized frame buffer
-void Simple2dFrame::init() {
+void Simple2dFrame::init(HWND hwnd) {
 	auto& pc = pipeline.getPipelineConfig();
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	pc.setFrameBufferSize(FRAME_BUFFER_SIZE);
@@ -22,6 +22,9 @@ void Simple2dFrame::init() {
 	pipeline.init();
 	Log("pipeline initialized" << endl);
 	dxGlobal.init();
+	if (hwnd != 0) {
+		dxGlobal.initSwapChain(&pipeline, hwnd);
+	}
 	// init framedata
 	//afd->setData(&afd[0]);
 	for (int i = 0; i < FRAME_BUFFER_SIZE; i++) {
@@ -30,7 +33,7 @@ void Simple2dFrame::init() {
 		Dx2D* d2d = &fd->d2d;
 		FrameDataD2D *fd2d = &fd->d2d_fd;
 		FrameDataGeneral *fd_gen = &fd->fd_general;
-		dxGlobal.initFrameBufferResources(fd_gen, fd2d);
+		dxGlobal.initFrameBufferResources(fd_gen, fd2d, i, &pipeline);
 		d2d->init(&dxGlobal, fd2d, fd_gen, &pipeline);
 	}
 }

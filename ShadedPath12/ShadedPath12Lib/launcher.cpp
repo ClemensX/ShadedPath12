@@ -1,13 +1,8 @@
 #include "stdafx.h"
 
-void Launcher::init()
+void Launcher::init(HWND hwnd)
 {
-	simple2dFrame.init();
-}
-
-void Launcher::initWindow(HWND hwnd)
-{
-	simple2dFrame.initWindow(hwnd);
+	simple2dFrame.init(hwnd);
 }
 
 void Launcher::start()

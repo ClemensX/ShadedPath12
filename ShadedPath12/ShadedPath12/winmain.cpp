@@ -151,8 +151,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	wstring wcmd = wstring(lpCmdLine);
 	string cmd = w2s(wcmd);
-	Launcher launcher;
-	launcher.init();
 	//xapp = XApp::getInstance();
 	//xapp->commandline = cmd;
 	//xapp->parseCommandLine(xapp->commandline);
@@ -167,7 +165,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         return FALSE;
     }
-	launcher.initWindow(hwnd);
+	Launcher launcher;
+	launcher.init(hwnd);
+	//launcher.init(0);
 	launcher.start();
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_SHADEDPATH12));
 

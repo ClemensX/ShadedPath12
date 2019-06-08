@@ -6,8 +6,7 @@
 class Launcher
 {
 public:
-	void init();
-	void initWindow(HWND hwnd);
+	void init(HWND hwnd);
 	void start();
 	void stop();
 	Simple2dFrame simple2dFrame;
