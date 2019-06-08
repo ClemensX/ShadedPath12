@@ -71,6 +71,7 @@ void DXGlobal::init()
 }
 
 void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d2d, int i, Pipeline* pipeline) {
+	auto config = pipeline->getPipelineConfig();
 	UINT d3d11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG;
 	D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
 	d2dFactoryOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
@@ -102,7 +103,7 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 		ThrowIfFailed(fd_d2d->d2dDevice->CreateDeviceContext(deviceOptions, &fd_d2d->d2dDeviceContext));
 		ThrowIfFailed(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &fd_d2d->dWriteFactory));
 	}
-	// d3d resources
+	// d3d resources, first the rendertarget associated with the window:
 	// Create descriptor heaps.
 	{
 		// Describe and create a render target view (RTV) descriptor heap.
@@ -149,7 +150,6 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 		depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
 		depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
-		auto config = pipeline->getPipelineConfig();
 		ThrowIfFailed(device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
@@ -207,6 +207,60 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 	if (fd->fenceEvent == nullptr) {
 		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
 	}
+	// d3d resources, now the render texture:
+	// create depth/stencil buffer and render texture
+	// Describe and create a depth stencil view (DSV) descriptor heap.
+	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
+	dsvHeapDesc.NumDescriptors = 1;
+	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&fd->dsvHeapRenderTexture)));
+
+	// depth stencil
+	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
+	depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+	// create the depth/stencil texture
+	device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, config.backbufferWidth, config.backbufferHeight, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.0f, 0),
+		IID_PPV_ARGS(&fd->depthStencilRenderTexture)
+	);
+	device->CreateDepthStencilView(fd->depthStencilRenderTexture.Get(), &depthStencilDesc, fd->dsvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
+	NAME_D3D12_OBJECT_SUFF(fd->depthStencilRenderTexture, i);
+
+	// Describe and create a render target view (RTV) descriptor heap.
+	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
+	rtvHeapDesc.NumDescriptors = 1;
+	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&fd->rtvHeapRenderTexture)));
+	NAME_D3D12_OBJECT_SUFF(fd->rtvHeapRenderTexture, i);
+	fd->rtvDescriptorSizeRenderTexture = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+	// create the render target texture
+	device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, config.backbufferWidth, config.backbufferHeight, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
+		D3D12_RESOURCE_STATE_RENDER_TARGET,
+		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_R8G8B8A8_UNORM, clearColor),
+		IID_PPV_ARGS(&fd->renderTargetRenderTexture)
+	);
+
+	resourceStateHelper->add(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+	// create the render target view from the heap desc and render texture:
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fd->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
+	device->CreateRenderTargetView(fd->renderTargetRenderTexture.Get(), nullptr, rtvHandle);
+	rtvHandle.Offset(1, fd->rtvDescriptorSizeRenderTexture);
+	//dxmanager->createPSO(*effectFrameResource, frameIndex);
+	//effectFrameResource->frameIndex = frameIndex;
+	//xapp->workerThreadStates[frameIndex] = WorkerThreadState::InitFrame;
 }
 
 void DXGlobal::initSwapChain(Pipeline* pipeline, HWND hwnd)

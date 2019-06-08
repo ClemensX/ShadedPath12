@@ -59,4 +59,9 @@ struct FrameDataGeneral {
 	HANDLE fenceEvent;
 	ComPtr<ID3D12Fence> fence;
 	UINT64 fenceValue;
+	ComPtr<ID3D12DescriptorHeap> rtvHeapRenderTexture;  // Resource Target View Heap
+	UINT rtvDescriptorSizeRenderTexture;
+	ComPtr<ID3D12Resource> renderTargetRenderTexture;
+	ComPtr<ID3D12Resource> depthStencilRenderTexture;
+	ComPtr<ID3D12DescriptorHeap> dsvHeapRenderTexture;
 };
