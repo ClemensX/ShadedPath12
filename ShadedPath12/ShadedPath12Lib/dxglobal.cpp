@@ -103,7 +103,111 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 		ThrowIfFailed(fd_d2d->d2dDevice->CreateDeviceContext(deviceOptions, &fd_d2d->d2dDeviceContext));
 		ThrowIfFailed(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &fd_d2d->dWriteFactory));
 	}
-	// d3d resources, first the rendertarget associated with the window:
+	// d3d resources, first the render texture (unrelated to swap chain or window):
+	// create depth/stencil buffer and render texture
+	// Describe and create a depth stencil view (DSV) descriptor heap.
+	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
+	dsvHeapDesc.NumDescriptors = 1;
+	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&fd->dsvHeapRenderTexture)));
+
+	// depth stencil
+	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
+	depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+	// create the depth/stencil texture
+	device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, config.backbufferWidth, config.backbufferHeight, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.0f, 0),
+		IID_PPV_ARGS(&fd->depthStencilRenderTexture)
+	);
+	device->CreateDepthStencilView(fd->depthStencilRenderTexture.Get(), &depthStencilDesc, fd->dsvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
+	NAME_D3D12_OBJECT_SUFF(fd->depthStencilRenderTexture, i);
+
+	// Describe and create a render target view (RTV) descriptor heap.
+	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
+	rtvHeapDesc.NumDescriptors = 1;
+	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&fd->rtvHeapRenderTexture)));
+	NAME_D3D12_OBJECT_SUFF(fd->rtvHeapRenderTexture, i);
+	fd->rtvDescriptorSizeRenderTexture = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+	// create the render target texture
+	device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, config.backbufferWidth, config.backbufferHeight, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
+		D3D12_RESOURCE_STATE_RENDER_TARGET,
+		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_R8G8B8A8_UNORM, clearColor),
+		IID_PPV_ARGS(&fd->renderTargetRenderTexture)
+	);
+
+	resourceStateHelper->add(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+	// create the render target view from the heap desc and render texture:
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fd->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
+	device->CreateRenderTargetView(fd->renderTargetRenderTexture.Get(), nullptr, rtvHandle);
+	rtvHandle.Offset(1, fd->rtvDescriptorSizeRenderTexture);
+	//dxmanager->createPSO(*effectFrameResource, frameIndex);
+	//effectFrameResource->frameIndex = frameIndex;
+	//xapp->workerThreadStates[frameIndex] = WorkerThreadState::InitFrame;
+	// Create an empty root signature.
+	{
+		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+		rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		ComPtr<ID3DBlob> signature;
+		ComPtr<ID3DBlob> error;
+		ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
+		ThrowIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&fd->rootSignatureRenderTexture)));
+	}
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+	// Describe and create the graphics pipeline state object (PSO).
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+	psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
+	psoDesc.pRootSignature = fd->rootSignatureRenderTexture.Get();
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.DepthStencilState.DepthEnable = FALSE;
+	psoDesc.DepthStencilState.StencilEnable = FALSE;
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.NumRenderTargets = 1;
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	psoDesc.SampleDesc.Count = 1;
+#include "CompiledShaders/PostVS.h"
+	psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
+	//psoDesc.VS = { nullptr, 0 };
+	ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&fd->pipelineStateRenderTexture)));
+	NAME_D3D12_OBJECT_SUFF(fd->pipelineStateRenderTexture, i);
+	ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&fd->commandAllocatorRenderTexture)));
+	NAME_D3D12_OBJECT_SUFF(fd->commandAllocatorRenderTexture, i);
+	ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, fd->commandAllocatorRenderTexture.Get(), fd->pipelineStateRenderTexture.Get(), IID_PPV_ARGS(&fd->commandListRenderTexture)));
+	NAME_D3D12_OBJECT_SUFF(fd->commandListRenderTexture, i);
+	fd->commandListRenderTexture->Close();
+	ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fd->fenceRenderTexture)));
+	NAME_D3D12_OBJECT_SUFF(fd->fenceRenderTexture, i);
+	fd->fenceValueRenderTexture = 0;
+	fd->fenceEventRenderTexture = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+	if (fd->fenceEventRenderTexture == nullptr) {
+		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+	}
+
+	// d3d resources, now the rendertarget associated with the swap chain and window:
+	if (swapChain == nullptr) {
+		Log("no swap chain - cannot initialize D3D12 resources")
+			return;
+	}
 	// Create descriptor heaps.
 	{
 		// Describe and create a render target view (RTV) descriptor heap.
@@ -115,10 +219,6 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 		ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&fd->rtvHeap)));
 		NAME_D3D12_OBJECT_SUFF(fd->rtvHeap, i);
 		fd->rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	}
-	if (swapChain == nullptr) {
-		Log("no swap chain - cannot initialize D3D12 resources")
-		return;
 	}
 	// Create frame resources.
 	{
@@ -172,26 +272,26 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 		ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
 		ThrowIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&fd->rootSignature)));
 	}
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-	};
+	//D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
+	//{
+	//	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	//	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	//};
 	// Describe and create the graphics pipeline state object (PSO).
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-	psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
-	psoDesc.pRootSignature = fd->rootSignature.Get();
-	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	psoDesc.DepthStencilState.DepthEnable = FALSE;
-	psoDesc.DepthStencilState.StencilEnable = FALSE;
-	psoDesc.SampleMask = UINT_MAX;
-	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	psoDesc.NumRenderTargets = 1;
-	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.SampleDesc.Count = 1;
-#include "CompiledShaders/PostVS.h"
-	psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
+//	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+//	psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
+//	psoDesc.pRootSignature = fd->rootSignature.Get();
+//	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+//	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+//	psoDesc.DepthStencilState.DepthEnable = FALSE;
+//	psoDesc.DepthStencilState.StencilEnable = FALSE;
+//	psoDesc.SampleMask = UINT_MAX;
+//	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+//	psoDesc.NumRenderTargets = 1;
+//	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+//	psoDesc.SampleDesc.Count = 1;
+//#include "CompiledShaders/PostVS.h"
+//	psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
 	//psoDesc.VS = { nullptr, 0 };
 	ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&fd->pipelineState)));
 	NAME_D3D12_OBJECT_SUFF(fd->pipelineState, i);
@@ -207,60 +307,6 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 	if (fd->fenceEvent == nullptr) {
 		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
 	}
-	// d3d resources, now the render texture:
-	// create depth/stencil buffer and render texture
-	// Describe and create a depth stencil view (DSV) descriptor heap.
-	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
-	dsvHeapDesc.NumDescriptors = 1;
-	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&fd->dsvHeapRenderTexture)));
-
-	// depth stencil
-	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
-	depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
-
-	// create the depth/stencil texture
-	device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, config.backbufferWidth, config.backbufferHeight, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
-		D3D12_RESOURCE_STATE_DEPTH_WRITE,
-		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.0f, 0),
-		IID_PPV_ARGS(&fd->depthStencilRenderTexture)
-	);
-	device->CreateDepthStencilView(fd->depthStencilRenderTexture.Get(), &depthStencilDesc, fd->dsvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
-	NAME_D3D12_OBJECT_SUFF(fd->depthStencilRenderTexture, i);
-
-	// Describe and create a render target view (RTV) descriptor heap.
-	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-	rtvHeapDesc.NumDescriptors = 1;
-	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	ThrowIfFailed(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&fd->rtvHeapRenderTexture)));
-	NAME_D3D12_OBJECT_SUFF(fd->rtvHeapRenderTexture, i);
-	fd->rtvDescriptorSizeRenderTexture = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
-	// create the render target texture
-	device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, config.backbufferWidth, config.backbufferHeight, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-		D3D12_RESOURCE_STATE_RENDER_TARGET,
-		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_R8G8B8A8_UNORM, clearColor),
-		IID_PPV_ARGS(&fd->renderTargetRenderTexture)
-	);
-
-	resourceStateHelper->add(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET);
-	// create the render target view from the heap desc and render texture:
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fd->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
-	device->CreateRenderTargetView(fd->renderTargetRenderTexture.Get(), nullptr, rtvHandle);
-	rtvHandle.Offset(1, fd->rtvDescriptorSizeRenderTexture);
-	//dxmanager->createPSO(*effectFrameResource, frameIndex);
-	//effectFrameResource->frameIndex = frameIndex;
-	//xapp->workerThreadStates[frameIndex] = WorkerThreadState::InitFrame;
 }
 
 void DXGlobal::initSwapChain(Pipeline* pipeline, HWND hwnd)
@@ -289,17 +335,17 @@ void DXGlobal::initSwapChain(Pipeline* pipeline, HWND hwnd)
 	ThrowIfFailed(swapChain0.As(&swapChain));
 }
 
-void DXGlobal::createSyncPoint(FrameDataGeneral& f, ComPtr<ID3D12CommandQueue> queue)
+void DXGlobal::createSyncPoint(FrameDataGeneral* f, ComPtr<ID3D12CommandQueue> queue)
 {
-	UINT64 threadFenceValue = InterlockedIncrement(&f.fenceValue);
-	ThrowIfFailed(queue->Signal(f.fence.Get(), threadFenceValue));
-	ThrowIfFailed(f.fence->SetEventOnCompletion(threadFenceValue, f.fenceEvent));
+	UINT64 threadFenceValue = InterlockedIncrement(&f->fenceValue);
+	ThrowIfFailed(queue->Signal(f->fence.Get(), threadFenceValue));
+	ThrowIfFailed(f->fence->SetEventOnCompletion(threadFenceValue, f->fenceEvent));
 }
 
-void DXGlobal::waitForSyncPoint(FrameDataGeneral& f)
+void DXGlobal::waitForSyncPoint(FrameDataGeneral* f)
 {
 	//	int frameIndex = xapp->getCurrentBackBufferIndex();
-	UINT64 completed = f.fence->GetCompletedValue();
+	UINT64 completed = f->fence->GetCompletedValue();
 	//Log("ev start " << f.frameIndex << " " << completed << " " << f.fenceValue << endl);
 	if (completed == -1) {
 		Error(L"fence.GetCompletedValue breakdown");
@@ -307,16 +353,16 @@ void DXGlobal::waitForSyncPoint(FrameDataGeneral& f)
 	if (completed > 100000) {
 		//Log("ev MAX " << completed << " " << f.fenceValue << endl);
 	}
-	if (completed <= f.fenceValue)
+	if (completed <= f->fenceValue)
 	{
-		WaitForSingleObject(f.fenceEvent, INFINITE);
+		WaitForSingleObject(f->fenceEvent, INFINITE);
 	}
 	else {
 		//Log("ev " << completed << " " << f.fenceValue << endl);
 	}
 }
 
-void DXGlobal::waitGPU(FrameDataGeneral& res, ComPtr<ID3D12CommandQueue> queue)
+void DXGlobal::waitGPU(FrameDataGeneral* res, ComPtr<ID3D12CommandQueue> queue)
 {
 	DXGlobal::createSyncPoint(res, queue);
 	DXGlobal::waitForSyncPoint(res);
@@ -327,6 +373,49 @@ void DXGlobal::destroy(Pipeline *pipeline)
 	auto conf = pipeline->getPipelineConfig();
 	for (int i = 0; i < conf.getFrameBufferSize(); i++) {
 	AppFrameData* af = (AppFrameData*)pipeline->afManager.getAppDataForSlot(i);
-		waitGPU(af->fd_general, commandQueue);
+		waitGPU(&af->fd_general, commandQueue);
 	}
+}
+
+void DXGlobal::copyRenderTexture2Window(FrameDataGeneral* fd_renderTexture, FrameDataGeneral* fd_swapChain)
+{
+	// hwnd RT in state _COMMON or _PRESENT
+	// texture in state _RENDER_TARGET
+	// wait for last frame with this index to be finished:
+	waitGPU(fd_swapChain, commandQueue);
+	// prepare command
+	ID3D12GraphicsCommandList* commandList = fd_swapChain->commandList.Get();
+	ThrowIfFailed(fd_swapChain->commandAllocator->Reset());
+	ThrowIfFailed(commandList->Reset(fd_swapChain->commandAllocator.Get(), fd_swapChain->pipelineState.Get()));
+
+	resourceStateHelper->toState(fd_renderTexture->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, commandList);
+	resourceStateHelper->toState(fd_swapChain->renderTarget.Get(), D3D12_RESOURCE_STATE_COPY_DEST, commandList);
+	commandList->CopyResource(fd_swapChain->renderTarget.Get(), fd_renderTexture->renderTargetRenderTexture.Get());
+	resourceStateHelper->toState(fd_renderTexture->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+	resourceStateHelper->toState(fd_swapChain->renderTarget.Get(), D3D12_RESOURCE_STATE_COMMON, commandList);
+
+	ThrowIfFailed(commandList->Close());
+	ID3D12CommandList* ppCommandLists[] = { commandList };
+
+	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+}
+
+void DXGlobal::clearRenderTexture(FrameDataGeneral* fd)
+{
+	// wait for last frame with this index to be finished:
+	waitGPU(fd, commandQueue);
+	// d3d12 present:
+	ID3D12GraphicsCommandList* commandList = fd->commandListRenderTexture.Get();
+	ThrowIfFailed(fd->commandAllocatorRenderTexture->Reset());
+	ThrowIfFailed(commandList->Reset(fd->commandAllocatorRenderTexture.Get(), fd->pipelineStateRenderTexture.Get()));
+	resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fd->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), 0, fd->rtvDescriptorSizeRenderTexture);
+	//float clearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f }; will correctly produce warnings CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
+	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	commandList->ClearDepthStencilView(fd->dsvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_COMMON, commandList);
+	ThrowIfFailed(commandList->Close());
+	ID3D12CommandList* ppCommandLists[] = { commandList };
+
+	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 }

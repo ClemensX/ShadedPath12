@@ -35,11 +35,17 @@ public:
 	ComPtr<IDXGISwapChain3> swapChain;
 	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	float clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
-	static void createSyncPoint(FrameDataGeneral& f, ComPtr<ID3D12CommandQueue> queue);
-	static void waitForSyncPoint(FrameDataGeneral& f);
+	static void createSyncPoint(FrameDataGeneral* f, ComPtr<ID3D12CommandQueue> queue);
+	static void waitForSyncPoint(FrameDataGeneral* f);
 	// cretae sync point and wit for completion
-	void waitGPU(FrameDataGeneral& res, ComPtr<ID3D12CommandQueue> queue);
+	void waitGPU(FrameDataGeneral* res, ComPtr<ID3D12CommandQueue> queue);
 	void destroy(Pipeline* pipeline);
+
+	// render methods:
+
+	// copy background render texture to foreground window (possibly from different slots)
+	void copyRenderTexture2Window(FrameDataGeneral* fd_renderTexture, FrameDataGeneral* fd_swapChain);
+	void clearRenderTexture(FrameDataGeneral* fd);
 };
 
 // Frame data unrelated to a specific effect that needs to be unique for each slot
@@ -64,4 +70,11 @@ struct FrameDataGeneral {
 	ComPtr<ID3D12Resource> renderTargetRenderTexture;
 	ComPtr<ID3D12Resource> depthStencilRenderTexture;
 	ComPtr<ID3D12DescriptorHeap> dsvHeapRenderTexture;
+	ComPtr<ID3D12CommandAllocator> commandAllocatorRenderTexture;
+	ComPtr<ID3D12GraphicsCommandList> commandListRenderTexture;
+	ComPtr<ID3D12PipelineState> pipelineStateRenderTexture;
+	ComPtr<ID3D12RootSignature> rootSignatureRenderTexture;
+	HANDLE fenceEventRenderTexture;
+	ComPtr<ID3D12Fence> fenceRenderTexture;
+	UINT64 fenceValueRenderTexture;
 };
