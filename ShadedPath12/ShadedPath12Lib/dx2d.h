@@ -51,7 +51,7 @@ private:
 
 // per farme resources for this effect
 struct FrameDataD2D {
-private:
+public:
 	ComPtr<ID2D1Factory3> d2dFactory;
 	ComPtr<ID2D1Device2> d2dDevice;
 	ComPtr<ID2D1DeviceContext2> d2dDeviceContext;
@@ -60,6 +60,7 @@ private:
 	IDXGISurface* dxgiSurface = nullptr;
 	ID2D1RenderTarget* d2RenderTarget = nullptr;
 	ID3D11RenderTargetView* d2Rtv = nullptr;
+	ComPtr<ID2D1Bitmap1> d2dRenderTargetBitmap;
 
 	ID3D11Texture2D* textureCPU = nullptr;  // 2d texture used for reading bitmap data from GPU to CPU
 	IDWriteFactory* pDWriteFactory_;

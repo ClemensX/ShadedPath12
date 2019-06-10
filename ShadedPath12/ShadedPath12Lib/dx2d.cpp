@@ -6,6 +6,36 @@ void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_, FrameDataGeneral* fd_gen
 	this->dxGlobal = dxGlobal_;
 	this->fd_general = fd_general_;
 	auto config = pipeline->getPipelineConfig();
+	// wrap resources:
+	D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
+	ThrowIfFailed(fd_general->device11On12->CreateWrappedResource(
+		fd_general->renderTargetRenderTexture.Get(),
+		&d3d11Flags,
+		D3D12_RESOURCE_STATE_RENDER_TARGET,
+		D3D12_RESOURCE_STATE_PRESENT,
+		IID_PPV_ARGS(&fd_general->wrappedDx12Resource)
+	));
+
+	// Query the desktop's dpi settings, which will be used to create
+	// D2D's render targets.
+	float dpiX;
+	float dpiY;
+	fd->d2dFactory->GetDesktopDpi(&dpiX, &dpiY);
+	D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
+		D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+		D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+		dpiX,
+		dpiY
+	);
+	// Create a render target for D2D to draw directly to this back buffer.
+	ComPtr<IDXGISurface> surface;
+	ThrowIfFailed(fd_general->wrappedDx12Resource.As(&surface));
+	ThrowIfFailed(fd->d2dDeviceContext->CreateBitmapFromDxgiSurface(
+		surface.Get(),
+		&bitmapProperties,
+		&fd->d2dRenderTargetBitmap
+	));
+
 	// create d2d texture:
 	auto &desc = fd->desc;
 	desc.Width = config.backbufferWidth;
@@ -75,7 +105,9 @@ void Dx2D::copyTextureToCPUAndExport(string filename)
 
 ID2D1RenderTarget* Dx2D::getRenderTarget()
 {
+	//return fd->d2dRenderTargetBitmap.Get();
 	return fd->d2RenderTarget;
+	//return fd->d2dDeviceContext->GetTarget(fd->d2dRenderTargetBitmap.Get());
 }
 
 ID3D11RenderTargetView* Dx2D::getRenderTargetView()

@@ -77,4 +77,5 @@ struct FrameDataGeneral {
 	HANDLE fenceEventRenderTexture;
 	ComPtr<ID3D12Fence> fenceRenderTexture;
 	UINT64 fenceValueRenderTexture;
+	ComPtr<ID3D11Resource> wrappedDx12Resource;
 };
