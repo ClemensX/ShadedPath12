@@ -74,11 +74,17 @@ void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_, FrameDataGeneral* fd_gen
 	ThrowIfFailed(fd_general->device11->CreateTexture2D(&desc, NULL, &fd->textureCPU));
 
 	ThrowIfFailed(fd->texture->QueryInterface(&fd->dxgiSurface));
-	D2D1_RENDER_TARGET_PROPERTIES props =
+/*	D2D1_RENDER_TARGET_PROPERTIES props =
 		D2D1::RenderTargetProperties(
 			D2D1_RENDER_TARGET_TYPE_DEFAULT,
 			D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_IGNORE));
 	ThrowIfFailed(fd->d2dFactory->CreateDxgiSurfaceRenderTarget(fd->dxgiSurface, &props, &fd->d2RenderTarget));
+*/
+	D2D1_RENDER_TARGET_PROPERTIES props =
+		D2D1::RenderTargetProperties(
+			D2D1_RENDER_TARGET_TYPE_DEFAULT,
+			D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_IGNORE));
+	ThrowIfFailed(fd->d2dFactory->CreateDxgiSurfaceRenderTarget(surface.Get(), &props, &fd->d2RenderTarget));
 	// prepare DWrite factory
 	ThrowIfFailed(DWriteCreateFactory(
 		DWRITE_FACTORY_TYPE_SHARED,

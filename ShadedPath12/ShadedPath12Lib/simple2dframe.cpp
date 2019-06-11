@@ -91,12 +91,12 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	FrameDataD2D *fd = &afd->d2d_fd;
 	Dx2D *d2d = &afd->d2d;
 
-	dxGlobal.clearRenderTexture(&afd->fd_general);
+	//dxGlobal.clearRenderTexture(&afd->fd_general);
 	float col[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 	//afd->fd_general.deviceContext11->ClearRenderTargetView(d2d->getRenderTargetView(), col); // we should clear RT from dx12 part
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
 	afd->fd_general.device11On12->AcquireWrappedResources(afd->fd_general.wrappedDx12Resource.GetAddressOf(), 1);
-	//fd->d2dDeviceContext->SetTarget(fd->d2dRenderTargetBitmap.Get());
+	fd->d2dDeviceContext->SetTarget(fd->d2dRenderTargetBitmap.Get());
 	//fd->d2dRenderTargetBitmap->GetFactory()
 	//fd->d2dDeviceContext->GetTarget()
 
@@ -150,7 +150,7 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	redBrush->Release();
 	//d2d->copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
 	//cout << "  END draw() for frame: " << frame->absFrameNumber << " slot" << frame->slot << endl;
-	d2d->drawStatisticsOverlay(frame, pipeline);
+	//d2d->drawStatisticsOverlay(frame, pipeline);
 	afd->fd_general.device11On12->ReleaseWrappedResources(afd->fd_general.wrappedDx12Resource.GetAddressOf(), 1);
 	// Flush to submit the 11 command list to the shared command queue.
 	fd->d2dDeviceContext->Flush();
