@@ -69,7 +69,7 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 {
 	while (!pipeline->isShutdown()) {
 		auto frameNum = pipeline->getNextFrameNumber();
-		LogF("Pipeline::runFrameSlot " << frameNum << endl);
+		//LogF("Pipeline::runFrameSlot " << frameNum << endl);
 		// if next line is commentd out we see garbled text because of multile threads writing
 		//cout << "run frame slot " << slot << " frame " << frameNum << endl;
 		frame->renderStartTime = chrono::high_resolution_clock::now();
@@ -77,13 +77,14 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 		frame->slot = slot;
 		frame->frameData = pipeline->afManager.getAppDataForSlot(slot);
 		// let application draw:
-//		pipeline->drawCallback(frame, pipeline, pipeline->applicationFrameData);
+		
+		pipeline->drawCallback(frame, pipeline, pipeline->applicationFrameData);
 		// frame now considered processed
 		// call synchronized present method
 		{
 			unique_lock<mutex> lock(pipeline->appSyncMutex);
 			pipeline->inSyncCode = true;
-			pipeline->drawCallback(frame, pipeline, pipeline->applicationFrameData);
+			//pipeline->drawCallback(frame, pipeline, pipeline->applicationFrameData);
 			if (frame->absFrameNumber < pipeline->last_processed) {
 				// received an out-of-order frame: discard
 				pipeline->skipped++;

@@ -77,7 +77,8 @@ void Simple2dFrame::presentFrame(Frame* frame, Pipeline* pipeline) {
 
 	// copy frame to HD
 	if (isAutomatedTestMode || frame->absFrameNumber % 10000 == 0) {
-		af_swapChain->d2d.copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
+		// TODO beware of sync problems:
+		//af_swapChain->d2d.copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
 	}
 }
 
@@ -192,5 +193,7 @@ void Simple2dFrame::stop() {
 	pipeline.shutdown();
 	pipeline.waitUntilShutdown();
 	Log("Simple2dFrame and pipeline stopped\n");
+	LogF("Simple2dFrame and pipeline stopped\n");
 	Log(s2w(pipeline.getStatistics()));
+	LogF(s2w(pipeline.getStatistics()));
 }

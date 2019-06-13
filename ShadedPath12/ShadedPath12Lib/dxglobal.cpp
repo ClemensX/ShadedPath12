@@ -356,6 +356,9 @@ void DXGlobal::waitForSyncPoint(FrameDataGeneral* f)
 	}
 	if (completed <= f->fenceValue)
 	{
+		if (completed < (f->fenceValue - 1)) {
+			LogF("kaputt ");
+		}
 		WaitForSingleObject(f->fenceEvent, INFINITE);
 	}
 	else {
@@ -383,7 +386,7 @@ void DXGlobal::copyRenderTexture2Window(FrameDataGeneral* fd_renderTexture, Fram
 	// hwnd RT in state _COMMON or _PRESENT
 	// texture in state _RENDER_TARGET
 	// wait for last frame with this index to be finished:
-	waitGPU(fd_swapChain, commandQueue);
+	//waitGPU(fd_swapChain, commandQueue);  DEADLOCK not allowed to wait in syncronized code
 	// prepare command
 	ID3D12GraphicsCommandList* commandList = fd_swapChain->commandList.Get();
 	ThrowIfFailed(fd_swapChain->commandAllocator->Reset());
