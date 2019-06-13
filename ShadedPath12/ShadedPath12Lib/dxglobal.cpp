@@ -148,6 +148,7 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 		&CD3DX12_CLEAR_VALUE(DXGI_FORMAT_R8G8B8A8_UNORM, clearColor),
 		IID_PPV_ARGS(&fd->renderTargetRenderTexture)
 	);
+	NAME_D3D12_OBJECT_SUFF(fd->renderTargetRenderTexture, i);
 
 	resourceStateHelper->add(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 	// create the render target view from the heap desc and render texture:
@@ -413,7 +414,7 @@ void DXGlobal::clearRenderTexture(FrameDataGeneral* fd)
 	//float clearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f }; will correctly produce warnings CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
 	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(fd->dsvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-	resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_COMMON, commandList);
+	resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
 	ThrowIfFailed(commandList->Close());
 	ID3D12CommandList* ppCommandLists[] = { commandList };
 

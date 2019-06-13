@@ -12,7 +12,7 @@ void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_, FrameDataGeneral* fd_gen
 		fd_general->renderTargetRenderTexture.Get(),
 		&d3d11Flags,
 		D3D12_RESOURCE_STATE_RENDER_TARGET,
-		D3D12_RESOURCE_STATE_PRESENT,
+		D3D12_RESOURCE_STATE_RENDER_TARGET,
 		IID_PPV_ARGS(&fd_general->wrappedDx12Resource)
 	));
 
