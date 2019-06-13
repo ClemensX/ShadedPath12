@@ -91,7 +91,7 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	FrameDataD2D *fd = &afd->d2d_fd;
 	Dx2D *d2d = &afd->d2d;
 
-	//dxGlobal.clearRenderTexture(&afd->fd_general);
+	dxGlobal.clearRenderTexture(&afd->fd_general);
 	float col[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 	//afd->fd_general.deviceContext11->ClearRenderTargetView(d2d->getRenderTargetView(), col); // we should clear RT from dx12 part
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
@@ -107,6 +107,9 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	D2D1::ColorF wh(1, 1, 1, 1);  // fully opaque white
 	D2D1::ColorF black(0, 0, 0, 1);  // fully opaque black
 	auto d2RenderTarget = d2d->getRenderTarget();
+	//ID2D1Image* d2RenderTarget;
+	//fd->d2dDeviceContext->GetTarget(&d2RenderTarget);
+	//d2RenderTarget->
 	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(red, &redBrush));
 	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(wh, &whiteBrush));
 
@@ -145,15 +148,17 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	);
 
 	ThrowIfFailed(d2RenderTarget->EndDraw());
+	//d2d->copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
+	//cout << "  END draw() for frame: " << frame->absFrameNumber << " slot" << frame->slot << endl;
+	d2d->drawStatisticsOverlay(frame, pipeline);
+	afd->fd_general.device11On12->ReleaseWrappedResources(afd->fd_general.wrappedDx12Resource.GetAddressOf(), 1);
+	// Flush to submit the 11 command list to the shared command queue.
+	//ThrowIfFailed(fd->d2dDeviceContext->Flush());
+	//////fd->d2dDeviceContext->Flush();
+	afd->fd_general.deviceContext11->Flush();
 	pTextFormat_->Release();
 	whiteBrush->Release();
 	redBrush->Release();
-	//d2d->copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
-	//cout << "  END draw() for frame: " << frame->absFrameNumber << " slot" << frame->slot << endl;
-	//d2d->drawStatisticsOverlay(frame, pipeline);
-	afd->fd_general.device11On12->ReleaseWrappedResources(afd->fd_general.wrappedDx12Resource.GetAddressOf(), 1);
-	// Flush to submit the 11 command list to the shared command queue.
-	fd->d2dDeviceContext->Flush();
 }
 
 void Simple2dFrame::runTest() {

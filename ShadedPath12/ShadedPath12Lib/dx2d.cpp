@@ -83,7 +83,7 @@ void Dx2D::init(DXGlobal* dxGlobal_, FrameDataD2D* fd_, FrameDataGeneral* fd_gen
 	D2D1_RENDER_TARGET_PROPERTIES props =
 		D2D1::RenderTargetProperties(
 			D2D1_RENDER_TARGET_TYPE_DEFAULT,
-			D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_IGNORE));
+			D2D1::PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM, D2D1_ALPHA_MODE_IGNORE));
 	ThrowIfFailed(fd->d2dFactory->CreateDxgiSurfaceRenderTarget(surface.Get(), &props, &fd->d2RenderTarget));
 	// prepare DWrite factory
 	ThrowIfFailed(DWriteCreateFactory(
