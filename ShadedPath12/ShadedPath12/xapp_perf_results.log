@@ -1,0 +1,7 @@
+ctrl-F5 run without debug on Release:
+Synchronized call: Draw() and PresentFrame() in sync block:
+created 203844 frames with average [microseconds] to render: 3207 tot FPS: 933 skipped 5
+
+only PresentFrame() snychronized, Draw() runs in threads:
+created 207546 frames with average [microseconds] to render: 1009 tot FPS: 2850 skipped 8190
+
