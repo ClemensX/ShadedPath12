@@ -1,9 +1,10 @@
-# ShadedPath12 Architecture (branch master2)
-DirectX 12 Framework and Applications for Oculus Rift
+# Architecture (branch master2)
+
+### Application and Framework Initialization
 
 ![Initialization](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/ClemensX/ShadedPath12/master2/README_ARCH.md&idx=0)
 
-### Application and Framework Initialization
+<details><summary></summary>
 ```plantuml
 @startuml
 |Application|
@@ -61,3 +62,4 @@ DirectX 12 Framework and Applications for Oculus Rift
     on wrapped DX12 background texture;
 @enduml
 ```
+</details>
