@@ -8,6 +8,11 @@ struct AppFrameData : AppFrameDataBase
 	FrameDataGeneral fd_general;
 	FrameDataD2D d2d_fd;
 	Dx2D d2d;
+
+	// Inherited via AppFrameDataBase
+	virtual FrameDataGeneral* getFrameDataGeneral() override {
+		return &fd_general;
+	};
 };
 
 

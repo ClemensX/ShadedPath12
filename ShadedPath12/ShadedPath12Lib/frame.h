@@ -3,6 +3,7 @@
 struct AppFrameDataBase
 {
 	virtual ~AppFrameDataBase() {};
+	virtual FrameDataGeneral* getFrameDataGeneral() = 0;
 };
 
 // manage app frame data

@@ -376,18 +376,23 @@ void DXGlobal::destroy(Pipeline *pipeline)
 {
 	auto conf = pipeline->getPipelineConfig();
 	for (int i = 0; i < conf.getFrameBufferSize(); i++) {
-	AppFrameData* af = (AppFrameData*)pipeline->afManager.getAppDataForSlot(i);
-		waitGPU(&af->fd_general, commandQueue);
+	AppFrameDataBase* af = pipeline->afManager.getAppDataForSlot(i);
+		waitGPU(af->getFrameDataGeneral(), commandQueue);
 	}
 }
 
-void DXGlobal::copyRenderTexture2Window(FrameDataGeneral* fd_renderTexture, FrameDataGeneral* fd_swapChain)
+void DXGlobal::present2Window(Pipeline* pipeline, Frame* frame)
 {
 	// hwnd RT in state _COMMON or _PRESENT
 	// texture in state _RENDER_TARGET
 	// wait for last frame with this index to be finished:
 	//waitGPU(fd_swapChain, commandQueue);  DEADLOCK not allowed to wait in syncronized code
-	// prepare command
+
+	// we have to copy the render texture of this slot to the current back buffer render target:
+	FrameDataGeneral* fd_renderTexture = pipeline->afManager.getAppDataForSlot(frame->slot)->getFrameDataGeneral();
+	int slot = swapChain->GetCurrentBackBufferIndex();
+	FrameDataGeneral* fd_swapChain = pipeline->afManager.getAppDataForSlot(slot)->getFrameDataGeneral();
+
 	ID3D12GraphicsCommandList* commandList = fd_swapChain->commandList.Get();
 	ThrowIfFailed(fd_swapChain->commandAllocator->Reset());
 	ThrowIfFailed(commandList->Reset(fd_swapChain->commandAllocator.Get(), fd_swapChain->pipelineState.Get()));
@@ -402,6 +407,7 @@ void DXGlobal::copyRenderTexture2Window(FrameDataGeneral* fd_renderTexture, Fram
 	ID3D12CommandList* ppCommandLists[] = { commandList };
 
 	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	ThrowIfFailedWithDevice(swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), device.Get());
 }
 
 void DXGlobal::clearRenderTexture(FrameDataGeneral* fd)
@@ -414,7 +420,7 @@ void DXGlobal::clearRenderTexture(FrameDataGeneral* fd)
 	ThrowIfFailed(commandList->Reset(fd->commandAllocatorRenderTexture.Get(), fd->pipelineStateRenderTexture.Get()));
 	resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fd->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), 0, fd->rtvDescriptorSizeRenderTexture);
-	//float clearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f }; will correctly produce warnings CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
+	//float clearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f }; //will correctly produce warnings CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
 	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(fd->dsvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
@@ -422,4 +428,19 @@ void DXGlobal::clearRenderTexture(FrameDataGeneral* fd)
 	ID3D12CommandList* ppCommandLists[] = { commandList };
 
 	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+}
+
+void DXGlobal::prepare2DRendering(Frame* frame, Pipeline* pipeline, FrameDataD2D* fd2d)
+{
+	FrameDataGeneral* fd = pipeline->afManager.getAppDataForSlot(frame->slot)->getFrameDataGeneral();
+	fd->device11On12->AcquireWrappedResources(fd->wrappedDx12Resource.GetAddressOf(), 1);
+	fd2d->d2dDeviceContext->SetTarget(fd2d->d2dRenderTargetBitmap.Get());
+}
+
+void DXGlobal::end2DRendering(Frame* frame, Pipeline* pipeline, FrameDataD2D* fd2d)
+{
+	FrameDataGeneral* fd = pipeline->afManager.getAppDataForSlot(frame->slot)->getFrameDataGeneral();
+	fd->device11On12->ReleaseWrappedResources(fd->wrappedDx12Resource.GetAddressOf(), 1);
+	// Flush to submit the 11 command list to the shared command queue.
+	fd->deviceContext11->Flush();
 }

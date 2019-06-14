@@ -42,38 +42,13 @@ void Simple2dFrame::init(HWND hwnd) {
 
 void Simple2dFrame::presentFrame(Frame* frame, Pipeline* pipeline) {
 	//cout << "present frame slot " << frame->slot << " frame " << frame->absFrameNumber << endl;
-	AppFrameData* af_renderTexture = (AppFrameData*)pipeline->afManager.getAppDataForSlot(frame->slot);
-	// we need to get the app data for the current back buffer:
-	int slot = dxGlobal.swapChain->GetCurrentBackBufferIndex();
-	AppFrameData* af_swapChain = (AppFrameData*)pipeline->afManager.getAppDataForSlot(slot);
 	if (isAutomatedTestMode) {
 		if (frame->absFrameNumber >= (FRAME_COUNT - 1)) {
 			//cout << "pipeline should shutdown" << endl;
 			pipeline->shutdown();
 		}
 	}
-	// we have to copy the render texture of this slot to the current back buffer render target:
-	dxGlobal.copyRenderTexture2Window(&af_renderTexture->fd_general, &af_swapChain->fd_general);
-
-	//// wait for last frame with this index to be finished:
-	//dxGlobal.waitGPU(&af_swapChain->fd_general, dxGlobal.commandQueue);
-	//// d3d12 present:
-	//ID3D12GraphicsCommandList* commandList = af_swapChain->fd_general.commandList.Get();
-	//ThrowIfFailed(af_swapChain->fd_general.commandAllocator->Reset());
-	//ThrowIfFailed(commandList->Reset(af_swapChain->fd_general.commandAllocator.Get(), af_swapChain->fd_general.pipelineState.Get()));
-	//auto resourceStateHelper = dxGlobal.resourceStateHelper;
-	//resourceStateHelper->toState(af_swapChain->fd_general.renderTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
-	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(af_swapChain->fd_general.rtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, af_swapChain->fd_general.rtvDescriptorSize);
-	//commandList->ClearRenderTargetView(rtvHandle, dxGlobal.clearColor, 0, nullptr);
-	//commandList->ClearDepthStencilView(af_swapChain->fd_general.dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-	//resourceStateHelper->toState(af_swapChain->fd_general.renderTarget.Get(), D3D12_RESOURCE_STATE_COMMON, commandList);
-	//ThrowIfFailed(commandList->Close());
-	//ID3D12CommandList* ppCommandLists[] = { commandList };
-
-	//dxGlobal.commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-
-	ThrowIfFailedWithDevice(dxGlobal.swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), dxGlobal.device.Get());
-
+	dxGlobal.present2Window(pipeline, frame);
 
 	// copy frame to HD
 	if (isAutomatedTestMode || frame->absFrameNumber % 10000 == 0) {
@@ -93,13 +68,8 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	Dx2D *d2d = &afd->d2d;
 
 	dxGlobal.clearRenderTexture(&afd->fd_general);
-	float col[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-	//afd->fd_general.deviceContext11->ClearRenderTargetView(d2d->getRenderTargetView(), col); // we should clear RT from dx12 part
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
-	afd->fd_general.device11On12->AcquireWrappedResources(afd->fd_general.wrappedDx12Resource.GetAddressOf(), 1);
-	fd->d2dDeviceContext->SetTarget(fd->d2dRenderTargetBitmap.Get());
-	//fd->d2dRenderTargetBitmap->GetFactory()
-	//fd->d2dDeviceContext->GetTarget()
+	dxGlobal.prepare2DRendering(frame, pipeline, fd);
 
 	// create brush
 	ID2D1SolidColorBrush* whiteBrush = nullptr;
@@ -108,9 +78,6 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	D2D1::ColorF wh(1, 1, 1, 1);  // fully opaque white
 	D2D1::ColorF black(0, 0, 0, 1);  // fully opaque black
 	auto d2RenderTarget = d2d->getRenderTarget();
-	//ID2D1Image* d2RenderTarget;
-	//fd->d2dDeviceContext->GetTarget(&d2RenderTarget);
-	//d2RenderTarget->
 	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(red, &redBrush));
 	ThrowIfFailed(d2RenderTarget->CreateSolidColorBrush(wh, &whiteBrush));
 
@@ -134,8 +101,6 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 
 	// draw to texture:
 	d2RenderTarget->BeginDraw();
-	//d2RenderTarget->Clear(black);
-	//d2RenderTarget->Clear(NULL);
 	auto desc = d2d->getTextureDesc();
 	d2RenderTarget->DrawRectangle(D2D1::RectF(50.0f, 50.0f, desc->Width - 50.0f, desc->Height - 50.0f), redBrush);
 	// fillrectangle produces memeory leaks and leads to device removed error
@@ -152,14 +117,10 @@ void Simple2dFrame::draw(Frame* frame, Pipeline* pipeline, void *data)
 	//d2d->copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
 	//cout << "  END draw() for frame: " << frame->absFrameNumber << " slot" << frame->slot << endl;
 	d2d->drawStatisticsOverlay(frame, pipeline);
-	afd->fd_general.device11On12->ReleaseWrappedResources(afd->fd_general.wrappedDx12Resource.GetAddressOf(), 1);
-	// Flush to submit the 11 command list to the shared command queue.
-	//ThrowIfFailed(fd->d2dDeviceContext->Flush());
-	//////fd->d2dDeviceContext->Flush();
-	afd->fd_general.deviceContext11->Flush();
 	pTextFormat_->Release();
 	whiteBrush->Release();
 	redBrush->Release();
+	dxGlobal.end2DRendering(frame, pipeline, fd);
 }
 
 void Simple2dFrame::runTest() {

@@ -1,4 +1,5 @@
 class Pipeline;
+class Frame;
 struct FrameDataGeneral;
 struct FrameDataD2D;
 // global DirectX parameters
@@ -44,8 +45,11 @@ public:
 	// render methods:
 
 	// copy background render texture to foreground window (possibly from different slots)
-	void copyRenderTexture2Window(FrameDataGeneral* fd_renderTexture, FrameDataGeneral* fd_swapChain);
+	// and present() the swap chain
+	void present2Window(Pipeline* pipeline, Frame *frame);
 	void clearRenderTexture(FrameDataGeneral* fd);
+	void prepare2DRendering(Frame* frame, Pipeline* pipeline, FrameDataD2D* fd2d);
+	void end2DRendering(Frame* frame, Pipeline* pipeline, FrameDataD2D* fd2d);
 };
 
 // Frame data unrelated to a specific effect that needs to be unique for each slot
