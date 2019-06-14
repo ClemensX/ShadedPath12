@@ -1,10 +1,10 @@
 # ShadedPath12 Architecture (branch master2)
 DirectX 12 Framework and Applications for Oculus Rift
 
-![Alt text](https://g.gravizo.com/source/overview?https%3A%2F%2Fraw.githubusercontent.com%2FClemensX%2FShadedPath12%2Fmaster2%2FREADME_ARCH.md)
-
+![Alt text](https://g.gravizo.com/source/init?https%3A%2F%2Fraw.githubusercontent.com%2FClemensX%2FShadedPath12%2Fmaster2%2FREADME_ARCH.md)
 <details> 
 <summary></summary>
+init
 @startuml
 |Application|
 |Pipeline|
@@ -60,6 +60,7 @@ DirectX 12 Framework and Applications for Oculus Rift
     :create Texture2D and SurfaceRenderTarget
     on wrapped DX12 background texture;
 @enduml
+init
 </details>
 
 ### Application and Framework Initialization
