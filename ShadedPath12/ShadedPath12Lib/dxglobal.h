@@ -72,6 +72,7 @@ struct FrameDataGeneral {
 	ComPtr<ID3D12DescriptorHeap> rtvHeapRenderTexture;  // Resource Target View Heap
 	UINT rtvDescriptorSizeRenderTexture;
 	ComPtr<ID3D12Resource> renderTargetRenderTexture;
+	ComPtr<ID3D12Resource> renderTargetRenderTextureCPU;
 	ComPtr<ID3D12Resource> depthStencilRenderTexture;
 	ComPtr<ID3D12DescriptorHeap> dsvHeapRenderTexture;
 	ComPtr<ID3D12CommandAllocator> commandAllocatorRenderTexture;

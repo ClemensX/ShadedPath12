@@ -150,6 +150,18 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 	);
 	NAME_D3D12_OBJECT_SUFF(fd->renderTargetRenderTexture, i);
 
+	// create a CPU accessible texture for reading the background render texture 
+	// look here: https://www.gamedev.net/forums/topic/679771-copy-texture-from-back-buffer-in-directx12/
+	device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK),
+		D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES,
+		&CD3DX12_RESOURCE_DESC::Buffer(config.backbufferWidth, D3D12_RESOURCE_FLAG_NONE),
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		nullptr,
+		IID_PPV_ARGS(&fd->renderTargetRenderTextureCPU)
+	);
+	NAME_D3D12_OBJECT_SUFF(fd->renderTargetRenderTexture, i);
+
 	resourceStateHelper->add(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 	// create the render target view from the heap desc and render texture:
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fd->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
