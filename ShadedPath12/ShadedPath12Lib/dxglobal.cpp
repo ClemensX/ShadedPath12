@@ -313,13 +313,13 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 	ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, fd->commandAllocator.Get(), fd->pipelineState.Get(), IID_PPV_ARGS(&fd->commandList)));
 	NAME_D3D12_OBJECT_SUFF(fd->commandList, i);
 	fd->commandList->Close();
-	ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fd->fence)));
-	NAME_D3D12_OBJECT_SUFF(fd->fence, i);
-	fd->fenceValue = 0;
-	fd->fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-	if (fd->fenceEvent == nullptr) {
-		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-	}
+	//ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fd->fence)));
+	//NAME_D3D12_OBJECT_SUFF(fd->fence, i);
+	//fd->fenceValue = 0;
+	//fd->fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+	//if (fd->fenceEvent == nullptr) {
+	//	ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+	//}
 }
 
 void DXGlobal::initSwapChain(Pipeline* pipeline, HWND hwnd)
@@ -350,15 +350,15 @@ void DXGlobal::initSwapChain(Pipeline* pipeline, HWND hwnd)
 
 void DXGlobal::createSyncPoint(FrameDataGeneral* f, ComPtr<ID3D12CommandQueue> queue)
 {
-	UINT64 threadFenceValue = InterlockedIncrement(&f->fenceValue);
-	ThrowIfFailed(queue->Signal(f->fence.Get(), threadFenceValue));
-	ThrowIfFailed(f->fence->SetEventOnCompletion(threadFenceValue, f->fenceEvent));
+	UINT64 threadFenceValue = InterlockedIncrement(&f->fenceValueRenderTexture);
+	ThrowIfFailed(queue->Signal(f->fenceRenderTexture.Get(), threadFenceValue));
+	ThrowIfFailed(f->fenceRenderTexture->SetEventOnCompletion(threadFenceValue, f->fenceEventRenderTexture));
 }
 
 void DXGlobal::waitForSyncPoint(FrameDataGeneral* f)
 {
 	//	int frameIndex = xapp->getCurrentBackBufferIndex();
-	UINT64 completed = f->fence->GetCompletedValue();
+	UINT64 completed = f->fenceRenderTexture->GetCompletedValue();
 	//Log("ev start " << f.frameIndex << " " << completed << " " << f.fenceValue << endl);
 	if (completed == -1) {
 		Error(L"fence.GetCompletedValue breakdown");
@@ -366,12 +366,12 @@ void DXGlobal::waitForSyncPoint(FrameDataGeneral* f)
 	if (completed > 100000) {
 		//Log("ev MAX " << completed << " " << f.fenceValue << endl);
 	}
-	if (completed <= f->fenceValue)
+	if (completed <= f->fenceValueRenderTexture)
 	{
-		if (completed < (f->fenceValue - 1)) {
+		if (completed < (f->fenceValueRenderTexture - 1)) {
 			LogF("kaputt ");
 		}
-		WaitForSingleObject(f->fenceEvent, INFINITE);
+		WaitForSingleObject(f->fenceEventRenderTexture, INFINITE);
 	}
 	else {
 		//Log("ev " << completed << " " << f.fenceValue << endl);

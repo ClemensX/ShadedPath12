@@ -66,9 +66,6 @@ struct FrameDataGeneral {
 	ComPtr<ID3D12GraphicsCommandList> commandList;
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
-	HANDLE fenceEvent;
-	ComPtr<ID3D12Fence> fence;
-	UINT64 fenceValue;
 	ComPtr<ID3D12DescriptorHeap> rtvHeapRenderTexture;  // Resource Target View Heap
 	UINT rtvDescriptorSizeRenderTexture;
 	ComPtr<ID3D12Resource> renderTargetRenderTexture;
