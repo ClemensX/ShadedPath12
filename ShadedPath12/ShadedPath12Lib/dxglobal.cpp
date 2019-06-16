@@ -150,18 +150,6 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 	);
 	NAME_D3D12_OBJECT_SUFF(fd->renderTargetRenderTexture, i);
 
-	// create a CPU accessible texture for reading the background render texture 
-	// look here: https://www.gamedev.net/forums/topic/679771-copy-texture-from-back-buffer-in-directx12/
-	device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK),
-		D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES,
-		&CD3DX12_RESOURCE_DESC::Buffer(config.backbufferWidth, D3D12_RESOURCE_FLAG_NONE),
-		D3D12_RESOURCE_STATE_COPY_DEST,
-		nullptr,
-		IID_PPV_ARGS(&fd->renderTargetRenderTextureCPU)
-	);
-	NAME_D3D12_OBJECT_SUFF(fd->renderTargetRenderTexture, i);
-
 	resourceStateHelper->add(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 	// create the render target view from the heap desc and render texture:
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fd->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
@@ -455,4 +443,53 @@ void DXGlobal::end2DRendering(Frame* frame, Pipeline* pipeline, FrameDataD2D* fd
 	fd->device11On12->ReleaseWrappedResources(fd->wrappedDx12Resource.GetAddressOf(), 1);
 	// Flush to submit the 11 command list to the shared command queue.
 	fd->deviceContext11->Flush();
+}
+
+void DXGlobal::copyTextureToCPUAndExport(Frame* frame, Pipeline* pipeline, string filename)
+{
+	//Log("copy D3D12 frame to CPU: " << frame->absFrameNumber << endl);
+	FrameDataGeneral* fd = pipeline->afManager.getAppDataForSlot(frame->slot)->getFrameDataGeneral();
+	// Get resource desc and footprint
+	D3D12_RESOURCE_DESC texDesc = fd->renderTargetRenderTexture->GetDesc();
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint[1];
+	UINT rowCounts[1];
+	uint64_t rowSize;
+	uint64_t size;
+	device->GetCopyableFootprints(&texDesc, 0, 1, 0, &footprint[0], &rowCounts[0], &rowSize, &size);
+	// create CPU accessible buffer
+	ComPtr<ID3D12Resource> bufferRenderTextureCPU;
+	device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK),
+		D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES,
+		&CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE),
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		nullptr,
+		IID_PPV_ARGS(&bufferRenderTextureCPU)
+	);
+	NAME_D3D12_OBJECT(bufferRenderTextureCPU);
+
+	waitGPU(fd, commandQueue);
+	// copy texture to buffer
+	D3D12_TEXTURE_COPY_LOCATION srcLoc = { fd->renderTargetRenderTexture.Get(), D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX, 0 };
+	D3D12_TEXTURE_COPY_LOCATION dstLoc = { bufferRenderTextureCPU.Get(), D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT, footprint[0] };
+	ID3D12GraphicsCommandList* commandList = fd->commandListRenderTexture.Get();
+	ThrowIfFailed(fd->commandAllocatorRenderTexture->Reset());
+	ThrowIfFailed(commandList->Reset(fd->commandAllocatorRenderTexture.Get(), fd->pipelineStateRenderTexture.Get()));
+	resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, commandList);
+	commandList->CopyTextureRegion(&dstLoc, 0, 0, 0, &srcLoc, nullptr);
+	resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+	ThrowIfFailed(commandList->Close());
+	ID3D12CommandList* ppCommandLists[] = { commandList };
+
+	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	waitGPU(fd, commandQueue);
+	void* mem;
+	// specify range instead of nullptr to Map() to avoid inefficency warning
+	D3D12_RANGE range;
+	range.Begin = 0;
+	range.End = size;
+	ThrowIfFailed(bufferRenderTextureCPU->Map(0, &range, &mem));
+	Dx2D d2d;
+	d2d.exportBMP(mem, footprint[0].Footprint.Height, footprint[0].Footprint.Width, footprint[0].Footprint.RowPitch, footprint[0].Footprint.Format, filename);
+	bufferRenderTextureCPU->Unmap(0, nullptr);
 }

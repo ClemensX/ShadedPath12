@@ -28,6 +28,8 @@ public:
 	void init();
 	void initFrameBufferResources(FrameDataGeneral* fd, FrameDataD2D* fd_d2d, int frameBufferNumber, Pipeline* pipeline);
 	void initSwapChain(Pipeline* pipeline, HWND hwnd);
+	// return true if there is a windows and swap chain available for output
+	bool isOutputWindowAvailable() { return swapChain != nullptr; };
 	DXGlobalParam config;
 	ComPtr<IDXGIFactory4> factory;
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
@@ -50,6 +52,9 @@ public:
 	void clearRenderTexture(FrameDataGeneral* fd);
 	void prepare2DRendering(Frame* frame, Pipeline* pipeline, FrameDataD2D* fd2d);
 	void end2DRendering(Frame* frame, Pipeline* pipeline, FrameDataD2D* fd2d);
+	// copy texture from GPU mem to CPU mem and export it as BMP file
+	// this is slow. not intended to be called every frame
+	void copyTextureToCPUAndExport(Frame* frame, Pipeline* pipeline, string filename);
 };
 
 // Frame data unrelated to a specific effect that needs to be unique for each slot
@@ -69,7 +74,6 @@ struct FrameDataGeneral {
 	ComPtr<ID3D12DescriptorHeap> rtvHeapRenderTexture;  // Resource Target View Heap
 	UINT rtvDescriptorSizeRenderTexture;
 	ComPtr<ID3D12Resource> renderTargetRenderTexture;
-	ComPtr<ID3D12Resource> renderTargetRenderTextureCPU;
 	ComPtr<ID3D12Resource> depthStencilRenderTexture;
 	ComPtr<ID3D12DescriptorHeap> dsvHeapRenderTexture;
 	ComPtr<ID3D12CommandAllocator> commandAllocatorRenderTexture;

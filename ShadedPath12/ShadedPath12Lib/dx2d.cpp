@@ -205,6 +205,10 @@ unsigned char* Dx2D::createBitmapInfoHeader(int height, int width) {
 
 Dx2D::~Dx2D()
 {
+	if (fd == nullptr) {
+		// nothing to cleanup 
+		return;
+	}
 	if (fd->texture != nullptr) {
 		fd->texture->Release();
 	}

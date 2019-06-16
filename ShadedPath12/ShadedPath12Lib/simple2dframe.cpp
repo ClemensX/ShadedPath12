@@ -48,12 +48,16 @@ void Simple2dFrame::presentFrame(Frame* frame, Pipeline* pipeline) {
 			pipeline->shutdown();
 		}
 	}
-	dxGlobal.present2Window(pipeline, frame);
 
 	// copy frame to HD
 	if (isAutomatedTestMode || frame->absFrameNumber % 10000 == 0) {
 		// TODO beware of sync problems:
 		//af_swapChain->d2d.copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
+		dxGlobal.copyTextureToCPUAndExport(frame, pipeline, "pic" + to_string(frame->absFrameNumber) + ".bmp");
+	}
+
+	if (dxGlobal.isOutputWindowAvailable()) {
+		dxGlobal.present2Window(pipeline, frame);
 	}
 }
 
