@@ -14,11 +14,16 @@ struct BillboardElement {
 	XMFLOAT2 size; // x = width, y = height
 };
 
-class BillboardEffectAppData : EffectAppData {
+class BillboardEffectAppData : public EffectAppData {
+public:
+	unordered_map<string, vector<BillboardElement>> billboards;
+	~BillboardEffectAppData() override { };
 };
 
 // base class for Per Frame Data
-class BillboardEffectFrameData :  EffectFrameData {
+class BillboardEffectFrameData :  public EffectFrameData {
+public:
+	~BillboardEffectFrameData() override {};
 };
 
 class Billboard : Effect {
@@ -34,15 +39,32 @@ public:
 	};
 
 	void init();
-	// add billboard to the scene, billboardEl will be copied and order number will be returned
+	// add billboard to the scene, billboardElement will be copied and order number will be returned
+	// order numbers are counted per texture and start with 0
 	// use get() to get/change existing billboard
 	size_t add(string texture_id, BillboardElement billboardEl);
+	// get billboard with order number order_num for texture_id
 	BillboardElement& get(string texture_id, int order_num);
 	void update();
 	void draw();
 	void drawAll();
 	void destroy();
-	unordered_map<string, vector<BillboardElement>> billboards;
+
+	// Inherited via Effect
+	BillboardEffectAppData* getInactiveAppDataSet() override
+	{
+		return &appDataSets[currentInactiveAppDataSet];
+	};
+	virtual EffectAppData* getActiveAppDataSet() override
+	{
+		return nullptr;
+	}
+	virtual void activateAppDataSet() override
+	{
+		currentActiveAppDataSet = (currentActiveAppDataSet + 1) % 2;
+		currentInactiveAppDataSet = (currentInactiveAppDataSet + 1) % 2;
+	}
+	~Billboard() {};
 
 private:
 	ComPtr<ID3D12PipelineState> pipelineState;
@@ -64,23 +86,9 @@ private:
 	ComPtr<ID3D12Resource> vertexBufferX;
 	ComPtr<ID3D12Resource> vertexBufferUploadX;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
-	~Billboard();
 	BillboardEffectAppData appDataSets[2];
 	int currentInactiveAppDataSet = 0;
 	int currentActiveAppDataSet = -1;
-	// Inherited via Effect
-	virtual BillboardEffectAppData* getInactiveAppDataSet() override
-	{
-		return &appDataSets[currentInactiveAppDataSet];
-	};
-	}
-	virtual BillboardEffectAppData* getActiveAppDataSet() override
-	{
-		return nullptr;
-	}
-	virtual void activateAppDataSet() override
-	{
-	}
 	//UINT numberOfVertices = 0;
 };
 

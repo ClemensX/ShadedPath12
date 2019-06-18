@@ -1,11 +1,13 @@
 // base class for App Data
 class EffectAppData {
-	virtual ~EffectAppData() = 0;
+public:
+	virtual ~EffectAppData() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors
 };
 
 // base class for Per Frame Data
 class EffectFrameData {
-	virtual ~EffectFrameData() = 0;
+public:
+	virtual ~EffectFrameData() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors
 };
 
 // base class for effects
@@ -27,6 +29,6 @@ public:
 	// returns nullptr if there is no active set yet
 	virtual void activateAppDataSet() = 0;
 
-	virtual ~Effect() = 0;
+	virtual ~Effect() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors
 
 };
