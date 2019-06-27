@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "emptyframes.h"
 #include "simple2dframe.h"
+#include "billboardapp.h"
 #include "PerfTest.h"
 
 // TODO now orchestrate frame creation in multiple tests
@@ -13,7 +14,9 @@ int main()
 {
 	//EmptyFrames emptyFrames;
 	//emptyFrames.runTest();
-	Simple2dFrame simple2dFrame;
-	simple2dFrame.runTest();
+	//Simple2dFrame simple2dFrame;
+	//simple2dFrame.runTest();
+	BillboardApp a;
+	a.runTest();
 }
 

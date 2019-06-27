@@ -120,6 +120,6 @@ TEST(TestNewEngine, Billboard) {
 	EXPECT_THROW(b.get("tex_01", 0), std::exception);
 	//auto v = b.get("tex_01", 0);
 	n1 = b.add("tex_01", be1);
-	EXPECT_EQ(0, n1);  // have we really restarted from 0?
+	EXPECT_EQ(0, n1);  // did we really restart from 0?
 	LogF("billboard finished" << endl);	//b.get()
 }

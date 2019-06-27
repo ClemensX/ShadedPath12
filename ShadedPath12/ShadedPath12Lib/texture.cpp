@@ -51,6 +51,59 @@ void TextureStore::init(XApp *a) {
 		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
 	}
 }
+void TextureStore::init(DXGlobal *a, Util* util) {
+	assert(dx == nullptr); // only single call allowed
+	dx = a;
+	DXGlobal* xapp = dx;
+	this->util = util;
+	// Create an empty root signature.
+	{
+		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+		rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		ComPtr<ID3DBlob> signature;
+		ComPtr<ID3DBlob> error;
+		ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
+		ThrowIfFailed(xapp->device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
+	}
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+	// Describe and create the graphics pipeline state object (PSO).
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+	psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
+	psoDesc.pRootSignature = rootSignature.Get();
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.DepthStencilState.DepthEnable = FALSE;
+	psoDesc.DepthStencilState.StencilEnable = FALSE;
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	psoDesc.NumRenderTargets = 1;
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	psoDesc.SampleDesc.Count = 1;
+	//ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
+#include "CompiledShaders/PostVS.h"
+//#include "CompiledShaders/PostPS.h"
+	// test shade library functions
+	//{
+	//D3DLoadModule() uses ID3D11Module
+	//ComPtr<ID3DBlob> vShader;
+	//ThrowIfFailed(D3DReadFileToBlob(L"", &vShader));
+	psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
+	ThrowIfFailed(xapp->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
+	ThrowIfFailed(xapp->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
+	ThrowIfFailed(xapp->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), pipelineState.Get(), IID_PPV_ARGS(&commandList)));
+	ThrowIfFailed(xapp->device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&updateFrameData.fence)));
+	updateFrameData.fence->SetName(L"fence_texture_update");
+	updateFrameData.fenceValue = 0;
+	updateFrameData.fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+	if (updateFrameData.fenceEvent == nullptr) {
+		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+	}
+}
 
 TextureInfo* TextureStore::getTexture(string id)
 {
@@ -78,16 +131,16 @@ void TextureStore::loadTexture(wstring filename, string id)
 
 	// find texture file, look in pak file first:
 	PakEntry *pakFileEntry = nullptr;
-	pakFileEntry = xapp->findFileInPak(filename.c_str());
+	pakFileEntry = util->findFileInPak(filename.c_str());
 	// try file system if not found in pak:
 	initialTexture.filename = filename; // TODO check: field not needed? only in this method? --> remove
 	if (pakFileEntry == nullptr) {
-		wstring binFile = xapp->findFile(filename.c_str(), XApp::TEXTURE);
+		wstring binFile = util->findFile(filename.c_str(), Util::TEXTURE);
 		texture->filename = binFile;
 		//initialTexture.filename = binFile;
-		xapp->readFile(texture->filename.c_str(), file_buffer, XApp::FileCategory::TEXTURE);
+		util->readFile(texture->filename.c_str(), file_buffer, Util::FileCategory::TEXTURE);
 	} else {
-		xapp->readFile(pakFileEntry, file_buffer, XApp::FileCategory::TEXTURE);
+		util->readFile(pakFileEntry, file_buffer, Util::FileCategory::TEXTURE);
 	}
 
 
@@ -99,14 +152,14 @@ void TextureStore::loadTexture(wstring filename, string id)
 	srvHeapDesc.NumDescriptors = 1;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	ThrowIfFailed(xapp->device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&texture->m_srvHeap)));
+	ThrowIfFailed(dx->device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&texture->m_srvHeap)));
 	NAME_D3D12_OBJECT(texture->m_srvHeap);
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle(texture->m_srvHeap->GetCPUDescriptorHandleForHeapStart());
 	//CD3DX12_CPU_DESCRIPTOR_HANDLE(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	CreateDDSTextureFromMemory(
-		xapp->device.Get(),
+		dx->device.Get(),
 		&file_buffer[0],
 		file_buffer.size(),
 		0,
@@ -152,7 +205,7 @@ void TextureStore::loadTexture(wstring filename, string id)
 	BufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 	BufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-	ThrowIfFailed(xapp->device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE,
+	ThrowIfFailed(dx->device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE,
 		&BufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr, IID_PPV_ARGS(&result.UploadBuffer)));
 
@@ -170,11 +223,11 @@ void TextureStore::loadTexture(wstring filename, string id)
 	ThrowIfFailed(commandList->Close());
 	ID3D12CommandList* ppCommandLists[] = { this->commandList.Get() };
 	
-	xapp->appWindow.commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	dx->commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
 	// Create synchronization objects and wait until assets have been uploaded to the GPU.
 	//Sleep(300);
-	EffectBase::createSyncPoint(updateFrameData, xapp->appWindow.commandQueue);
+	EffectBase::createSyncPoint(updateFrameData, dx->commandQueue);
 	EffectBase::waitForSyncPoint(updateFrameData);
 
 	//auto &f = frameData[frameIndex];

@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="applicationWindow.cpp" />
     <ClCompile Include="billboard.cpp" />
+    <ClCompile Include="billboardapp.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="dx2d.cpp" />
     <ClCompile Include="dxglobal.cpp" />
@@ -55,6 +56,7 @@
     <ClInclude Include="..\ShadedPath12\winmain.h" />
     <ClInclude Include="applicationWindow.h" />
     <ClInclude Include="billboard.h" />
+    <ClInclude Include="billboardapp.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="dds.h" />

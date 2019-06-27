@@ -79,6 +79,17 @@ FXMVECTOR reflectionVector
 //
 //extern VectorHelper vectorHelper;
 
+class PakEntry {
+public:
+	long len;    // file length in bytes
+	long offset; // offset in pak - will be transferred to absolute
+				 // position in pak file on save
+	string name; // directory entry - may contain fake folder names
+				 // 'sub/t.dds'
+	//ifstream *pakFile; // reference to pak file, stream should be open and ready to read at all times
+	wstring pakname; // we open and close the pak file for every read, so we store filename here
+};
+
 class Util {
 public:
 
@@ -117,6 +128,19 @@ public:
 	void updateKeyboardState();
 	bool keyDown(BYTE key);
 	bool anyKeyDown = false;
+	// asset handling
+	enum FileCategory { FX, TEXTURE, MESH, SOUND, TEXTUREPAK };
+	// find absolute filename for a name and category, defaults to display error dialog, returns empty filename if not found and errorIfNotFound is set to false,
+	// returns full file path if generateFilenameMode == true (use to create files)
+	wstring findFile(wstring filename, FileCategory cat, bool errorIfNotFound = true, bool generateFilenameMode = false);
+	wstring findFileForCreation(wstring filename, FileCategory cat) { return findFile(filename, cat, false, true); };
+	void readFile(wstring filename, vector<byte>& buffer, FileCategory cat);
+	void readFile(PakEntry* pakEntry, vector<byte>& buffer, FileCategory cat);
+	PakEntry* findFileInPak(wstring filename);
+	void initPakFiles();
+private:
+	// pak files:
+	unordered_map<string, PakEntry> pak_content;
 };
 
 // log events to memory

@@ -18,17 +18,6 @@ namespace Colors {
 	const XMFLOAT4 LightSteelBlue = { 0.69f, 0.77f, 0.87f, 1.0f };
 };
 
-class PakEntry {
-public:
-	long len;    // file length in bytes
-	long offset; // offset in pak - will be transferred to absolute
-				 // position in pak file on save
-	string name; // directory entry - may contain fake folder names
-				 // 'sub/t.dds'
-	//ifstream *pakFile; // reference to pak file, stream should be open and ready to read at all times
-	wstring pakname; // we open and close the pak file for every read, so we store filename here
-};
-
 class XAppBase
 {
 public:
