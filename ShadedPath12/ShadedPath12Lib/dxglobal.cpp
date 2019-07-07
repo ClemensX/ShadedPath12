@@ -493,3 +493,4 @@ void DXGlobal::copyTextureToCPUAndExport(Frame* frame, Pipeline* pipeline, strin
 	d2d.exportBMP(mem, footprint[0].Footprint.Height, footprint[0].Footprint.Width, footprint[0].Footprint.RowPitch, footprint[0].Footprint.Format, filename);
 	bufferRenderTextureCPU->Unmap(0, nullptr);
 }
+

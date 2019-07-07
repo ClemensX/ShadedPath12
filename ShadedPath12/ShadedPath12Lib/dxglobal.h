@@ -40,7 +40,7 @@ public:
 	float clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
 	static void createSyncPoint(FrameDataGeneral* f, ComPtr<ID3D12CommandQueue> queue);
 	static void waitForSyncPoint(FrameDataGeneral* f);
-	// cretae sync point and wit for completion
+	// create sync point and wit for completion
 	void waitGPU(FrameDataGeneral* res, ComPtr<ID3D12CommandQueue> queue);
 	void destroy(Pipeline* pipeline);
 

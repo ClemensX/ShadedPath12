@@ -30,5 +30,7 @@ public:
 	virtual void activateAppDataSet() = 0;
 
 	virtual ~Effect() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors
-
+protected:
+	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
+	DXManager dxmanager;
 };

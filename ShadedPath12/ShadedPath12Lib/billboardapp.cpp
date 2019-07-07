@@ -24,6 +24,7 @@ void BillboardApp::init(HWND hwnd) {
 	pipeline.init();
 	Log("pipeline initialized" << endl);
 	dxGlobal.init();
+	billboard.init(&dxGlobal);
 	if (hwnd != 0) {
 		dxGlobal.initSwapChain(&pipeline, hwnd);
 	}
@@ -37,11 +38,18 @@ void BillboardApp::init(HWND hwnd) {
 		FrameDataGeneral *fd_gen = &fd->fd_general;
 		dxGlobal.initFrameBufferResources(fd_gen, fd2d, i, &pipeline);
 		d2d->init(&dxGlobal, fd2d, fd_gen, &pipeline);
+		//billboard.initFrameBufferResources(fd_gen, fd2d, i, &pipeline);
 	}
 	// test texture packs:
 	util.initPakFiles();
 	textureStore.init(&dxGlobal, &util);
 	textureStore.loadTexture(L"dirt6_markings.dds", "markings");
+	// create effect application data:
+	//auto bdata = billboard.getInactiveAppDataSet();
+	BillboardElement be1{ {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, -1.0f, 0.0f}, {1.0f, 2.0f} }; // pos, normal, size
+	// add to inactive data set:
+	billboard.add("markings", be1);
+	//bdata->billboards.
 }
 
 void BillboardApp::presentFrame(Frame* frame, Pipeline* pipeline) {
