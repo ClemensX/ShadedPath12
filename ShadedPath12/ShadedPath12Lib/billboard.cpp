@@ -16,8 +16,9 @@ size_t Billboard::add(string texture_id, BillboardElement billboardEl) {
 #include "CompiledShaders/BillboardVS.h"
 #include "CompiledShaders/BillboardPS.h"
 
-void Billboard::init(DXGlobal* a) {
+void Billboard::init(DXGlobal* a, FrameDataBillboard* fd, FrameDataGeneral* fd_general_, Pipeline* pipeline) {
 	initialized = true;
+	dxGlobal = a;
 	// try to do all expensive operations like shader loading and PSO creation here
 	// Create the pipeline state, which includes compiling and loading shaders.
 	{
@@ -54,11 +55,11 @@ void Billboard::init(DXGlobal* a) {
 		//psoDesc.GS = { binShader_LinetextGS, sizeof(binShader_LinetextGS) };
 		psoDesc.PS = { binShader_BillboardPS, sizeof(binShader_BillboardPS) };
 		//xapp().device->CreateRootSignature(0, binShader_LinetextGS, sizeof(binShader_LinetextGS), IID_PPV_ARGS(&rootSignature));
-		ThrowIfFailed(a->device->CreateRootSignature(0, binShader_BillboardVS, sizeof(binShader_BillboardVS), IID_PPV_ARGS(&rootSignature)));
+		ThrowIfFailed(a->device->CreateRootSignature(0, binShader_BillboardVS, sizeof(binShader_BillboardVS), IID_PPV_ARGS(&fd->rootSignature)));
 		//rootSignature.Get()->SetName(L"Linetext_root_signature");
-		psoDesc.pRootSignature = rootSignature.Get();
-		ThrowIfFailed(a->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
-		pipelineState.Get()->SetName(L"state_billboard_init");
+		psoDesc.pRootSignature = fd->rootSignature.Get();
+		ThrowIfFailed(a->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&fd->pipelineState)));
+		fd->pipelineState.Get()->SetName(L"state_billboard_init");
 
 		////createConstantBuffer((UINT) sizeof(cbv), L"Billboard_cbv_resource");
 		// set cbv data:
@@ -88,19 +89,43 @@ void Billboard::init(DXGlobal* a) {
 			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
 		}
 	}
+***/
 	// init resources for update thread:
-	ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&updateCommandAllocator)));
-	ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, updateCommandAllocator.Get(), pipelineState.Get(), IID_PPV_ARGS(&updateCommandList)));
+	ThrowIfFailed(a->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&fd->updateCommandAllocator)));
+	ThrowIfFailed(a->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, fd->updateCommandAllocator.Get(), fd->pipelineState.Get(), IID_PPV_ARGS(&fd->updateCommandList)));
 	// Command lists are created in the recording state, but there is nothing
 	// to record yet. The main loop expects it to be closed, so close it now.
-	ThrowIfFailed(updateCommandList->Close());
-	// init fences:
-	//ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frameData[n].fence.GetAddressOf())));
-	ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&updateFrameData.fence)));
-	updateFrameData.fence->SetName(L"fence_Billboard_update");
-	updateFrameData.fenceValue = 0;
-	updateFrameData.fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-	if (updateFrameData.fenceEvent == nullptr) {
-		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+	ThrowIfFailed(fd->updateCommandList->Close());
+	// init fences: --> use from FrameDataGeneral
+	//ThrowIfFailed(a->device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&updateFrameData.fence)));
+	//updateFrameData.fence->SetName(L"fence_Billboard_update");
+	//updateFrameData.fenceValue = 0;
+	//updateFrameData.fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+	//if (updateFrameData.fenceEvent == nullptr) {
+	//	ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+	//}
+}
+
+void Billboard::draw(FrameDataGeneral* fd, FrameDataBillboard* fdb)
+{
+	Log("draw " << endl);
+	{
+		// test draw with chnaging background color:
+		// wait for last frame with this index to be finished:
+		dxGlobal->waitGPU(fd, dxGlobal->commandQueue);
+		// d3d12 present:
+		ID3D12GraphicsCommandList* commandList = fd->commandListRenderTexture.Get();
+		ThrowIfFailed(fd->commandAllocatorRenderTexture->Reset());
+		ThrowIfFailed(commandList->Reset(fd->commandAllocatorRenderTexture.Get(), fd->pipelineStateRenderTexture.Get()));
+		resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fd->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), 0, fd->rtvDescriptorSizeRenderTexture);
+		float clearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f }; //will correctly produce warnings CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
+		commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+		commandList->ClearDepthStencilView(fd->dsvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+		resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+		ThrowIfFailed(commandList->Close());
+		ID3D12CommandList* ppCommandLists[] = { commandList };
+
+		dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 	}
-***/}
+}

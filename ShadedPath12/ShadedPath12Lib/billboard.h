@@ -20,10 +20,18 @@ public:
 	~BillboardEffectAppData() override { };
 };
 
-// base class for Per Frame Data
-class BillboardEffectFrameData :  public EffectFrameData {
+// per frame resources for this effect
+struct FrameDataBillboard {
 public:
-	~BillboardEffectFrameData() override {};
+	ComPtr<ID3D12PipelineState> pipelineState;
+	ComPtr<ID3D12RootSignature> rootSignature;
+	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
+	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
+	ComPtr<ID3D12Resource> vertexBufferX;
+	ComPtr<ID3D12Resource> vertexBufferUploadX;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
+
+	friend class DXGlobal;
 };
 
 class Billboard : Effect {
@@ -38,7 +46,7 @@ public:
 		XMFLOAT3 cam;  // camera world position
 	};
 
-	void init(DXGlobal* a);
+	void init(DXGlobal* a, FrameDataBillboard* fd, FrameDataGeneral* fd_general_, Pipeline* pipeline);
 	// add billboard to inactive data set, billboardElement will be copied and order number will be returned
 	// order numbers are counted per texture and start with 0
 	// use get() to get/change existing billboard
@@ -46,7 +54,7 @@ public:
 	// get billboard with order number order_num for texture_id
 	BillboardElement& get(string texture_id, int order_num);
 	void update();
-	void draw();
+	void draw(FrameDataGeneral *dfg, FrameDataBillboard *fdb);
 	void drawAll();
 	void destroy();
 
@@ -67,8 +75,6 @@ public:
 	~Billboard() {};
 
 private:
-	ComPtr<ID3D12PipelineState> pipelineState;
-	ComPtr<ID3D12RootSignature> rootSignature;
 	void preDraw(int eyeNum);
 	void postDraw();
 	CBV cbv;
@@ -80,15 +86,12 @@ private:
 	//vector<BillboardElement> texts;
 	atomic<bool> updateRunning = false;
 	future<void> billboardFuture;
-	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
-	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
-	FrameResource updateFrameData;
-	ComPtr<ID3D12Resource> vertexBufferX;
-	ComPtr<ID3D12Resource> vertexBufferUploadX;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
+	//FrameResource updateFrameData;
 	BillboardEffectAppData appDataSets[2];
 	int currentInactiveAppDataSet = 0;
 	int currentActiveAppDataSet = -1;
 	//UINT numberOfVertices = 0;
+	DXGlobal* dxGlobal = nullptr;
+	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 };
 

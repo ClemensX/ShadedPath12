@@ -40,78 +40,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\LineVS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\LinePS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\DotcrossVS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\DotcrossPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\DotcrossGS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\LinetextGS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\LinetextVS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\BillboardPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\BillboardVS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\ObjectPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\ObjectVS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\MObjectPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\MObjectVS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\MObjectCS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Shaders\Line.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Shaders\Dotcross.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Shaders\Linetext.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Shaders\Billboard.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Shaders\Object.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Shaders\lights_basic.hlsi">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Shaders\lights.hlsi">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="ClassDiagram.cd" />
-    <None Include="Shaders\MObject.hlsli">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Shaders\lights_old.hlsi">
-      <Filter>Shaders</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="winmain.cpp">

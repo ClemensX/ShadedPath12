@@ -24,7 +24,7 @@ void BillboardApp::init(HWND hwnd) {
 	pipeline.init();
 	Log("pipeline initialized" << endl);
 	dxGlobal.init();
-	billboard.init(&dxGlobal);
+	//billboard.init(&dxGlobal);
 	if (hwnd != 0) {
 		dxGlobal.initSwapChain(&pipeline, hwnd);
 	}
@@ -36,9 +36,10 @@ void BillboardApp::init(HWND hwnd) {
 		Dx2D* d2d = &fd->d2d;
 		FrameDataD2D *fd2d = &fd->d2d_fd;
 		FrameDataGeneral *fd_gen = &fd->fd_general;
+		FrameDataBillboard* fdb = &fd->billboard_fd;
 		dxGlobal.initFrameBufferResources(fd_gen, fd2d, i, &pipeline);
 		d2d->init(&dxGlobal, fd2d, fd_gen, &pipeline);
-		//billboard.initFrameBufferResources(fd_gen, fd2d, i, &pipeline);
+		billboard.init(&dxGlobal, fdb, fd_gen, &pipeline);
 	}
 	// test texture packs:
 	util.initPakFiles();
@@ -62,7 +63,7 @@ void BillboardApp::presentFrame(Frame* frame, Pipeline* pipeline) {
 	}
 
 	// copy frame to HD
-	if (isAutomatedTestMode || frame->absFrameNumber % 10000 == 0) {
+	if (isAutomatedTestMode /*|| frame->absFrameNumber % 10000 == 0*/) {
 		// TODO beware of sync problems:
 		//af_swapChain->d2d.copyTextureToCPUAndExport("pic" + to_string(frame->absFrameNumber) + ".bmp");
 		dxGlobal.copyTextureToCPUAndExport(frame, pipeline, "pic" + to_string(frame->absFrameNumber) + ".bmp");
@@ -76,11 +77,14 @@ void BillboardApp::presentFrame(Frame* frame, Pipeline* pipeline) {
 void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void *data)
 {
 	BillboardAppFrameData* afd = (BillboardAppFrameData*)frame->frameData;
+	FrameDataGeneral* fdg = &afd->fd_general;
 	FrameDataD2D *fd = &afd->d2d_fd;
 	Dx2D *d2d = &afd->d2d;
+	FrameDataBillboard* fdb = &afd->billboard_fd;
 
-	dxGlobal.clearRenderTexture(&afd->fd_general);
+	dxGlobal.clearRenderTexture(fdg);
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
+	billboard.draw(fdg, fdb);
 	dxGlobal.prepare2DRendering(frame, pipeline, fd);
 
 	d2d->drawStatisticsOverlay(frame, pipeline);

@@ -7,6 +7,7 @@ struct BillboardAppFrameData : AppFrameDataBase
 {
 	FrameDataGeneral fd_general;
 	FrameDataD2D d2d_fd;
+	FrameDataBillboard billboard_fd;
 	Dx2D d2d;
 
 	// Inherited via AppFrameDataBase
@@ -31,7 +32,7 @@ public:
 	void stop();
 private:
 	static const int FRAME_BUFFER_SIZE = 3;
-	static const int FRAME_COUNT = 10;
+	static const int FRAME_COUNT = 4;
 	// after a frame has been processed this is called to consume it
 	// (present or store usually)
 	// this call is synced by pipeline, so only 1 thread at any time running this method

@@ -49,7 +49,7 @@ private:
 	FrameDataGeneral* fd_general;
 };
 
-// per farme resources for this effect
+// per frame resources for this effect
 struct FrameDataD2D {
 public:
 	ComPtr<ID2D1Factory3> d2dFactory;
