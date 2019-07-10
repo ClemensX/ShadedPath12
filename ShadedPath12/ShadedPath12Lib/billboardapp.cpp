@@ -39,7 +39,7 @@ void BillboardApp::init(HWND hwnd) {
 		FrameDataBillboard* fdb = &fd->billboard_fd;
 		dxGlobal.initFrameBufferResources(fd_gen, fd2d, i, &pipeline);
 		d2d->init(&dxGlobal, fd2d, fd_gen, &pipeline);
-		billboard.init(&dxGlobal, fdb, fd_gen, &pipeline);
+		billboard.init(&dxGlobal, fdb, fd_gen);
 	}
 	// test texture packs:
 	util.initPakFiles();
@@ -84,7 +84,7 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void *data)
 
 	dxGlobal.clearRenderTexture(fdg);
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
-	billboard.draw(fdg, fdb);
+	billboard.draw(fdg, fdb, pipeline);
 	dxGlobal.prepare2DRendering(frame, pipeline, fd);
 
 	d2d->drawStatisticsOverlay(frame, pipeline);

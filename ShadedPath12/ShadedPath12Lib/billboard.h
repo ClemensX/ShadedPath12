@@ -46,7 +46,7 @@ public:
 		XMFLOAT3 cam;  // camera world position
 	};
 
-	void init(DXGlobal* a, FrameDataBillboard* fd, FrameDataGeneral* fd_general_, Pipeline* pipeline);
+	void init(DXGlobal* a, FrameDataBillboard* fd, FrameDataGeneral* fd_general_);
 	// add billboard to inactive data set, billboardElement will be copied and order number will be returned
 	// order numbers are counted per texture and start with 0
 	// use get() to get/change existing billboard
@@ -54,7 +54,7 @@ public:
 	// get billboard with order number order_num for texture_id
 	BillboardElement& get(string texture_id, int order_num);
 	void update();
-	void draw(FrameDataGeneral *dfg, FrameDataBillboard *fdb);
+	void draw(FrameDataGeneral *dfg, FrameDataBillboard *fdb, Pipeline* pipeline);
 	void drawAll();
 	void destroy();
 

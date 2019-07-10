@@ -1,5 +1,7 @@
 #pragma once
 
+class Pipeline;
+
 // define all frame data
 // it is up to the app to organize this, we recommend to define a struct
 // with all frame data entries for all effects and make an array with [FRAME_BUFFER_SIZE]
