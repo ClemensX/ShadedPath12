@@ -22,6 +22,7 @@
     <ClCompile Include="applicationWindow.cpp" />
     <ClCompile Include="billboard.cpp" />
     <ClCompile Include="billboardapp.cpp" />
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="dx2d.cpp" />
     <ClCompile Include="dxglobal.cpp" />

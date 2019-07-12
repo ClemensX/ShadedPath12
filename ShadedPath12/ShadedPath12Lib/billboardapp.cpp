@@ -24,6 +24,7 @@ void BillboardApp::init(HWND hwnd) {
 	pipeline.init();
 	Log("pipeline initialized" << endl);
 	dxGlobal.init();
+	dxGlobal.setTextureStore(&textureStore);
 	//billboard.init(&dxGlobal);
 	if (hwnd != 0) {
 		dxGlobal.initSwapChain(&pipeline, hwnd);
@@ -47,9 +48,11 @@ void BillboardApp::init(HWND hwnd) {
 	textureStore.loadTexture(L"dirt6_markings.dds", "markings");
 	// create effect application data:
 	//auto bdata = billboard.getInactiveAppDataSet();
-	BillboardElement be1{ {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, -1.0f, 0.0f}, {1.0f, 2.0f} }; // pos, normal, size
+	BillboardElement be1{ {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
 	// add to inactive data set:
 	billboard.add("markings", be1);
+	// activate changes:
+	billboard.activateAppDataSet();
 	//bdata->billboards.
 }
 

@@ -10,6 +10,17 @@ public:
 	virtual ~EffectFrameData() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors
 };
 
+struct FrameDataBase {
+public:
+	ComPtr<ID3D12PipelineState> pipelineState;
+	ComPtr<ID3D12RootSignature> rootSignature;
+	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
+	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
+	ComPtr<ID3D12Resource> cbvResource;
+	UINT8* cbvGPUDest;  // memcpy() changed cbv data to this address before draw()
+
+	friend class DXGlobal;
+};
 // base class for effects
 
 class Effect {
@@ -33,4 +44,40 @@ public:
 protected:
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
 	DXManager dxmanager;
+	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
+	DXGlobal* dxGlobal;
+	// constant buffers
+	// set cbv:
+	// flow of control:
+	// initial phase:
+	// --> device->CreateCommittedResource()  (resource type is constant buffer)
+	// --> ID3D12Resource::GetGPUVirtualAddress
+	// --> constantBuffer->Map() to get GPUAdress to copy to from C++ code
+	// --> initially memcpy the cbv data to GPU
+	//
+	// update/render phase:
+	// -->SetGraphicsRootConstantBufferView(0, D3D12_GPU_VIRTUAL_ADDRESS); // on command list
+	// -->memcpy(GPUAdress, changed constant buffer content)
+
+	void createConstantBuffer(size_t s, LPCWSTR name, FrameDataBase *frameData);
+
+	// vertex buffer
+	void createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void* data, ID3D12PipelineState* pipelineState, LPCWSTR baseName,
+		ComPtr<ID3D12Resource>& vertexBuffer,
+		ComPtr<ID3D12Resource>& vertexBufferUpload,
+		ComPtr<ID3D12CommandAllocator>& commandAllocator,
+		ComPtr<ID3D12GraphicsCommandList>& commandList,
+		D3D12_VERTEX_BUFFER_VIEW& vertexBufferView
+	);
+	// index buffer
+	void createAndUploadIndexBuffer(size_t bufferSize, void* data, ID3D12PipelineState* pipelineState, LPCWSTR baseName,
+		ComPtr<ID3D12Resource>& indexBuffer,
+		ComPtr<ID3D12Resource>& indexBufferUpload,
+		ComPtr<ID3D12CommandAllocator>& commandAllocator,
+		ComPtr<ID3D12GraphicsCommandList>& commandList,
+		D3D12_INDEX_BUFFER_VIEW& indexBufferView
+	);
+	ComPtr<ID3D12Resource> vertexBuffer;
+	ComPtr<ID3D12Resource> vertexBufferUpload;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 };

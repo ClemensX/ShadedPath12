@@ -2,15 +2,15 @@
 
 void Launcher::init(HWND hwnd)
 {
-	simple2dFrame.init(hwnd);
+	app.init(hwnd);
 }
 
 void Launcher::start()
 {
-	simple2dFrame.start();
+	app.start();
 }
 
 void Launcher::stop()
 {
-	simple2dFrame.stop();
+	app.stop();
 }

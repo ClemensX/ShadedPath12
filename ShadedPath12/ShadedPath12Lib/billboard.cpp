@@ -16,7 +16,7 @@ size_t Billboard::add(string texture_id, BillboardElement billboardEl) {
 #include "CompiledShaders/BillboardVS.h"
 #include "CompiledShaders/BillboardPS.h"
 
-void Billboard::init(DXGlobal* a, FrameDataBillboard* fd, FrameDataGeneral* fd_general_) {
+void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_general_) {
 	initialized = true;
 	dxGlobal = a;
 	// try to do all expensive operations like shader loading and PSO creation here
@@ -55,17 +55,17 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fd, FrameDataGeneral* fd_g
 		//psoDesc.GS = { binShader_LinetextGS, sizeof(binShader_LinetextGS) };
 		psoDesc.PS = { binShader_BillboardPS, sizeof(binShader_BillboardPS) };
 		//xapp().device->CreateRootSignature(0, binShader_LinetextGS, sizeof(binShader_LinetextGS), IID_PPV_ARGS(&rootSignature));
-		ThrowIfFailed(a->device->CreateRootSignature(0, binShader_BillboardVS, sizeof(binShader_BillboardVS), IID_PPV_ARGS(&fd->rootSignature)));
+		ThrowIfFailed(a->device->CreateRootSignature(0, binShader_BillboardVS, sizeof(binShader_BillboardVS), IID_PPV_ARGS(&fdb->rootSignature)));
 		//rootSignature.Get()->SetName(L"Linetext_root_signature");
-		psoDesc.pRootSignature = fd->rootSignature.Get();
-		ThrowIfFailed(a->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&fd->pipelineState)));
-		fd->pipelineState.Get()->SetName(L"state_billboard_init");
+		psoDesc.pRootSignature = fdb->rootSignature.Get();
+		ThrowIfFailed(a->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&fdb->pipelineState)));
+		fdb->pipelineState.Get()->SetName(L"state_billboard_init");
 
-		////createConstantBuffer((UINT) sizeof(cbv), L"Billboard_cbv_resource");
+		createConstantBuffer((UINT) sizeof(cbv), L"Billboard_cbv_resource", fdb);
 		// set cbv data:
 		XMMATRIX ident = XMMatrixIdentity();
 		XMStoreFloat4x4(&cbv.wvp, ident);
-		////memcpy(cbvGPUDest, &cbv, sizeof(cbv));
+		memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
 	}
 
 	// Create command allocators and command lists for each frame.
@@ -91,11 +91,11 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fd, FrameDataGeneral* fd_g
 	}
 ***/
 	// init resources for update thread:
-	ThrowIfFailed(a->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&fd->updateCommandAllocator)));
-	ThrowIfFailed(a->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, fd->updateCommandAllocator.Get(), fd->pipelineState.Get(), IID_PPV_ARGS(&fd->updateCommandList)));
+	ThrowIfFailed(a->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&fdb->updateCommandAllocator)));
+	ThrowIfFailed(a->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, fdb->updateCommandAllocator.Get(), fdb->pipelineState.Get(), IID_PPV_ARGS(&fdb->updateCommandList)));
 	// Command lists are created in the recording state, but there is nothing
 	// to record yet. The main loop expects it to be closed, so close it now.
-	ThrowIfFailed(fd->updateCommandList->Close());
+	ThrowIfFailed(fdb->updateCommandList->Close());
 	// init fences: --> use from FrameDataGeneral
 	//ThrowIfFailed(a->device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&updateFrameData.fence)));
 	//updateFrameData.fence->SetName(L"fence_Billboard_update");
@@ -106,7 +106,7 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fd, FrameDataGeneral* fd_g
 	//}
 }
 
-void Billboard::draw(FrameDataGeneral* fd, FrameDataBillboard* fdb, Pipeline* pipeline)
+void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* pipeline)
 {
 	Log("draw " << endl);
 	auto config = pipeline->getPipelineConfig();
@@ -129,14 +129,14 @@ void Billboard::draw(FrameDataGeneral* fd, FrameDataBillboard* fdb, Pipeline* pi
 
 	//	dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 	//}
-	dxGlobal->waitGPU(fd, dxGlobal->commandQueue);
+	dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
 	{
 		// prepare drawing:
-		ID3D12GraphicsCommandList* commandList = fd->commandListRenderTexture.Get();
-		ThrowIfFailed(fd->commandAllocatorRenderTexture->Reset());
-		ThrowIfFailed(commandList->Reset(fd->commandAllocatorRenderTexture.Get(), fd->pipelineStateRenderTexture.Get()));
-		resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fd->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), 0, fd->rtvDescriptorSizeRenderTexture);
+		ID3D12GraphicsCommandList* commandList = fdg->commandListRenderTexture.Get();
+		ThrowIfFailed(fdg->commandAllocatorRenderTexture->Reset());
+		ThrowIfFailed(commandList->Reset(fdg->commandAllocatorRenderTexture.Get(), fdb->pipelineState.Get()));
+		resourceStateHelper->toState(fdg->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fdg->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), 0, fdg->rtvDescriptorSizeRenderTexture);
 
 		// prepare viewport and scissor rect:
 		int width =	config.backbufferWidth;
@@ -156,29 +156,62 @@ void Billboard::draw(FrameDataGeneral* fd, FrameDataBillboard* fdb, Pipeline* pi
 		scissorRect.bottom = static_cast<LONG>(height);
 
 		// Set necessary state.
-		commandList->SetGraphicsRootSignature(fd->rootSignatureRenderTexture.Get());
+		commandList->SetGraphicsRootSignature(fdb->rootSignature.Get());
 		commandList->RSSetViewports(1, &viewport);
 		commandList->RSSetScissorRects(1, &scissorRect);
 
 		// Set CBV
-		// TODO fd->commandList->SetGraphicsRootConstantBufferView(0, fdb->cbvResource->GetGPUVirtualAddress());
+		commandList->SetGraphicsRootConstantBufferView(0, fdb->cbvResource->GetGPUVirtualAddress());
 
 		// Indicate that the back buffer will be used as a render target.
 		//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 		//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
 		//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fd->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
-		CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(fd->dsvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
-		fd->commandListRenderTexture->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-		ID3D12Resource* resource = fd->renderTarget.Get();
+		CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(fdg->dsvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
+		fdg->commandListRenderTexture->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+		ID3D12Resource* resource = fdg->renderTarget.Get();
 		//if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
 		//else resource = xapp().vr.texResource[frameIndex];
+
+		// prepare cbv:
+		Camera c;
+		c.init();
+		XMStoreFloat4x4(&cbv.wvp, c.worldViewProjection());
+		cbv.cam.x = c.pos.x;
+		cbv.cam.y = c.pos.y;
+		cbv.cam.z = c.pos.z;
+		memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
+
+		// draw
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		commandList->IASetVertexBuffers(0, 1, &fdb->vertexBufferView);
+		// now draw all the billboards, one draw call per texture type 
+		// iterate over billboard types
+		UINT cur_vertex_index = 0;
+		auto d = (BillboardEffectAppData*)getActiveAppDataSet();
+		for (auto& elvec : d->billboards) {
+			//Log(elvec.first.c_str() << endl);
+			auto tex = dxGlobal->getTextureStore()->getTexture(elvec.first);
+			// Set SRV
+			ID3D12DescriptorHeap* ppHeaps[] = { tex->m_srvHeap.Get() };
+			fdg->commandListRenderTexture->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+			fdg->commandListRenderTexture->SetGraphicsRootDescriptorTable(1, tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+			UINT count = (UINT)elvec.second.size() * 6;
+			if (count > 0) fdg->commandListRenderTexture->DrawInstanced(count, 1, cur_vertex_index, 0);
+			cur_vertex_index += count;
+		}
+		//postDraw();
 
 		// execute commands:
 		ThrowIfFailed(commandList->Close());
 		ID3D12CommandList* ppCommandLists[] = { commandList };
 
 		dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+		dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
+		commandList = fdg->commandListRenderTexture.Get();
+		//ThrowIfFailed(fdg->commandAllocatorRenderTexture->Reset());
+		//ThrowIfFailed(commandList->Reset(fdg->commandAllocatorRenderTexture.Get(), fdg->pipelineStateRenderTexture.Get()));
 
 	}
 }

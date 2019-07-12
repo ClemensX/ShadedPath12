@@ -61,7 +61,7 @@ public:
 	int calculateVisibility(BoundingBox &box, XMMATRIX &toWorld);
 
 	// copy constructor
-	Camera& Camera::operator=(const Camera& other) {
+	Camera& operator=(const Camera& other) {
 		activeEye = other.activeEye;
 		aspectRatio = other.aspectRatio;
 		eyeNum = other.eyeNum;

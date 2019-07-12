@@ -45,24 +45,24 @@ void Camera::lookAt(XMFLOAT4 posp, XMFLOAT4 targetp, XMFLOAT4 upp) {
 void Camera::viewTransform() {
 	XMMATRIX v = XMMatrixLookToLH(XMLoadFloat4(&pos), XMLoadFloat4(&look), XMLoadFloat4(&up));
 	XMStoreFloat4x4(&view, v);
-	if (ovrCamera) {
-		if (eyeNumUse)
-			view = xapp().vr.getOVRViewMatrixByIndex(eyeNum);
-		else
-			view = xapp().vr.getOVRViewMatrix();
-	}
+	//if (ovrCamera) {
+	//	if (eyeNumUse)
+	//		view = xapp().vr.getOVRViewMatrixByIndex(eyeNum);
+	//	else
+	//		view = xapp().vr.getOVRViewMatrix();
+	//}
 }
 
 void Camera::projectionTransform() {
 	//Log("aspect == " << aspectRatio << "\n");
 	XMMATRIX v = XMMatrixPerspectiveFovLH(fieldOfViewAngleY, aspectRatio, nearZ, farZ);
 	XMStoreFloat4x4(&projection, v);
-	if (ovrCamera) {
-		if (eyeNumUse)
-			projection = xapp().vr.getOVRProjectionMatrixByIndex(eyeNum);
-		else
-			projection = xapp().vr.getOVRProjectionMatrix();
-	}
+	//if (ovrCamera) {
+	//	if (eyeNumUse)
+	//		projection = xapp().vr.getOVRProjectionMatrixByIndex(eyeNum);
+	//	else
+	//		projection = xapp().vr.getOVRProjectionMatrix();
+	//}
 }
 
 XMMATRIX Camera::worldViewProjection() {
@@ -72,14 +72,14 @@ XMMATRIX Camera::worldViewProjection() {
 	//if (pt2.x != 0.0f)
 	//Log("  Look: " << pt2.x << " " << pt2.y << " " << pt2.z << endl);
 	XMMATRIX v = XMMatrixLookToLH(XMLoadFloat4(&pos), XMLoadFloat4(&look), XMLoadFloat4(&up));
-	if (ovrCamera) {
-		XMFLOAT4X4 vxm;
-		if (eyeNumUse)
-			vxm = xapp().vr.getOVRViewMatrixByIndex(eyeNum);
-		else
-			vxm = xapp().vr.getOVRViewMatrix();
-		v = XMLoadFloat4x4(&vxm);
-	}
+	//if (ovrCamera) {
+	//	XMFLOAT4X4 vxm;
+	//	if (eyeNumUse)
+	//		vxm = xapp().vr.getOVRViewMatrixByIndex(eyeNum);
+	//	else
+	//		vxm = xapp().vr.getOVRViewMatrix();
+	//	v = XMLoadFloat4x4(&vxm);
+	//}
 	XMMATRIX wvp = v*p;
 	return XMMatrixTranspose(wvp);
 }

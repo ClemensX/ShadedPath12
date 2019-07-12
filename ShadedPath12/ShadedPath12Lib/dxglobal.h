@@ -1,5 +1,6 @@
 class Pipeline;
 class Frame;
+class TextureStore;
 struct FrameDataGeneral;
 struct FrameDataD2D;
 // global DirectX parameters
@@ -55,6 +56,11 @@ public:
 	// copy texture from GPU mem to CPU mem and export it as BMP file
 	// this is slow. not intended to be called every frame
 	void copyTextureToCPUAndExport(Frame* frame, Pipeline* pipeline, string filename);
+	// texture store to be used by effects - has to be set from application during startup init
+	void setTextureStore(TextureStore* textureStore) { this->textureStore = textureStore; };
+	TextureStore* getTextureStore() { return this->textureStore; };
+private:
+	TextureStore* textureStore = nullptr;
 };
 
 // Frame data unrelated to a specific effect that needs to be unique for each slot

@@ -21,16 +21,11 @@ public:
 };
 
 // per frame resources for this effect
-struct FrameDataBillboard {
+struct FrameDataBillboard : FrameDataBase {
 public:
-	ComPtr<ID3D12PipelineState> pipelineState;
-	ComPtr<ID3D12RootSignature> rootSignature;
-	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
-	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
-	ComPtr<ID3D12Resource> vertexBufferX;
-	ComPtr<ID3D12Resource> vertexBufferUploadX;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
-
+	ComPtr<ID3D12Resource> vertexBuffer;
+	ComPtr<ID3D12Resource> vertexBufferUpload;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	friend class DXGlobal;
 };
 
@@ -65,7 +60,10 @@ public:
 	};
 	virtual EffectAppData* getActiveAppDataSet() override
 	{
-		return nullptr;
+		if (currentActiveAppDataSet < 0) {
+			throw "active data set not available in Billboard";
+		}
+		return &appDataSets[currentActiveAppDataSet];
 	}
 	virtual void activateAppDataSet() override
 	{
@@ -91,7 +89,5 @@ private:
 	int currentInactiveAppDataSet = 0;
 	int currentActiveAppDataSet = -1;
 	//UINT numberOfVertices = 0;
-	DXGlobal* dxGlobal = nullptr;
-	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 };
 

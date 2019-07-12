@@ -108,6 +108,9 @@
     <ClCompile Include="billboardapp.cpp">
       <Filter>Apps</Filter>
     </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ShadedPath12\Resource.h">
