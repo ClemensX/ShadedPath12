@@ -131,6 +131,23 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 	//}
 	dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
 	{
+		// TODO workaround for mem leak: only call this once:
+		if (fdb->vertexBuffer == nullptr) {
+
+			// prepare vertices:
+			vector<Vertex> vertices;
+			vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices);
+			size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
+			createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), fdb->pipelineState.Get(),
+				L"Billboard2", fdb->vertexBuffer, fdb->vertexBufferUpload, fdb->updateCommandAllocator, fdb->updateCommandList, fdb->vertexBufferView);
+
+			// Close the command list and execute it to begin the vertex buffer copy into
+			// the default heap.
+			ThrowIfFailed(fdb->updateCommandList->Close());
+			ID3D12CommandList* ppCommandListsUpload[] = { fdb->updateCommandList.Get() };
+			dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandListsUpload), ppCommandListsUpload);
+			dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
+		}
 		// prepare drawing:
 		ID3D12GraphicsCommandList* commandList = fdg->commandListRenderTexture.Get();
 		ThrowIfFailed(fdg->commandAllocatorRenderTexture->Reset());
@@ -139,7 +156,7 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fdg->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), 0, fdg->rtvDescriptorSizeRenderTexture);
 
 		// prepare viewport and scissor rect:
-		int width =	config.backbufferWidth;
+		int width = config.backbufferWidth;
 		int height = config.backbufferHeight;
 		D3D12_VIEWPORT viewport;
 		viewport.MinDepth = 0.0f;
@@ -178,6 +195,9 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 		Camera c;
 		c.init();
 		XMStoreFloat4x4(&cbv.wvp, c.worldViewProjection());
+		// set to identity until cam works:
+		XMMATRIX ident = XMMatrixIdentity();
+		XMStoreFloat4x4(&cbv.wvp, ident);
 		cbv.cam.x = c.pos.x;
 		cbv.cam.y = c.pos.y;
 		cbv.cam.z = c.pos.z;
@@ -214,4 +234,99 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 		//ThrowIfFailed(commandList->Reset(fdg->commandAllocatorRenderTexture.Get(), fdg->pipelineStateRenderTexture.Get()));
 
 	}
+}
+
+vector<Billboard::Vertex>& Billboard::recreateVertexBufferContent(vector<Vertex> &vertices)
+{
+	if (vertices.size() > 0) return vertices;
+	Vertex cur_billboard[6];
+	auto d = (BillboardEffectAppData*)getActiveAppDataSet();
+	for (auto& elvec : d->billboards) {
+		//Log(elvec.first.c_str() << endl);
+		// iterate over billboards of current type
+		for (auto& bb : elvec.second) {
+			//Log("billboard " << bb.pos.x << endl);
+			createBillbordVertexData(cur_billboard, bb);
+			for (int i = 0; i < 6; i++) {
+				vertices.push_back(cur_billboard[i]);
+			}
+		}
+	}
+	return vertices;
+}
+
+void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement& bb) {
+	// we know cur_billboard is a Vertex[6]
+	// first create billboard at origin in x/y plane with correct size:
+	float deltaw = bb.size.x / 2;
+	float deltah = bb.size.y / 2;
+	Vertex* c = cur_billboard; // use shorter name
+	// low left
+	c[0].pos.x = 0 - deltaw;
+	c[0].pos.y = 0 - deltah;
+	c[0].pos.z = 0;
+	c[0].pos.w = 1;
+	c[0].uv.x = 0;
+	c[0].uv.y = 1;
+	// top left
+	c[1].pos.x = 0 - deltaw;
+	c[1].pos.y = 0 + deltah;
+	c[1].pos.z = 0;
+	c[1].pos.w = 1;
+	c[1].uv.x = 0;
+	c[1].uv.y = 0;
+	// low right
+	c[2].pos.x = 0 + deltaw;
+	c[2].pos.y = 0 - deltah;
+	c[2].pos.z = 0;
+	c[2].pos.w = 1;
+	c[2].uv.x = 1;
+	c[2].uv.y = 1;
+	// 2nd triangle: copy low right
+	c[3] = c[2];
+	// 2nd triangle: copy top left
+	c[4] = c[1];
+	// 2nd triangle: top right
+	c[5].pos.x = 0 + deltaw;
+	c[5].pos.y = 0 + deltah;
+	c[5].pos.z = 0;
+	c[5].pos.w = 1;
+	c[5].uv.x = 1;
+	c[5].uv.y = 0;
+	// now translate to real position:
+	for (int i = 0; i < 6; i++) {
+		c[i].pos.x += bb.pos.x;
+		c[i].pos.y += bb.pos.y;
+		c[i].pos.z += bb.pos.z;
+	}
+	// layout of vertex input: 
+	// pos.x		P.x
+	// pos.y		P.y
+	// pos.z		P.z
+	// pos.w
+	// normal.x		factor.x
+	// normal.y		factor.y
+	// normal.z		w/2
+	// normal.w		h/2
+	//XMFLOAT4 cam = xapp().camera.pos;
+	//for (int i = 0; i < 6; i++) {
+	//	c[i].pos.x = bb.pos.x;
+	//	c[i].pos.y = bb.pos.y;
+	//	c[i].pos.z = bb.pos.z;
+	//	c[i].normal.z = deltaw;
+	//	c[i].normal.w = deltah;
+	//}
+	c[0].normal.x = -1;
+	c[0].normal.y = -1;
+	c[1].normal.x = -1;
+	c[1].normal.y = 1;
+	c[2].normal.x = 1;
+	c[2].normal.y = -1;
+
+	c[3].normal.x = 1;
+	c[3].normal.y = -1;
+	c[4].normal.x = -1;
+	c[4].normal.y = 1;
+	c[5].normal.x = 1;
+	c[5].normal.y = 1;
 }

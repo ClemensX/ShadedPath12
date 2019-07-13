@@ -23,7 +23,6 @@ void Effect::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, v
 	D3D12_VERTEX_BUFFER_VIEW& vertexBufferView
 )
 {
-	//int frameIndex = xapp().getCurrentBackBufferIndex();
 	UINT vertexBufferSize = (UINT)bufferSize;
 	ThrowIfFailed(dxGlobal->device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),

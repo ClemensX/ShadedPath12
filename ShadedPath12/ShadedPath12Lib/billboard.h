@@ -79,7 +79,7 @@ private:
 	mutex mutex_Billboard;
 	void drawInternal(int eyeNum = 0);
 	void updateTask();
-	vector<Vertex>& recreateVertexBufferContent();
+	vector<Vertex>& recreateVertexBufferContent(vector<Vertex>& vertices);
 	void createBillbordVertexData(Vertex* cur_billboard, BillboardElement& bb);
 	//vector<BillboardElement> texts;
 	atomic<bool> updateRunning = false;

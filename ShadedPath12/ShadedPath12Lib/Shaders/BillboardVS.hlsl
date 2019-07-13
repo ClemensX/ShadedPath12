@@ -18,7 +18,7 @@ PSInput main( VSInput input )
 	//right = float3(1, 0, 0);
 	//up2 = float3(0, 1, 0);
 	float3 pos2 = pos + factorx * right + factory * up2;
-	input.position.xyz = pos2;
+	//input.position.xyz = pos2;
 
 	//result.position.w = 1.0;
 	//input.position.y -= 4.0;
