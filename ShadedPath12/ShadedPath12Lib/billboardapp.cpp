@@ -55,6 +55,18 @@ void BillboardApp::init(HWND hwnd) {
 	util.initPakFiles();
 	textureStore.init(&dxGlobal, &util);
 	textureStore.loadTexture(L"dirt6_markings.dds", "markings");
+	textureStore.loadTexture(L"vac_00.dds", "vac00");
+	textureStore.loadTexture(L"vac_01.dds", "vac01");
+	textureStore.loadTexture(L"vac_02.dds", "vac02");
+	textureStore.loadTexture(L"vac_03.dds", "vac03");
+	textureStore.loadTexture(L"vac_04.dds", "vac04");
+	textureStore.loadTexture(L"vac_05.dds", "vac05");
+	textureStore.loadTexture(L"vac_06.dds", "vac06");
+	textureStore.loadTexture(L"vac_07.dds", "vac07");
+	textureStore.loadTexture(L"vac_08.dds", "vac08");
+	textureStore.loadTexture(L"vac_09.dds", "vac09");
+	textureStore.loadTexture(L"vac_10.dds", "vac10");
+	textureStore.loadTexture(L"vac_11.dds", "vac11");
 	// create effect application data:
 	//auto bdata = billboard.getInactiveAppDataSet();
 	BillboardElement be1{ {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
@@ -63,12 +75,50 @@ void BillboardApp::init(HWND hwnd) {
 	// add to inactive data set:
 	billboard.add("markings", be1);
 	billboard.add("markings", be2);
-	billboard.add("markings", be3);
+	billboard.add("vac11", be3);
+	if (true) {
+		BillboardElement b;
+		b.pos = XMFLOAT3(15.0f, 0.0f, 2.0f);
+		b.normal = XMFLOAT4(0.0f, 0.0f, -1.0f, 1.0f);
+		//b.size = XMFLOAT2(1.5f, 1.0f);
+		b.size = XMFLOAT2(3.629f, 2.4192f);
+		//	unsigned long total_billboards = 4000000;
+		unsigned long total_billboards = 1000000;
+		//unsigned long total_billboards = 50000;
+		// unsigned long total_billboards = 12;
+		unsigned long billboards_per_texture = total_billboards / 12;
+
+		// create randomly positioned billboards for each vacXX texture we have:
+		for (int tex_number = 0; tex_number < 12; tex_number++) {
+			//assemble texture name:
+			string texName;
+			if (tex_number < 10)
+				texName = string("vac0").append(to_string(tex_number));
+			else
+				texName = string("vac").append(to_string(tex_number));
+			//Log(elvec.first.c_str() << endl);
+			auto* tex = textureStore.getTexture(texName);
+			for (unsigned long i = 0; i < billboards_per_texture; i++) {
+				XMFLOAT3 rnd = pipeline.getWorld()->getRandomPos();
+				b.pos.x = rnd.x;
+				b.pos.y = rnd.y;
+				b.pos.z = rnd.z;
+				billboard.add(texName, b);
+			}
+		}
+
+	}
 	// activate changes:
 	billboard.activateAppDataSet();
 	//bdata->billboards.
 	input = Input::getInstance();
 	c.init();
+	c.nearZ = 0.2f;
+	c.farZ = 2000.0f;
+	c.pos = XMFLOAT4(0.0f, 0.0f, -3.0f, 0.0f);
+	c.setSpeed(15.5f); // faster for dev usability // 15.5
+	c.fieldOfViewAngleY = 1.289f;
+	//world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	c.projectionTransform();
 }
 

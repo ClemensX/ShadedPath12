@@ -31,6 +31,7 @@ void Pipeline::init()
 	Log("Pipeline::init" << endl);
 	LogF("Pipeline::init with LogF" << endl);
 	initialized = true;
+	world.setWorldSize(pc.getSizeX(), pc.getSizeY(), pc.getSizeZ());
 }
 
 void Pipeline::finallyProcessed(Frame* frame)

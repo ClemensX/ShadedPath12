@@ -40,6 +40,7 @@ class World
 {
 public:
 	World(XApp *xapp);
+	World() {};
 	~World();
 
 	// effect utils

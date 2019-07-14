@@ -120,6 +120,7 @@ public:
 	AppFrameDataManager afManager;
 	long long lastFrameRenderDuration = 0L; // microseconds
 	long totalFPS = 0; // FPS since starting render threads (skipped frames do not count)
+	World* getWorld() { return &world; };
 private:
 	// Pipeline part of creating a frame
 	static void runFrameSlot(Pipeline* pipeline, Frame* frame, int slot);
@@ -141,6 +142,7 @@ private:
 	chrono::time_point<chrono::high_resolution_clock> pipelineStartTime;
 	long long skipped = 0; // count skipped frames
 	long long last_processed = -1; // last processed frame number
+	World world;
 protected:
 };
 
