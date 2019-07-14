@@ -19,6 +19,7 @@ void BillboardApp::init(HWND hwnd) {
 	auto& pc = pipeline.getPipelineConfig();
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	pc.setFrameBufferSize(FRAME_BUFFER_SIZE);
+	// increasing back buffer width/height has huge effect on overall picture quality and sharpness
 	pc.backbufferWidth = 1024;
 	pc.backbufferHeight = 768;
 	pipeline.init();
@@ -49,8 +50,12 @@ void BillboardApp::init(HWND hwnd) {
 	// create effect application data:
 	//auto bdata = billboard.getInactiveAppDataSet();
 	BillboardElement be1{ {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
+	BillboardElement be2{ {0.5f, 0.1f, 2.1f}, {0.0f, 1.0f, 1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
+	BillboardElement be3{ {-3.5f, 0.0f, 14.0f}, {0.0f, 1.0f, 1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
 	// add to inactive data set:
 	billboard.add("markings", be1);
+	billboard.add("markings", be2);
+	billboard.add("markings", be3);
 	// activate changes:
 	billboard.activateAppDataSet();
 	//bdata->billboards.

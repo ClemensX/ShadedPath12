@@ -194,10 +194,11 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 		// prepare cbv:
 		Camera c;
 		c.init();
+		c.projectionTransform();
 		XMStoreFloat4x4(&cbv.wvp, c.worldViewProjection());
 		// set to identity until cam works:
-		XMMATRIX ident = XMMatrixIdentity();
-		XMStoreFloat4x4(&cbv.wvp, ident);
+		//XMMATRIX ident = XMMatrixIdentity();
+		//XMStoreFloat4x4(&cbv.wvp, ident);
 		cbv.cam.x = c.pos.x;
 		cbv.cam.y = c.pos.y;
 		cbv.cam.z = c.pos.z;
@@ -255,6 +256,61 @@ vector<Billboard::Vertex>& Billboard::recreateVertexBufferContent(vector<Vertex>
 	return vertices;
 }
 
+// create 2 triangles to display a billboard
+void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement& bb) {
+	// we know cur_billboard is a Vertex[6]
+	// first create billboard at origin in x/y plane with correct size:
+	float deltaw = bb.size.x / 2;
+	float deltah = bb.size.y / 2;
+	Vertex* c = cur_billboard; // use shorter name
+	// low left
+	c[0].pos.x = 0 - deltaw;
+	c[0].pos.y = 0 - deltah;
+	c[0].pos.z = 0;
+	c[0].pos.w = 1;
+	c[0].uv.x = 0;
+	c[0].uv.y = 1;
+	// top left
+	c[1].pos.x = 0 - deltaw;
+	c[1].pos.y = 0 + deltah;
+	c[1].pos.z = 0;
+	c[1].pos.w = 1;
+	c[1].uv.x = 0;
+	c[1].uv.y = 0;
+	// low right
+	c[2].pos.x = 0 + deltaw;
+	c[2].pos.y = 0 - deltah;
+	c[2].pos.z = 0;
+	c[2].pos.w = 1;
+	c[2].uv.x = 1;
+	c[2].uv.y = 1;
+	// 2nd triangle: copy low right
+	c[3] = c[2];
+	// 2nd triangle: copy top left
+	c[4] = c[1];
+	// 2nd triangle: top right
+	c[5].pos.x = 0 + deltaw;
+	c[5].pos.y = 0 + deltah;
+	c[5].pos.z = 0;
+	c[5].pos.w = 1;
+	c[5].uv.x = 1;
+	c[5].uv.y = 0;
+	// now translate to real position:
+	for (int i = 0; i < 6; i++) {
+		c[i].pos.x += bb.pos.x;
+		c[i].pos.y += bb.pos.y;
+		c[i].pos.z += bb.pos.z;
+	}
+	// layout of vertex input: 
+	// pos.x		P.x
+	// pos.y		P.y
+	// pos.z		P.z
+	// pos.w
+}
+
+// strange version that uses normal parameters for triangle calculation 
+// probably left-over from old massive test
+/*
 void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement& bb) {
 	// we know cur_billboard is a Vertex[6]
 	// first create billboard at origin in x/y plane with correct size:
@@ -309,13 +365,13 @@ void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement
 	// normal.z		w/2
 	// normal.w		h/2
 	//XMFLOAT4 cam = xapp().camera.pos;
-	//for (int i = 0; i < 6; i++) {
-	//	c[i].pos.x = bb.pos.x;
-	//	c[i].pos.y = bb.pos.y;
-	//	c[i].pos.z = bb.pos.z;
-	//	c[i].normal.z = deltaw;
-	//	c[i].normal.w = deltah;
-	//}
+	for (int i = 0; i < 6; i++) {
+		c[i].pos.x = bb.pos.x;
+		c[i].pos.y = bb.pos.y;
+		c[i].pos.z = bb.pos.z;
+		c[i].normal.z = deltaw;
+		c[i].normal.w = deltah;
+	}
 	c[0].normal.x = -1;
 	c[0].normal.y = -1;
 	c[1].normal.x = -1;
@@ -330,3 +386,4 @@ void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement
 	c[5].normal.x = 1;
 	c[5].normal.y = 1;
 }
+*/

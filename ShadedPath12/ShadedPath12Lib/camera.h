@@ -51,11 +51,13 @@ public:
 
 
 	// projection to 2d
-	void projectionTransform();  // use current frustum and recalc projection matrix
+	// use current frustum and recalc projection matrix
+	void projectionTransform();
 	XMFLOAT4X4 projection;    // defaults to default frustum projection
 
 	// world view projection transform - usually for passing to shaders
-	XMMATRIX worldViewProjection();  // use frustum and camera to recalc wvp matrix - no need to update view first, but projection is expected to be up-to-date
+	// use frustum and camera to recalc wvp matrix - no need to update view first, but projection is expected to be up-to-date
+	XMMATRIX worldViewProjection();  
 	XMMATRIX worldViewProjection(XMFLOAT4X4 & proj_ovr, XMFLOAT4X4 & view_ovr);
 	// visibility:
 	int calculateVisibility(BoundingBox &box, XMMATRIX &toWorld);
