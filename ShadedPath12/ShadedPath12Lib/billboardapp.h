@@ -51,5 +51,7 @@ private:
 	TextureStore textureStore;
 	Billboard billboard;
 	Util util;
+	Camera c;
+	Input* input = nullptr;
 };
 

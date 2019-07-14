@@ -20,8 +20,16 @@ void BillboardApp::init(HWND hwnd) {
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	pc.setFrameBufferSize(FRAME_BUFFER_SIZE);
 	// increasing back buffer width/height has huge effect on overall picture quality and sharpness
-	pc.backbufferWidth = 1024;
-	pc.backbufferHeight = 768;
+	// small:
+	//pc.backbufferWidth = 1024;
+	//pc.backbufferHeight = 768;
+	// 4k:
+	//pc.backbufferWidth = 3840;
+	//pc.backbufferHeight = 2160;
+	// Full HD:
+	pc.backbufferWidth = 3840/2;
+	pc.backbufferHeight = 2160/2;
+	// 3840 2160
 	pipeline.init();
 	Log("pipeline initialized" << endl);
 	dxGlobal.init();
@@ -59,6 +67,9 @@ void BillboardApp::init(HWND hwnd) {
 	// activate changes:
 	billboard.activateAppDataSet();
 	//bdata->billboards.
+	input = Input::getInstance();
+	c.init();
+	c.projectionTransform();
 }
 
 void BillboardApp::presentFrame(Frame* frame, Pipeline* pipeline) {
@@ -84,6 +95,12 @@ void BillboardApp::presentFrame(Frame* frame, Pipeline* pipeline) {
 
 void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void *data)
 {
+	// handle input first:
+	KeyTicks ticks;
+	input->getAndClearKeyTicks(ticks);
+	input->applyTicksToCameraPosition(ticks, &c, 0.00001f);
+	input->applyMouseEvents(&c, 0.001f); // 0.003f
+	// draw effects;
 	BillboardAppFrameData* afd = (BillboardAppFrameData*)frame->frameData;
 	FrameDataGeneral* fdg = &afd->fd_general;
 	FrameDataD2D *fd = &afd->d2d_fd;
@@ -92,7 +109,7 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void *data)
 
 	dxGlobal.clearRenderTexture(fdg);
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
-	billboard.draw(fdg, fdb, pipeline);
+	billboard.draw(fdg, fdb, pipeline, &c);
 	dxGlobal.prepare2DRendering(frame, pipeline, fd);
 
 	d2d->drawStatisticsOverlay(frame, pipeline);

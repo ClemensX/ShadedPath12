@@ -49,7 +49,7 @@ public:
 	// get billboard with order number order_num for texture_id
 	BillboardElement& get(string texture_id, int order_num);
 	void update();
-	void draw(FrameDataGeneral *dfg, FrameDataBillboard *fdb, Pipeline* pipeline);
+	void draw(FrameDataGeneral *dfg, FrameDataBillboard *fdb, Pipeline* pipeline, Camera *c);
 	void drawAll();
 	void destroy();
 

@@ -10,7 +10,7 @@
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-Util util;
+Input *inputHandler = Input::getInstance();
 HWND hwnd;										// window handle
 
 // Forward declarations of functions included in this code module:
@@ -38,9 +38,9 @@ void registerRawInput()
 	}
 }
 
-void handleRawInput(LPARAM lParam, Util *util)
+void handleRawInput(LPARAM lParam, Input *input)
 {
-	BYTE* keystates = util->key_state;
+	BYTE* keystates = input->key_state;
 	UINT dwSize;
 	// store last x and y coord for use with absilute mouse coords, -1 indicates not being used yet
 	static LONG lastx = -1;
@@ -81,7 +81,7 @@ void handleRawInput(LPARAM lParam, Util *util)
 		if ((raw->data.keyboard.Flags & RI_KEY_BREAK) && key < 255) {
 			// key is not up
 			keystates[key] = true;
-			util->anyKeyDown = true;  // important to reset this at end of frame;
+			input->anyKeyDown = true;  // important to reset this at end of frame;
 		}
 		else {
 			keystates[key] = false;
@@ -113,19 +113,19 @@ void handleRawInput(LPARAM lParam, Util *util)
 			if (lasty == -1) {
 				lasty = raw->data.mouse.lLastY;
 			}
-			util->mouseDx = raw->data.mouse.lLastX - lastx;
-			util->mouseDy = raw->data.mouse.lLastY - lasty;
-			util->mouseDx /= ABS_MOUSE_DIVIDER;
-			util->mouseDy /= ABS_MOUSE_DIVIDER;
+			input->mouseDx = raw->data.mouse.lLastX - lastx;
+			input->mouseDy = raw->data.mouse.lLastY - lasty;
+			input->mouseDx /= ABS_MOUSE_DIVIDER;
+			input->mouseDy /= ABS_MOUSE_DIVIDER;
 			lastx = raw->data.mouse.lLastX;
 			lasty = raw->data.mouse.lLastY;
 		} else {
 			// relative mouse coord - use them directly
-			util->mouseDx = raw->data.mouse.lLastX;
-			util->mouseDy = raw->data.mouse.lLastY;
-			//Log("" << util->mouseDx << " " << util->mouseDy << endl);
+			input->mouseDx = raw->data.mouse.lLastX;
+			input->mouseDy = raw->data.mouse.lLastY;
+			//Log("" << input->mouseDx << " " << input->mouseDy << endl);
 		}
-		util->mouseTodo = true;
+		input->mouseTodo = true;
 	}
 
 	delete[] lpb;
@@ -191,7 +191,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		} else {
 			//if (xapp->isShudownFinished())
 			//	break;
-			util.updateKeyboardState();
+			inputHandler->updateKeyboardState();
 			//xapp->update();
 			//xapp->draw();
 			//xapp->importFrameFromRenderToApp();
@@ -310,7 +310,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
 	case WM_INPUT:
-		handleRawInput(lParam, &util);
+		handleRawInput(lParam, inputHandler);
 		return 0;
 	case WM_COMMAND:
         {

@@ -121,13 +121,6 @@ public:
 		XMVECTOR bv = XMLoadFloat3(b);
 		return XMVectorGetX(XMVector3Length(bv - av));
 	};
-	BYTE key_state[256];
-	int mouseDx;
-	int mouseDy;
-	bool mouseTodo;
-	void updateKeyboardState();
-	bool keyDown(BYTE key);
-	bool anyKeyDown = false;
 	// asset handling
 	enum FileCategory { FX, TEXTURE, MESH, SOUND, TEXTUREPAK };
 	// find absolute filename for a name and category, defaults to display error dialog, returns empty filename if not found and errorIfNotFound is set to false,

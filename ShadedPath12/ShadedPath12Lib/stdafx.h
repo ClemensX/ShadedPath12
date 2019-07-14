@@ -200,6 +200,7 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 #include "dwrite_3.h"
 #include "DDSTextureLoader.h"
 #include "forward_structures.h"
+#include "input.h"
 #include "frameresource.h"
 #include "dxmanager.h"
 #include "dxglobal.h"

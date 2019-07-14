@@ -106,9 +106,9 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 	//}
 }
 
-void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* pipeline)
+void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* pipeline, Camera* c)
 {
-	Log("draw " << endl);
+	//Log("draw " << endl);
 	auto config = pipeline->getPipelineConfig();
 	//{
 	//	// test draw with chnaging background color:
@@ -192,16 +192,13 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 		//else resource = xapp().vr.texResource[frameIndex];
 
 		// prepare cbv:
-		Camera c;
-		c.init();
-		c.projectionTransform();
-		XMStoreFloat4x4(&cbv.wvp, c.worldViewProjection());
+		XMStoreFloat4x4(&cbv.wvp, c->worldViewProjection());
 		// set to identity until cam works:
 		//XMMATRIX ident = XMMatrixIdentity();
 		//XMStoreFloat4x4(&cbv.wvp, ident);
-		cbv.cam.x = c.pos.x;
-		cbv.cam.y = c.pos.y;
-		cbv.cam.z = c.pos.z;
+		//cbv.cam.x = c->pos.x;
+		//cbv.cam.y = c->pos.y;
+		//cbv.cam.z = c->pos.z;
 		memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
 
 		// draw
