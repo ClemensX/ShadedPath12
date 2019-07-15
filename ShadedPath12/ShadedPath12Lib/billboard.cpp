@@ -303,6 +303,31 @@ void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement
 	// pos.y		P.y
 	// pos.z		P.z
 	// pos.w
+	if (true) {
+		// now turn the whole thing into normal
+		// default normal is (0,0,-1), we call it n0
+		// the billboard should be turned into bb.normal (n1)
+		// turn axis is perpendicular vector to n0 and n1: 
+		// axis = n0 x n1
+		// radians turn degree is cos t = n0 * n1 / (|n0|*|n1|)
+		// 
+		XMFLOAT4 n0_xm = XMFLOAT4(0.0f, 0.0f, -2.0f, 0.0f);
+		XMVECTOR n0 = XMLoadFloat4(&n0_xm);
+		XMVECTOR n1 = XMLoadFloat4(&bb.normal);
+		XMVECTOR angle = XMVector3AngleBetweenVectors(n0, n1);
+		XMVECTOR axis = XMVector3Cross(n0, n1);
+		XMMATRIX rot = XMMatrixRotationAxis(axis, XMVectorGetX(angle));
+		for (int i = 0; i < 6; i++) {
+			XMFLOAT4 v_xm = XMFLOAT4(c[i].pos.x, c[i].pos.y, c[i].pos.z, 0.0f);
+			XMVECTOR v = XMLoadFloat4(&v_xm);
+			XMVECTOR v2 = XMVector3Transform(v, rot);
+			XMFLOAT3 v2_xm;
+			XMStoreFloat3(&v2_xm, v2);
+			c[i].pos.x = v2_xm.x;
+			c[i].pos.y = v2_xm.y;
+			c[i].pos.z = v2_xm.z;
+		}
+	}
 }
 
 // strange version that uses normal parameters for triangle calculation 
