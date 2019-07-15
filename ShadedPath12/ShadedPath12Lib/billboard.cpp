@@ -316,6 +316,9 @@ void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement
 		XMVECTOR n1 = XMLoadFloat4(&bb.normal);
 		XMVECTOR angle = XMVector3AngleBetweenVectors(n0, n1);
 		XMVECTOR axis = XMVector3Cross(n0, n1);
+		if (XMVector3Equal(axis, XMVectorZero())) {
+
+		}
 		XMMATRIX rot = XMMatrixRotationAxis(axis, XMVectorGetX(angle));
 		for (int i = 0; i < 6; i++) {
 			XMFLOAT4 v_xm = XMFLOAT4(c[i].pos.x, c[i].pos.y, c[i].pos.z, 0.0f);

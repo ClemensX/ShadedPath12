@@ -69,9 +69,9 @@ void BillboardApp::init(HWND hwnd) {
 	textureStore.loadTexture(L"vac_11.dds", "vac11");
 	// create effect application data:
 	//auto bdata = billboard.getInactiveAppDataSet();
-	BillboardElement be1{ {0.0f, 0.0f, 0.0f}, {0.2f, 0.0f, -1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
+	BillboardElement be1{ {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, -1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
 	BillboardElement be2{ {0.5f, 0.1f, 2.1f}, {0.2f, 0.0f, -1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
-	BillboardElement be3{ {-3.5f, 0.0f, 14.0f}, {0.2f, 0.0f, -1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
+	BillboardElement be3{ {-3.5f, 0.0f, 14.0f}, {0.0f, 0.0f, 1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
 	// add to inactive data set:
 	billboard.add("markings", be1);
 	billboard.add("markings", be2);
@@ -79,7 +79,7 @@ void BillboardApp::init(HWND hwnd) {
 	if (false) {
 		BillboardElement b;
 		b.pos = XMFLOAT3(15.0f, 0.0f, 2.0f);
-		b.normal = XMFLOAT4(0.0f, 0.0f, -1.0f, 1.0f);
+		b.normal = XMFLOAT4(-1.0f, 0.0f, -1.0f, 1.0f);
 		//b.size = XMFLOAT2(1.5f, 1.0f);
 		b.size = XMFLOAT2(3.629f, 2.4192f);
 		//	unsigned long total_billboards = 4000000;
