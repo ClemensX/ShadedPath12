@@ -46,6 +46,7 @@ protected:
 	DXManager dxmanager;
 	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	DXGlobal* dxGlobal;
+	VR_Eyes eyes;
 	// constant buffers
 	// set cbv:
 	// flow of control:

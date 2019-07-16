@@ -61,6 +61,7 @@ public:
 	TextureStore* getTextureStore() { return this->textureStore; };
 private:
 	TextureStore* textureStore = nullptr;
+	VR vr;
 };
 
 // Frame data unrelated to a specific effect that needs to be unique for each slot
@@ -90,4 +91,5 @@ struct FrameDataGeneral {
 	ComPtr<ID3D12Fence> fenceRenderTexture;
 	UINT64 fenceValueRenderTexture;
 	ComPtr<ID3D11Resource> wrappedDx12Resource;
+	VR_Eyes eyes;
 };

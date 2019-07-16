@@ -48,6 +48,7 @@
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="threads.cpp" />
     <ClCompile Include="util.cpp" />
+    <ClCompile Include="vr.cpp" />
     <ClCompile Include="world.cpp" />
     <ClCompile Include="xapp.cpp" />
   </ItemGroup>

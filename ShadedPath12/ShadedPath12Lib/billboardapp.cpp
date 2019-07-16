@@ -19,6 +19,7 @@ void BillboardApp::init(HWND hwnd) {
 	auto& pc = pipeline.getPipelineConfig();
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	pc.setFrameBufferSize(FRAME_BUFFER_SIZE);
+	pc.setVRMode();
 	// increasing back buffer width/height has huge effect on overall picture quality and sharpness
 	// small:
 	//pc.backbufferWidth = 1024;
@@ -71,7 +72,8 @@ void BillboardApp::init(HWND hwnd) {
 	//auto bdata = billboard.getInactiveAppDataSet();
 	BillboardElement be1{ {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, -1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
 	BillboardElement be2{ {0.5f, 0.1f, 2.1f}, {0.2f, 0.0f, -1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
-	BillboardElement be3{ {-3.5f, 0.0f, 14.0f}, {0.0f, 0.0f, 1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
+	//BillboardElement be3{ {-3.5f, 0.0f, 14.0f}, {0.0f, 0.0f, 1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
+	BillboardElement be3{ {0.0f, 0.0f, 0.1f}, {0.0f, 0.0f, 1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
 	// add to inactive data set:
 	billboard.add("markings", be1);
 	billboard.add("markings", be2);
@@ -159,7 +161,8 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void *data)
 
 	dxGlobal.clearRenderTexture(fdg);
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
-	billboard.draw(fdg, fdb, pipeline, &c);
+	c2 = c; // TODO copy camera for now - get from HMD later
+	billboard.draw(fdg, fdb, pipeline, &c, &c2);
 	dxGlobal.prepare2DRendering(frame, pipeline, fd);
 
 	d2d->drawStatisticsOverlay(frame, pipeline);

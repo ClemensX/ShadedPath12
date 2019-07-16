@@ -21,8 +21,8 @@ using namespace OVR;
 
 enum EyePos { EyeLeft, EyeRight };
 
-class XApp;
 class VR;
+class Pipeline;
 
 class AvatarPartInfo {
 public:
@@ -30,8 +30,8 @@ public:
 	wstring textureFileName;
 	string meshId;
 	string textureId;
-	WorldObject o;
 #if defined(_OVR_)
+	WorldObject o;
 	ovrAvatarAssetID ovrMeshId;
 	const ovrAvatarRenderPart_SkinnedMeshRenderPBS *renderPartPBS;
 	const ovrAvatarRenderPart_SkinnedMeshRender *renderPart;
@@ -59,7 +59,7 @@ public:
 	D3D12_RECT *getScissorRectByIndex(int eyeNum) { return &scissorRects[eyeNum]; };
 
 	// adjust the MVP matrix according to current eye position
-	void adjustEyeMatrix(XMMATRIX &m, Camera *cam = nullptr);
+	void adjustEyeMatrix(XMMATRIX &m, Camera *cam = nullptr); // TODO probably not needed
 
 	// get view matrix for current eye
 	XMFLOAT4X4 getOVRViewMatrixByIndex(int eyeNum);
@@ -75,7 +75,7 @@ public:
 // global class  - only one instance  - used for global VR data and initialization
 class VR {
 public:
-	VR(XApp *xapp);
+	void init(Pipeline *pipeline);
 	~VR();
 	// basic OVR initialization, called at start of xapp.init()
 	void init();
@@ -86,11 +86,12 @@ public:
 	void endFrame();
 	EyePos getCurrentEye() { return curEye; };
 
+	void prepareEyes(VR_Eyes* eyes);
 	void prepareViews(D3D12_VIEWPORT &viewport, D3D12_RECT &scissorRect);
-	D3D12_VIEWPORT *getViewport() { return &viewports[curEye]; };
-	D3D12_RECT *getScissorRect() { return &scissorRects[curEye]; };
-	D3D12_VIEWPORT *getViewportByIndex(int eyeNum) { return &viewports[eyeNum]; };
-	D3D12_RECT *getScissorRectByIndex(int eyeNum) { return &scissorRects[eyeNum]; };
+	//D3D12_VIEWPORT *getViewport() { return &viewports[curEye]; };
+	//D3D12_RECT *getScissorRect() { return &scissorRects[curEye]; };
+	//D3D12_VIEWPORT *getViewportByIndex(int eyeNum) { return &viewports[eyeNum]; };
+	//D3D12_RECT *getScissorRectByIndex(int eyeNum) { return &scissorRects[eyeNum]; };
 	// getHeight and getWidth should only be called after init()
 	int getHeight() { return buffersize_height; };
 	int getWidth() { return buffersize_width; };
@@ -163,7 +164,7 @@ public:
 	XMFLOAT4X4 getOVRViewMatrixByIndex(int eyeNum) { return ident; };
 	XMFLOAT4X4 getOVRProjectionMatrixByIndex(int eyeNum) { return ident; };
 	XMFLOAT3 getOVRAdjustedEyePosByIndex(int eyeNum) { return XMFLOAT3(0, 0, 0); };
-	int getCurrentFrameBufferIndex();
+	int getCurrentFrameBufferIndex(); // TODO probably not needed
 #endif
 
 	bool enabled = false;  // default: VR is off, switch on by command line option -vr
@@ -181,13 +182,14 @@ private:
 	void handleAvatarMessages();
 	unsigned int pack(const uint8_t *blend_indices);
 
-	D3D12_VIEWPORT viewports[2];
-	D3D12_RECT scissorRects[2];
-	XApp* xapp;
+	//D3D12_VIEWPORT viewports[2];
+	//D3D12_RECT scissorRects[2];
+
 	XMFLOAT4 cam_look, cam_up, cam_pos;
 	bool firstEye = false;
 	int buffersize_width = 0;
 	int buffersize_height = 0;
+	Pipeline* pipeline;
 
 #if defined(_OVR_)
 	void writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarMeshAssetData *assetdata);
