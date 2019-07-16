@@ -56,6 +56,8 @@ public:
 	float getSizeX() { return sizex; };
 	float getSizeY() { return sizey; };
 	float getSizeZ() { return sizez; };
+	void setVRMode() { vrMode = true; };
+	bool getVRMode() { return vrMode; };
 	int getWaitTimeout() { return wait_timeout_ms; };
 	void setFrameBufferSize(size_t size) { frameBufferSize = size; };
 	size_t getFrameBufferSize() { return frameBufferSize; };
@@ -67,6 +69,7 @@ private:
 	float sizex = 0.0f, sizey = 0.0f, sizez = 0.0f;
 	int wait_timeout_ms = 100; // check for interruption 10 times per second
 	size_t frameBufferSize = 0;
+	bool vrMode = false;
 };
 
 class Pipeline
@@ -121,6 +124,8 @@ public:
 	long long lastFrameRenderDuration = 0L; // microseconds
 	long totalFPS = 0; // FPS since starting render threads (skipped frames do not count)
 	World* getWorld() { return &world; };
+	bool vr = false; // VR == true: 2 render two half images
+	bool ovrRendering = false;  // ovrRendering == true: render to HMD
 private:
 	// Pipeline part of creating a frame
 	static void runFrameSlot(Pipeline* pipeline, Frame* frame, int slot);

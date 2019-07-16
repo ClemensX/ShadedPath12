@@ -72,6 +72,8 @@ void DXGlobal::init()
 
 void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d2d, int i, Pipeline* pipeline) {
 	auto config = pipeline->getPipelineConfig();
+	vr.init(pipeline);
+	vr.prepareEyes(&fd->eyes);
 	UINT d3d11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG;
 	D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
 	d2dFactoryOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;

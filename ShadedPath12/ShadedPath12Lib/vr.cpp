@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
-VR::VR(XApp *xapp) {
-	this->xapp = xapp;
+void VR::init(Pipeline *pipeline) {
+	this->pipeline = pipeline;
 #if !defined(_OVR_)
 	XMStoreFloat4x4(&ident, XMMatrixIdentity());
 #endif
@@ -14,7 +14,7 @@ XMFLOAT4X4 VR::ident;
 #define MAX_BONES 64
 
 VR::~VR() {
-	if (!this->xapp->ovrRendering) return;
+	if (!pipeline->ovrRendering) return;
 #if defined(_OVR_)
 	int count;
 	ovr_GetTextureSwapChainLength(session, textureSwapChain, &count);
@@ -217,28 +217,66 @@ void VR::endFrame()
 {
 }
 
+void VR::prepareEyes(VR_Eyes* eyes)
+{
+	auto config = pipeline->getPipelineConfig();
+	auto width = config.backbufferWidth;
+	auto height = config.backbufferHeight;
+	D3D12_VIEWPORT viewport;
+	viewport.MinDepth = 0.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	viewport.Width = static_cast<float>(width);
+	viewport.Height = static_cast<float>(height);
+	viewport.MaxDepth = 1.0f;
+
+	D3D12_RECT scissorRect;
+	scissorRect.left = 0;
+	scissorRect.top = 0;
+	scissorRect.right = static_cast<LONG>(width);
+	scissorRect.bottom = static_cast<LONG>(height);
+
+	if (!pipeline->vr) {
+		eyes->viewports[0] = viewport;
+		eyes->viewports[1] = viewport;
+		eyes->scissorRects[0] = scissorRect;
+		eyes->scissorRects[1] = scissorRect;
+	} else {
+		eyes->viewports[EyeLeft] = viewport;
+		eyes->scissorRects[EyeLeft] = scissorRect;
+		eyes->viewports[EyeRight] = viewport;
+		eyes->scissorRects[EyeRight] = scissorRect;
+		eyes->viewports[EyeLeft].Width /= 2;
+		eyes->scissorRects[EyeLeft].right /= 2;
+		//scissorRects[EyeLeft].right--;
+		eyes->viewports[EyeRight].Width /= 2;
+		eyes->viewports[EyeRight].TopLeftX = eyes->viewports[EyeLeft].Width;
+		eyes->scissorRects[EyeRight].left = eyes->scissorRects[EyeLeft].right;
+	}
+}
+
 void VR::prepareViews(D3D12_VIEWPORT &viewport, D3D12_RECT &scissorRect)
 {
-	if (!enabled) {
-		viewports[EyeLeft] = viewport;
-		scissorRects[EyeLeft] = scissorRect;
-		viewports[EyeRight] = viewport;
-		scissorRects[EyeRight] = scissorRect;
-	}
-	else {
-		//orig_viewport = viewport;
-		//orig_scissorRect = scissorRect;
-		viewports[EyeLeft] = viewport;
-		scissorRects[EyeLeft] = scissorRect;
-		viewports[EyeRight] = viewport;
-		scissorRects[EyeRight] = scissorRect;
-		viewports[EyeLeft].Width /= 2;
-		scissorRects[EyeLeft].right /= 2;
-		//scissorRects[EyeLeft].right--;
-		viewports[EyeRight].Width /= 2;
-		viewports[EyeRight].TopLeftX = viewports[EyeLeft].Width;
-		scissorRects[EyeRight].left = scissorRects[EyeLeft].right;
-	}
+	//if (!enabled) {
+	//	viewports[EyeLeft] = viewport;
+	//	scissorRects[EyeLeft] = scissorRect;
+	//	viewports[EyeRight] = viewport;
+	//	scissorRects[EyeRight] = scissorRect;
+	//}
+	//else {
+	//	//orig_viewport = viewport;
+	//	//orig_scissorRect = scissorRect;
+	//	viewports[EyeLeft] = viewport;
+	//	scissorRects[EyeLeft] = scissorRect;
+	//	viewports[EyeRight] = viewport;
+	//	scissorRects[EyeRight] = scissorRect;
+	//	viewports[EyeLeft].Width /= 2;
+	//	scissorRects[EyeLeft].right /= 2;
+	//	//scissorRects[EyeLeft].right--;
+	//	viewports[EyeRight].Width /= 2;
+	//	viewports[EyeRight].TopLeftX = viewports[EyeLeft].Width;
+	//	scissorRects[EyeRight].left = scissorRects[EyeLeft].right;
+	//}
 }
 
 void VR::prepareDraw()
@@ -270,14 +308,14 @@ void VR_Eyes::adjustEyeMatrix(XMMATRIX & m, Camera * cam, int eyeNum, VR* vr)
 	m = cam->worldViewProjection(projOVR[eyeNum], viewOVR[eyeNum]);
 	// for disabled oculus rendering just copy regular camera wvp:
 	if (vr->texResource.size() == 0) {
-		m = xapp().camera.worldViewProjection();
+		//m = xapp().camera.worldViewProjection(); TODO removed - not necessary
 	}
 }
 
 void VR::adjustEyeMatrix(XMMATRIX &m, Camera *cam) {
 	if (cam == nullptr) {
-		xapp->camera.projectionTransform();
-		m = xapp->camera.worldViewProjection();
+		//xapp->camera.projectionTransform();  TODO removed - not necessary
+		//m = xapp->camera.worldViewProjection();  TODO removed - not necessary
 	}
 	else {
 		cam->projectionTransform();
@@ -1289,7 +1327,7 @@ void VR::submitFrame()
 }
 
 int VR::getCurrentFrameBufferIndex() {
-	return xapp->getCurrentBackBufferIndex();
+	return 0; // xapp->getCurrentBackBufferIndex(); TODO probably not needed
 };
 
 void VR::drawController(bool isLeft)

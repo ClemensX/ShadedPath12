@@ -106,7 +106,7 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 	//}
 }
 
-void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* pipeline, Camera* c)
+void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* pipeline, Camera* cleft, Camera* cright)
 {
 	//Log("draw " << endl);
 	auto config = pipeline->getPipelineConfig();
@@ -131,6 +131,9 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 	//}
 	dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
 	{
+		if (pipeline->vr) {
+			assert(cright != nullptr);
+		}
 		// TODO workaround for mem leak: only call this once:
 		if (fdb->vertexBuffer == nullptr) {
 
@@ -174,8 +177,8 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 
 		// Set necessary state.
 		commandList->SetGraphicsRootSignature(fdb->rootSignature.Get());
-		commandList->RSSetViewports(1, &viewport);
-		commandList->RSSetScissorRects(1, &scissorRect);
+		commandList->RSSetViewports(1, &fdg->eyes.viewports[0]);
+		commandList->RSSetScissorRects(1, &fdg->eyes.scissorRects[0]);
 
 		// Set CBV
 		commandList->SetGraphicsRootConstantBufferView(0, fdb->cbvResource->GetGPUVirtualAddress());
@@ -192,13 +195,13 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 		//else resource = xapp().vr.texResource[frameIndex];
 
 		// prepare cbv:
-		XMStoreFloat4x4(&cbv.wvp, c->worldViewProjection());
+		XMStoreFloat4x4(&cbv.wvp, cleft->worldViewProjection());
 		// set to identity until cam works:
 		//XMMATRIX ident = XMMatrixIdentity();
 		//XMStoreFloat4x4(&cbv.wvp, ident);
-		//cbv.cam.x = c->pos.x;
-		//cbv.cam.y = c->pos.y;
-		//cbv.cam.z = c->pos.z;
+		//cbv.cam.x = cleft->pos.x;
+		//cbv.cam.y = cleft->pos.y;
+		//cbv.cam.z = cleft->pos.z;
 		memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
 
 		// draw
@@ -220,6 +223,30 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 			cur_vertex_index += count;
 		}
 		//postDraw();
+
+		if (pipeline->vr) {
+			// draw right eye:
+			commandList->RSSetViewports(1, &fdg->eyes.viewports[1]);
+			commandList->RSSetScissorRects(1, &fdg->eyes.scissorRects[1]);
+			cright->pos.x += 2.0f;
+			XMStoreFloat4x4(&cbv.wvp, cright->worldViewProjection());
+			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv)); // TODO use 2 buffers!!!!!
+			// now draw all the billboards, one draw call per texture type 
+			// iterate over billboard types
+			UINT cur_vertex_index = 0;
+			auto d = (BillboardEffectAppData*)getActiveAppDataSet();
+			for (auto& elvec : d->billboards) {
+				//Log(elvec.first.c_str() << endl);
+				auto tex = dxGlobal->getTextureStore()->getTexture(elvec.first);
+				// Set SRV
+				ID3D12DescriptorHeap* ppHeaps[] = { tex->m_srvHeap.Get() };
+				fdg->commandListRenderTexture->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+				fdg->commandListRenderTexture->SetGraphicsRootDescriptorTable(1, tex->m_srvHeap->GetGPUDescriptorHandleForHeapStart());
+				UINT count = (UINT)elvec.second.size() * 6;
+				if (count > 0) fdg->commandListRenderTexture->DrawInstanced(count, 1, cur_vertex_index, 0);
+				cur_vertex_index += count;
+			}
+		}
 
 		// execute commands:
 		ThrowIfFailed(commandList->Close());
@@ -317,7 +344,10 @@ void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement
 		XMVECTOR angle = XMVector3AngleBetweenVectors(n0, n1);
 		XMVECTOR axis = XMVector3Cross(n0, n1);
 		if (XMVector3Equal(axis, XMVectorZero())) {
-
+			n0 = XMVectorSetX(n0, XMVectorGetX(n0) + 0.001f);
+			angle = XMVector3AngleBetweenVectors(n0, n1);
+			axis = XMVector3Cross(n0, n1);
+			assert(XMVector3NotEqual(axis, XMVectorZero()));
 		}
 		XMMATRIX rot = XMMatrixRotationAxis(axis, XMVectorGetX(angle));
 		for (int i = 0; i < 6; i++) {
@@ -341,44 +371,44 @@ void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement
 	// first create billboard at origin in x/y plane with correct size:
 	float deltaw = bb.size.x / 2;
 	float deltah = bb.size.y / 2;
-	Vertex* c = cur_billboard; // use shorter name
+	Vertex* cleft = cur_billboard; // use shorter name
 	// low left
-	c[0].pos.x = 0 - deltaw;
-	c[0].pos.y = 0 - deltah;
-	c[0].pos.z = 0;
-	c[0].pos.w = 1;
-	c[0].uv.x = 0;
-	c[0].uv.y = 1;
+	cleft[0].pos.x = 0 - deltaw;
+	cleft[0].pos.y = 0 - deltah;
+	cleft[0].pos.z = 0;
+	cleft[0].pos.w = 1;
+	cleft[0].uv.x = 0;
+	cleft[0].uv.y = 1;
 	// top left
-	c[1].pos.x = 0 - deltaw;
-	c[1].pos.y = 0 + deltah;
-	c[1].pos.z = 0;
-	c[1].pos.w = 1;
-	c[1].uv.x = 0;
-	c[1].uv.y = 0;
+	cleft[1].pos.x = 0 - deltaw;
+	cleft[1].pos.y = 0 + deltah;
+	cleft[1].pos.z = 0;
+	cleft[1].pos.w = 1;
+	cleft[1].uv.x = 0;
+	cleft[1].uv.y = 0;
 	// low right
-	c[2].pos.x = 0 + deltaw;
-	c[2].pos.y = 0 - deltah;
-	c[2].pos.z = 0;
-	c[2].pos.w = 1;
-	c[2].uv.x = 1;
-	c[2].uv.y = 1;
+	cleft[2].pos.x = 0 + deltaw;
+	cleft[2].pos.y = 0 - deltah;
+	cleft[2].pos.z = 0;
+	cleft[2].pos.w = 1;
+	cleft[2].uv.x = 1;
+	cleft[2].uv.y = 1;
 	// 2nd triangle: copy low right
-	c[3] = c[2];
+	cleft[3] = cleft[2];
 	// 2nd triangle: copy top left
-	c[4] = c[1];
+	cleft[4] = cleft[1];
 	// 2nd triangle: top right
-	c[5].pos.x = 0 + deltaw;
-	c[5].pos.y = 0 + deltah;
-	c[5].pos.z = 0;
-	c[5].pos.w = 1;
-	c[5].uv.x = 1;
-	c[5].uv.y = 0;
+	cleft[5].pos.x = 0 + deltaw;
+	cleft[5].pos.y = 0 + deltah;
+	cleft[5].pos.z = 0;
+	cleft[5].pos.w = 1;
+	cleft[5].uv.x = 1;
+	cleft[5].uv.y = 0;
 	// now translate to real position:
 	for (int i = 0; i < 6; i++) {
-		c[i].pos.x += bb.pos.x;
-		c[i].pos.y += bb.pos.y;
-		c[i].pos.z += bb.pos.z;
+		cleft[i].pos.x += bb.pos.x;
+		cleft[i].pos.y += bb.pos.y;
+		cleft[i].pos.z += bb.pos.z;
 	}
 	// layout of vertex input: 
 	// pos.x		P.x
@@ -391,24 +421,24 @@ void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement
 	// normal.w		h/2
 	//XMFLOAT4 cam = xapp().camera.pos;
 	for (int i = 0; i < 6; i++) {
-		c[i].pos.x = bb.pos.x;
-		c[i].pos.y = bb.pos.y;
-		c[i].pos.z = bb.pos.z;
-		c[i].normal.z = deltaw;
-		c[i].normal.w = deltah;
+		cleft[i].pos.x = bb.pos.x;
+		cleft[i].pos.y = bb.pos.y;
+		cleft[i].pos.z = bb.pos.z;
+		cleft[i].normal.z = deltaw;
+		cleft[i].normal.w = deltah;
 	}
-	c[0].normal.x = -1;
-	c[0].normal.y = -1;
-	c[1].normal.x = -1;
-	c[1].normal.y = 1;
-	c[2].normal.x = 1;
-	c[2].normal.y = -1;
+	cleft[0].normal.x = -1;
+	cleft[0].normal.y = -1;
+	cleft[1].normal.x = -1;
+	cleft[1].normal.y = 1;
+	cleft[2].normal.x = 1;
+	cleft[2].normal.y = -1;
 
-	c[3].normal.x = 1;
-	c[3].normal.y = -1;
-	c[4].normal.x = -1;
-	c[4].normal.y = 1;
-	c[5].normal.x = 1;
-	c[5].normal.y = 1;
+	cleft[3].normal.x = 1;
+	cleft[3].normal.y = -1;
+	cleft[4].normal.x = -1;
+	cleft[4].normal.y = 1;
+	cleft[5].normal.x = 1;
+	cleft[5].normal.y = 1;
 }
 */
