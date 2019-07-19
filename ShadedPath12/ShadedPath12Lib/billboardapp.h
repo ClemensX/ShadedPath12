@@ -51,7 +51,7 @@ private:
 	TextureStore textureStore;
 	Billboard billboard;
 	Util util;
-	Camera c,c2;
+	Camera c,c2; //cameras need to be local to threads, copy these in effects
 	Input* input = nullptr;
 };
 

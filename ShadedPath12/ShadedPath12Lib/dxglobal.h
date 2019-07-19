@@ -50,6 +50,8 @@ public:
 	// copy background render texture to foreground window (possibly from different slots)
 	// and present() the swap chain
 	void present2Window(Pipeline* pipeline, Frame *frame);
+	// prepare comeras by copying global cameras to frame resources
+	void prepareCameras(Frame* frame, Pipeline* pipeline, const Camera* cleft, const Camera* cright = nullptr);
 	void clearRenderTexture(FrameDataGeneral* fd);
 	void prepare2DRendering(Frame* frame, Pipeline* pipeline, FrameDataD2D* fd2d);
 	void end2DRendering(Frame* frame, Pipeline* pipeline, FrameDataD2D* fd2d);
@@ -92,4 +94,6 @@ struct FrameDataGeneral {
 	UINT64 fenceValueRenderTexture;
 	ComPtr<ID3D11Resource> wrappedDx12Resource;
 	VR_Eyes eyes;
+	Camera leftCam;
+	Camera rightCam;
 };

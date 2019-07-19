@@ -106,7 +106,7 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 	//}
 }
 
-void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* pipeline, Camera* cleft, Camera* cright)
+void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* pipeline)
 {
 	//Log("draw " << endl);
 	auto config = pipeline->getPipelineConfig();
@@ -131,9 +131,9 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 	//}
 	dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
 	{
-		if (pipeline->vr) {
-			assert(cright != nullptr);
-		}
+		//if (pipeline->vr) {
+		//	assert(fdg->rightCam. != nullptr);
+		//}
 		// TODO workaround for mem leak: only call this once:
 		if (fdb->vertexBuffer == nullptr) {
 
@@ -195,13 +195,7 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 		//else resource = xapp().vr.texResource[frameIndex];
 
 		// prepare cbv:
-		XMStoreFloat4x4(&cbv.wvp, cleft->worldViewProjection());
-		// set to identity until cam works:
-		//XMMATRIX ident = XMMatrixIdentity();
-		//XMStoreFloat4x4(&cbv.wvp, ident);
-		//cbv.cam.x = cleft->pos.x;
-		//cbv.cam.y = cleft->pos.y;
-		//cbv.cam.z = cleft->pos.z;
+		XMStoreFloat4x4(&cbv.wvp, fdg->leftCam.worldViewProjection());
 		memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
 
 		// draw
@@ -222,14 +216,12 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 			if (count > 0) fdg->commandListRenderTexture->DrawInstanced(count, 1, cur_vertex_index, 0);
 			cur_vertex_index += count;
 		}
-		//postDraw();
-
-		if (pipeline->vr) {
+		//Sleep(50);
+		if (true && pipeline->vr) {
 			// draw right eye:
 			commandList->RSSetViewports(1, &fdg->eyes.viewports[1]);
 			commandList->RSSetScissorRects(1, &fdg->eyes.scissorRects[1]);
-			cright->pos.x += 2.0f;
-			XMStoreFloat4x4(&cbv.wvp, cright->worldViewProjection());
+			XMStoreFloat4x4(&cbv.wvp, fdg->rightCam.worldViewProjection());
 			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv)); // TODO use 2 buffers!!!!!
 			// now draw all the billboards, one draw call per texture type 
 			// iterate over billboard types

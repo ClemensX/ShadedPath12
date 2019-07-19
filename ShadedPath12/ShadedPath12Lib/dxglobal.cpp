@@ -497,3 +497,13 @@ void DXGlobal::copyTextureToCPUAndExport(Frame* frame, Pipeline* pipeline, strin
 	bufferRenderTextureCPU->Unmap(0, nullptr);
 }
 
+void DXGlobal::prepareCameras(Frame* frame, Pipeline* pipeline, const Camera* cleft, const Camera* cright)
+{
+	FrameDataGeneral* fd = pipeline->afManager.getAppDataForSlot(frame->slot)->getFrameDataGeneral();
+	fd->leftCam = *cleft;
+	if (cright != nullptr) {
+		fd->rightCam = *cright;
+		fd->rightCam.pos.x += 4.0f;
+		//fd->rightCam.pos.y += 5.0f;
+	}
+}

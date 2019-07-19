@@ -162,7 +162,8 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void *data)
 	dxGlobal.clearRenderTexture(fdg);
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
 	c2 = c; // TODO copy camera for now - get from HMD later
-	billboard.draw(fdg, fdb, pipeline, &c, &c2);
+	dxGlobal.prepareCameras(frame, pipeline, &c, &c2);
+	billboard.draw(fdg, fdb, pipeline);
 	dxGlobal.prepare2DRendering(frame, pipeline, fd);
 
 	d2d->drawStatisticsOverlay(frame, pipeline);
