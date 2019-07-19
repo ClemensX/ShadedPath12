@@ -218,11 +218,12 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 		}
 		//Sleep(50);
 		if (true && pipeline->vr) {
+			commandList->SetGraphicsRootConstantBufferView(0, fdb->cbvResource2->GetGPUVirtualAddress());
 			// draw right eye:
 			commandList->RSSetViewports(1, &fdg->eyes.viewports[1]);
 			commandList->RSSetScissorRects(1, &fdg->eyes.scissorRects[1]);
 			XMStoreFloat4x4(&cbv.wvp, fdg->rightCam.worldViewProjection());
-			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv)); // TODO use 2 buffers!!!!!
+			memcpy(fdb->cbvGPUDest2, &cbv, sizeof(cbv)); // TODO use 2 buffers!!!!!
 			// now draw all the billboards, one draw call per texture type 
 			// iterate over billboard types
 			UINT cur_vertex_index = 0;

@@ -13,6 +13,16 @@ void Effect::createConstantBuffer(size_t s, LPCWSTR name, FrameDataBase* frameDa
 	frameData->cbvResource.Get()->SetName(name);
 	Log("GPU virtual: " << frameData->cbvResource->GetGPUVirtualAddress() << endl);
 	ThrowIfFailed(frameData->cbvResource->Map(0, nullptr, reinterpret_cast<void**>(&frameData->cbvGPUDest)));
+	ThrowIfFailed(dxGlobal->device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE, // do not set - dx12 does this automatically depending on resource type
+		&CD3DX12_RESOURCE_DESC::Buffer(cbvSize),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&frameData->cbvResource2)));
+	frameData->cbvResource.Get()->SetName(name);
+	Log("GPU virtual: " << frameData->cbvResource2->GetGPUVirtualAddress() << endl);
+	ThrowIfFailed(frameData->cbvResource2->Map(0, nullptr, reinterpret_cast<void**>(&frameData->cbvGPUDest2)));
 }
 
 void Effect::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, void* data, ID3D12PipelineState* pipelineState, LPCWSTR baseName,

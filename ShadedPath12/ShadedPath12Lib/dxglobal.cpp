@@ -503,7 +503,7 @@ void DXGlobal::prepareCameras(Frame* frame, Pipeline* pipeline, const Camera* cl
 	fd->leftCam = *cleft;
 	if (cright != nullptr) {
 		fd->rightCam = *cright;
-		fd->rightCam.pos.x += 4.0f;
+		fd->rightCam.pos.x += 0.064f; // 64mm average pupil distance
 		//fd->rightCam.pos.y += 5.0f;
 	}
 }

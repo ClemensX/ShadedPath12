@@ -17,7 +17,9 @@ public:
 	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
 	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
 	ComPtr<ID3D12Resource> cbvResource;
+	ComPtr<ID3D12Resource> cbvResource2;
 	UINT8* cbvGPUDest;  // memcpy() changed cbv data to this address before draw()
+	UINT8* cbvGPUDest2;  // memcpy() changed cbv data to this address before draw()
 
 	friend class DXGlobal;
 };
