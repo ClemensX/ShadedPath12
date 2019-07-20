@@ -1346,16 +1346,19 @@ void VR::submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg)
 #if defined(_SVR_)
 	vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
 
-
+	// uv min upper left, uvmax lower right
 	vr::VRTextureBounds_t bounds;
 	bounds.uMin = 0.0f;
-	bounds.uMax = 1.0f;
+	bounds.uMax = 0.5f;
 	bounds.vMin = 0.0f;
 	bounds.vMax = 1.0f;
 	
 	vr::D3D12TextureData_t d3d12LeftEyeTexture = { fdg->renderTargetRenderTexture.Get(), dxGlobal->commandQueue.Get(), 0 };
 	vr::Texture_t leftEyeTexture = { (void*)& d3d12LeftEyeTexture, vr::TextureType_DirectX12, vr::ColorSpace_Gamma };
 	vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture, &bounds, vr::Submit_Default);
+
+	bounds.uMin = 0.5f;
+	bounds.uMax = 1.0f;
 
 	vr::D3D12TextureData_t d3d12RightEyeTexture = { fdg->renderTargetRenderTexture.Get(), dxGlobal->commandQueue.Get(), 0 };
 	vr::Texture_t rightEyeTexture = { (void*)& d3d12RightEyeTexture, vr::TextureType_DirectX12, vr::ColorSpace_Gamma };
