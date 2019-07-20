@@ -18,7 +18,11 @@ using namespace OVR;
 #pragma comment(lib, "../../../OculusSDK/LibOVR/Lib/Windows/x64/Release/VS2015/LibOVR.lib")
 #endif
 #endif
-
+#if defined(_SVR_)
+// you have to copy openvr/bin/win64/openvr_api.dll to repos/ShadedPath12/ShadedPath12/x64/Debug or /Release
+#include "../../../openvr/headers/openvr.h"
+#pragma comment(lib, "../../../openvr/lib/win64/openvr_api.lib")
+#endif
 enum EyePos { EyeLeft, EyeRight };
 
 class VR;
@@ -117,6 +121,15 @@ public:
 	void drawController(bool isLeft);
 	void drawHand(bool isLeft);
 	// if all assets of an avatar have been loaded, gather all the info needed for rendering:
+#if defined(_SVR_)
+	vr::IVRSystem* m_pHMD;
+	vr::IVRRenderModels* m_pRenderModels;
+	std::string m_strDriver;
+	std::string m_strDisplay;
+	vr::TrackedDevicePose_t m_rTrackedDevicePose[vr::k_unMaxTrackedDeviceCount];
+	//Matrix4 m_rmat4DevicePose[vr::k_unMaxTrackedDeviceCount];
+	bool m_rbShowTrackedDevice[vr::k_unMaxTrackedDeviceCount];
+#endif
 #if defined(_OVR_)
 	void gatherAvatarComponentInfo(AvatarPartInfo &avatarPartInfo, const ovrAvatarControllerComponent *component);
 	void gatherAvatarComponentInfo(AvatarPartInfo &avatarPartInfo, const ovrAvatarHandComponent *component);
@@ -189,7 +202,7 @@ private:
 	bool firstEye = false;
 	int buffersize_width = 0;
 	int buffersize_height = 0;
-	Pipeline* pipeline;
+	Pipeline* pipeline = nullptr;
 
 #if defined(_OVR_)
 	void writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarMeshAssetData *assetdata);

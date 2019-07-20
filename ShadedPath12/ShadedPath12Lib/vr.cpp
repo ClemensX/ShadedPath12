@@ -1,9 +1,22 @@
 #include "stdafx.h"
 
 void VR::init(Pipeline *pipeline) {
+	if (this->pipeline != nullptr) return; // TODO fix multiple calls to this init()
 	this->pipeline = pipeline;
-#if !defined(_OVR_)
-	XMStoreFloat4x4(&ident, XMMatrixIdentity());
+#if defined(_SVR_)
+	// Loading the SteamVR Runtime
+	vr::EVRInitError eError = vr::VRInitError_None;
+	m_pHMD = vr::VR_Init(&eError, vr::VRApplication_Scene);
+
+	if (eError != vr::VRInitError_None)
+	{
+		m_pHMD = NULL;
+		char buf[1024];
+		sprintf_s(buf, sizeof(buf), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription(eError));
+		Log(L"svr_Initialize failed: " << vr::VR_GetVRInitErrorAsEnglishDescription(eError) << endl);
+		Error(L"svr_Initialize failed");
+	}
+
 #endif
 }
 
