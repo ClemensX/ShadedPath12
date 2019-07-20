@@ -27,6 +27,9 @@ enum EyePos { EyeLeft, EyeRight };
 
 class VR;
 class Pipeline;
+class Frame;
+class DXGlobal;
+struct FrameDataGeneral;
 
 class AvatarPartInfo {
 public:
@@ -79,7 +82,7 @@ public:
 // global class  - only one instance  - used for global VR data and initialization
 class VR {
 public:
-	void init(Pipeline *pipeline);
+	void init(Pipeline *pipeline, DXGlobal*);
 	~VR();
 	// basic OVR initialization, called at start of xapp.init()
 	void init();
@@ -111,7 +114,7 @@ public:
 	bool isFirstEye();
 	// read HMD position and generate view parameters for both eyes
 	void nextTracking();
-	void submitFrame();
+	void submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg);
 
 	// ovr message queue, has to be called from application update()
 	void handleOVRMessages();
@@ -203,6 +206,7 @@ private:
 	int buffersize_width = 0;
 	int buffersize_height = 0;
 	Pipeline* pipeline = nullptr;
+	DXGlobal* dxGlobal = nullptr;
 
 #if defined(_OVR_)
 	void writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded *assetmsg, const ovrAvatarMeshAssetData *assetdata);

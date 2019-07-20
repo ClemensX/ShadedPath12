@@ -1,8 +1,9 @@
 #include "stdafx.h"
 
-void VR::init(Pipeline *pipeline) {
+void VR::init(Pipeline *pipeline, DXGlobal *dxglobal) {
 	if (this->pipeline != nullptr) return; // TODO fix multiple calls to this init()
 	this->pipeline = pipeline;
+	this->dxGlobal = dxglobal;
 #if defined(_SVR_)
 	// Loading the SteamVR Runtime
 	vr::EVRInitError eError = vr::VRInitError_None;
@@ -15,6 +16,11 @@ void VR::init(Pipeline *pipeline) {
 		sprintf_s(buf, sizeof(buf), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription(eError));
 		Log(L"svr_Initialize failed: " << vr::VR_GetVRInitErrorAsEnglishDescription(eError) << endl);
 		Error(L"svr_Initialize failed");
+	}
+	if (!vr::VRCompositor())
+	{
+		Log(L"VRCompositor not available" << endl);
+		Error(L"VRCompositor not available");
 	}
 
 #endif
@@ -1335,8 +1341,26 @@ void VR::nextTracking()
 {
 }
 
-void VR::submitFrame()
+void VR::submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg)
 {
+#if defined(_SVR_)
+	vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
+
+
+	vr::VRTextureBounds_t bounds;
+	bounds.uMin = 0.0f;
+	bounds.uMax = 1.0f;
+	bounds.vMin = 0.0f;
+	bounds.vMax = 1.0f;
+	
+	vr::D3D12TextureData_t d3d12LeftEyeTexture = { fdg->renderTargetRenderTexture.Get(), dxGlobal->commandQueue.Get(), 0 };
+	vr::Texture_t leftEyeTexture = { (void*)& d3d12LeftEyeTexture, vr::TextureType_DirectX12, vr::ColorSpace_Gamma };
+	vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture, &bounds, vr::Submit_Default);
+
+	vr::D3D12TextureData_t d3d12RightEyeTexture = { fdg->renderTargetRenderTexture.Get(), dxGlobal->commandQueue.Get(), 0 };
+	vr::Texture_t rightEyeTexture = { (void*)& d3d12RightEyeTexture, vr::TextureType_DirectX12, vr::ColorSpace_Gamma };
+	vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture, &bounds, vr::Submit_Default);
+#endif
 }
 
 int VR::getCurrentFrameBufferIndex() {

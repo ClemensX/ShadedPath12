@@ -61,6 +61,7 @@ public:
 	// texture store to be used by effects - has to be set from application during startup init
 	void setTextureStore(TextureStore* textureStore) { this->textureStore = textureStore; };
 	TextureStore* getTextureStore() { return this->textureStore; };
+	void submitVR(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg);
 private:
 	TextureStore* textureStore = nullptr;
 	VR vr;
