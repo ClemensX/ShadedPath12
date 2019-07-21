@@ -124,8 +124,9 @@ public:
 	long long lastFrameRenderDuration = 0L; // microseconds
 	long totalFPS = 0; // FPS since starting render threads (skipped frames do not count)
 	World* getWorld() { return &world; };
-	bool vr = false; // VR == true: 2 render two half images
+	bool vrMode = false; // VR == true: 2 render two half images
 	bool ovrRendering = false;  // ovrRendering == true: render to HMD
+	void setVRImplementation(VR* vrimpl) { vr = vrimpl; };
 private:
 	// Pipeline part of creating a frame
 	static void runFrameSlot(Pipeline* pipeline, Frame* frame, int slot);
@@ -148,6 +149,7 @@ private:
 	long long skipped = 0; // count skipped frames
 	long long last_processed = -1; // last processed frame number
 	World world;
+	VR* vr = nullptr;
 protected:
 };
 

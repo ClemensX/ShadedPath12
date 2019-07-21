@@ -32,7 +32,7 @@ void Pipeline::init()
 	LogF("Pipeline::init with LogF" << endl);
 	initialized = true;
 	world.setWorldSize(pc.getSizeX(), pc.getSizeY(), pc.getSizeZ());
-	vr = pc.getVRMode();
+	vrMode = pc.getVRMode();
 }
 
 void Pipeline::finallyProcessed(Frame* frame)

@@ -36,6 +36,7 @@
     <ClCompile Include="gametime.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="launcher.cpp" />
+    <ClCompile Include="Matrices.cpp" />
     <ClCompile Include="pipeline.cpp" />
     <ClCompile Include="rendercontrol.cpp" />
     <ClCompile Include="sample1.cpp" />
@@ -79,6 +80,7 @@
     <ClInclude Include="input.h" />
     <ClInclude Include="launcher.h" />
     <ClInclude Include="lights.h" />
+    <ClInclude Include="Matrices.h" />
     <ClInclude Include="meshObject.h" />
     <ClInclude Include="path.h" />
     <ClInclude Include="pipeline.h" />

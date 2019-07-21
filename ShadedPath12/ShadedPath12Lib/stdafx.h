@@ -204,6 +204,7 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 #include "frameresource.h"
 #include "dxmanager.h"
 #include "camera.h"
+#include "Matrices.h"
 #include "vr.h"
 #include "dxglobal.h"
 #include "dx2d.h"

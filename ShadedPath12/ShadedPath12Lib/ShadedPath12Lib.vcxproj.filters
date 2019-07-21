@@ -117,6 +117,9 @@
     <ClCompile Include="vr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Matrices.cpp">
+      <Filter>Source Files\NE3</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ShadedPath12\Resource.h">
@@ -240,6 +243,9 @@
       <Filter>Apps</Filter>
     </ClInclude>
     <ClInclude Include="input.h">
+      <Filter>Source Files\NE3</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrices.h">
       <Filter>Source Files\NE3</Filter>
     </ClInclude>
   </ItemGroup>

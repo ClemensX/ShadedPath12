@@ -130,8 +130,42 @@ public:
 	std::string m_strDriver;
 	std::string m_strDisplay;
 	vr::TrackedDevicePose_t m_rTrackedDevicePose[vr::k_unMaxTrackedDeviceCount];
-	//Matrix4 m_rmat4DevicePose[vr::k_unMaxTrackedDeviceCount];
+	Matrix4 m_rmat4DevicePose[vr::k_unMaxTrackedDeviceCount];
 	bool m_rbShowTrackedDevice[vr::k_unMaxTrackedDeviceCount];
+	Matrix4 GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye);
+	Matrix4 GetHMDMatrixPoseEye(vr::Hmd_Eye nEye);
+	Matrix4 GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye);
+	void UpdateHMDMatrixPose();
+
+	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t& matPose);
+private:
+	int m_iTrackedControllerCount;
+	int m_iTrackedControllerCount_Last;
+	int m_iValidPoseCount;
+	int m_iValidPoseCount_Last;
+	bool m_bShowCubes;
+
+	std::string m_strPoseClasses;                            // what classes we saw poses for this frame
+	char m_rDevClassChar[vr::k_unMaxTrackedDeviceCount];   // for each device, a character representing its class
+
+	int m_iSceneVolumeWidth;
+	int m_iSceneVolumeHeight;
+	int m_iSceneVolumeDepth;
+	float m_fScaleSpacing;
+	float m_fScale;
+
+	int m_iSceneVolumeInit;                                  // if you want something other than the default 20x20x20
+
+	float m_fNearClip;
+	float m_fFarClip;
+	Matrix4 m_mat4HMDPose;
+	Matrix4 m_mat4eyePosLeft;
+	Matrix4 m_mat4eyePosRight;
+
+	Matrix4 m_mat4ProjectionCenter;
+	Matrix4 m_mat4ProjectionLeft;
+	Matrix4 m_mat4ProjectionRight;
+public:
 #endif
 #if defined(_OVR_)
 	void gatherAvatarComponentInfo(AvatarPartInfo &avatarPartInfo, const ovrAvatarControllerComponent *component);
@@ -183,7 +217,7 @@ public:
 	int getCurrentFrameBufferIndex(); // TODO probably not needed
 #endif
 
-	bool enabled = false;  // default: VR is off, switch on by command line option -vr
+	bool enabled = false;  // default: VR is off, switch on by command line option -vrMode
 	std::vector<ID3D12Resource*> texResource;
 	ComPtr<ID3D12DescriptorHeap> rtvVRHeap;  // Resource Target View Heap
 	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> texRtv;

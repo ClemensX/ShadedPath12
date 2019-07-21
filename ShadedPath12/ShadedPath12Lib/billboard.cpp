@@ -131,7 +131,7 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 	//}
 	dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
 	{
-		//if (pipeline->vr) {
+		//if (pipeline->vrMode) {
 		//	assert(fdg->rightCam. != nullptr);
 		//}
 		// TODO workaround for mem leak: only call this once:
@@ -192,11 +192,14 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 		fdg->commandListRenderTexture->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 		ID3D12Resource* resource = fdg->renderTarget.Get();
 		//if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
-		//else resource = xapp().vr.texResource[frameIndex];
+		//else resource = xapp().vrMode.texResource[frameIndex];
 
 		// prepare cbv:
 		XMStoreFloat4x4(&cbv.wvp, fdg->leftCam.worldViewProjection());
 		memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
+		Log("size my wvp: " << sizeof(cbv.wvp) << endl);
+		Log("size Steam wvp: " << sizeof(Matrix4) << endl);
+		assert(sizeof(cbv.wvp) == sizeof(Matrix4));
 
 		// draw
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -217,7 +220,7 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 			cur_vertex_index += count;
 		}
 		//Sleep(50);
-		if (true && pipeline->vr) {
+		if (true && pipeline->vrMode) {
 			commandList->SetGraphicsRootConstantBufferView(0, fdb->cbvResource2->GetGPUVirtualAddress());
 			// draw right eye:
 			commandList->RSSetViewports(1, &fdg->eyes.viewports[1]);

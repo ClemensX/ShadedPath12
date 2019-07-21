@@ -64,7 +64,7 @@ protected:
 	void waitForWorkerThreads();
 	//VR_Eyes vr_eyes;
 	// initialize next ovr draw by copying globals from VR class to vr_eyes
-	//void prepareDraw(VR *vr);
+	//void prepareDraw(VR *vrMode);
 	virtual ~EffectBase();
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
 	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();

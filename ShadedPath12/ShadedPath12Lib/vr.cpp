@@ -4,6 +4,7 @@ void VR::init(Pipeline *pipeline, DXGlobal *dxglobal) {
 	if (this->pipeline != nullptr) return; // TODO fix multiple calls to this init()
 	this->pipeline = pipeline;
 	this->dxGlobal = dxglobal;
+	pipeline->setVRImplementation(this);
 #if defined(_SVR_)
 	// Loading the SteamVR Runtime
 	vr::EVRInitError eError = vr::VRInitError_None;
@@ -255,7 +256,7 @@ void VR::prepareEyes(VR_Eyes* eyes)
 	scissorRect.right = static_cast<LONG>(width);
 	scissorRect.bottom = static_cast<LONG>(height);
 
-	if (!pipeline->vr) {
+	if (!pipeline->vrMode) {
 		eyes->viewports[0] = viewport;
 		eyes->viewports[1] = viewport;
 		eyes->scissorRects[0] = scissorRect;
@@ -317,7 +318,7 @@ void VR::endDraw() {
 void VR_Eyes::adjustEyeMatrix(XMMATRIX & m, Camera * cam, int eyeNum, VR* vr)
 {
 	// get updated eye pos
-	//vr->nextTracking();
+	//vrMode->nextTracking();
 	viewOVR[eyeNum] = vr->getOVRViewMatrixByIndex(eyeNum);
 	projOVR[eyeNum] = vr->getOVRProjectionMatrixByIndex(eyeNum);
 	adjustedEyePos[eyeNum] = vr->getOVRAdjustedEyePosByIndex(eyeNum);
@@ -1376,5 +1377,59 @@ void VR::drawController(bool isLeft)
 
 void VR::drawHand(bool isLeft)
 {
+}
+#endif
+
+#if defined(_SVR_)
+void VR::UpdateHMDMatrixPose()
+{
+	if (!m_pHMD)
+		return;
+
+	vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
+
+	m_iValidPoseCount = 0;
+	m_strPoseClasses = "";
+	for (int nDevice = 0; nDevice < vr::k_unMaxTrackedDeviceCount; ++nDevice)
+	{
+		if (m_rTrackedDevicePose[nDevice].bPoseIsValid)
+		{
+			m_iValidPoseCount++;
+			m_rmat4DevicePose[nDevice] = ConvertSteamVRMatrixToMatrix4(m_rTrackedDevicePose[nDevice].mDeviceToAbsoluteTracking);
+			if (m_rDevClassChar[nDevice] == 0)
+			{
+				switch (m_pHMD->GetTrackedDeviceClass(nDevice))
+				{
+				case vr::TrackedDeviceClass_Controller:        m_rDevClassChar[nDevice] = 'C'; break;
+				case vr::TrackedDeviceClass_HMD:               m_rDevClassChar[nDevice] = 'H'; break;
+				case vr::TrackedDeviceClass_Invalid:           m_rDevClassChar[nDevice] = 'I'; break;
+				case vr::TrackedDeviceClass_GenericTracker:    m_rDevClassChar[nDevice] = 'G'; break;
+				case vr::TrackedDeviceClass_TrackingReference: m_rDevClassChar[nDevice] = 'T'; break;
+				default:                                       m_rDevClassChar[nDevice] = '?'; break;
+				}
+			}
+			m_strPoseClasses += m_rDevClassChar[nDevice];
+		}
+	}
+
+	if (m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid)
+	{
+		m_mat4HMDPose = m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
+		m_mat4HMDPose.invert();
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Converts a SteamVR matrix to our local matrix class
+//-----------------------------------------------------------------------------
+Matrix4 VR::ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t& matPose)
+{
+	Matrix4 matrixObj(
+		matPose.m[0][0], matPose.m[1][0], matPose.m[2][0], 0.0,
+		matPose.m[0][1], matPose.m[1][1], matPose.m[2][1], 0.0,
+		matPose.m[0][2], matPose.m[1][2], matPose.m[2][2], 0.0,
+		matPose.m[0][3], matPose.m[1][3], matPose.m[2][3], 1.0f
+	);
+	return matrixObj;
 }
 #endif
