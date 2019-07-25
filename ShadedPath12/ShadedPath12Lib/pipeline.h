@@ -127,6 +127,7 @@ public:
 	bool vrMode = false; // VR == true: 2 render two half images
 	bool ovrRendering = false;  // ovrRendering == true: render to HMD
 	void setVRImplementation(VR* vrimpl) { vr = vrimpl; };
+	VR* getVR() { return vr; };
 private:
 	// Pipeline part of creating a frame
 	static void runFrameSlot(Pipeline* pipeline, Frame* frame, int slot);

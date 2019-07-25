@@ -195,11 +195,18 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 		//else resource = xapp().vrMode.texResource[frameIndex];
 
 		// prepare cbv:
-		XMStoreFloat4x4(&cbv.wvp, fdg->leftCam.worldViewProjection());
-		memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
-		Log("size my wvp: " << sizeof(cbv.wvp) << endl);
-		Log("size Steam wvp: " << sizeof(Matrix4) << endl);
-		assert(sizeof(cbv.wvp) == sizeof(Matrix4));
+		if (pipeline->ovrRendering) {
+			pipeline->getVR()->SetupCameras();
+			Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Left);
+			memcpy(&cbv.wvp, &wvp, sizeof(cbv.wvp));
+			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
+		} else {
+			XMStoreFloat4x4(&cbv.wvp, fdg->leftCam.worldViewProjection());
+			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
+		}
+		//Log("size my wvp: " << sizeof(cbv.wvp) << endl);
+		//Log("size Steam wvp: " << sizeof(Matrix4) << endl);
+		//assert(sizeof(cbv.wvp) == sizeof(Matrix4));
 
 		// draw
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -225,8 +232,15 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 			// draw right eye:
 			commandList->RSSetViewports(1, &fdg->eyes.viewports[1]);
 			commandList->RSSetScissorRects(1, &fdg->eyes.scissorRects[1]);
-			XMStoreFloat4x4(&cbv.wvp, fdg->rightCam.worldViewProjection());
-			memcpy(fdb->cbvGPUDest2, &cbv, sizeof(cbv)); // TODO use 2 buffers!!!!!
+			if (pipeline->ovrRendering) {
+				Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Right);
+				memcpy(&cbv.wvp, &wvp, sizeof(cbv.wvp));
+				memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
+			}
+			else {
+				XMStoreFloat4x4(&cbv.wvp, fdg->rightCam.worldViewProjection());
+				memcpy(fdb->cbvGPUDest2, &cbv, sizeof(cbv));
+			}
 			// now draw all the billboards, one draw call per texture type 
 			// iterate over billboard types
 			UINT cur_vertex_index = 0;

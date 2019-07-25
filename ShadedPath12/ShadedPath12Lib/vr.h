@@ -138,6 +138,7 @@ public:
 	void UpdateHMDMatrixPose();
 
 	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t& matPose);
+	void SetupCameras();
 private:
 	int m_iTrackedControllerCount;
 	int m_iTrackedControllerCount_Last;
@@ -156,8 +157,8 @@ private:
 
 	int m_iSceneVolumeInit;                                  // if you want something other than the default 20x20x20
 
-	float m_fNearClip;
-	float m_fFarClip;
+	float m_fNearClip = 0.1f;
+	float m_fFarClip = 300.0f;
 	Matrix4 m_mat4HMDPose;
 	Matrix4 m_mat4eyePosLeft;
 	Matrix4 m_mat4eyePosRight;
