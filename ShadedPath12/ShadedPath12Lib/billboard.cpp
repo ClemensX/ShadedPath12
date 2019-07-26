@@ -196,10 +196,12 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 
 		// prepare cbv:
 		if (pipeline->ovrRendering) {
+#if defined(_SVR_)
 			pipeline->getVR()->SetupCameras();
 			Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Left);
 			memcpy(&cbv.wvp, &wvp, sizeof(cbv.wvp));
 			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
+#endif
 		} else {
 			XMStoreFloat4x4(&cbv.wvp, fdg->leftCam.worldViewProjection());
 			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
@@ -233,9 +235,11 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 			commandList->RSSetViewports(1, &fdg->eyes.viewports[1]);
 			commandList->RSSetScissorRects(1, &fdg->eyes.scissorRects[1]);
 			if (pipeline->ovrRendering) {
+#if defined(_SVR_)
 				Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Right);
 				memcpy(&cbv.wvp, &wvp, sizeof(cbv.wvp));
 				memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
+#endif
 			}
 			else {
 				XMStoreFloat4x4(&cbv.wvp, fdg->rightCam.worldViewProjection());
