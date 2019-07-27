@@ -747,8 +747,12 @@ inline const float* Matrix4::getTranspose()
 
 inline Matrix4& Matrix4::identity()
 {
-    m[0] = m[5] = m[10] = m[15] = 1.0f;
-    m[1] = m[2] = m[3] = m[4] = m[6] = m[7] = m[8] = m[9] = m[11] = m[12] = m[13] = m[14] = 0.0f;
+	try {
+		m[0] = m[5] = m[10] = m[15] = 1.0f;
+		m[1] = m[2] = m[3] = m[4] = m[6] = m[7] = m[8] = m[9] = m[11] = m[12] = m[13] = m[14] = 0.0f;
+	} catch (...) {
+		Log("örgs" << endl);
+	}
     return *this;
 }
 

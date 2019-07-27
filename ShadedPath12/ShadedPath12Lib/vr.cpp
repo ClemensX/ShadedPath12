@@ -1,5 +1,10 @@
 #include "stdafx.h"
 
+VR::VR()
+{
+	Log("VR class initialized" << endl);
+}
+
 void VR::init(Pipeline *pipeline, DXGlobal *dxglobal) {
 	if (this->pipeline != nullptr) return; // TODO fix multiple calls to this init()
 	this->pipeline = pipeline;
@@ -1345,7 +1350,7 @@ void VR::nextTracking()
 void VR::submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg)
 {
 #if defined(_SVR_)
-	vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
+	//vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
 
 	// uv min upper left, uvmax lower right
 	vr::VRTextureBounds_t bounds;

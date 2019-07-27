@@ -195,6 +195,7 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 		//else resource = xapp().vrMode.texResource[frameIndex];
 
 		// prepare cbv:
+		pipeline->ovrRendering = true;
 		if (pipeline->ovrRendering) {
 #if defined(_SVR_)
 			pipeline->getVR()->SetupCameras();

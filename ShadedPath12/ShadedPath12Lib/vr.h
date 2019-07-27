@@ -82,6 +82,7 @@ public:
 // global class  - only one instance  - used for global VR data and initialization
 class VR {
 public:
+	VR();
 	void init(Pipeline *pipeline, DXGlobal*);
 	~VR();
 	// basic OVR initialization, called at start of xapp.init()

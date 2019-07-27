@@ -62,9 +62,9 @@ public:
 	void setTextureStore(TextureStore* textureStore) { this->textureStore = textureStore; };
 	TextureStore* getTextureStore() { return this->textureStore; };
 	void submitVR(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg);
+	VR* vr = nullptr;
 private:
 	TextureStore* textureStore = nullptr;
-	VR vr;
 };
 
 // Frame data unrelated to a specific effect that needs to be unique for each slot
