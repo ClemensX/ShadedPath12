@@ -239,10 +239,9 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 #if defined(_SVR_)
 				Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Right);
 				memcpy(&cbv.wvp, &wvp, sizeof(cbv.wvp));
-				memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
+				memcpy(fdb->cbvGPUDest2, &cbv, sizeof(cbv));
 #endif
-			}
-			else {
+			} else {
 				XMStoreFloat4x4(&cbv.wvp, fdg->rightCam.worldViewProjection());
 				memcpy(fdb->cbvGPUDest2, &cbv, sizeof(cbv));
 			}

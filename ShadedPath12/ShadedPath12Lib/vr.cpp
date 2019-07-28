@@ -1453,7 +1453,7 @@ Matrix4 VR::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 	{
 		matMVP = m_mat4ProjectionRight * m_mat4eyePosRight * m_mat4HMDPose;
 	}
-
+	matMVP.transpose();
 	return matMVP;
 }
 

@@ -26,11 +26,11 @@ void BillboardApp::init(HWND hwnd) {
 	//pc.backbufferWidth = 1024;
 	//pc.backbufferHeight = 768;
 	// 4k:
-	//pc.backbufferWidth = 3840;
-	//pc.backbufferHeight = 2160;
+	pc.backbufferWidth = 3840;
+	pc.backbufferHeight = 2160;
 	// Full HD:
-	pc.backbufferWidth = 3840/2;
-	pc.backbufferHeight = 2160/2;
+	//pc.backbufferWidth = 3840/2;
+	//pc.backbufferHeight = 2160/2;
 	// 3840 2160
 	pipeline.init();
 	Log("pipeline initialized" << endl);
@@ -81,14 +81,15 @@ void BillboardApp::init(HWND hwnd) {
 	billboard.add("markings", be1);
 	billboard.add("markings", be2);
 	billboard.add("vac11", be3);
-	if (false) {
+	if (true) {
 		BillboardElement b;
 		b.pos = XMFLOAT3(15.0f, 0.0f, 2.0f);
 		b.normal = XMFLOAT4(-1.0f, 0.0f, -1.0f, 1.0f);
 		//b.size = XMFLOAT2(1.5f, 1.0f);
 		b.size = XMFLOAT2(3.629f, 2.4192f);
 		//	unsigned long total_billboards = 4000000;
-		unsigned long total_billboards = 1000000;
+		//unsigned long total_billboards = 1000000;
+		unsigned long total_billboards = 100000;
 		//unsigned long total_billboards = 50000;
 		// unsigned long total_billboards = 12;
 		unsigned long billboards_per_texture = total_billboards / 12;
