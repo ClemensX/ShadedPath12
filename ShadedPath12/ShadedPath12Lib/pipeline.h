@@ -56,8 +56,12 @@ public:
 	float getSizeX() { return sizex; };
 	float getSizeY() { return sizey; };
 	float getSizeZ() { return sizez; };
+	// VR mode is two cameras in a vertically split window
 	void setVRMode() { vrMode = true; };
 	bool getVRMode() { return vrMode; };
+	// HMD mode is VR mode that renders to HMD device
+	void setHMDMode() { hmdMode = true; vrMode = true; };
+	bool getHMDMode() { return hmdMode; };
 	int getWaitTimeout() { return wait_timeout_ms; };
 	void setFrameBufferSize(size_t size) { frameBufferSize = size; };
 	size_t getFrameBufferSize() { return frameBufferSize; };
@@ -70,6 +74,7 @@ private:
 	int wait_timeout_ms = 100; // check for interruption 10 times per second
 	size_t frameBufferSize = 0;
 	bool vrMode = false;
+	bool hmdMode = false;
 };
 
 class Pipeline
@@ -124,11 +129,14 @@ public:
 	long long lastFrameRenderDuration = 0L; // microseconds
 	long totalFPS = 0; // FPS since starting render threads (skipped frames do not count)
 	World* getWorld() { return &world; };
-	bool vrMode = false; // VR == true: 2 render two half images
-	bool ovrRendering = false;  // ovrRendering == true: render to HMD
 	void setVRImplementation(VR* vrimpl) { vr = vrimpl; };
 	VR* getVR() { return vr; };
+	bool isVR() { return vrMode; };
+	bool isHMD() { return hmdMode; };
+
 private:
+	bool vrMode = false; // VR == true: 2 render two half images
+	bool hmdMode = false;  // hmdMode == true: render to HMD
 	// Pipeline part of creating a frame
 	static void runFrameSlot(Pipeline* pipeline, Frame* frame, int slot);
 	PipelineQueue queue;

@@ -33,6 +33,7 @@ void Pipeline::init()
 	initialized = true;
 	world.setWorldSize(pc.getSizeX(), pc.getSizeY(), pc.getSizeZ());
 	vrMode = pc.getVRMode();
+	hmdMode = pc.getHMDMode();
 }
 
 void Pipeline::finallyProcessed(Frame* frame)

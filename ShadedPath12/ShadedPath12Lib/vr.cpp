@@ -39,7 +39,7 @@ XMFLOAT4X4 VR::ident;
 #define MAX_BONES 64
 
 VR::~VR() {
-	if (!pipeline->ovrRendering) return;
+	if (!pipeline->isHMD()) return;
 #if defined(_OVR_)
 	int count;
 	ovr_GetTextureSwapChainLength(session, textureSwapChain, &count);
@@ -261,7 +261,7 @@ void VR::prepareEyes(VR_Eyes* eyes)
 	scissorRect.right = static_cast<LONG>(width);
 	scissorRect.bottom = static_cast<LONG>(height);
 
-	if (!pipeline->vrMode) {
+	if (!pipeline->isVR()) {
 		eyes->viewports[0] = viewport;
 		eyes->viewports[1] = viewport;
 		eyes->scissorRects[0] = scissorRect;

@@ -195,8 +195,7 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 		//else resource = xapp().vrMode.texResource[frameIndex];
 
 		// prepare cbv:
-		pipeline->ovrRendering = true;
-		if (pipeline->ovrRendering) {
+		if (pipeline->isHMD()) {
 #if defined(_SVR_)
 			pipeline->getVR()->SetupCameras();
 			Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Left);
@@ -230,12 +229,12 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 			cur_vertex_index += count;
 		}
 		//Sleep(50);
-		if (true && pipeline->vrMode) {
+		if (true && pipeline->isVR()) {
 			commandList->SetGraphicsRootConstantBufferView(0, fdb->cbvResource2->GetGPUVirtualAddress());
 			// draw right eye:
 			commandList->RSSetViewports(1, &fdg->eyes.viewports[1]);
 			commandList->RSSetScissorRects(1, &fdg->eyes.scissorRects[1]);
-			if (pipeline->ovrRendering) {
+			if (pipeline->isHMD()) {
 #if defined(_SVR_)
 				Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Right);
 				memcpy(&cbv.wvp, &wvp, sizeof(cbv.wvp));

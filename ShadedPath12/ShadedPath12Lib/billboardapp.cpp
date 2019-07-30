@@ -21,6 +21,9 @@ void BillboardApp::init(HWND hwnd) {
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	pc.setFrameBufferSize(FRAME_BUFFER_SIZE);
 	pc.setVRMode();
+#if defined (_SVR_)
+	pc.setHMDMode();
+#endif
 	// increasing back buffer width/height has huge effect on overall picture quality and sharpness
 	// small:
 	//pc.backbufferWidth = 1024;
