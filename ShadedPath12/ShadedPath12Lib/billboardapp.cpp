@@ -84,7 +84,7 @@ void BillboardApp::init(HWND hwnd) {
 	billboard.add("markings", be1);
 	billboard.add("markings", be2);
 	billboard.add("vac11", be3);
-	if (true) {
+	if (false) {
 		BillboardElement b;
 		b.pos = XMFLOAT3(15.0f, 0.0f, 2.0f);
 		b.normal = XMFLOAT4(-1.0f, 0.0f, -1.0f, 1.0f);

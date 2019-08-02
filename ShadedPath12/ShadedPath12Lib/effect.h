@@ -20,9 +20,23 @@ public:
 	ComPtr<ID3D12Resource> cbvResource2;
 	UINT8* cbvGPUDest;  // memcpy() changed cbv data to this address before draw()
 	UINT8* cbvGPUDest2;  // memcpy() changed cbv data to this address before draw()
+	long long frameNumOfDataActivation; // ???
 
 	friend class DXGlobal;
 };
+
+/*
+ Update effect date:
+ 1) app gets inactive data set IDS
+ 2) app updates IDS (TODO: in app thread? effect thread?) TODO: what about updates while IDS is inuse?
+ 3) app calls activateAppDataSet()
+ 4) Inactive GPU ressources are updated, render code still sees old data
+ 5) after finished update of GPU we have to start transition to new data set for render code:
+ 5a) There will be render code running still - old data cannot be changed right away
+ 5b) new effect render code will get new data set
+ 5c) after all threads have switched to new data, the old data is free again - it will be used to update for next cycle
+ */
+
 // base class for effects
 
 class Effect {
