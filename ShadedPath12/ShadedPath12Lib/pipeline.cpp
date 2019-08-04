@@ -34,6 +34,7 @@ void Pipeline::init()
 	world.setWorldSize(pc.getSizeX(), pc.getSizeY(), pc.getSizeZ());
 	vrMode = pc.getVRMode();
 	hmdMode = pc.getHMDMode();
+	singleThreadMode = pc.getSingleThreadMode();
 }
 
 void Pipeline::finallyProcessed(Frame* frame)
@@ -132,8 +133,14 @@ void Pipeline::startRenderThreads()
 		return;
 	}
 	pipelineStartTime = chrono::high_resolution_clock::now();
-	for (int i = 0; i < frameBuffer.size(); i++) {
-		threads.add_t(runFrameSlot, this, frameBuffer.getFrame(i), i);
+	if (singleThreadMode) {
+		for (int i = 0; i < 1; i++) {
+			threads.add_t(runFrameSlot, this, frameBuffer.getFrame(i), i);
+		}
+	} else {
+		for (int i = 0; i < frameBuffer.size(); i++) {
+			threads.add_t(runFrameSlot, this, frameBuffer.getFrame(i), i);
+		}
 	}
 }
 

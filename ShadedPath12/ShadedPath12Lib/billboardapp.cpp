@@ -21,6 +21,7 @@ void BillboardApp::init(HWND hwnd) {
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	pc.setFrameBufferSize(FRAME_BUFFER_SIZE);
 	pc.setVRMode();
+	pc.setSingleThreadMode();
 #if defined (_SVR_)
 	pc.setHMDMode();
 #endif
@@ -92,7 +93,7 @@ void BillboardApp::init(HWND hwnd) {
 		b.size = XMFLOAT2(3.629f, 2.4192f);
 		//	unsigned long total_billboards = 4000000;
 		//unsigned long total_billboards = 1000000;
-		unsigned long total_billboards = 100000;
+		unsigned long total_billboards = 500000;
 		//unsigned long total_billboards = 50000;
 		// unsigned long total_billboards = 12;
 		unsigned long billboards_per_texture = total_billboards / 12;

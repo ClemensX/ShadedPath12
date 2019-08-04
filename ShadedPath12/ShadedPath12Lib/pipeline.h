@@ -47,6 +47,9 @@ private:
 	bool in_shutdown{ false };
 };
 
+// Idea for VR: intead of reverting to fully synchronized single thread rendering
+// try to render frames in parallel, but process them in order - no throwing away rednered frames
+// should help with HMD position being correct for each frame
 class PipelineConfig
 {
 public:
@@ -56,6 +59,9 @@ public:
 	float getSizeX() { return sizex; };
 	float getSizeY() { return sizey; };
 	float getSizeZ() { return sizez; };
+	// single thread mode limits the render threads to 1, currently needed for VR not stuttering
+	void setSingleThreadMode() { singleThreadMode = true; };
+	bool getSingleThreadMode() { return singleThreadMode; };
 	// VR mode is two cameras in a vertically split window
 	void setVRMode() { vrMode = true; };
 	bool getVRMode() { return vrMode; };
@@ -75,6 +81,7 @@ private:
 	size_t frameBufferSize = 0;
 	bool vrMode = false;
 	bool hmdMode = false;
+	bool singleThreadMode = false;
 };
 
 class Pipeline
@@ -137,6 +144,7 @@ public:
 private:
 	bool vrMode = false; // VR == true: 2 render two half images
 	bool hmdMode = false;  // hmdMode == true: render to HMD
+	bool singleThreadMode = false; // use only one render thread if true
 	// Pipeline part of creating a frame
 	static void runFrameSlot(Pipeline* pipeline, Frame* frame, int slot);
 	PipelineQueue queue;
