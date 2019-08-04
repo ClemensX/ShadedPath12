@@ -84,7 +84,7 @@ void BillboardApp::init(HWND hwnd) {
 	billboard.add("markings", be1);
 	billboard.add("markings", be2);
 	billboard.add("vac11", be3);
-	if (false) {
+	if (true) {
 		BillboardElement b;
 		b.pos = XMFLOAT3(15.0f, 0.0f, 2.0f);
 		b.normal = XMFLOAT4(-1.0f, 0.0f, -1.0f, 1.0f);
@@ -152,6 +152,7 @@ void BillboardApp::presentFrame(Frame* frame, Pipeline* pipeline) {
 		FrameDataGeneral* fdg = &afd->fd_general;
 		dxGlobal.submitVR(frame, pipeline, fdg);
 		dxGlobal.present2Window(pipeline, frame);
+		dxGlobal.vr->UpdateHMDMatrixPose();
 	}
 }
 

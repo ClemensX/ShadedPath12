@@ -511,7 +511,7 @@ void DXGlobal::prepareCameras(Frame* frame, Pipeline* pipeline, const Camera* cl
 void DXGlobal::submitVR(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg)
 {
 #if defined (_SVR_)
-	vr->UpdateHMDMatrixPose();
+	//vr->UpdateHMDMatrixPose();
 	vr->submitFrame(frame, pipeline, fdg);
 #endif
 }
