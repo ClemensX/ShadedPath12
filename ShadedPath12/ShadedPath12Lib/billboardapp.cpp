@@ -21,7 +21,7 @@ void BillboardApp::init(HWND hwnd) {
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	pc.setFrameBufferSize(FRAME_BUFFER_SIZE);
 	pc.setVRMode();
-	pc.setSingleThreadMode();
+	//pc.setSingleThreadMode();
 #if defined (_SVR_)
 	pc.setHMDMode();
 #endif
@@ -177,7 +177,7 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void *data)
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
 	c2 = c; // TODO copy camera for now - get from HMD later
 	dxGlobal.prepareCameras(frame, pipeline, &c, &c2);
-	billboard.draw(fdg, fdb, pipeline);
+	billboard.draw(frame, fdg, fdb, pipeline);
 	dxGlobal.prepare2DRendering(frame, pipeline, fd);
 
 	d2d->drawStatisticsOverlay(frame, pipeline);

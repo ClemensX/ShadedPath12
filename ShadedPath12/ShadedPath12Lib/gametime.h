@@ -24,7 +24,7 @@ public:
 	double getTimeOfDay();
 
 	// get number of hours (and fractions) since game timer creation
-	// NEVER user time values as float: precision is not enough and you will get same time value for actually different times
+	// NEVER use time values as float instead of double: precision is not enough and you will get same time value for actually different times
 	double getTimeAbs();
 
 	// get absolute number of seconds (and fractions)

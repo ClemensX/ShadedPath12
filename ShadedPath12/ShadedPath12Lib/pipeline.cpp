@@ -35,6 +35,7 @@ void Pipeline::init()
 	vrMode = pc.getVRMode();
 	hmdMode = pc.getHMDMode();
 	singleThreadMode = pc.getSingleThreadMode();
+	gametime.init(pc.getGamedayFactor());
 }
 
 void Pipeline::finallyProcessed(Frame* frame)
@@ -76,7 +77,9 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 		//LogF("Pipeline::runFrameSlot " << frameNum << endl);
 		// if next line is commentd out we see garbled text because of multile threads writing
 		//cout << "run frame slot " << slot << " frame " << frameNum << endl;
+		pipeline->gametime.advanceTime();
 		frame->renderStartTime = chrono::high_resolution_clock::now();
+		frame->gametime = pipeline->gametime.getTimeAbs();
 		frame->absFrameNumber = frameNum;
 		frame->slot = slot;
 		frame->frameData = pipeline->afManager.getAppDataForSlot(slot);
@@ -89,7 +92,17 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 			unique_lock<mutex> lock(pipeline->appSyncMutex);
 			pipeline->inSyncCode = true;
 			//pipeline->drawCallback(frame, pipeline, pipeline->applicationFrameData);
-			if (frame->absFrameNumber < pipeline->last_processed) {
+			bool skippedDueToWVP = false;
+			if (pipeline->lastWVPTime >= frame->wvpTime) {
+				//Log("WVP OUT OF ORDER: " << frame->absFrameNumber << endl);
+				skippedDueToWVP = true;
+			}
+			pipeline->lastWVPTime = frame->wvpTime;
+			if (pipeline->lastFrameGametime >= frame->gametime) {
+				//Log("Frame OUT OF ORDER: " << frame->absFrameNumber << endl);
+			}
+			pipeline->lastFrameGametime = frame->gametime;
+			if (frame->absFrameNumber < pipeline->last_processed || skippedDueToWVP) {
 				// received an out-of-order frame: discard
 				pipeline->skipped++;
 			} else {

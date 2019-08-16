@@ -68,6 +68,10 @@ public:
 	// HMD mode is VR mode that renders to HMD device
 	void setHMDMode() { hmdMode = true; vrMode = true; };
 	bool getHMDMode() { return hmdMode; };
+	// set how much faster a game day passes, 1 == real time, 24*60 is a one minute day
+	// init needs be called before any other time method
+	void setGamedayFactor(LONGLONG factor) { gamedayFactor = factor; };
+	LONGLONG getGamedayFactor() { return gamedayFactor; };
 	int getWaitTimeout() { return wait_timeout_ms; };
 	void setFrameBufferSize(size_t size) { frameBufferSize = size; };
 	size_t getFrameBufferSize() { return frameBufferSize; };
@@ -82,6 +86,7 @@ private:
 	bool vrMode = false;
 	bool hmdMode = false;
 	bool singleThreadMode = false;
+	LONGLONG gamedayFactor = 1L;
 };
 
 class Pipeline
@@ -140,6 +145,7 @@ public:
 	VR* getVR() { return vr; };
 	bool isVR() { return vrMode; };
 	bool isHMD() { return hmdMode; };
+	GameTime gametime;
 
 private:
 	bool vrMode = false; // VR == true: 2 render two half images
@@ -167,6 +173,8 @@ private:
 	long long last_processed = -1; // last processed frame number
 	World world;
 	VR* vr = nullptr;
+	double lastFrameGametime = 0.0f;
+	double lastWVPTime = 0.0f; // time of WVP matrix generation for last rendered frame
 protected:
 };
 

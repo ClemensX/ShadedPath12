@@ -106,7 +106,7 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 	//}
 }
 
-void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* pipeline)
+void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* pipeline)
 {
 	//Log("draw " << endl);
 	auto config = pipeline->getPipelineConfig();
@@ -205,6 +205,7 @@ void Billboard::draw(FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* p
 #endif
 		} else {
 			XMStoreFloat4x4(&cbv.wvp, fdg->leftCam.worldViewProjection());
+			frame->wvpTime = pipeline->gametime.getTimeAbs();
 			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
 		}
 		//Log("size my wvp: " << sizeof(cbv.wvp) << endl);
