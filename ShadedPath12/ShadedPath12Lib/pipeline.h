@@ -97,9 +97,12 @@ public:
 	PipelineConfig& getPipelineConfig() { return pipelineConfig; }
 	// Initialize default pipeline with framecount 0 and one FrameBuffer
 	void init();
-	// return next frame number. Frame numbers ar increased by 1 with every call to this method. 
+	// return next frame number. Frame numbers are increased by 1 with every call to this method. 
 	// Only be called once for every frame
 	long long getNextFrameNumber() { return frameNum++; }
+	// return next WVP number. WVP numbers are increased by 1 with every call to this method. 
+	// Only be called once for every frame
+	long long getNextWVPNumber() { return wvpNum++; }
 	// return current frame number. This is the highest frame number that has not yet been finally processed.
 	long long getCurrentFrameNumber() { return frameNum; }
 	// signal that a frame has been fully processed and all associated resources can be freed
@@ -157,6 +160,7 @@ private:
 	FrameBuffer frameBuffer;
 	PipelineConfig pipelineConfig;
 	atomic<long long> frameNum = 0;
+	atomic<long long> wvpNum = 0;
 	boolean running = false;
 	atomic<boolean> shutdown_mode = false;
 	function<void(Frame*, Pipeline*)> consumer = nullptr;
@@ -175,6 +179,8 @@ private:
 	VR* vr = nullptr;
 	double lastFrameGametime = 0.0f;
 	double lastWVPTime = 0.0f; // time of WVP matrix generation for last rendered frame
+	long long wvpId = 0L;
+	long long lastWvpId = 0L;
 protected:
 };
 

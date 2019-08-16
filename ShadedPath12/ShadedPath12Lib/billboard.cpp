@@ -206,6 +206,7 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 		} else {
 			XMStoreFloat4x4(&cbv.wvp, fdg->leftCam.worldViewProjection());
 			frame->wvpTime = pipeline->gametime.getTimeAbs();
+			frame->wvpId = pipeline->getNextWVPNumber();
 			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
 		}
 		//Log("size my wvp: " << sizeof(cbv.wvp) << endl);

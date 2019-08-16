@@ -86,16 +86,23 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 		// let application draw:
 		
 		pipeline->drawCallback(frame, pipeline, pipeline->applicationFrameData);
+		bool unfinished = true;
 		// frame now considered processed
 		// call synchronized present method
+		while (unfinished)
 		{
 			unique_lock<mutex> lock(pipeline->appSyncMutex);
 			pipeline->inSyncCode = true;
 			//pipeline->drawCallback(frame, pipeline, pipeline->applicationFrameData);
 			bool skippedDueToWVP = false;
-			if (pipeline->lastWVPTime >= frame->wvpTime) {
-				//Log("WVP OUT OF ORDER: " << frame->absFrameNumber << endl);
+			if (pipeline->lastWvpId+1 != frame->wvpId) {
+				Log("WVP MISMATCH: last id: " << pipeline->lastWvpId << " cur frame: " << frame->wvpId << endl);
 				skippedDueToWVP = true;
+			}
+			pipeline->lastWvpId = frame->wvpId;
+			if (pipeline->lastWVPTime >= frame->wvpTime) {
+				//Log("WVP OUT OF ORDER: " << frame->absFrameNumber << " last time: " << pipeline->lastWVPTime << " cur frame: " << frame->wvpTime << endl);
+				//skippedDueToWVP = true;
 			}
 			pipeline->lastWVPTime = frame->wvpTime;
 			if (pipeline->lastFrameGametime >= frame->gametime) {
@@ -111,6 +118,7 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 			}
 			pipeline->updateStatistics(frame);
 			pipeline->inSyncCode = false;
+			unfinished = false;
 		}
 		//pipeline->updateStatistics(frame);
 	}

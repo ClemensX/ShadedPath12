@@ -39,6 +39,7 @@ public:
 	long long renderDuration; // render duration in microseconds
 	double gametime; // gametime at frame start
 	double wvpTime;  // gametime at WVP creation in camera
+	long long wvpId = 0L; // count WVP creation. helps detecting out of sync situations
 };
 
 // Frame storage. Get access in a round-robin manner. 
