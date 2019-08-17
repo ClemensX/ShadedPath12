@@ -1,0 +1,42 @@
+Unhandled exception at 0x00007FF6D738C0BC in ShadedPath12.exe: Stack cookie instrumentation code detected a stack-based buffer overrun. occurred
+control flow in hello_dx12:
+
+GetCurrentViewProjectionMatrix
+ matMVP = m_mat4ProjectionLeft * m_mat4eyePosLeft * m_mat4HMDPose; 1836
+   m_mat4ProjectionLeft = GetHMDMatrixProjectionEye( vr::Eye_Left );
+      vr::HmdMatrix44_t mat = m_pHMD->GetProjectionMatrix( nEye, m_fNearClip, m_fFarClip );
+			return Matrix4(
+				mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],
+				mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1], 
+				mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2], 
+				mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3]
+			);
+     
+  	m_mat4eyePosLeft = GetHMDMatrixPoseEye( vr::Eye_Left );
+			vr::HmdMatrix34_t matEyeRight = m_pHMD->GetEyeToHeadTransform( nEye );
+			Matrix4 matrixObj(
+				matEyeRight.m[0][0], matEyeRight.m[1][0], matEyeRight.m[2][0], 0.0, 
+				matEyeRight.m[0][1], matEyeRight.m[1][1], matEyeRight.m[2][1], 0.0,
+				matEyeRight.m[0][2], matEyeRight.m[1][2], matEyeRight.m[2][2], 0.0,
+				matEyeRight.m[0][3], matEyeRight.m[1][3], matEyeRight.m[2][3], 1.0f
+				);
+
+			return matrixObj.invert();
+
+UpdateHMDMatrixPose()
+	vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0 );
+
+			m_rmat4DevicePose[nDevice] = ConvertSteamVRMatrixToMatrix4( m_rTrackedDevicePose[nDevice].mDeviceToAbsoluteTracking );
+
+  	
+  	m_mat4HMDPose = m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
+		m_mat4HMDPose.invert();
+
+Flow Cycle:
+1 rendering
+2 execute cmd list
+3 VRCompositor()->Submit
+4 swapChain->Present
+5 Wait completion
+6 UpdateHMDMatrixPose()
+7 go to 1
