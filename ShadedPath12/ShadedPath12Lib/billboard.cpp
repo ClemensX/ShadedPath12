@@ -197,9 +197,11 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 		// prepare cbv:
 		if (pipeline->isHMD()) {
 #if defined(_SVR_)
-			//pipeline->getVR()->UpdateHMDMatrixPose();
+			pipeline->getVR()->UpdateHMDMatrixPose();
 			pipeline->getVR()->SetupCameras();
 			Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Left);
+			frame->wvpTime = pipeline->gametime.getTimeAbs();
+			frame->wvpId = pipeline->getNextWVPNumber();
 			memcpy(&cbv.wvp, &wvp, sizeof(cbv.wvp));
 			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
 #endif

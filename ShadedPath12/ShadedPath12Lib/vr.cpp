@@ -1391,6 +1391,7 @@ void VR::UpdateHMDMatrixPose()
 	if (!m_pHMD)
 		return;
 
+	//Log("WaitGetPoses()" << endl);
 	vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
 
 	m_iValidPoseCount = 0;

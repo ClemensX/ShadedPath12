@@ -155,6 +155,7 @@ void BillboardApp::presentFrame(Frame* frame, Pipeline* pipeline) {
 		dxGlobal.present2Window(pipeline, frame);
 #if defined (_SVR_)
 		dxGlobal.vr->UpdateHMDMatrixPose();
+		dxGlobal.vr->UpdateHMDMatrixPose();
 #endif
 	}
 }
