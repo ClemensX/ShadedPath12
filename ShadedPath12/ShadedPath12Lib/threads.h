@@ -201,8 +201,9 @@ public:
 
 	// store and start Thread
 	template <class Fn, class... Args>
-	void add_t(Fn&& F, Args&&... A) {
+	void *add_t(Fn&& F, Args&&... A) {
 		threads.emplace_back(std::thread(F, A...));
+		return threads.back().native_handle();
 	}
 
 	// wait for all threads to finish

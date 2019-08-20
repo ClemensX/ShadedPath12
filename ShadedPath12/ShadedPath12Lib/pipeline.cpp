@@ -36,6 +36,7 @@ void Pipeline::init()
 	hmdMode = pc.getHMDMode();
 	singleThreadMode = pc.getSingleThreadMode();
 	gametime.init(pc.getGamedayFactor());
+	SetThreadDescription(GetCurrentThread(), L"main_pipeline_thread");
 }
 
 void Pipeline::finallyProcessed(Frame* frame)
@@ -160,7 +161,9 @@ void Pipeline::startRenderThreads()
 		}
 	} else {
 		for (int i = 0; i < frameBuffer.size(); i++) {
-			threads.add_t(runFrameSlot, this, frameBuffer.getFrame(i), i);
+			void * native_handle = threads.add_t(runFrameSlot, this, frameBuffer.getFrame(i), i);
+			wstring mod_name = wstring(L"render_pipeline_thread").append(L"_").append(to_wstring(i));
+			SetThreadDescription((HANDLE)native_handle, mod_name.c_str());
 		}
 	}
 }
