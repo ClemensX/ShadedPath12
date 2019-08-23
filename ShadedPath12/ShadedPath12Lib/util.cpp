@@ -235,3 +235,15 @@ void Util::readFile(wstring filename, vector<byte>& buffer, FileCategory cat) {
 	}
 
 }
+
+void Util::logThreadInfo(wstring info)
+{
+	PWSTR wstr;
+	HRESULT hr = GetThreadDescription(GetCurrentThread(), &wstr);
+	if (SUCCEEDED(hr)) {
+		info.append(L" ").append(wstr).append(L"\n");
+		LocalFree(wstr);
+	}
+	//info = info << endl;
+	OutputDebugString(info.c_str());
+}

@@ -131,6 +131,7 @@ public:
 	void readFile(PakEntry* pakEntry, vector<byte>& buffer, FileCategory cat);
 	PakEntry* findFileInPak(wstring filename);
 	void initPakFiles();
+	static void logThreadInfo(wstring info);
 private:
 	// pak files:
 	unordered_map<string, PakEntry> pak_content;

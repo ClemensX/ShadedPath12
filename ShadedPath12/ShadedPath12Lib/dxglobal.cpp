@@ -410,6 +410,7 @@ void DXGlobal::present2Window(Pipeline* pipeline, Frame* frame)
 	ID3D12CommandList* ppCommandLists[] = { commandList };
 
 	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	Util::logThreadInfo(L"swapChain->Present");
 	ThrowIfFailedWithDevice(swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), device.Get());
 }
 
@@ -510,8 +511,8 @@ void DXGlobal::prepareCameras(Frame* frame, Pipeline* pipeline, const Camera* cl
 
 void DXGlobal::submitVR(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg)
 {
-#if defined (_SVR_)
 	//vr->UpdateHMDMatrixPose();
 	vr->submitFrame(frame, pipeline, fdg);
+#if defined (_SVR_)
 #endif
 }
