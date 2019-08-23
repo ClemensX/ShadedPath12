@@ -28,7 +28,8 @@ void VR::init(Pipeline *pipeline, DXGlobal *dxglobal) {
 		Log(L"VRCompositor not available" << endl);
 		Error(L"VRCompositor not available");
 	}
-
+	// set async mode - should enable multi thread queue access
+	vr::VRCompositor()->SetExplicitTimingMode(vr::EVRCompositorTimingMode::VRCompositorTimingMode_Explicit_ApplicationPerformsPostPresentHandoff);
 #endif
 }
 
@@ -235,6 +236,8 @@ void VR::initFrame()
 
 void VR::startFrame()
 {
+	Util::logThreadInfo(L"VRCompositor()->SubmitExplicitTimingData()");
+	vr::VRCompositor()->SubmitExplicitTimingData();
 	curEye = EyeLeft;
 }
 
@@ -1351,6 +1354,7 @@ void VR::submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg)
 {
 #if defined(_SVR_)
 	//vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
+	vr::VRCompositor()->PostPresentHandoff();
 
 	// uv min upper left, uvmax lower right
 	vr::VRTextureBounds_t bounds;
@@ -1372,7 +1376,7 @@ void VR::submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg)
 	Util::logThreadInfo(wstring(L"VRCompositor()->Submit"));
 #if defined(_SVR_)
 	vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture, &bounds, vr::Submit_Default);
-#endif
+#endif	
 }
 
 int VR::getCurrentFrameBufferIndex() {

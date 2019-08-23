@@ -114,6 +114,7 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 				// received an out-of-order frame: discard
 				pipeline->skipped++;
 			} else {
+				pipeline->vr->startFrame();
 				pipeline->consumer(frame, pipeline);
 				pipeline->last_processed = frame->absFrameNumber;
 			}
