@@ -3,7 +3,7 @@
 
 void DXGlobal::init()
 {
-#ifdef _DEBUG
+#ifdef _DEBUGX
 	// Enable the D3D12 debug layer.
 	{
 		ComPtr<ID3D12Debug> debugController;
@@ -412,6 +412,32 @@ void DXGlobal::present2Window(Pipeline* pipeline, Frame* frame)
 	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 	Util::logThreadInfo(L"swapChain->Present");
 	ThrowIfFailedWithDevice(swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), device.Get());
+}
+
+void DXGlobal::startStatisticsDraw(FrameDataGeneral* fd)
+{
+	// determine current thread index:
+	int index = 0; // 0 is default in case we cannot parse thread number at end of thread description
+	PWSTR wstr;
+	HRESULT hr = GetThreadDescription(GetCurrentThread(), &wstr);
+	if (SUCCEEDED(hr)) {
+		wstring s(wstr);
+		auto threadnum = s.back();
+		switch (threadnum) {
+		case '1': index = 1; break;
+		case '2': index = 2; break;
+		}
+		LocalFree(wstr);
+	}
+
+	ID3D12GraphicsCommandList* commandList = fd->commandListRenderTexture.Get();
+	PIXBeginEvent(commandList, PIX_COLOR_INDEX(index), "draw thread %d", index);
+}
+
+void DXGlobal::endStatisticsDraw(FrameDataGeneral* fd)
+{
+	ID3D12GraphicsCommandList* commandList = fd->commandListRenderTexture.Get();
+	PIXEndEvent(commandList);
 }
 
 void DXGlobal::clearRenderTexture(FrameDataGeneral* fd)

@@ -63,6 +63,10 @@ public:
 	TextureStore* getTextureStore() { return this->textureStore; };
 	void submitVR(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg);
 	VR* vr = nullptr;
+	// PIX instrumentation:
+	void startStatisticsDraw(FrameDataGeneral* fd);
+	void endStatisticsDraw(FrameDataGeneral* fd);
+
 private:
 	TextureStore* textureStore = nullptr;
 };

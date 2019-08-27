@@ -236,8 +236,10 @@ void VR::initFrame()
 
 void VR::startFrame()
 {
+#if defined(_SVR_)
 	Util::logThreadInfo(L"VRCompositor()->SubmitExplicitTimingData()");
 	vr::VRCompositor()->SubmitExplicitTimingData();
+#endif
 	curEye = EyeLeft;
 }
 

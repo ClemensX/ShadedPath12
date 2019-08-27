@@ -66,7 +66,7 @@ void Effect::createAndUploadVertexBuffer(size_t bufferSize, size_t vertexSize, v
 	commandList.Get()->Reset(commandAllocator.Get(), pipelineState);
 	UpdateSubresources<1>(commandList.Get(), vertexBuffer.Get(), vertexBufferUpload.Get(), 0, 0, 1, &vertexData); // TODO
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
-	PIXEndEvent(commandList.Get());
+	//PIXEndEvent(commandList.Get());
 
 	// Initialize the vertex buffer view.
 	vertexBufferView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
@@ -117,7 +117,7 @@ void Effect::createAndUploadIndexBuffer(size_t bufferSize, void* data, ID3D12Pip
 	//commandList.Get()->Reset(commandAllocator.Get(), pipelineState);
 	UpdateSubresources<1>(commandList.Get(), indexBuffer.Get(), indexBufferUpload.Get(), 0, 0, 1, &indexData);
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(indexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER));
-	PIXEndEvent(commandList.Get());
+	//PIXEndEvent(commandList.Get());
 
 	// Initialize the vertex buffer view.
 	indexBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();

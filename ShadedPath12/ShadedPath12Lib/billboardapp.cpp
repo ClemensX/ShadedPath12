@@ -174,6 +174,7 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void *data)
 	Dx2D *d2d = &afd->d2d;
 	FrameDataBillboard* fdb = &afd->billboard_fd;
 
+	dxGlobal.startStatisticsDraw(fdg);
 	dxGlobal.clearRenderTexture(fdg);
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
 	c2 = c; // TODO copy camera for now - get from HMD later
@@ -183,6 +184,7 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void *data)
 
 	d2d->drawStatisticsOverlay(frame, pipeline);
 	dxGlobal.end2DRendering(frame, pipeline, fd);
+	dxGlobal.endStatisticsDraw(fdg);
 }
 
 void BillboardApp::runTest() {
