@@ -88,6 +88,7 @@ public:
 		ResourceStateInfo &resourceStateInfo = resourceStates.at(res);
 		if (resourceStateInfo.current_state != state) {
 			cl->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(res, resourceStateInfo.current_state, state));
+			//Log("to State " << res << " " << resourceStateInfo.current_state << " --> " << state << endl);
 			resourceStateInfo.current_state = state;
 		}
 	};

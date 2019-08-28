@@ -52,6 +52,9 @@ public:
 	void present2Window(Pipeline* pipeline, Frame *frame);
 	// prepare comeras by copying global cameras to frame resources
 	void prepareCameras(Frame* frame, Pipeline* pipeline, const Camera* cleft, const Camera* cright = nullptr);
+	// preapre for next frame draw: wait for GPU to finish and reset command list and allocator
+	void waitAndReset(FrameDataGeneral* fd);
+	// clear render target to background color
 	void clearRenderTexture(FrameDataGeneral* fd);
 	void prepare2DRendering(Frame* frame, Pipeline* pipeline, FrameDataD2D* fd2d);
 	void end2DRendering(Frame* frame, Pipeline* pipeline, FrameDataD2D* fd2d);

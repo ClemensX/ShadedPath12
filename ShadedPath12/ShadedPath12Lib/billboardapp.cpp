@@ -93,8 +93,8 @@ void BillboardApp::init(HWND hwnd) {
 		b.size = XMFLOAT2(3.629f, 2.4192f);
 		//	unsigned long total_billboards = 4000000;
 		//unsigned long total_billboards = 1000000;
-		unsigned long total_billboards = 500000;
-		//unsigned long total_billboards = 50000;
+		//unsigned long total_billboards = 500000;
+		unsigned long total_billboards = 5000;
 		// unsigned long total_billboards = 12;
 		unsigned long billboards_per_texture = total_billboards / 12;
 
@@ -174,6 +174,7 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void *data)
 	Dx2D *d2d = &afd->d2d;
 	FrameDataBillboard* fdb = &afd->billboard_fd;
 
+	dxGlobal.waitAndReset(fdg);
 	dxGlobal.startStatisticsDraw(fdg);
 	dxGlobal.clearRenderTexture(fdg);
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;

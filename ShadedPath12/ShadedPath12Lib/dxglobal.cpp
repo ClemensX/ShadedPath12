@@ -3,7 +3,7 @@
 
 void DXGlobal::init()
 {
-#ifdef _DEBUGX
+#ifndef _DISABLE_GPU_DEBUG_
 	// Enable the D3D12 debug layer.
 	{
 		ComPtr<ID3D12Debug> debugController;
@@ -403,14 +403,18 @@ void DXGlobal::present2Window(Pipeline* pipeline, Frame* frame)
 	resourceStateHelper->toState(fd_renderTexture->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, commandList);
 	resourceStateHelper->toState(fd_swapChain->renderTarget.Get(), D3D12_RESOURCE_STATE_COPY_DEST, commandList);
 	commandList->CopyResource(fd_swapChain->renderTarget.Get(), fd_renderTexture->renderTargetRenderTexture.Get());
+#if defined(_SVR_)
+	resourceStateHelper->toState(fd_renderTexture->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, commandList);
+#else
 	resourceStateHelper->toState(fd_renderTexture->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+#endif
 	resourceStateHelper->toState(fd_swapChain->renderTarget.Get(), D3D12_RESOURCE_STATE_COMMON, commandList);
 
 	ThrowIfFailed(commandList->Close());
 	ID3D12CommandList* ppCommandLists[] = { commandList };
 
 	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-	Util::logThreadInfo(L"swapChain->Present");
+	//Util::logThreadInfo(L"swapChain->Present");
 	ThrowIfFailedWithDevice(swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), device.Get());
 }
 
@@ -422,6 +426,7 @@ void DXGlobal::startStatisticsDraw(FrameDataGeneral* fd)
 	HRESULT hr = GetThreadDescription(GetCurrentThread(), &wstr);
 	if (SUCCEEDED(hr)) {
 		wstring s(wstr);
+		if (s.length() < 1) s.append(L"1");
 		auto threadnum = s.back();
 		switch (threadnum) {
 		case '1': index = 1; break;
@@ -434,20 +439,30 @@ void DXGlobal::startStatisticsDraw(FrameDataGeneral* fd)
 	PIXBeginEvent(commandList, PIX_COLOR_INDEX(index), "draw thread %d", index);
 }
 
-void DXGlobal::endStatisticsDraw(FrameDataGeneral* fd)
+void DXGlobal::endStatisticsDraw(FrameDataGeneral* fdg)
 {
-	ID3D12GraphicsCommandList* commandList = fd->commandListRenderTexture.Get();
+	// prepare drawing:
+	ID3D12GraphicsCommandList* commandList = fdg->commandListRenderTexture.Get();
+	ThrowIfFailed(fdg->commandAllocatorRenderTexture->Reset());
+	ThrowIfFailed(commandList->Reset(fdg->commandAllocatorRenderTexture.Get(), fdg->pipelineState.Get()));
 	PIXEndEvent(commandList);
+	ThrowIfFailed(commandList->Close());
+}
+
+void DXGlobal::waitAndReset(FrameDataGeneral* fd)
+{
+	// wait for last frame with this index to be finished:
+	waitGPU(fd, commandQueue);
+	// reset command list and allocator
+	ID3D12GraphicsCommandList* commandList = fd->commandListRenderTexture.Get();
+	ThrowIfFailed(fd->commandAllocatorRenderTexture->Reset());
+	ThrowIfFailed(commandList->Reset(fd->commandAllocatorRenderTexture.Get(), fd->pipelineStateRenderTexture.Get()));
+
 }
 
 void DXGlobal::clearRenderTexture(FrameDataGeneral* fd)
 {
-	// wait for last frame with this index to be finished:
-	waitGPU(fd, commandQueue);
-	// d3d12 present:
 	ID3D12GraphicsCommandList* commandList = fd->commandListRenderTexture.Get();
-	ThrowIfFailed(fd->commandAllocatorRenderTexture->Reset());
-	ThrowIfFailed(commandList->Reset(fd->commandAllocatorRenderTexture.Get(), fd->pipelineStateRenderTexture.Get()));
 	resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fd->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), 0, fd->rtvDescriptorSizeRenderTexture);
 	//float clearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f }; //will correctly produce warnings CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE

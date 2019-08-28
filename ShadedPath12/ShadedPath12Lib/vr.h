@@ -141,6 +141,7 @@ public:
 	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t& matPose);
 	void SetupCameras();
 private:
+	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	int m_iTrackedControllerCount;
 	int m_iTrackedControllerCount_Last;
 	int m_iValidPoseCount;

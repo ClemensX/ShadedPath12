@@ -41,6 +41,9 @@ XMFLOAT4X4 VR::ident;
 
 VR::~VR() {
 	if (!pipeline->isHMD()) return;
+#if defined(_SVR_)
+	vr::VR_Shutdown();
+#endif
 #if defined(_OVR_)
 	int count;
 	ovr_GetTextureSwapChainLength(session, textureSwapChain, &count);
@@ -237,7 +240,7 @@ void VR::initFrame()
 void VR::startFrame()
 {
 #if defined(_SVR_)
-	Util::logThreadInfo(L"VRCompositor()->SubmitExplicitTimingData()");
+	//Util::logThreadInfo(L"VRCompositor()->SubmitExplicitTimingData()");
 	vr::VRCompositor()->SubmitExplicitTimingData();
 #endif
 	curEye = EyeLeft;
@@ -1375,7 +1378,7 @@ void VR::submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg)
 	vr::D3D12TextureData_t d3d12RightEyeTexture = { fdg->renderTargetRenderTexture.Get(), dxGlobal->commandQueue.Get(), 0 };
 	vr::Texture_t rightEyeTexture = { (void*)& d3d12RightEyeTexture, vr::TextureType_DirectX12, vr::ColorSpace_Gamma };
 #endif
-	Util::logThreadInfo(wstring(L"VRCompositor()->Submit"));
+	//Util::logThreadInfo(wstring(L"VRCompositor()->Submit"));
 #if defined(_SVR_)
 	vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture, &bounds, vr::Submit_Default);
 #endif	
