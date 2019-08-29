@@ -34,7 +34,7 @@ public:
 	DXGlobalParam config;
 	ComPtr<IDXGIFactory4> factory;
 	IDXGraphicsAnalysis* pGraphicsAnalysis = nullptr; // check for nullpointer before using - only available during graphics diagnostics session
-	ComPtr<ID3D12Device> device;
+	ComPtr<ID3D12Device4> device;
 	ComPtr<ID3D12CommandQueue> commandQueue;
 	ComPtr<IDXGISwapChain3> swapChain;
 	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
