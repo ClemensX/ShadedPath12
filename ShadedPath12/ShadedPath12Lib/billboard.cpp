@@ -197,7 +197,7 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 		// prepare cbv:
 		if (pipeline->isHMD()) {
 #if defined(_SVR_)
-			pipeline->getVR()->UpdateHMDMatrixPose();
+			pipeline->getVR()->UpdateHMDMatrixPose(&fdg->leftCam);
 			pipeline->getVR()->SetupCameras();
 			Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Left);
 			frame->wvpTime = pipeline->gametime.getTimeAbs();

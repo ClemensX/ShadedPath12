@@ -136,7 +136,7 @@ public:
 	Matrix4 GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye);
 	Matrix4 GetHMDMatrixPoseEye(vr::Hmd_Eye nEye);
 	Matrix4 GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye);
-	void UpdateHMDMatrixPose();
+	void UpdateHMDMatrixPose(Camera * cam = nullptr);
 
 	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t& matPose);
 	void SetupCameras();

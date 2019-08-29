@@ -1396,9 +1396,20 @@ void VR::drawHand(bool isLeft)
 {
 }
 #endif
+/*
+ pose is returned as HmdMatrix34_t (3 lines, 4 rows matrix)
+ Axes: left   x: m[0][0] - m[2][0]
+ Axes: up     y: m[0][1] - m[2][1]
+ Axes: foward z: m[0][2] - m[2][2]
+ Translation:    m[0][3] - m[2][3]
 
+ apply camera position:
+   m[0][3] = x
+   m[1][3] = y
+   m[0][3] = x
+*/
 #if defined(_SVR_)
-void VR::UpdateHMDMatrixPose()
+void VR::UpdateHMDMatrixPose(Camera *cam)
 {
 	if (!m_pHMD)
 		return;
@@ -1432,6 +1443,16 @@ void VR::UpdateHMDMatrixPose()
 
 	if (m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid)
 	{
+		// adjust position to camera:
+		if (cam != nullptr) {
+			static float adder = 0.0f;
+			adder += 0.10f;
+			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[0][3] = cam->pos.x;
+			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[1][3] = cam->pos.y;
+			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[2][3] = -cam->pos.z;
+			m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd] = ConvertSteamVRMatrixToMatrix4(m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
+			// end
+		}
 		m_mat4HMDPose = m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
 		m_mat4HMDPose.invert();
 	}
