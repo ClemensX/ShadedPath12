@@ -144,8 +144,8 @@ public:
 	long long lastFrameRenderDuration = 0L; // microseconds
 	long totalFPS = 0; // FPS since starting render threads (skipped frames do not count)
 	World* getWorld() { return &world; };
-	void setVRImplementation(VR2* vrimpl) { vr = vrimpl; };
-	VR2* getVR() { return vr; };
+	void setVRImplementation(VR* vrimpl) { vr = vrimpl; };
+	VR* getVR() { return vr; };
 	bool isVR() { return vrMode; };
 	bool isHMD() { return hmdMode; };
 	GameTime gametime;
@@ -176,7 +176,7 @@ private:
 	long long skipped = 0; // count skipped frames
 	long long last_processed = -1; // last processed frame number
 	World world;
-	VR2* vr = nullptr;
+	VR* vr = nullptr;
 	double lastFrameGametime = 0.0f;
 	double lastWVPTime = 0.0f; // time of WVP matrix generation for last rendered frame
 	long long wvpId = 0L;

@@ -14,7 +14,7 @@ void VR::init(Pipeline* pipeline, DXGlobal* dxglobal) {
 	if (this->pipeline != nullptr) return; // TODO fix multiple calls to this init()
 	this->pipeline = pipeline;
 	this->dxGlobal = dxglobal;
-	//pipeline->setVRImplementation(this);
+	pipeline->setVRImplementation(this);  //	TODO reenable for this class to work!!!
 #if defined(_SVR_)
 	// Loading the SteamVR Runtime
 	vr::EVRInitError eError = vr::VRInitError_None;
@@ -1564,14 +1564,38 @@ VR2::VR2()
 void VR2::init(Pipeline* pipeline, DXGlobal* dxglobal) {
 	this->pipeline = pipeline;
 	this->dxGlobal = dxglobal;
-	pipeline->setVRImplementation(this);
+	//pipeline->setVRImplementation(this); //	TODO reenable for this class to work!!!
 	Log("size of VR2: " << sizeof(VR2) << endl);
 	Log("size of VR2: " << sizeof(*this) << endl);
+#if defined(_SVR_)
+	// Loading the SteamVR Runtime
+	vr::EVRInitError eError = vr::VRInitError_None;
+	m_pHMD = vr::VR_Init(&eError, vr::VRApplication_Scene);
+
+	if (eError != vr::VRInitError_None)
+	{
+		m_pHMD = NULL;
+		char buf[1024];
+		sprintf_s(buf, sizeof(buf), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription(eError));
+		Log(L"svr_Initialize failed: " << vr::VR_GetVRInitErrorAsEnglishDescription(eError) << endl);
+		Error(L"svr_Initialize failed");
+	}
+	if (!vr::VRCompositor())
+	{
+		Log(L"VRCompositor not available" << endl);
+		Error(L"VRCompositor not available");
+	}
+	// set async mode - should enable multi thread queue access
+	vr::VRCompositor()->SetExplicitTimingMode(vr::EVRCompositorTimingMode::VRCompositorTimingMode_Explicit_ApplicationPerformsPostPresentHandoff);
+#endif
 }
 
 VR2::~VR2() {
-	//delete[] m_rmat4DevicePose;
-	//delete[] m_rTrackedDevicePose;
+	if (!pipeline->isHMD()) return;
+#if defined(_SVR_)
+	vr::VRCompositor()->CompositorQuit();
+	vr::VR_Shutdown();
+#endif
 }
 
 void VR2::init()
@@ -1589,6 +1613,11 @@ void VR2::initFrame()
 
 void VR2::startFrame()
 {
+#if defined(_SVR_)
+	//Util::logThreadInfo(L"VRCompositor()->SubmitExplicitTimingData()");
+	vr::VRCompositor()->SubmitExplicitTimingData();
+#endif
+	curEye = EyeLeft;
 }
 
 void VR2::endFrame()
@@ -1673,6 +1702,31 @@ void VR2::nextTracking()
 
 void VR2::submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral* fdg)
 {
+#if defined(_SVR_)
+	//vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
+	vr::VRCompositor()->PostPresentHandoff();
+
+	// uv min upper left, uvmax lower right
+	vr::VRTextureBounds_t bounds;
+	bounds.uMin = 0.0f;
+	bounds.uMax = 0.5f;
+	bounds.vMin = 0.0f;
+	bounds.vMax = 1.0f;
+
+	vr::D3D12TextureData_t d3d12LeftEyeTexture = { fdg->renderTargetRenderTexture.Get(), dxGlobal->commandQueue.Get(), 0 };
+	vr::Texture_t leftEyeTexture = { (void*)& d3d12LeftEyeTexture, vr::TextureType_DirectX12, vr::ColorSpace_Gamma };
+	vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture, &bounds, vr::Submit_Default);
+
+	bounds.uMin = 0.5f;
+	bounds.uMax = 1.0f;
+
+	vr::D3D12TextureData_t d3d12RightEyeTexture = { fdg->renderTargetRenderTexture.Get(), dxGlobal->commandQueue.Get(), 0 };
+	vr::Texture_t rightEyeTexture = { (void*)& d3d12RightEyeTexture, vr::TextureType_DirectX12, vr::ColorSpace_Gamma };
+#endif
+	//Util::logThreadInfo(wstring(L"VRCompositor()->Submit"));
+#if defined(_SVR_)
+	vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture, &bounds, vr::Submit_Default);
+#endif	
 }
 
 int VR2::getCurrentFrameBufferIndex() {
@@ -1702,6 +1756,52 @@ void VR2::drawHand(bool isLeft)
 #if defined(_SVR_)
 void VR2::UpdateHMDMatrixPose(Camera* cam)
 {
+	if (!m_pHMD)
+		return;
+
+	//Log("WaitGetPoses()" << endl);
+	vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
+/*
+	m_iValidPoseCount = 0;
+	m_strPoseClasses = "";
+	for (int nDevice = 0; nDevice < vr::k_unMaxTrackedDeviceCount; ++nDevice)
+	{
+		if (m_rTrackedDevicePose[nDevice].bPoseIsValid)
+		{
+			m_iValidPoseCount++;
+			m_rmat4DevicePose[nDevice] = ConvertSteamVRMatrixToMatrix4(m_rTrackedDevicePose[nDevice].mDeviceToAbsoluteTracking);
+			if (m_rDevClassChar[nDevice] == 0)
+			{
+				switch (m_pHMD->GetTrackedDeviceClass(nDevice))
+				{
+				case vr::TrackedDeviceClass_Controller:        m_rDevClassChar[nDevice] = 'C'; break;
+				case vr::TrackedDeviceClass_HMD:               m_rDevClassChar[nDevice] = 'H'; break;
+				case vr::TrackedDeviceClass_Invalid:           m_rDevClassChar[nDevice] = 'I'; break;
+				case vr::TrackedDeviceClass_GenericTracker:    m_rDevClassChar[nDevice] = 'G'; break;
+				case vr::TrackedDeviceClass_TrackingReference: m_rDevClassChar[nDevice] = 'T'; break;
+				default:                                       m_rDevClassChar[nDevice] = '?'; break;
+				}
+			}
+			m_strPoseClasses += m_rDevClassChar[nDevice];
+		}
+	}
+
+	if (m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid)
+	{
+		// adjust position to camera:
+		if (cam != nullptr) {
+			static float adder = 0.0f;
+			adder += 0.10f;
+			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[0][3] = cam->pos.x;
+			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[1][3] = cam->pos.y;
+			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[2][3] = -cam->pos.z;
+			m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd] = ConvertSteamVRMatrixToMatrix4(m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
+			// end
+		}
+		m_mat4HMDPose = m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
+		m_mat4HMDPose.invert();
+	}
+*/
 }
 
 //-----------------------------------------------------------------------------

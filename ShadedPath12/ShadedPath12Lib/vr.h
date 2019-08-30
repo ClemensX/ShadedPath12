@@ -320,18 +320,16 @@ public:
 	void drawHand(bool isLeft);
 	// if all assets of an avatar have been loaded, gather all the info needed for rendering:
 #if defined(_SVR_)
-	char buf[2048];
-#if defined(_SVRX_)
 	vr::IVRSystem* m_pHMD;
 	vr::IVRRenderModels* m_pRenderModels;
 	std::string m_strDriver;
 	std::string m_strDisplay;
-	//vr::TrackedDevicePose_t m_rTrackedDevicePose[vr::k_unMaxTrackedDeviceCount];
-	vr::TrackedDevicePose_t* m_rTrackedDevicePose = nullptr;
-	//Matrix4 m_rmat4DevicePose[vr::k_unMaxTrackedDeviceCount];
-	Matrix4* m_rmat4DevicePose = nullptr;
+	vr::TrackedDevicePose_t m_rTrackedDevicePose[vr::k_unMaxTrackedDeviceCount];
+	//vr::TrackedDevicePose_t* m_rTrackedDevicePose = nullptr;
+	Matrix4 m_rmat4DevicePose[vr::k_unMaxTrackedDeviceCount];
+	//Matrix4* m_rmat4DevicePose = nullptr;
 	bool m_rbShowTrackedDevice[vr::k_unMaxTrackedDeviceCount];
-#endif
+
 	Matrix4 GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye);
 	Matrix4 GetHMDMatrixPoseEye(vr::Hmd_Eye nEye);
 	Matrix4 GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye);
@@ -350,7 +348,6 @@ private:
 	std::string m_strPoseClasses;                            // what classes we saw poses for this frame
 	char m_rDevClassChar[vr::k_unMaxTrackedDeviceCount];   // for each device, a character representing its class
 
-#if defined(_SVRX_)
 	int m_iSceneVolumeWidth;
 	int m_iSceneVolumeHeight;
 	int m_iSceneVolumeDepth;
@@ -368,7 +365,6 @@ private:
 	Matrix4 m_mat4ProjectionCenter;
 	Matrix4 m_mat4ProjectionLeft;
 	Matrix4 m_mat4ProjectionRight;
-#endif
 public:
 #endif
 #if defined(_OVR_)
