@@ -141,7 +141,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
 #if defined(DEBUG) | defined(_DEBUG)
-	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF);
+	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_CHECK_CRT_DF /*| _CRTDBG_DELAY_FREE_MEM_DF*/);
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 	// debug heap test
@@ -200,10 +200,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	//xapp->destroy();
 
 	// debug heap test
-	//_RPTF0(_CRT_WARN, "heap report test\n");
-	//_CrtMemDumpAllObjectsSince(NULL);
+	_RPTF0(_CRT_WARN, "heap report test\n");
+	_CrtCheckMemory();
+	//int a, * b, c;
+	//if (1)
+	//	;// b = &a;
+	//c = a;  // No run-time error with /RTCu	//_CrtMemDumpAllObjectsSince(NULL);
 	// debug heap end
 	//xappDestroy();
+	Log("size of VR2: " << sizeof(VR2) << endl);
+	Log("size of VR: " << sizeof(VR) << endl);
     return (int) msg.wParam;
 }
 

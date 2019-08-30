@@ -4,7 +4,7 @@
 //
 
 #pragma once
-
+#include "pre_proc.h"
 #include "targetver.h"
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
@@ -38,6 +38,9 @@ using namespace std;
 //using namespace std::tr2::sys;
 #include <assert.h>
 #include <typeinfo.h>
+
+#include <dxgidebug.h>
+#pragma comment(lib, "dxguid.lib")
 
 #include <DXGItype.h>
 #include <dxgi1_4.h>

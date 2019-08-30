@@ -2,14 +2,19 @@
 
 VR::VR()
 {
+#if defined(_SVR_)
+	m_rmat4DevicePose = new Matrix4[vr::k_unMaxTrackedDeviceCount];
+	m_rTrackedDevicePose = new vr::TrackedDevicePose_t[vr::k_unMaxTrackedDeviceCount];
+#endif
+
 	Log("VR class initialized" << endl);
 }
 
-void VR::init(Pipeline *pipeline, DXGlobal *dxglobal) {
+void VR::init(Pipeline* pipeline, DXGlobal* dxglobal) {
 	if (this->pipeline != nullptr) return; // TODO fix multiple calls to this init()
 	this->pipeline = pipeline;
 	this->dxGlobal = dxglobal;
-	pipeline->setVRImplementation(this);
+	//pipeline->setVRImplementation(this);
 #if defined(_SVR_)
 	// Loading the SteamVR Runtime
 	vr::EVRInitError eError = vr::VRInitError_None;
@@ -40,6 +45,10 @@ XMFLOAT4X4 VR::ident;
 #define MAX_BONES 64
 
 VR::~VR() {
+#if defined(_SVR_)
+	delete[] m_rmat4DevicePose;
+	delete[] m_rTrackedDevicePose;
+#endif
 	if (!pipeline->isHMD()) return;
 #if defined(_SVR_)
 	vr::VR_Shutdown();
@@ -274,7 +283,8 @@ void VR::prepareEyes(VR_Eyes* eyes)
 		eyes->viewports[1] = viewport;
 		eyes->scissorRects[0] = scissorRect;
 		eyes->scissorRects[1] = scissorRect;
-	} else {
+	}
+	else {
 		eyes->viewports[EyeLeft] = viewport;
 		eyes->scissorRects[EyeLeft] = scissorRect;
 		eyes->viewports[EyeRight] = viewport;
@@ -288,7 +298,7 @@ void VR::prepareEyes(VR_Eyes* eyes)
 	}
 }
 
-void VR::prepareViews(D3D12_VIEWPORT &viewport, D3D12_RECT &scissorRect)
+void VR::prepareViews(D3D12_VIEWPORT& viewport, D3D12_RECT& scissorRect)
 {
 	//if (!enabled) {
 	//	viewports[EyeLeft] = viewport;
@@ -328,7 +338,7 @@ void VR::endDraw() {
 	//xapp->camera.worldViewProjection();
 }
 
-void VR_Eyes::adjustEyeMatrix(XMMATRIX & m, Camera * cam, int eyeNum, VR* vr)
+void VR_Eyes::adjustEyeMatrix(XMMATRIX& m, Camera* cam, int eyeNum, VR* vr)
 {
 	// get updated eye pos
 	//vrMode->nextTracking();
@@ -345,7 +355,7 @@ void VR_Eyes::adjustEyeMatrix(XMMATRIX & m, Camera * cam, int eyeNum, VR* vr)
 	}
 }
 
-void VR::adjustEyeMatrix(XMMATRIX &m, Camera *cam) {
+void VR::adjustEyeMatrix(XMMATRIX& m, Camera* cam) {
 	if (cam == nullptr) {
 		//xapp->camera.projectionTransform();  TODO removed - not necessary
 		//m = xapp->camera.worldViewProjection();  TODO removed - not necessary
@@ -388,7 +398,7 @@ bool VR::isFirstEye() {
 
 #if defined(_OVR_)
 
-unsigned int VR::pack(const uint8_t * blend_indices)
+unsigned int VR::pack(const uint8_t* blend_indices)
 {
 	int pack = 0;
 	for (int i = 3; i >= 0; i--) {
@@ -398,7 +408,7 @@ unsigned int VR::pack(const uint8_t * blend_indices)
 	return pack;
 }
 
-void Matrix4fToXM(XMFLOAT4X4 &xm, Matrix4f &m) {
+void Matrix4fToXM(XMFLOAT4X4& xm, Matrix4f& m) {
 	xm._11 = m.M[0][0];
 	xm._12 = m.M[0][1];
 	xm._13 = m.M[0][2];
@@ -417,7 +427,7 @@ void Matrix4fToXM(XMFLOAT4X4 &xm, Matrix4f &m) {
 	xm._44 = m.M[3][3];
 }
 
-void XMFLOAT4x4ToFloatArray(XMFLOAT4X4 &xm, float *m) {
+void XMFLOAT4x4ToFloatArray(XMFLOAT4X4& xm, float* m) {
 	m[0] = xm._11;
 	m[1] = xm._12;
 	m[2] = xm._13;
@@ -479,8 +489,8 @@ void VR::nextTracking()
 	// Render the two undistorted eye views into their render buffers.  
 	for (int eye = 0; eye < 2; eye++)
 	{
-		ovrPosef    * useEyePose = &EyeRenderPose[eye];
-		float       * useYaw = &YawAtRender[eye];
+		ovrPosef* useEyePose = &EyeRenderPose[eye];
+		float* useYaw = &YawAtRender[eye];
 		float Yaw = XM_PI;
 		*useEyePose = layer.RenderPose[eye];
 		*useYaw = Yaw;
@@ -549,7 +559,7 @@ void VR::submitFrame()
 void VR::handleOVRMessages()
 {
 	handleAvatarMessages();
-	ovrMessage *message = ovr_PopMessage();
+	ovrMessage* message = ovr_PopMessage();
 	if (ovr_Message_IsError(message) != 0) {
 		Log("OVR message error" << endl);
 		auto errHandle = ovr_Message_GetError(message);
@@ -604,11 +614,11 @@ void VR::handleAvatarMessages()
 	static int loadingAssets = 0;
 	//static const ovrAvatarMessage_AvatarSpecification *spec;
 	static uint64_t userId;
-	ovrAvatarMessage *message = ovrAvatarMessage_Pop();
+	ovrAvatarMessage* message = ovrAvatarMessage_Pop();
 	if (!message) {
 		return; // no new messages.
 	}
-	const ovrAvatarMessage_AvatarSpecification *spec;
+	const ovrAvatarMessage_AvatarSpecification* spec;
 	auto messageType = ovrAvatarMessage_GetType(message);
 	if (messageType == ovrAvatarMessageType_AvatarSpecification) {
 		spec = ovrAvatarMessage_GetAvatarSpecification(message);
@@ -691,7 +701,7 @@ void VR::handleAvatarMessages()
 	ovrAvatarMessage_Free(message);
 }
 
-void VR::computeWorldPose(const ovrAvatarSkinnedMeshPose & localPose, XMMATRIX worldPose[])
+void VR::computeWorldPose(const ovrAvatarSkinnedMeshPose& localPose, XMMATRIX worldPose[])
 {
 	for (int i = 0; i < localPose.jointCount; ++i)
 	{
@@ -714,7 +724,7 @@ void VR::computeWorldPose(const ovrAvatarSkinnedMeshPose & localPose, XMMATRIX w
 	}
 }
 
-void VR::calculateBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * bind4)
+void VR::calculateBindMatrix(const ovrAvatarTransform* t, XMFLOAT4X4* bind4)
 {
 	XMVECTOR zeroRotationOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR scale, rotationQuaternion, translation;
@@ -732,7 +742,7 @@ void VR::calculateBindMatrix(const ovrAvatarTransform * t, XMFLOAT4X4 * bind4)
 	XMStoreFloat4x4(bind4, bind);
 }
 
-void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded * assetmsg, const ovrAvatarMeshAssetData * assetdata)
+void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded* assetmsg, const ovrAvatarMeshAssetData* assetdata)
 {
 	//Log("write avatar mesh (user id / mesh id / vertex count): " << std::hex << userId << " / " << assetmsg->assetID << " / " << assetdata->vertexCount << endl);
 	wstring filename = getMeshFileName(assetmsg->assetID);
@@ -742,27 +752,27 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 	int mode = 0; // no bone data
 				  // change to bone mode if joints are found:
 	if (assetdata->skinnedBindPose.jointCount > 0) mode = 1;
-	bfile.write((char*)&mode, 4);
+	bfile.write((char*)& mode, 4);
 	if (mode == 1) {
 		int numAniClips = 1;  // only one fake clip for ovr mode
-		bfile.write((char*)&numAniClips, 4);
+		bfile.write((char*)& numAniClips, 4);
 		//aniClips = new AnimationClip[numAniClips];
 		for (int i = 0; i < numAniClips; i++) {
 			string clip_name("non_keyframe");
 			int numAnimationNameLength = (int)clip_name.length();
-			bfile.write((char*)&numAnimationNameLength, 4);
+			bfile.write((char*)& numAnimationNameLength, 4);
 			bfile.write(clip_name.c_str(), numAnimationNameLength);
 			//int zero = 0;
 			//bfile.write((char*)&zero, 1);
 			int numJoints = assetdata->skinnedBindPose.jointCount;
 			//debugComponent = std::string(assetdata->skinnedBindPose.jointNames[0]).compare("hands:l_hand_world") ? false : true;
-			bfile.write((char*)&numJoints, 4);
+			bfile.write((char*)& numJoints, 4);
 			XMMATRIX worldPose[MAX_BONES];  // actually the bind pose, used to calc inverse bind pose matrices
 			computeWorldPose(assetdata->skinnedBindPose, &worldPose[0]);
 			for (int j = 0; j < numJoints; j++) {
 				// parent:
 				int parentId = assetdata->skinnedBindPose.jointParents[j];
-				bfile.write((char*)&parentId, 4);
+				bfile.write((char*)& parentId, 4);
 				// calculate inverse bind matrices:
 				// inverses are stored exactly like in OpenGL
 				XMMATRIX bind = worldPose[j];
@@ -773,16 +783,16 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 				float f[16];
 				XMFLOAT4x4ToFloatArray(inv, f);
 				for (int n = 0; n < 16; n++) {
-					bfile.write((char*)&f[n], 4);
+					bfile.write((char*)& f[n], 4);
 				}
 				// zero keyframes:
 				int keyframes = 0;
-				bfile.write((char*)&keyframes, 4);
+				bfile.write((char*)& keyframes, 4);
 			}
 		}
 	}
 	// vertices
-	ovrAvatarMeshVertex_ *vbuf = (ovrAvatarMeshVertex_ *)assetdata->vertexBuffer;
+	ovrAvatarMeshVertex_* vbuf = (ovrAvatarMeshVertex_*)assetdata->vertexBuffer;
 	uint16_t* ibuf = (uint16_t*)assetdata->indexBuffer;
 	int numVerts = assetdata->vertexCount;
 	if (true) {
@@ -804,16 +814,16 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 		}
 	}
 	numVerts *= 3;
-	bfile.write((char*)&numVerts, 4);
+	bfile.write((char*)& numVerts, 4);
 	for (size_t i = 0; i < assetdata->vertexCount; i++) {
 		ovrAvatarMeshVertex_ v = vbuf[i];
 		//assert(v.u <= 1.0f);
 		//assert(v.u >= 0.0f);
 		//assert(v.v <= 1.0f);
 		//assert(v.v >= 0.0f);
-		bfile.write((char*)&v.x, 4);
-		bfile.write((char*)&v.y, 4);
-		bfile.write((char*)&v.z, 4);
+		bfile.write((char*)& v.x, 4);
+		bfile.write((char*)& v.y, 4);
+		bfile.write((char*)& v.z, 4);
 	}
 
 	// texture coords
@@ -822,16 +832,16 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 		ovrAvatarMeshVertex_ v = vbuf[i];
 		//v.u = 1.0f - v.u;
 		//v.v = 1.0f - v.v;
-		bfile.write((char*)&v.u, 4);
-		bfile.write((char*)&v.v, 4);
+		bfile.write((char*)& v.u, 4);
+		bfile.write((char*)& v.v, 4);
 	}
 
 	// normals
 	for (size_t i = 0; i < assetdata->vertexCount; i++) {
 		ovrAvatarMeshVertex_ v = vbuf[i];
-		bfile.write((char*)&v.nx, 4);
-		bfile.write((char*)&v.ny, 4);
-		bfile.write((char*)&v.nz, 4);
+		bfile.write((char*)& v.nx, 4);
+		bfile.write((char*)& v.ny, 4);
+		bfile.write((char*)& v.nz, 4);
 	}
 
 	if (mode == 1) {
@@ -840,31 +850,31 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 		for (size_t i = 0; i < assetdata->vertexCount; i++) {
 			ovrAvatarMeshVertex_ v = vbuf[i];
 			unsigned int packed = pack(&v.blendIndices[0]);
-			bfile.write((char*)&packed, 4);
+			bfile.write((char*)& packed, 4);
 		}
 		// for each bonePack we have the 4 weights:
 		for (size_t i = 0; i < assetdata->vertexCount; i++) {
 			ovrAvatarMeshVertex_ v = vbuf[i];
 			unsigned int packed = pack(&v.blendIndices[0]);
-			bfile.write((char*)&v.blendWeights[0], 4);
-			bfile.write((char*)&v.blendWeights[1], 4);
-			bfile.write((char*)&v.blendWeights[2], 4);
-			bfile.write((char*)&v.blendWeights[3], 4);
+			bfile.write((char*)& v.blendWeights[0], 4);
+			bfile.write((char*)& v.blendWeights[1], 4);
+			bfile.write((char*)& v.blendWeights[2], 4);
+			bfile.write((char*)& v.blendWeights[3], 4);
 		}
 	}
 	// vertices index buffer
 	int numIndex = assetdata->indexCount;
-	bfile.write((char*)&numIndex, 4);
+	bfile.write((char*)& numIndex, 4);
 	//const uint16_t* ibuf = assetdata->indexBuffer;
 	for (size_t i = 0; i < assetdata->indexCount; i++) {
 		uint16_t n = ibuf[i];
 		int nl = n;
-		bfile.write((char*)&nl, 4);
+		bfile.write((char*)& nl, 4);
 	}
 
 	// animations
 	int numAnimationNameLength = 0;
-	bfile.write((char*)&numAnimationNameLength, 4);
+	bfile.write((char*)& numAnimationNameLength, 4);
 	if (numAnimationNameLength != 0) {
 		// TODO
 	}
@@ -877,7 +887,7 @@ void VR::writeOVRMesh(const uint64_t userId, const ovrAvatarMessage_AssetLoaded 
 }
 
 #include "dds.h"
-void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoaded * assetmsg, const ovrAvatarTextureAssetData * data)
+void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoaded* assetmsg, const ovrAvatarTextureAssetData* data)
 {
 	// Load the image data
 	wstring filename = getTextureFileName(assetmsg->assetID);
@@ -885,7 +895,7 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 	ofstream bfile(binFile, ios::out | ios::trunc | ios::binary);  // create and delete old content
 	assert(bfile);
 	uint32_t dwMagicNumber = DDS_MAGIC;
-	bfile.write((const char*)&dwMagicNumber, 4);
+	bfile.write((const char*)& dwMagicNumber, 4);
 	DDS_HEADER header = { 0 };
 	bool ok = false;
 
@@ -915,7 +925,7 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 		header.ddspf.BBitMask = 0x000000ff;
 		header.ddspf.ABitMask = 0xff000000;
 
-		bfile.write((const char*)&header, sizeof(header));
+		bfile.write((const char*)& header, sizeof(header));
 		ok = true;
 		for (uint32_t level = 0, offset = 0, width = data->sizeX, height = data->sizeY; level < data->mipCount; ++level)
 		{
@@ -923,9 +933,9 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 			//convert to rgb32 while saving:
 			const unsigned char alpha = 0xff;
 			for (uint32_t rgb_index = 0; rgb_index < width * height * 3; rgb_index += 3) {
-				const char *mem = ((const char*)data->textureData) + offset + rgb_index;
+				const char* mem = ((const char*)data->textureData) + offset + rgb_index;
 				bfile.write(mem, 3);
-				bfile.write((const char*)&alpha, 1);
+				bfile.write((const char*)& alpha, 1);
 			}
 			offset += width * height * 3;
 			width /= 2;
@@ -964,7 +974,7 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 		header.ddspf.size = 0x20;
 		header.ddspf.flags = 0x04;
 
-		bfile.write((const char*)&header, sizeof(header));
+		bfile.write((const char*)& header, sizeof(header));
 		ok = true;
 		//glFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 		//Log(" sizes: ");
@@ -975,7 +985,7 @@ void VR::writeOVRTexture(const uint64_t userId, const ovrAvatarMessage_AssetLoad
 			int levelSize = blockSize * max(1, ((width + 3) / 4)) * max(1, ((height + 3) / 4));
 			//Log(std::hex << levelSize << " ");
 			total += levelSize;
-			const char *mem = ((const char*)data->textureData) + offset;
+			const char* mem = ((const char*)data->textureData) + offset;
 			bfile.write(mem, levelSize);
 			offset += levelSize;
 			width /= 2;
@@ -1004,7 +1014,7 @@ void VR::loadAvatarDefault()
 	loadAvatarFromOculus(false);
 }
 
-void VR::gatherAvatarComponentInfo(AvatarPartInfo & avatarPartInfo, const ovrAvatarHandComponent * component)
+void VR::gatherAvatarComponentInfo(AvatarPartInfo& avatarPartInfo, const ovrAvatarHandComponent* component)
 {
 	auto avatarRenderComponent = component->renderComponent;
 	//Log("controller has " << avatarRenderComponent->renderPartCount << " render parts" << endl);
@@ -1027,7 +1037,7 @@ void VR::gatherAvatarComponentInfo(AvatarPartInfo & avatarPartInfo, const ovrAva
 	}
 }
 
-void VR::gatherAvatarComponentInfo(AvatarPartInfo & avatarPartInfo, const ovrAvatarControllerComponent * component)
+void VR::gatherAvatarComponentInfo(AvatarPartInfo& avatarPartInfo, const ovrAvatarControllerComponent* component)
 {
 	auto avatarRenderComponent = component->renderComponent;
 	//Log("controller has " << avatarRenderComponent->renderPartCount << " render parts" << endl);
@@ -1053,7 +1063,7 @@ void VR::gatherAvatarComponentInfo(AvatarPartInfo & avatarPartInfo, const ovrAva
 	}
 }
 
-void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
+void VR::gatherAvatarInfo(AvatarInfo& avatarInfo, ovrAvatar* avatar)
 {
 	// left controller:
 	auto avatarControllerComponent = ovrAvatarPose_GetLeftControllerComponent(avatar);
@@ -1069,7 +1079,7 @@ void VR::gatherAvatarInfo(AvatarInfo &avatarInfo, ovrAvatar * avatar)
 	gatherAvatarComponentInfo(avatarInfo.handRight, avatarHandComponent);
 
 	// prepare assets:
-	TextureInfo *ti = xapp->textureStore.getTexture(avatarInfo.controllerLeft.textureId);
+	TextureInfo* ti = xapp->textureStore.getTexture(avatarInfo.controllerLeft.textureId);
 	if (ti->id.length() == 0) {
 		xapp->textureStore.loadTexture(avatarInfo.controllerLeft.textureFileName, avatarInfo.controllerLeft.textureId);
 		ti = xapp->textureStore.getTexture(avatarInfo.controllerLeft.textureId);
@@ -1291,7 +1301,7 @@ void VR::drawController(bool isLeft)
 {
 	if (!avatarInfo.readyToRender) return;
 
-	auto *mesh = isLeft ? avatarInfo.controllerLeft.renderPartPBS : avatarInfo.controllerRight.renderPartPBS;
+	auto* mesh = isLeft ? avatarInfo.controllerLeft.renderPartPBS : avatarInfo.controllerRight.renderPartPBS;
 	assert(mesh);
 	XMMATRIX skinnedPoses[MAX_BONES];  // current world pose matrices
 	computeWorldPose(mesh->skinnedPose, skinnedPoses);
@@ -1306,7 +1316,8 @@ void VR::drawController(bool isLeft)
 	if (isLeft) {
 		avatarInfo.controllerLeft.o.update();
 		avatarInfo.controllerLeft.o.draw();
-	} else {
+	}
+	else {
 		avatarInfo.controllerRight.o.update();
 		avatarInfo.controllerRight.o.draw();
 	}
@@ -1316,7 +1327,7 @@ void VR::drawHand(bool isLeft)
 {
 	if (!avatarInfo.readyToRender) return;
 
-	auto *mesh = isLeft ? avatarInfo.handLeft.renderPart : avatarInfo.handRight.renderPart;
+	auto* mesh = isLeft ? avatarInfo.handLeft.renderPart : avatarInfo.handRight.renderPart;
 	assert(mesh);
 	XMMATRIX skinnedPoses[MAX_BONES];  // current world pose matrices
 	computeWorldPose(mesh->skinnedPose, skinnedPoses);
@@ -1331,7 +1342,8 @@ void VR::drawHand(bool isLeft)
 	if (isLeft) {
 		avatarInfo.handLeft.o.update();
 		avatarInfo.handLeft.o.draw();
-	} else {
+	}
+	else {
 		avatarInfo.handRight.o.update();
 		avatarInfo.handRight.o.draw();
 	}
@@ -1355,7 +1367,7 @@ void VR::nextTracking()
 {
 }
 
-void VR::submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg)
+void VR::submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral* fdg)
 {
 #if defined(_SVR_)
 	//vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
@@ -1367,7 +1379,7 @@ void VR::submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg)
 	bounds.uMax = 0.5f;
 	bounds.vMin = 0.0f;
 	bounds.vMax = 1.0f;
-	
+
 	vr::D3D12TextureData_t d3d12LeftEyeTexture = { fdg->renderTargetRenderTexture.Get(), dxGlobal->commandQueue.Get(), 0 };
 	vr::Texture_t leftEyeTexture = { (void*)& d3d12LeftEyeTexture, vr::TextureType_DirectX12, vr::ColorSpace_Gamma };
 	vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture, &bounds, vr::Submit_Default);
@@ -1409,7 +1421,7 @@ void VR::drawHand(bool isLeft)
    m[0][3] = x
 */
 #if defined(_SVR_)
-void VR::UpdateHMDMatrixPose(Camera *cam)
+void VR::UpdateHMDMatrixPose(Camera* cam)
 {
 	if (!m_pHMD)
 		return;
@@ -1539,5 +1551,197 @@ Matrix4 VR::GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye)
 	);
 }
 
+
+#endif
+
+// VR2 test
+VR2::VR2()
+{
+	//m_rmat4DevicePose = new Matrix4[vr::k_unMaxTrackedDeviceCount];
+	//m_rTrackedDevicePose = new vr::TrackedDevicePose_t[vr::k_unMaxTrackedDeviceCount];
+}
+
+void VR2::init(Pipeline* pipeline, DXGlobal* dxglobal) {
+	this->pipeline = pipeline;
+	this->dxGlobal = dxglobal;
+	pipeline->setVRImplementation(this);
+	Log("size of VR2: " << sizeof(VR2) << endl);
+	Log("size of VR2: " << sizeof(*this) << endl);
+}
+
+VR2::~VR2() {
+	//delete[] m_rmat4DevicePose;
+	//delete[] m_rTrackedDevicePose;
+}
+
+void VR2::init()
+{
+	//pipeline->setVRImplementation(this);
+}
+
+void VR2::initD3D()
+{
+}
+
+void VR2::initFrame()
+{
+}
+
+void VR2::startFrame()
+{
+}
+
+void VR2::endFrame()
+{
+}
+
+void VR2::prepareEyes(VR_Eyes* eyes)
+{
+	auto config = pipeline->getPipelineConfig();
+	auto width = config.backbufferWidth;
+	auto height = config.backbufferHeight;
+	D3D12_VIEWPORT viewport;
+	viewport.MinDepth = 0.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	viewport.Width = static_cast<float>(width);
+	viewport.Height = static_cast<float>(height);
+	viewport.MaxDepth = 1.0f;
+
+	D3D12_RECT scissorRect;
+	scissorRect.left = 0;
+	scissorRect.top = 0;
+	scissorRect.right = static_cast<LONG>(width);
+	scissorRect.bottom = static_cast<LONG>(height);
+
+	if (!pipeline->isVR()) {
+		eyes->viewports[0] = viewport;
+		eyes->viewports[1] = viewport;
+		eyes->scissorRects[0] = scissorRect;
+		eyes->scissorRects[1] = scissorRect;
+	}
+	else {
+		eyes->viewports[EyeLeft] = viewport;
+		eyes->scissorRects[EyeLeft] = scissorRect;
+		eyes->viewports[EyeRight] = viewport;
+		eyes->scissorRects[EyeRight] = scissorRect;
+		eyes->viewports[EyeLeft].Width /= 2;
+		eyes->scissorRects[EyeLeft].right /= 2;
+		//scissorRects[EyeLeft].right--;
+		eyes->viewports[EyeRight].Width /= 2;
+		eyes->viewports[EyeRight].TopLeftX = eyes->viewports[EyeLeft].Width;
+		eyes->scissorRects[EyeRight].left = eyes->scissorRects[EyeLeft].right;
+	}
+}
+
+void VR2::prepareViews(D3D12_VIEWPORT& viewport, D3D12_RECT& scissorRect)
+{
+}
+
+void VR2::prepareDraw()
+{
+}
+
+void VR2::endDraw() {
+}
+
+
+void VR2::adjustEyeMatrix(XMMATRIX& m, Camera* cam) {
+}
+
+void VR2::nextEye() {
+}
+
+bool VR2::isFirstEye() {
+	return firstEye;
+}
+void VR2::handleOVRMessages()
+{
+}
+
+void VR2::loadAvatarDefault()
+{
+}
+
+void VR2::loadAvatarFromOculus(bool reloadAssets)
+{
+}
+
+void VR2::nextTracking()
+{
+}
+
+void VR2::submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral* fdg)
+{
+}
+
+int VR2::getCurrentFrameBufferIndex() {
+	return 0; // xapp->getCurrentBackBufferIndex(); TODO probably not needed
+};
+
+void VR2::drawController(bool isLeft)
+{
+}
+
+void VR2::drawHand(bool isLeft)
+{
+}
+/*
+ pose is returned as HmdMatrix34_t (3 lines, 4 rows matrix)
+ Axes: left   x: m[0][0] - m[2][0]
+ Axes: up     y: m[0][1] - m[2][1]
+ Axes: foward z: m[0][2] - m[2][2]
+ Translation:    m[0][3] - m[2][3]
+
+ apply camera position:
+   m[0][3] = x
+   m[1][3] = y
+   m[0][3] = x
+*/
+
+#if defined(_SVR_)
+void VR2::UpdateHMDMatrixPose(Camera* cam)
+{
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Converts a SteamVR matrix to our local matrix class
+//-----------------------------------------------------------------------------
+Matrix4 VR2::ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t& matPose)
+{
+	return Matrix4();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Gets a Current View Projection Matrix with respect to nEye,
+//          which may be an Eye_Left or an Eye_Right.
+//-----------------------------------------------------------------------------
+Matrix4 VR2::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
+{
+	return Matrix4();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Gets an HMDMatrixPoseEye with respect to nEye.
+//-----------------------------------------------------------------------------
+Matrix4 VR2::GetHMDMatrixPoseEye(vr::Hmd_Eye nEye)
+{
+	return Matrix4();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void VR2::SetupCameras()
+{
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Gets a Matrix Projection Eye with respect to nEye.
+//-----------------------------------------------------------------------------
+Matrix4 VR2::GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye)
+{
+	return Matrix4();
+}
 
 #endif

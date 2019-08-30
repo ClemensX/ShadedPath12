@@ -10,7 +10,7 @@ BillboardApp::BillboardApp()
 
 BillboardApp::~BillboardApp()
 {
-	if (vr) delete vr;
+	//if (vr) delete vr;
 	// wait until all frames have finished GPU usage
 	dxGlobal.destroy(&pipeline);
 }
@@ -40,8 +40,8 @@ void BillboardApp::init(HWND hwnd) {
 	Log("pipeline initialized" << endl);
 	dxGlobal.init();
 	dxGlobal.setTextureStore(&textureStore);
-	vr = new VR();
-	dxGlobal.vr = vr;
+	//vr = new VR2();
+	dxGlobal.vr = &vr;
 	//billboard.init(&dxGlobal);
 	if (hwnd != 0) {
 		dxGlobal.initSwapChain(&pipeline, hwnd);
