@@ -65,6 +65,7 @@ void DXGlobal::init()
 		D3D12_MESSAGE_SEVERITY Severities[] =
 		{
 			D3D12_MESSAGE_SEVERITY_INFO
+			//D3D12_MESSAGE_SEVERITY_WARNING
 		};
 
 		// Suppress individual messages by their ID
@@ -78,8 +79,8 @@ void DXGlobal::init()
 		D3D12_INFO_QUEUE_FILTER NewFilter = {};
 		//NewFilter.DenyList.NumCategories = _countof(Categories);
 		//NewFilter.DenyList.pCategoryList = Categories;
-		//NewFilter.DenyList.NumSeverities = _countof(Severities);
-		//NewFilter.DenyList.pSeverityList = Severities;
+		NewFilter.DenyList.NumSeverities = _countof(Severities);
+		NewFilter.DenyList.pSeverityList = Severities;
 		NewFilter.DenyList.NumIDs = _countof(DenyIds);
 		NewFilter.DenyList.pIDList = DenyIds;
 

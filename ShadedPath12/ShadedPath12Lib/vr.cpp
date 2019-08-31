@@ -1457,11 +1457,9 @@ void VR::UpdateHMDMatrixPose(Camera* cam)
 	{
 		// adjust position to camera:
 		if (cam != nullptr) {
-			static float adder = 0.0f;
-			adder += 0.10f;
-			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[0][3] = cam->pos.x;
-			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[1][3] = cam->pos.y;
-			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[2][3] = -cam->pos.z;
+			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[0][3] += cam->pos.x;
+			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[1][3] += cam->pos.y;
+			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[2][3] -= cam->pos.z;
 			m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd] = ConvertSteamVRMatrixToMatrix4(m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking);
 			// end
 		}
@@ -1593,7 +1591,7 @@ void VR2::init(Pipeline* pipeline, DXGlobal* dxglobal) {
 VR2::~VR2() {
 	if (!pipeline->isHMD()) return;
 #if defined(_SVR_)
-	vr::VRCompositor()->CompositorQuit();
+	//vr::VRCompositor()->CompositorQuit();
 	vr::VR_Shutdown();
 #endif
 }
