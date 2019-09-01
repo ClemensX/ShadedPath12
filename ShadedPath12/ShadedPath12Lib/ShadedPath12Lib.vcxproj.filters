@@ -248,6 +248,9 @@
     <ClInclude Include="Matrices.h">
       <Filter>Source Files\NE3</Filter>
     </ClInclude>
+    <ClInclude Include="pre_proc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\PostPS.hlsl">

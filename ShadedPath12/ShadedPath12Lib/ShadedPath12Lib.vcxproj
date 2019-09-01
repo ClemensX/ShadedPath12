@@ -84,6 +84,7 @@
     <ClInclude Include="meshObject.h" />
     <ClInclude Include="path.h" />
     <ClInclude Include="pipeline.h" />
+    <ClInclude Include="pre_proc.h" />
     <ClInclude Include="sample1.h" />
     <ClInclude Include="simple2dframe.h" />
     <ClInclude Include="sound.h" />

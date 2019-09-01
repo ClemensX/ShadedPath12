@@ -1457,6 +1457,9 @@ void VR::UpdateHMDMatrixPose(Camera* cam)
 	{
 		// adjust position to camera:
 		if (cam != nullptr) {
+			// update camera settings to VR:
+			m_fNearClip = cam->nearZ;
+			m_fFarClip = cam->farZ;
 			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[0][3] += cam->pos.x;
 			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[1][3] += cam->pos.y;
 			m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].mDeviceToAbsoluteTracking.m[2][3] -= cam->pos.z;

@@ -5,4 +5,4 @@
 #pragma once
 
 #define _SVR_
-#define _DISABLE_GPU_DEBUGXXX_
+#define _DISABLE_GPU_DEBUG_
