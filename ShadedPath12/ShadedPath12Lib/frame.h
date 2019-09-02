@@ -36,7 +36,8 @@ public:
 	AppFrameDataBase* frameData = nullptr;
 	chrono::time_point<chrono::high_resolution_clock> renderStartTime;
 	//chrono::duration<chrono::microseconds> renderDuration; // render duration in microseconds
-	long long renderDuration; // render duration in microseconds
+	long long renderDuration; // render duration in microseconds (whole frame including display)
+	long long drawDuration; // draw duration in microseconds
 	double gametime; // gametime at frame start
 	double wvpTime;  // gametime at WVP creation in camera
 	long long wvpId = 0L; // count WVP creation. helps detecting out of sync situations

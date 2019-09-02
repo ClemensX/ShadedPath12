@@ -87,6 +87,7 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 		// let application draw:
 		
 		pipeline->drawCallback(frame, pipeline, pipeline->applicationFrameData);
+		pipeline->updateStatisticsDraw(frame);
 		bool unfinished = true;
 		// frame now considered processed
 		// call synchronized present method
@@ -118,7 +119,7 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 				pipeline->consumer(frame, pipeline);
 				pipeline->last_processed = frame->absFrameNumber;
 			}
-			pipeline->updateStatistics(frame);
+			pipeline->updateStatisticsPresent(frame);
 			pipeline->inSyncCode = false;
 			unfinished = false;
 		}
@@ -126,9 +127,24 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 	}
 }
 
-void Pipeline::updateStatistics(Frame* frame)
+void Pipeline::updateStatisticsDraw(Frame* frame)
+{
+	auto t1 = chrono::high_resolution_clock::now();
+	frame->drawDuration = chrono::duration_cast<chrono::microseconds>(t1 - frame->renderStartTime).count();
+	Log(" frame draw " << frame->drawDuration << endl);
+}
+
+void Pipeline::updateStatisticsPresent(Frame* frame)
 {
 	assert(inSyncCode);
+	// finsh draw statistics
+	lastFrameDrawDuration = frame->drawDuration;
+	cumulatedFrameDrawDuration += frame->drawDuration;
+	//Log("cumulated " << cumulatedFrameRenderDuration);
+	averageFrameDrawDuration = cumulatedFrameDrawDuration / (frame->absFrameNumber + 1);
+	//Log(" average " << averageFrameRenderDuration << endl);
+
+	// Present statistics
 	auto t1 = chrono::high_resolution_clock::now();
 	frame->renderDuration = chrono::duration_cast<chrono::microseconds>(t1 - frame->renderStartTime).count();
 	lastFrameRenderDuration = frame->renderDuration;

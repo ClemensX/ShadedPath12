@@ -138,9 +138,13 @@ public:
 	// Wait until pipeline has ended rendering. Needed for console apps that have no event loop
 	void waitUntilShutdown();
 	// get cumulated statistics message
-	string getStatistics() { stringstream s; s << "created " << (frameNum + 1) << " frames with average [microseconds] to render: " << averageFrameRenderDuration << " tot FPS: " << totalFPS << " skipped " << skipped << endl; return s.str(); }
-	void updateStatistics(Frame* frame);
+	string getStatistics() { stringstream s; s << "created " << (frameNum + 1) << " frames with average [microseconds] to draw/render: " << averageFrameDrawDuration <<"/" << averageFrameRenderDuration << " tot FPS: " << totalFPS << " skipped " << skipped << endl; return s.str(); }
+	// update frame statistics after frame was presented
+	void updateStatisticsPresent(Frame* frame);
+	// update frame statistics after frame was drawn to internal render target
+	void updateStatisticsDraw(Frame* frame);
 	AppFrameDataManager afManager;
+	long long lastFrameDrawDuration = 0L; // microseconds
 	long long lastFrameRenderDuration = 0L; // microseconds
 	long totalFPS = 0; // FPS since starting render threads (skipped frames do not count)
 	World* getWorld() { return &world; };
@@ -170,6 +174,8 @@ private:
 	ThreadGroup threads;
 	long long averageFrameRenderDuration = 0L; // microseconds
 	long long cumulatedFrameRenderDuration = 0L; // microseconds
+	long long averageFrameDrawDuration = 0L; // microseconds
+	long long cumulatedFrameDrawDuration = 0L; // microseconds
 	mutex appSyncMutex; // to synchronize callbacks to application
 	boolean inSyncCode = false;  // indicate single thread access code, check this var before global operations
 	chrono::time_point<chrono::high_resolution_clock> pipelineStartTime;
