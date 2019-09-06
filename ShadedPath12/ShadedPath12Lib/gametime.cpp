@@ -27,6 +27,7 @@ void GameTime::advanceTime()
 	//timeAbs = ((double)now - start) / ticks_per_game_day * 24;
 	//timeAbs /= 3600; // go from seconds to hours
 	timeAbs = (double)now / ticks_per_game_day * 24;
+	timeRel = (double)(now-start) / ticks_per_game_day;
 	timeDelta = ((double)(now - last_backup)) / ticks_per_sec;
 	if (timeDelta < 0)
 		timeDelta = 0.0f;
@@ -58,6 +59,12 @@ double GameTime::getTimeAbs()
 double GameTime::getTimeAbsSeconds()
 {
 	return timeAbs * 3600.0;
+}
+
+// get rel number of seconds (and fractions) since timer start
+double GameTime::getTimeRelSeconds()
+{
+	return timeRel * 3600.0;
 }
 
 // get number of seconds since last advanceTime()

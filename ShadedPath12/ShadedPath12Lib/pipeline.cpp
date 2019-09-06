@@ -127,11 +127,19 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 	}
 }
 
+void Pipeline::runUpdate(Pipeline* pipeline)
+{
+	while (!pipeline->isShutdown()) {
+		//pipeline->gametime.advanceTime(); // TODO thread safe?  - apparently not
+		pipeline->updateCallback(pipeline);
+	}
+}
+
 void Pipeline::updateStatisticsDraw(Frame* frame)
 {
 	auto t1 = chrono::high_resolution_clock::now();
 	frame->drawDuration = chrono::duration_cast<chrono::microseconds>(t1 - frame->renderStartTime).count();
-	Log(" frame draw " << frame->drawDuration << endl);
+	//Log(" frame draw " << frame->drawDuration << endl);
 }
 
 void Pipeline::updateStatisticsPresent(Frame* frame)
@@ -176,13 +184,30 @@ void Pipeline::startRenderThreads()
 		for (int i = 0; i < 1; i++) {
 			threads.add_t(runFrameSlot, this, frameBuffer.getFrame(i), i);
 		}
-	} else {
+	}
+	else {
 		for (int i = 0; i < frameBuffer.size(); i++) {
-			void * native_handle = threads.add_t(runFrameSlot, this, frameBuffer.getFrame(i), i);
+			void* native_handle = threads.add_t(runFrameSlot, this, frameBuffer.getFrame(i), i);
 			wstring mod_name = wstring(L"render_pipeline_thread").append(L"_").append(to_wstring(i));
 			SetThreadDescription((HANDLE)native_handle, mod_name.c_str());
 		}
 	}
+}
+
+void Pipeline::startUpdateThread()
+{
+	if (!initialized) {
+		Error(L"cannot start update thread: pipeline not initialized\n");
+		return;
+	}
+	if (updateCallback == nullptr) {
+		Error(L"cannot start update thread: no update consumer specified\n");
+		return;
+	}
+	// one update thread for application code:
+	void* native_handle = threads.add_t(runUpdate, this);
+	wstring mod_name = wstring(L"update_application");//.append(L"_").append(to_wstring(i));
+	SetThreadDescription((HANDLE)native_handle, mod_name.c_str());
 }
 
 void Pipeline::waitUntilShutdown()

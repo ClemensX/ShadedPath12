@@ -57,7 +57,7 @@ void BillboardApp::init(HWND hwnd) {
 		FrameDataBillboard* fdb = &fd->billboard_fd;
 		dxGlobal.initFrameBufferResources(fd_gen, fd2d, i, &pipeline);
 		d2d->init(&dxGlobal, fd2d, fd_gen, &pipeline);
-		billboard.init(&dxGlobal, fdb, fd_gen);
+		billboard.init(&dxGlobal, fdb, fd_gen, &pipeline);
 	}
 	// test texture packs:
 	util.initPakFiles();
@@ -160,7 +160,7 @@ void BillboardApp::presentFrame(Frame* frame, Pipeline* pipeline) {
 	}
 }
 
-void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void *data)
+void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 {
 	// handle input first:
 	KeyTicks ticks;
@@ -170,8 +170,8 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void *data)
 	// draw effects;
 	BillboardAppFrameData* afd = (BillboardAppFrameData*)frame->frameData;
 	FrameDataGeneral* fdg = &afd->fd_general;
-	FrameDataD2D *fd = &afd->d2d_fd;
-	Dx2D *d2d = &afd->d2d;
+	FrameDataD2D* fd = &afd->d2d_fd;
+	Dx2D* d2d = &afd->d2d;
 	FrameDataBillboard* fdb = &afd->billboard_fd;
 
 	dxGlobal.waitAndReset(fdg);
@@ -187,6 +187,12 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void *data)
 	d2d->drawStatisticsOverlay(frame, pipeline);
 	dxGlobal.end2DRendering(frame, pipeline, fd);
 	dxGlobal.endStatisticsDraw(fdg);
+}
+
+void BillboardApp::update(Pipeline* pipeline)
+{
+	double now = pipeline->gametime.getTimeRelSeconds();
+	Log("BillboardApp update started [h] " << now << endl);
 }
 
 void BillboardApp::runTest() {
@@ -209,18 +215,20 @@ void BillboardApp::runTest() {
 }
 
 void BillboardApp::start() {
-	Log("Simple2dFrame UI mode started\n");
+	Log("BillboardApp UI mode started\n");
 	pipeline.setFinishedFrameConsumer(bind(&BillboardApp::presentFrame, this, placeholders::_1, placeholders::_2));
 	pipeline.setApplicationFrameData(&afd);
 	pipeline.setCallbackDraw(bind(&BillboardApp::draw, this, placeholders::_1, placeholders::_2, placeholders::_3));
+	pipeline.setCallbackUpdate(bind(&BillboardApp::update, this, placeholders::_1));
+	pipeline.startUpdateThread();
 	pipeline.startRenderThreads();
 }
 
 void BillboardApp::stop() {
 	pipeline.shutdown();
 	pipeline.waitUntilShutdown();
-	Log("Simple2dFrame and pipeline stopped\n");
-	LogF("Simple2dFrame and pipeline stopped\n");
+	Log("BillboardApp and pipeline stopped\n");
+	LogF("BillboardApp and pipeline stopped\n");
 	Log(s2w(pipeline.getStatistics()));
 	LogF(s2w(pipeline.getStatistics()));
 }

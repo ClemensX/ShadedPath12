@@ -42,6 +42,7 @@ private:
 	// draw frame, will be called with from multiple threads in parallel
 	// usually the app just calls the draw methods of all used effects
 	void draw(Frame* frame, Pipeline* pipeline, void* afd);
+	void update(Pipeline* pipeline);
 	Pipeline pipeline;
 	DXGlobal dxGlobal;
 	BillboardAppFrameData afd[FRAME_BUFFER_SIZE];

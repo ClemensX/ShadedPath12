@@ -35,6 +35,9 @@ public:
  5a) There will be render code running still - old data cannot be changed right away
  5b) new effect render code will get new data set
  5c) after all threads have switched to new data, the old data is free again - it will be used to update for next cycle
+ --> idea: usage counter for active/inactive data set?
+ --> one update thread per effect: may work on one update for arbitrary duration, only one more will be queued
+     if another update comes while one is already queued, the queued one will simply be replaced
  */
 
 // base class for effects
@@ -55,8 +58,13 @@ public:
 	// rendering after this call returns will use the new data set. 
 	// returns nullptr if there is no active set yet
 	virtual void activateAppDataSet() = 0;
+	void update(EffectAppData* data);
+	// update thread runs this method:
+	static void runUpdate(Pipeline* pipeline);
 
 	virtual ~Effect() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors
+	//function<void(Frame*, Pipeline*)> updater = nullptr;
+	//void setFinishedFrameConsumer(function<void(Frame*, Pipeline*)> consumer) { this->consumer = consumer; }
 protected:
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
 	DXManager dxmanager;

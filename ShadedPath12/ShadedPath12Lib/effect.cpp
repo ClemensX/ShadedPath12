@@ -124,3 +124,10 @@ void Effect::createAndUploadIndexBuffer(size_t bufferSize, void* data, ID3D12Pip
 	indexBufferView.SizeInBytes = indexBufferSize;
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 }
+
+void Effect::runUpdate(Pipeline* pipeline) {
+	Log("start effect update thread" << endl);
+	while (!pipeline->isShutdown()) {
+	}
+	Log("end effect update thread" << endl);
+}
