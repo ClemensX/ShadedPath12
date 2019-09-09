@@ -78,7 +78,6 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 		//LogF("Pipeline::runFrameSlot " << frameNum << endl);
 		// if next line is commentd out we see garbled text because of multile threads writing
 		//cout << "run frame slot " << slot << " frame " << frameNum << endl;
-		pipeline->gametime.advanceTime();
 		frame->renderStartTime = chrono::high_resolution_clock::now();
 		frame->gametime = pipeline->gametime.getTimeAbs();
 		frame->absFrameNumber = frameNum;
@@ -122,6 +121,7 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 			pipeline->updateStatisticsPresent(frame);
 			pipeline->inSyncCode = false;
 			unfinished = false;
+			pipeline->gametime.advanceTime();
 		}
 		//pipeline->updateStatistics(frame);
 	}

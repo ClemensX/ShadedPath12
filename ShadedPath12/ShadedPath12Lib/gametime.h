@@ -19,6 +19,7 @@ private:
 	double timeDelta;
 public:
 	// advances time, should be called once for every frame
+	// not thread save - be sure to call from synchronized method (usually after presenting)
 	void advanceTime();
 
 	// returns time of day as double in range 0..24

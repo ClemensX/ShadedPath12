@@ -192,7 +192,7 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 void BillboardApp::update(Pipeline* pipeline)
 {
 	double now = pipeline->gametime.getTimeRelSeconds();
-	Log("BillboardApp update started [h] " << now << endl);
+	Log("BillboardApp update since game start [sec] " << now << endl);
 }
 
 void BillboardApp::runTest() {

@@ -27,11 +27,12 @@ void GameTime::advanceTime()
 	//timeAbs = ((double)now - start) / ticks_per_game_day * 24;
 	//timeAbs /= 3600; // go from seconds to hours
 	timeAbs = (double)now / ticks_per_game_day * 24;
-	timeRel = (double)(now-start) / ticks_per_game_day;
+	timeRel = (double)(now-start) / ticks_per_game_day * 24;
 	timeDelta = ((double)(now - last_backup)) / ticks_per_sec;
 	if (timeDelta < 0)
 		timeDelta = 0.0f;
 	//Log("time day abs delta " << timeOfDay << " " << timeAbs << " " << timeDelta << "\n");
+	//Log("time rel to start [seconds]" << getTimeRelSeconds() << "\n");
 	//Log(" time dbl " << setprecision(20) << timeAbs << endl);
 	//float tf = (float)timeAbs;
 	assert(lastTimeAbsD != timeAbs);
