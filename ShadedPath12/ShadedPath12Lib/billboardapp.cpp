@@ -86,7 +86,7 @@ void BillboardApp::init(HWND hwnd) {
 	billboard.add("markings", be1);
 	billboard.add("markings", be2);
 	billboard.add("vac11", be3);
-	if (true) {
+	if (false) {
 		BillboardElement b;
 		b.pos = XMFLOAT3(15.0f, 0.0f, 2.0f);
 		b.normal = XMFLOAT4(-1.0f, 0.0f, -1.0f, 1.0f);
@@ -196,8 +196,24 @@ void BillboardApp::update(Pipeline* pipeline)
 	auto millis = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 	//Log("BillboardApp update since game start [millis] " << millis << endl);
 
-	//double now = pipeline->gametime.getTimeRelSeconds();
-	//Log("BillboardApp update since game start [sec] " << now << endl);
+	auto& inactive = billboard.getInactiveAppDataSet()->billboards;
+	auto& active = billboard.getActiveAppDataSet()->billboards;
+	// in each cycle we copy all the data from active and apply our changesdepending on duration that has passed
+	inactive.clear(); // remove entries - does not deallocate mem
+
+	for (auto& b : active) {
+		auto& tex = b.first;
+		auto& vec = b.second;
+		for (auto& p : vec) {
+			BillboardElement moved_p = p;
+			moved_p.pos.x += 0.001f;
+			billboard.add(tex, moved_p);
+			//Log(" x " << moved_p.pos.x << endl);
+		}
+	}
+	//Log(" inactive set: " << active.size() << endl);
+	assert(active.size() == inactive.size());
+	billboard.activateAppDataSet();
 }
 
 void BillboardApp::runTest() {

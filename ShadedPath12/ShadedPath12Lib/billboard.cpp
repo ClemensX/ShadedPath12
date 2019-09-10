@@ -147,6 +147,7 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 			vector<Vertex> vertices;
 			vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices);
 			size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
+			Log(" upload billboard vertex buffer for slot " << frame->slot << " size " << vertexBufferSize << endl);
 			createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), fdb->pipelineState.Get(),
 				L"Billboard2", fdb->vertexBuffer, fdb->vertexBufferUpload, fdb->updateCommandAllocator, fdb->updateCommandList, fdb->vertexBufferView);
 

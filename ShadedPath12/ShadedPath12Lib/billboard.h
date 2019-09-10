@@ -58,7 +58,7 @@ public:
 	{
 		return &appDataSets[currentInactiveAppDataSet];
 	};
-	virtual EffectAppData* getActiveAppDataSet() override
+	BillboardEffectAppData* getActiveAppDataSet() override
 	{
 		if (currentActiveAppDataSet < 0) {
 			throw "active data set not available in Billboard";

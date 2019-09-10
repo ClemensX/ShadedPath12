@@ -98,7 +98,7 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 			//pipeline->drawCallback(frame, pipeline, pipeline->applicationFrameData);
 			bool skippedDueToWVP = false;
 			if (pipeline->lastWvpId+1 != frame->wvpId) {
-				Log("WVP MISMATCH: last id: " << pipeline->lastWvpId << " cur frame: " << frame->wvpId << endl);
+				//Log("WVP MISMATCH: last id: " << pipeline->lastWvpId << " cur frame: " << frame->wvpId << endl);
 				skippedDueToWVP = true;
 			}
 			pipeline->lastWvpId = frame->wvpId;
