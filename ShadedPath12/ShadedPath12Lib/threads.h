@@ -286,3 +286,31 @@ public:
 		drawSlotAvailable.notify_one();
 	};
 };
+
+// limit running thread to max calls per second
+// thread will sleep when called too often
+// calling rarely will not be changed
+class ThreadLimiter {
+public:
+	ThreadLimiter(float limit) {
+		this->limit = limit;
+		this->limitMicro = 1000000L / (long long)limit;
+		Log("limit: " << limitMicro << endl);
+		lastCallTime = chrono::high_resolution_clock::now();
+	}
+	void waitForLimit() {
+		auto now = chrono::high_resolution_clock::now();
+		long long length = chrono::duration_cast<chrono::microseconds>(now - lastCallTime).count();
+		if (length < limitMicro) {
+			// we are above threshold: sleep for the remaining milliseconds
+			unsigned long d = (unsigned long)(limitMicro - length) / 1000; // sleep time in millis
+			//Log(" limit length duration " << limitMicro << " " << length << " " << d << endl);
+			Sleep(d);
+		}
+		lastCallTime = chrono::high_resolution_clock::now();
+	};
+private:
+	long long limitMicro;
+	float limit;
+	chrono::time_point<chrono::steady_clock> lastCallTime;
+};

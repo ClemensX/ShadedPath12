@@ -22,6 +22,7 @@ void BillboardApp::init(HWND hwnd) {
 	pc.setFrameBufferSize(FRAME_BUFFER_SIZE);
 	pc.setVRMode();
 	//pc.setSingleThreadMode();
+	pc.setMaxUpdatesPerSecond(30); // limit update thread to 30 calls / second
 #if defined (_SVR_)
 	pc.setHMDMode();
 #endif
@@ -191,8 +192,12 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 
 void BillboardApp::update(Pipeline* pipeline)
 {
-	double now = pipeline->gametime.getTimeRelSeconds();
-	Log("BillboardApp update since game start [sec] " << now << endl);
+	auto now = chrono::high_resolution_clock::now();
+	auto millis = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
+	//Log("BillboardApp update since game start [millis] " << millis << endl);
+
+	//double now = pipeline->gametime.getTimeRelSeconds();
+	//Log("BillboardApp update since game start [sec] " << now << endl);
 }
 
 void BillboardApp::runTest() {

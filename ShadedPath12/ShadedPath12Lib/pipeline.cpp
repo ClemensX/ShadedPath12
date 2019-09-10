@@ -37,6 +37,7 @@ void Pipeline::init()
 	singleThreadMode = pc.getSingleThreadMode();
 	gametime.init(pc.getGamedayFactor());
 	SetThreadDescription(GetCurrentThread(), L"main_pipeline_thread");
+	updatesPerSecond = pc.getMaxUpdatesPerSecond();
 }
 
 void Pipeline::finallyProcessed(Frame* frame)
@@ -129,8 +130,10 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 
 void Pipeline::runUpdate(Pipeline* pipeline)
 {
+	ThreadLimiter limiter(pipeline->updatesPerSecond);
 	while (!pipeline->isShutdown()) {
 		//pipeline->gametime.advanceTime(); // TODO thread safe?  - apparently not
+		limiter.waitForLimit();
 		pipeline->updateCallback(pipeline);
 	}
 }

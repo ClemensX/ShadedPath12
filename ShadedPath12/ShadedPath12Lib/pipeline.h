@@ -135,6 +135,9 @@ public:
 	// all drawing takes place in backbuffer - output to whatever size the window currently has is only last step
 	unsigned int backbufferWidth = 0, backbufferHeight = 0;
 	float aspectRatio;
+	// limit update thread to 30 calls / second
+	void setMaxUpdatesPerSecond(float maxps) { updatesPerSecond = maxps; };
+	float getMaxUpdatesPerSecond() { return updatesPerSecond; };
 private:
 	// world size in absolute units around origin, e.g. x is from -x to x
 	float sizex = 0.0f, sizey = 0.0f, sizez = 0.0f;
@@ -144,6 +147,7 @@ private:
 	bool hmdMode = false;
 	bool singleThreadMode = false;
 	LONGLONG gamedayFactor = 1L;
+	float updatesPerSecond = 30.0f;
 };
 
 class Pipeline
@@ -214,11 +218,13 @@ public:
 	bool isHMD() { return hmdMode; };
 	GameTime gametime;
 	ThreadGroup* getThreadGroup() { return &threads; };
+	float getMaxUpdatesPerSecond() { return updatesPerSecond; };
 
 private:
 	bool vrMode = false; // VR == true: 2 render two half images
 	bool hmdMode = false;  // hmdMode == true: render to HMD
 	bool singleThreadMode = false; // use only one render thread if true
+	float updatesPerSecond;
 	// Pipeline part of creating a frame
 	static void runFrameSlot(Pipeline* pipeline, Frame* frame, int slot);
 	// Application update thread
