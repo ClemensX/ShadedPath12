@@ -60,6 +60,8 @@ void BillboardApp::init(HWND hwnd) {
 		d2d->init(&dxGlobal, fd2d, fd_gen, &pipeline);
 		billboard.init(&dxGlobal, fdb, fd_gen, &pipeline);
 	}
+	// store effects that will be called during data updates
+	updateEffectList.push_back((Effect*)&billboard);
 	// test texture packs:
 	util.initPakFiles();
 	textureStore.init(&dxGlobal, &util);
@@ -213,7 +215,8 @@ void BillboardApp::update(Pipeline* pipeline)
 	}
 	//Log(" inactive set: " << active.size() << endl);
 	assert(active.size() == inactive.size());
-	billboard.activateAppDataSet();
+	Effect::update(updateEffectList);
+	//billboard.activateAppDataSet();
 }
 
 void BillboardApp::runTest() {

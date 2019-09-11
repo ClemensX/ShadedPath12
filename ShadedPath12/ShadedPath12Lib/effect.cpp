@@ -125,12 +125,17 @@ void Effect::createAndUploadIndexBuffer(size_t bufferSize, void* data, ID3D12Pip
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 }
 
+void Effect::update(vector<Effect*> effectList)
+{
+}
+
 void Effect::runUpdate(Pipeline* pipeline, Effect *effectInstance) {
 	Log("start effect update thread" << endl);
 	static long long calls = 0L;
 	while (!pipeline->isShutdown()) {
 		calls++;
-		effectInstance->updateQueue.pop(pipeline);
+		EffectAppData* ead = effectInstance->updateQueue.pop(pipeline);
+		Log(" EffectAppData " << ead << endl);
 	}
 	Log("end effect update thread" << endl);
 	Log("   calls " << calls << endl);

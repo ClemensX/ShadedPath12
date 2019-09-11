@@ -60,6 +60,8 @@ private:
  --> idea: usage counter for active/inactive data set?
  --> one update thread per effect: may work on one update for arbitrary duration, only one more will be queued
      if another update comes while one is already queued, the queued one will simply be replaced
+ --> user update thread triggers all effect updates, so that they can run in parallel
+     after that it waits for all efects to have consumed the update and switches incative/active set
  */
 
 // base class for effects
@@ -80,7 +82,7 @@ public:
 	// rendering after this call returns will use the new data set. 
 	// returns nullptr if there is no active set yet
 	virtual void activateAppDataSet() = 0;
-	void update(EffectAppData* data);
+	static void update(vector<Effect*> effectList);
 	// update thread runs this method:
 	static void runUpdate(Pipeline* pipeline, Effect* effectInstance);
 

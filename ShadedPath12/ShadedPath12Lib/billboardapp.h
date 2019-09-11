@@ -56,5 +56,6 @@ private:
 	Input* input = nullptr;
 	//VR2 *vr = nullptr;
 	VR vr;
+	vector<Effect*> updateEffectList;
 };
 
