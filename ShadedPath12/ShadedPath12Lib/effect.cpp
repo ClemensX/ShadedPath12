@@ -125,9 +125,50 @@ void Effect::createAndUploadIndexBuffer(size_t bufferSize, void* data, ID3D12Pip
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 }
 
-void Effect::runUpdate(Pipeline* pipeline) {
+void Effect::runUpdate(Pipeline* pipeline, Effect *effectInstance) {
 	Log("start effect update thread" << endl);
+	static long long calls = 0L;
 	while (!pipeline->isShutdown()) {
+		calls++;
+		effectInstance->updateQueue.pop(pipeline);
 	}
 	Log("end effect update thread" << endl);
+	Log("   calls " << calls << endl);
+}
+
+// wait until next data set is available
+// will only be called by update thread
+
+inline EffectAppData* UpdateQueue::pop(Pipeline* pipeline) {
+	unique_lock<mutex> lock(monitorMutex);
+	while (myqueue.empty()) {
+		cond.wait_for(lock, chrono::milliseconds(3000));
+		LogF("UpdateQueue wait suspended\n");
+		if (pipeline->isShutdown()) {
+			LogF("UpdateQueue shutdown in pop\n");
+			return nullptr;
+		}
+	}
+	assert(myqueue.empty() == false);
+	EffectAppData* ad = myqueue.front();
+	myqueue.pop();
+	cond.notify_one();
+	return ad;
+}
+
+// push finished data set
+
+inline void UpdateQueue::push(EffectAppData* ed, Pipeline* pipeline) {
+	unique_lock<mutex> lock(monitorMutex);
+	if (pipeline->isShutdown()) {
+		throw "UpdateQueue shutdown in UpdateQueue push";
+	}
+	// remove old entries - they are obsolete when new data set arrives
+	while (myqueue.size() > 0) {
+		myqueue.pop();
+		LogF("UpdateQueue removed obsolete entry " << ed << endl);
+	}
+	myqueue.push(ed);
+	LogF("UpdateQueue length " << myqueue.size() << endl);
+	cond.notify_one();
 }

@@ -47,61 +47,7 @@ private:
 	bool in_shutdown{ false };
 };
 
-// update queue for update threads (ech effect has its own):
-// never queue more than one entry: if new entry arrives and there is still one unprocessed,
-// the unprocessed will be replaced
-class UpdateQueue {
-public:
-	// wait until next data set is available
-	// will only be called by update thread
-	EffectAppData* pop() {
-		unique_lock<mutex> lock(monitorMutex);
-		while (myqueue.empty()) {
-			cond.wait_for(lock, chrono::milliseconds(3000));
-			LogF("UpdateQueue wait suspended\n");
-			if (in_shutdown) {
-				LogF("UpdateQueue shutdown in pop\n");
-				return nullptr;
-			}
-		}
-		assert(myqueue.empty() == false);
-		EffectAppData* ad = myqueue.front();
-		myqueue.pop();
-		cond.notify_one();
-		return ad;
-	}
-
-	// push finished data set
-	void push(EffectAppData* ed) {
-		unique_lock<mutex> lock(monitorMutex);
-		if (in_shutdown) {
-			throw "RenderQueue shutdown in UpdateQueue push";
-		}
-		// remove old entries - they are obsolete when new data set arrives
-		while (myqueue.size() > 0) {
-			myqueue.pop();
-			LogF("UpdateQueue removed obsolete entry " << ed << endl);
-		}
-		myqueue.push(ed);
-		LogF("UpdateQueue length " << myqueue.size() << endl);
-		cond.notify_one();
-	}
-
-	void shutdown() {
-		in_shutdown = true;
-		cond.notify_all();
-	}
-
-	size_t size() {
-		return myqueue.size();
-	}
-
-private:
-	queue<EffectAppData*> myqueue;
-	mutex monitorMutex;
-	condition_variable cond;
-	bool in_shutdown{ false };
-};
+// update queue moved to effect.h
 
 
 // Idea for VR: intead of reverting to fully synchronized single thread rendering

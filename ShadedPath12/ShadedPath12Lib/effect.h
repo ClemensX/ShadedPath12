@@ -25,6 +25,28 @@ public:
 	friend class DXGlobal;
 };
 
+// update queue for update threads (ech effect has its own):
+// never queue more than one entry: if new entry arrives and there is still one unprocessed,
+// the unprocessed will be replaced
+class UpdateQueue {
+public:
+	// wait until next data set is available
+	// will only be called by update thread
+	EffectAppData* pop(Pipeline* pipeline);
+
+	// push finished data set
+	void push(EffectAppData* ed, Pipeline* pipeline);
+
+	size_t size() {
+		return myqueue.size();
+	}
+
+private:
+	queue<EffectAppData*> myqueue;
+	mutex monitorMutex;
+	condition_variable cond;
+};
+
 /*
  Update effect date:
  1) app gets inactive data set IDS
@@ -60,7 +82,7 @@ public:
 	virtual void activateAppDataSet() = 0;
 	void update(EffectAppData* data);
 	// update thread runs this method:
-	static void runUpdate(Pipeline* pipeline);
+	static void runUpdate(Pipeline* pipeline, Effect* effectInstance);
 
 	virtual ~Effect() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors
 	//function<void(Frame*, Pipeline*)> updater = nullptr;
@@ -105,4 +127,6 @@ protected:
 	ComPtr<ID3D12Resource> vertexBuffer;
 	ComPtr<ID3D12Resource> vertexBufferUpload;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	// queue to handle updates to constant data
+	UpdateQueue updateQueue;
 };

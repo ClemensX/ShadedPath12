@@ -19,7 +19,7 @@ size_t Billboard::add(string texture_id, BillboardElement billboardEl) {
 void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_general_, Pipeline* pipeline) {
 	if (!initialized) {
 		// update thread
-		void* native_handle = pipeline->getThreadGroup()->add_t(runUpdate, pipeline);
+		void* native_handle = pipeline->getThreadGroup()->add_t(runUpdate, pipeline, (Effect*)this);
 		wstring mod_name = wstring(L"update_billboard");//.append(L"_").append(to_wstring(i));
 		SetThreadDescription((HANDLE)native_handle, mod_name.c_str());
 	}
