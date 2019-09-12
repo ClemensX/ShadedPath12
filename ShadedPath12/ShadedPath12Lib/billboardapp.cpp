@@ -215,7 +215,7 @@ void BillboardApp::update(Pipeline* pipeline)
 	}
 	//Log(" inactive set: " << active.size() << endl);
 	assert(active.size() == inactive.size());
-	Effect::update(updateEffectList);
+	Effect::update(updateEffectList, pipeline);
 	//billboard.activateAppDataSet();
 }
 

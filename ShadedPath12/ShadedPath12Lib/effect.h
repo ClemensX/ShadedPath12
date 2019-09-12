@@ -41,10 +41,25 @@ public:
 		return myqueue.size();
 	}
 
+	void waitForEffectUpdateFinish() {
+		unique_lock<mutex> lock(monitorMutex_finished);
+		cv_status status = cond_finished.wait_for(lock, chrono::milliseconds(3000));
+		if (status == cv_status::timeout) {
+			Log("ERROR: unexpected timeout in waitForEffectUpdateFinish" << endl); // should not happen except during debugging
+		}
+	}
+
+	void triggerEffectUpdateFinished() {
+		unique_lock<mutex> lock(monitorMutex_finished);
+		cond_finished.notify_one();
+	}
+
 private:
 	queue<EffectAppData*> myqueue;
 	mutex monitorMutex;
+	mutex monitorMutex_finished;
 	condition_variable cond;
+	condition_variable cond_finished; // effect update thread finished
 };
 
 /*
@@ -82,8 +97,10 @@ public:
 	// rendering after this call returns will use the new data set. 
 	// returns nullptr if there is no active set yet
 	virtual void activateAppDataSet() = 0;
-	static void update(vector<Effect*> effectList);
-	// update thread runs this method:
+	// initate effect updates: Each effect is called with the inactive data set and triggers its update thread
+	// before returning all effect updates are guaranteed to have finished, so it is save to switch app data afterwards
+	static void update(vector<Effect*> effectList, Pipeline* pipeline);
+	// update thread of each effect runs this method:
 	static void runUpdate(Pipeline* pipeline, Effect* effectInstance);
 
 	virtual ~Effect() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors

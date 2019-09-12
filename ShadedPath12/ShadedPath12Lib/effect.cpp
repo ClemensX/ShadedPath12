@@ -125,8 +125,19 @@ void Effect::createAndUploadIndexBuffer(size_t bufferSize, void* data, ID3D12Pip
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 }
 
-void Effect::update(vector<Effect*> effectList)
+void Effect::update(vector<Effect*> effectList, Pipeline* pipeline)
 {
+	// initiating phase: trigger all effect update threads
+	for (Effect* eff : effectList) {
+		EffectAppData* inactiveDataSet = eff->getInactiveAppDataSet();
+		eff->updateQueue.push(inactiveDataSet, pipeline);
+	}
+	// synchronization phase: wait until all effect update threads have finished
+	for (Effect* eff : effectList) {
+		EffectAppData* inactiveDataSet = eff->getInactiveAppDataSet();
+		eff->updateQueue.waitForEffectUpdateFinish();
+		//Log("GOTSCHA" << endl);
+	}
 }
 
 void Effect::runUpdate(Pipeline* pipeline, Effect *effectInstance) {
@@ -135,7 +146,8 @@ void Effect::runUpdate(Pipeline* pipeline, Effect *effectInstance) {
 	while (!pipeline->isShutdown()) {
 		calls++;
 		EffectAppData* ead = effectInstance->updateQueue.pop(pipeline);
-		Log(" EffectAppData " << ead << endl);
+		//Log(" EffectAppData " << ead << endl);
+		effectInstance->updateQueue.triggerEffectUpdateFinished();
 	}
 	Log("end effect update thread" << endl);
 	Log("   calls " << calls << endl);
@@ -166,7 +178,8 @@ inline EffectAppData* UpdateQueue::pop(Pipeline* pipeline) {
 inline void UpdateQueue::push(EffectAppData* ed, Pipeline* pipeline) {
 	unique_lock<mutex> lock(monitorMutex);
 	if (pipeline->isShutdown()) {
-		throw "UpdateQueue shutdown in UpdateQueue push";
+		Log("UpdateQueue shutdown in UpdateQueue push" << endl);
+		return;
 	}
 	// remove old entries - they are obsolete when new data set arrives
 	while (myqueue.size() > 0) {
