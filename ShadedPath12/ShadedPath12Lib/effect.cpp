@@ -147,6 +147,7 @@ void Effect::runUpdate(Pipeline* pipeline, Effect *effectInstance) {
 		calls++;
 		EffectAppData* ead = effectInstance->updateQueue.pop(pipeline);
 		//Log(" EffectAppData " << ead << endl);
+		effectInstance->activateAppDataSet();
 		effectInstance->updateQueue.triggerEffectUpdateFinished();
 	}
 	Log("end effect update thread" << endl);

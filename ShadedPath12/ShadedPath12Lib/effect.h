@@ -148,4 +148,5 @@ protected:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	// queue to handle updates to constant data
 	UpdateQueue updateQueue;
+	FenceData updateFenceData;
 };

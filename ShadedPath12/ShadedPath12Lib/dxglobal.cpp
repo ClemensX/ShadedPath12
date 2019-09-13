@@ -229,13 +229,7 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 	ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, fd->commandAllocatorRenderTexture.Get(), fd->pipelineStateRenderTexture.Get(), IID_PPV_ARGS(&fd->commandListRenderTexture)));
 	NAME_D3D12_OBJECT_SUFF(fd->commandListRenderTexture, i);
 	fd->commandListRenderTexture->Close();
-	ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fd->fenceRenderTexture)));
-	NAME_D3D12_OBJECT_SUFF(fd->fenceRenderTexture, i);
-	fd->fenceValueRenderTexture = 0;
-	fd->fenceEventRenderTexture = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-	if (fd->fenceEventRenderTexture == nullptr) {
-		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-	}
+	//initSyncPoint(&fd->fenceData);
 
 	// d3d resources, now the rendertarget associated with the swap chain and window:
 	if (swapChain == nullptr) {
@@ -334,6 +328,7 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 	ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, fd->commandAllocator.Get(), fd->pipelineState.Get(), IID_PPV_ARGS(&fd->commandList)));
 	NAME_D3D12_OBJECT_SUFF(fd->commandList, i);
 	fd->commandList->Close();
+	initSyncPoint(&fd->fenceData, device);
 	//ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fd->fence)));
 	//NAME_D3D12_OBJECT_SUFF(fd->fence, i);
 	//fd->fenceValue = 0;
@@ -370,17 +365,28 @@ void DXGlobal::initSwapChain(Pipeline* pipeline, HWND hwnd)
 	ThrowIfFailed(swapChain0.As(&swapChain));
 }
 
-void DXGlobal::createSyncPoint(FrameDataGeneral* f, ComPtr<ID3D12CommandQueue> queue)
+void DXGlobal::initSyncPoint(FenceData* f, ComPtr<ID3D12Device4>& device)
 {
-	UINT64 threadFenceValue = InterlockedIncrement(&f->fenceValueRenderTexture);
-	ThrowIfFailed(queue->Signal(f->fenceRenderTexture.Get(), threadFenceValue));
-	ThrowIfFailed(f->fenceRenderTexture->SetEventOnCompletion(threadFenceValue, f->fenceEventRenderTexture));
+	ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&f->fence)));
+	NAME_D3D12_OBJECT(f->fence);
+	f->fenceValue = 0;
+	f->fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
+	if (f->fenceEvent == nullptr) {
+		ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
+	}
 }
 
-void DXGlobal::waitForSyncPoint(FrameDataGeneral* f)
+void DXGlobal::createSyncPoint(FenceData* f, ComPtr<ID3D12CommandQueue> queue)
+{
+	UINT64 threadFenceValue = InterlockedIncrement(&f->fenceValue);
+	ThrowIfFailed(queue->Signal(f->fence.Get(), threadFenceValue));
+	ThrowIfFailed(f->fence->SetEventOnCompletion(threadFenceValue, f->fenceEvent));
+}
+
+void DXGlobal::waitForSyncPoint(FenceData* f)
 {
 	//	int frameIndex = xapp->getCurrentBackBufferIndex();
-	UINT64 completed = f->fenceRenderTexture->GetCompletedValue();
+	UINT64 completed = f->fence->GetCompletedValue();
 	//Log("ev start " << f.frameIndex << " " << completed << " " << f.fenceValue << endl);
 	if (completed == -1) {
 		Error(L"fence.GetCompletedValue breakdown");
@@ -388,16 +394,26 @@ void DXGlobal::waitForSyncPoint(FrameDataGeneral* f)
 	if (completed > 100000) {
 		//Log("ev MAX " << completed << " " << f.fenceValue << endl);
 	}
-	if (completed <= f->fenceValueRenderTexture)
+	if (completed <= f->fenceValue)
 	{
-		if (completed < (f->fenceValueRenderTexture - 1)) {
+		if (completed < (f->fenceValue - 1)) {
 			LogF("kaputt ");
 		}
-		WaitForSingleObject(f->fenceEventRenderTexture, INFINITE);
+		WaitForSingleObject(f->fenceEvent, INFINITE);
 	}
 	else {
 		//Log("ev " << completed << " " << f.fenceValue << endl);
 	}
+}
+
+void DXGlobal::createSyncPoint(FrameDataGeneral* f, ComPtr<ID3D12CommandQueue> queue)
+{
+	createSyncPoint(&f->fenceData, queue);
+}
+
+void DXGlobal::waitForSyncPoint(FrameDataGeneral* f)
+{
+	waitForSyncPoint(&f->fenceData);
 }
 
 void DXGlobal::waitGPU(FrameDataGeneral* res, ComPtr<ID3D12CommandQueue> queue)

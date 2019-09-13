@@ -3,6 +3,7 @@ class Frame;
 class TextureStore;
 struct FrameDataGeneral;
 struct FrameDataD2D;
+struct FenceData;
 // global DirectX parameters
 struct DXGlobalParam{
 	bool ovrRendering = false;   // use split screen ovr rendering
@@ -39,6 +40,9 @@ public:
 	ComPtr<IDXGISwapChain3> swapChain;
 	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	float clearColor[4] = { 0.0f, 0.2f, 0.4f, 1.0f };
+	static void initSyncPoint(FenceData* f, ComPtr<ID3D12Device4>& device);
+	static void createSyncPoint(FenceData* f, ComPtr<ID3D12CommandQueue> queue);
+	static void waitForSyncPoint(FenceData* f);
 	static void createSyncPoint(FrameDataGeneral* f, ComPtr<ID3D12CommandQueue> queue);
 	static void waitForSyncPoint(FrameDataGeneral* f);
 	// create sync point and wit for completion
@@ -74,6 +78,12 @@ private:
 	TextureStore* textureStore = nullptr;
 };
 
+// everything needed for creating and waiting for fence events
+struct FenceData {
+	HANDLE fenceEvent;
+	ComPtr<ID3D12Fence> fence;
+	UINT64 fenceValue;
+};
 // Frame data unrelated to a specific effect that needs to be unique for each slot
 struct FrameDataGeneral {
 	ComPtr<ID3D11DeviceContext> deviceContext11; // cannot use D3D11 DeviceContext in multi-thread code
@@ -97,9 +107,7 @@ struct FrameDataGeneral {
 	ComPtr<ID3D12GraphicsCommandList> commandListRenderTexture;
 	ComPtr<ID3D12PipelineState> pipelineStateRenderTexture;
 	ComPtr<ID3D12RootSignature> rootSignatureRenderTexture;
-	HANDLE fenceEventRenderTexture;
-	ComPtr<ID3D12Fence> fenceRenderTexture;
-	UINT64 fenceValueRenderTexture;
+	FenceData fenceData;
 	ComPtr<ID3D11Resource> wrappedDx12Resource;
 	VR_Eyes eyes;
 	Camera leftCam;

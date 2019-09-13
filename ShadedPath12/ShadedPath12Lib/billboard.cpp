@@ -22,6 +22,7 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 		void* native_handle = pipeline->getThreadGroup()->add_t(runUpdate, pipeline, (Effect*)this);
 		wstring mod_name = wstring(L"update_billboard");//.append(L"_").append(to_wstring(i));
 		SetThreadDescription((HANDLE)native_handle, mod_name.c_str());
+		DXGlobal::initSyncPoint(&updateFenceData, a->device);
 	}
 	initialized = true;
 	dxGlobal = a;
@@ -103,13 +104,6 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 	// to record yet. The main loop expects it to be closed, so close it now.
 	ThrowIfFailed(fdb->updateCommandList->Close());
 	// init fences: --> use from FrameDataGeneral
-	//ThrowIfFailed(a->device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&updateFrameData.fence)));
-	//updateFrameData.fence->SetName(L"fence_Billboard_update");
-	//updateFrameData.fenceValue = 0;
-	//updateFrameData.fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-	//if (updateFrameData.fenceEvent == nullptr) {
-	//	ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-	//}
 }
 
 void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* pipeline)
