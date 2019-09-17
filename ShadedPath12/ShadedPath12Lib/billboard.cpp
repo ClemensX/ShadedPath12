@@ -383,6 +383,13 @@ void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement
 	}
 }
 
+void Billboard::updateInactiveDataSet()
+{
+	// update inactive data set
+	DXGlobal::createSyncPoint(&updateFenceData, dxGlobal->commandQueue);
+	DXGlobal::waitForSyncPoint(&updateFenceData);
+}
+
 // strange version that uses normal parameters for triangle calculation 
 // probably left-over from old massive test
 /*

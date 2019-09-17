@@ -73,6 +73,8 @@ public:
 	~Billboard() {};
 
 private:
+	// Inherited via Effect
+	virtual void updateInactiveDataSet() override;
 	void preDraw(int eyeNum);
 	void postDraw();
 	CBV cbv;
@@ -88,6 +90,7 @@ private:
 	BillboardEffectAppData appDataSets[2];
 	int currentInactiveAppDataSet = 0;
 	int currentActiveAppDataSet = -1;
+
 	//UINT numberOfVertices = 0;
 };
 

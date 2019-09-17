@@ -192,6 +192,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			//if (xapp->isShudownFinished())
 			//	break;
 			inputHandler->updateKeyboardState();
+			Sleep(10);
 			//xapp->update();
 			//xapp->draw();
 			//xapp->importFrameFromRenderToApp();

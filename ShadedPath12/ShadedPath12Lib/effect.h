@@ -107,6 +107,9 @@ public:
 	//function<void(Frame*, Pipeline*)> updater = nullptr;
 	//void setFinishedFrameConsumer(function<void(Frame*, Pipeline*)> consumer) { this->consumer = consumer; }
 protected:
+	// copy effect data to GPU
+	// called only from effect update thread.
+	virtual void updateInactiveDataSet() = 0;
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
 	DXManager dxmanager;
 	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();

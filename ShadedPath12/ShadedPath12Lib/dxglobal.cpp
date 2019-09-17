@@ -107,7 +107,9 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 	vr->prepareEyes(&fd->eyes);
 	UINT d3d11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG;
 	D2D1_FACTORY_OPTIONS d2dFactoryOptions = {};
+#if defined (_DEBUG)
 	d2dFactoryOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+#endif
 	// Create an 11 device wrapped around the 12 device and share 12's command queue.
 	D3D_FEATURE_LEVEL fl[] = { D3D_FEATURE_LEVEL_12_1 };
 	D3D_FEATURE_LEVEL retLevel;

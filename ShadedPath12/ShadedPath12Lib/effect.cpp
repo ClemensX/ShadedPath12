@@ -147,6 +147,7 @@ void Effect::runUpdate(Pipeline* pipeline, Effect *effectInstance) {
 		calls++;
 		EffectAppData* ead = effectInstance->updateQueue.pop(pipeline);
 		//Log(" EffectAppData " << ead << endl);
+		effectInstance->updateInactiveDataSet();
 		effectInstance->activateAppDataSet();
 		effectInstance->updateQueue.triggerEffectUpdateFinished();
 	}
@@ -161,7 +162,9 @@ inline EffectAppData* UpdateQueue::pop(Pipeline* pipeline) {
 	unique_lock<mutex> lock(monitorMutex);
 	while (myqueue.empty()) {
 		cond.wait_for(lock, chrono::milliseconds(3000));
-		LogF("UpdateQueue wait suspended\n");
+		if (myqueue.empty()) {
+			LogF("UpdateQueue wait suspended\n");
+		}
 		if (pipeline->isShutdown()) {
 			LogF("UpdateQueue shutdown in pop\n");
 			return nullptr;
@@ -188,6 +191,6 @@ inline void UpdateQueue::push(EffectAppData* ed, Pipeline* pipeline) {
 		LogF("UpdateQueue removed obsolete entry " << ed << endl);
 	}
 	myqueue.push(ed);
-	LogF("UpdateQueue length " << myqueue.size() << endl);
+	//LogF("UpdateQueue length " << myqueue.size() << endl);
 	cond.notify_one();
 }
