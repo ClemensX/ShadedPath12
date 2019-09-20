@@ -135,15 +135,16 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 		//	assert(fdg->rightCam. != nullptr);
 		//}
 		// TODO workaround for mem leak: only call this once:
-		if (fdb->vertexBuffer == nullptr) {
-
+		auto bea = (BillboardEffectAppData*)getActiveAppDataSet();
+		if (bea->vertexBuffer == nullptr) {
+			Error(L"vertex buffer not initialized in billboard.draw(). Cannot continue.");
 			// prepare vertices:
 			vector<Vertex> vertices;
 			vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices);
 			size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
 			Log(" upload billboard vertex buffer for slot " << frame->slot << " size " << vertexBufferSize << endl);
 			createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), fdb->pipelineState.Get(),
-				L"Billboard2", fdb->vertexBuffer, fdb->vertexBufferUpload, fdb->updateCommandAllocator, fdb->updateCommandList, fdb->vertexBufferView);
+				L"Billboard2", bea->vertexBuffer, bea->vertexBufferUpload, fdb->updateCommandAllocator, fdb->updateCommandList, bea->vertexBufferView);
 
 			// Close the command list and execute it to begin the vertex buffer copy into
 			// the default heap.
@@ -218,12 +219,12 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 		//assert(sizeof(cbv.wvp) == sizeof(Matrix4));
 
 		// draw
+		auto d = (BillboardEffectAppData*)getActiveAppDataSet();
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		commandList->IASetVertexBuffers(0, 1, &fdb->vertexBufferView);
+		commandList->IASetVertexBuffers(0, 1, &d->vertexBufferView);
 		// now draw all the billboards, one draw call per texture type 
 		// iterate over billboard types
 		UINT cur_vertex_index = 0;
-		auto d = (BillboardEffectAppData*)getActiveAppDataSet();
 		for (auto& elvec : d->billboards) {
 			//Log(elvec.first.c_str() << endl);
 			auto tex = dxGlobal->getTextureStore()->getTexture(elvec.first);
@@ -386,8 +387,26 @@ void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement
 void Billboard::updateInactiveDataSet()
 {
 	// update inactive data set
-	DXGlobal::createSyncPoint(&updateFenceData, dxGlobal->commandQueue);
-	DXGlobal::waitForSyncPoint(&updateFenceData);
+	static bool doit = true;
+	if (doit) {
+		//doit = false;
+		//int slot = 0;
+
+		//// prepare vertices:
+		//vector<Vertex> vertices;
+		//vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices);
+		//size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
+		//Log(" upload billboard vertex buffer for slot " << slot << " size " << vertexBufferSize << endl);
+		//createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
+		//	L"Billboard2", fdb->vertexBuffer, fdb->vertexBufferUpload, fdb->updateCommandAllocator, fdb->updateCommandList, fdb->vertexBufferView);
+
+		//// Close the command list and execute it to begin the vertex buffer copy into
+		//// the default heap.
+		//ThrowIfFailed(fdb->updateCommandList->Close());
+		//ID3D12CommandList* ppCommandListsUpload[] = { fdb->updateCommandList.Get() };
+		//DXGlobal::createSyncPoint(&updateFenceData, dxGlobal->commandQueue);
+		//DXGlobal::waitForSyncPoint(&updateFenceData);
+	}
 }
 
 // strange version that uses normal parameters for triangle calculation 

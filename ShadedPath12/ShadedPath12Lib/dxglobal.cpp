@@ -35,6 +35,24 @@ void DXGlobal::init()
 	}
 
 	ThrowIfFailed(CreateDXGIFactory2(debugFlags, IID_PPV_ARGS(&factory)));
+	{
+		// enum adapters:
+		UINT i = 0;
+		IDXGIAdapter* pAdapter;
+		std::vector <IDXGIAdapter*> vAdapters;
+		while (factory->EnumAdapters(i, &pAdapter) != DXGI_ERROR_NOT_FOUND)
+		{
+			vAdapters.push_back(pAdapter);
+			DXGI_ADAPTER_DESC desc;
+			pAdapter->GetDesc(&desc);
+			Log(L"adapter " << i << L" " << desc.Description << endl);
+			++i;
+		}
+		// release adapters
+		for (auto& ad : vAdapters) {
+			ad->Release();
+		}
+	}
 
 	if (config.warp)
 	{
@@ -56,7 +74,20 @@ void DXGlobal::init()
 			IID_PPV_ARGS(&device)
 		));
 	}
-
+	{
+		auto luid = device->GetAdapterLuid();
+		IDXGIDevice* pDXGIDevice;
+		factory->EnumAdapterByLuid(luid, __uuidof(IDXGIDevice), (void**)& pDXGIDevice);
+		//IDXGIDevice* pDXGIDevice;
+		//ThrowIfFailed(device->QueryInterface(__uuidof(IDXGIDevice), (void**)& pDXGIDevice));
+		//ComPtr<IDXGIDevice3> dxgiDevice;
+		//ThrowIfFailed(device.As(&dxgiDevice));
+		IDXGIAdapter* pDXGIAdapter;
+		pDXGIDevice->GetAdapter(&pDXGIAdapter);
+		DXGI_ADAPTER_DESC adapterDesc;
+		pDXGIAdapter->GetDesc(&adapterDesc);
+		Log(L"ShadedPath Engine running on adapter: " << adapterDesc.Description << endl);
+	}
 #if defined(_DEBUG)
 	ComPtr<ID3D12InfoQueue> pInfoQueue;
 	if (SUCCEEDED(device.As(&pInfoQueue)))

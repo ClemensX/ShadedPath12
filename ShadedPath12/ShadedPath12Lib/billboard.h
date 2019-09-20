@@ -18,14 +18,17 @@ class BillboardEffectAppData : public EffectAppData {
 public:
 	unordered_map<string, vector<BillboardElement>> billboards;
 	~BillboardEffectAppData() override { };
+	ComPtr<ID3D12Resource> vertexBuffer;
+	ComPtr<ID3D12Resource> vertexBufferUpload;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 };
 
 // per frame resources for this effect
 struct FrameDataBillboard : FrameDataBase {
 public:
-	ComPtr<ID3D12Resource> vertexBuffer;
-	ComPtr<ID3D12Resource> vertexBufferUpload;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	ComPtr<ID3D12Resource> vertexBufferX;
+	ComPtr<ID3D12Resource> vertexBufferUploadX;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
 	friend class DXGlobal;
 };
 
