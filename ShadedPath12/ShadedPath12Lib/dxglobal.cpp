@@ -77,13 +77,14 @@ void DXGlobal::init()
 	{
 		auto luid = device->GetAdapterLuid();
 		IDXGIDevice* pDXGIDevice;
-		factory->EnumAdapterByLuid(luid, __uuidof(IDXGIDevice), (void**)& pDXGIDevice);
+		IDXGIAdapter2* pDXGIAdapter;
+		factory->EnumAdapterByLuid(luid, IID_PPV_ARGS(&pDXGIAdapter));
+		//ThrowIfFailed(factory->EnumAdapterByLuid(luid, __uuidof(IDXGIDevice), (void**)& pDXGIDevice));
 		//IDXGIDevice* pDXGIDevice;
 		//ThrowIfFailed(device->QueryInterface(__uuidof(IDXGIDevice), (void**)& pDXGIDevice));
 		//ComPtr<IDXGIDevice3> dxgiDevice;
 		//ThrowIfFailed(device.As(&dxgiDevice));
-		IDXGIAdapter* pDXGIAdapter;
-		pDXGIDevice->GetAdapter(&pDXGIAdapter);
+		//pDXGIDevice->GetAdapter(&pDXGIAdapter);
 		DXGI_ADAPTER_DESC adapterDesc;
 		pDXGIAdapter->GetDesc(&adapterDesc);
 		Log(L"ShadedPath Engine running on adapter: " << adapterDesc.Description << endl);
