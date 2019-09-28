@@ -68,11 +68,11 @@ public:
 		}
 		return &appDataSets[currentActiveAppDataSet];
 	}
-	virtual void activateAppDataSet() override
-	{
-		currentActiveAppDataSet = (currentActiveAppDataSet + 1) % 2;
-		currentInactiveAppDataSet = (currentInactiveAppDataSet + 1) % 2;
-	}
+
+	// make inactive app data set active and vice versa
+	// no synchronization, must not be called from multiple threads at the same time
+	virtual void activateAppDataSet() override;
+
 	~Billboard() {};
 
 private:

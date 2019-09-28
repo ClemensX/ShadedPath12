@@ -106,6 +106,33 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 	// init fences: --> use from FrameDataGeneral
 }
 
+// make inactive app data set active and vice versa
+// no synchronization, must not be called from multiple threads at the same time
+void Billboard::activateAppDataSet()
+{
+	auto bea = (BillboardEffectAppData*)getInactiveAppDataSet();
+	if (bea->vertexBuffer == nullptr) {
+		//Error(L"vertex buffer not initialized in billboard.draw(). Cannot continue.");
+		// prepare vertices:
+		vector<Vertex> vertices;
+		vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices);
+		size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
+		Log(" upload billboard vertex buffer, size " << vertexBufferSize << endl);
+		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), fdb->pipelineState.Get(),
+			L"Billboard2", bea->vertexBuffer, bea->vertexBufferUpload, fdb->updateCommandAllocator, fdb->updateCommandList, bea->vertexBufferView);
+
+		// Close the command list and execute it to begin the vertex buffer copy into
+		// the default heap.
+		ThrowIfFailed(fdb->updateCommandList->Close());
+		ID3D12CommandList* ppCommandListsUpload[] = { fdb->updateCommandList.Get() };
+		dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandListsUpload), ppCommandListsUpload);
+		dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
+	}
+	// switch inactive and active data sets:
+	currentActiveAppDataSet = (currentActiveAppDataSet + 1) % 2;
+	currentInactiveAppDataSet = (currentInactiveAppDataSet + 1) % 2;
+}
+
 void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* pipeline)
 {
 	//Log("draw " << endl);
