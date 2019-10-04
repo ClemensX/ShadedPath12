@@ -73,7 +73,11 @@ public:
 	// no synchronization, must not be called from multiple threads at the same time
 	virtual void activateAppDataSet() override;
 
-	~Billboard() {};
+	~Billboard() {
+		getInactiveAppDataSet()->vertexBuffer->Release();
+		getInactiveAppDataSet()->vertexBufferUpload->Release();
+		//pipelineState->Release();
+	};
 
 private:
 	// Inherited via Effect
@@ -84,7 +88,7 @@ private:
 	mutex mutex_Billboard;
 	void drawInternal(int eyeNum = 0);
 	void updateTask();
-	vector<Vertex>& recreateVertexBufferContent(vector<Vertex>& vertices);
+	vector<Vertex>& recreateVertexBufferContent(vector<Vertex>& vertices, BillboardEffectAppData *);
 	void createBillbordVertexData(Vertex* cur_billboard, BillboardElement& bb);
 	//vector<BillboardElement> texts;
 	atomic<bool> updateRunning = false;

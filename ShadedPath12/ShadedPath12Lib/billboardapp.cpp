@@ -168,7 +168,8 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 	// handle input first:
 	KeyTicks ticks;
 	input->getAndClearKeyTicks(ticks);
-	input->applyTicksToCameraPosition(ticks, &c, 0.00001f);
+	//input->applyTicksToCameraPosition(ticks, &c, 0.00001f);
+	input->applyTicksToCameraPosition(ticks, &c, 0.001f);
 	input->applyMouseEvents(&c, 0.001f); // 0.003f
 	// draw effects;
 	BillboardAppFrameData* afd = (BillboardAppFrameData*)frame->frameData;
@@ -194,7 +195,7 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 
 void BillboardApp::update(Pipeline* pipeline)
 {
-	//return;
+	return;
 	auto now = chrono::high_resolution_clock::now();
 	auto millis = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 	//Log("BillboardApp update since game start [millis] " << millis << endl);

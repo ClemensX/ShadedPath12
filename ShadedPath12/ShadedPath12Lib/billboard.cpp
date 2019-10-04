@@ -111,11 +111,11 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 void Billboard::activateAppDataSet()
 {
 	auto bea = (BillboardEffectAppData*)getInactiveAppDataSet();
-	if (bea->vertexBuffer == nullptr) {
+	if (bea->vertexBuffer == nullptr && !dxGlobal->pipeline->isShutdown()) {
 		//Error(L"vertex buffer not initialized in billboard.draw(). Cannot continue.");
 		// prepare vertices:
 		vector<Vertex> vertices;
-		vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices);
+		vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices, bea);
 		size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
 		Log(" upload billboard vertex buffer, size " << vertexBufferSize << endl);
 		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
@@ -310,12 +310,11 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 	}
 }
 
-vector<Billboard::Vertex>& Billboard::recreateVertexBufferContent(vector<Vertex> &vertices)
+vector<Billboard::Vertex>& Billboard::recreateVertexBufferContent(vector<Vertex> &vertices, BillboardEffectAppData *bea)
 {
 	if (vertices.size() > 0) return vertices;
 	Vertex cur_billboard[6];
-	auto d = (BillboardEffectAppData*)getActiveAppDataSet();
-	for (auto& elvec : d->billboards) {
+	for (auto& elvec : bea->billboards) {
 		//Log(elvec.first.c_str() << endl);
 		// iterate over billboards of current type
 		for (auto& bb : elvec.second) {

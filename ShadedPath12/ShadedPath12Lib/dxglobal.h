@@ -73,6 +73,7 @@ public:
 	// PIX instrumentation:
 	void startStatisticsDraw(FrameDataGeneral* fd);
 	void endStatisticsDraw(FrameDataGeneral* fd);
+	Pipeline* pipeline = nullptr;
 
 private:
 	TextureStore* textureStore = nullptr;

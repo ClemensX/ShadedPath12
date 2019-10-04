@@ -374,6 +374,7 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 
 void DXGlobal::initSwapChain(Pipeline* pipeline, HWND hwnd)
 {
+	this->pipeline = pipeline;
 	auto conf = pipeline->getPipelineConfig();
 	// Describe the swap chain.
 	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
