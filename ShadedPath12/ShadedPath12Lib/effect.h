@@ -1,4 +1,5 @@
 // base class for App Data
+// frame independent data like certex buffers
 class EffectAppData {
 public:
 	virtual ~EffectAppData() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors
@@ -10,12 +11,13 @@ public:
 	virtual ~EffectFrameData() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors
 };
 
+// frame dependent data like CBV for MVP matrix
 struct FrameDataBase {
 public:
-	ComPtr<ID3D12PipelineState> pipelineState;
-	ComPtr<ID3D12RootSignature> rootSignature;
-	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
-	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
+	ComPtr<ID3D12PipelineState> pipelineStateX;
+	ComPtr<ID3D12RootSignature> rootSignatureX;
+	ComPtr<ID3D12CommandAllocator> updateCommandAllocatorX;
+	ComPtr<ID3D12GraphicsCommandList> updateCommandListX;
 	ComPtr<ID3D12Resource> cbvResource;
 	ComPtr<ID3D12Resource> cbvResource2;
 	UINT8* cbvGPUDest;  // memcpy() changed cbv data to this address before draw()
@@ -152,4 +154,8 @@ protected:
 	// queue to handle updates to constant data
 	UpdateQueue updateQueue;
 	FenceData updateFenceData;
+	ComPtr<ID3D12PipelineState> pipelineState;
+	ComPtr<ID3D12RootSignature> rootSignature;
+	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
+	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
 };

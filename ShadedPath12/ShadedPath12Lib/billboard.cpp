@@ -23,57 +23,58 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 		wstring mod_name = wstring(L"update_billboard");//.append(L"_").append(to_wstring(i));
 		SetThreadDescription((HANDLE)native_handle, mod_name.c_str());
 		DXGlobal::initSyncPoint(&updateFenceData, a->device);
+		// Create the pipeline state, which includes compiling and loading shaders.
+		{
+			// Define the vertex input layout.
+			D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
+			{
+				//{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+				//{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+				//{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64 + 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+				{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+				{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+			};
+
+			// Describe and create the graphics pipeline state object (PSO).
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+			psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
+			psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+			psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+			//psoDesc.DepthStencilState.DepthEnable = TRUE;
+			//psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+			//psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+			//psoDesc.DepthStencilState.StencilEnable = FALSE;
+			//const D3D12_DEPTH_STENCIL_DESC&(ds);
+			psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+			psoDesc.SampleMask = UINT_MAX;
+			psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			psoDesc.NumRenderTargets = 1;
+			psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+			psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+			psoDesc.SampleDesc.Count = 1;
+
+			psoDesc.VS = { binShader_BillboardVS, sizeof(binShader_BillboardVS) };
+			//psoDesc.GS = { binShader_LinetextGS, sizeof(binShader_LinetextGS) };
+			psoDesc.PS = { binShader_BillboardPS, sizeof(binShader_BillboardPS) };
+			//xapp().device->CreateRootSignature(0, binShader_LinetextGS, sizeof(binShader_LinetextGS), IID_PPV_ARGS(&rootSignature));
+			ThrowIfFailed(a->device->CreateRootSignature(0, binShader_BillboardVS, sizeof(binShader_BillboardVS), IID_PPV_ARGS(&rootSignature)));
+			//rootSignature.Get()->SetName(L"Linetext_root_signature");
+			psoDesc.pRootSignature = rootSignature.Get();
+			ThrowIfFailed(a->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
+			pipelineState.Get()->SetName(L"state_billboard_init");
+
+			// init resources for update thread:
+			ThrowIfFailed(a->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&updateCommandAllocator)));
+			ThrowIfFailed(a->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, updateCommandAllocator.Get(), pipelineState.Get(), IID_PPV_ARGS(&updateCommandList)));
+			// Command lists are created in the recording state, but there is nothing
+			// to record yet. The main loop expects it to be closed, so close it now.
+			ThrowIfFailed(updateCommandList->Close());
+			// init fences: --> use from FrameDataGeneral
+		}
 	}
 	initialized = true;
 	dxGlobal = a;
-	// try to do all expensive operations like shader loading and PSO creation here
-	// Create the pipeline state, which includes compiling and loading shaders.
-	{
-		// Define the vertex input layout.
-		D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
-		{
-			//{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			//{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			//{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 64 + 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-		};
-
-		// Describe and create the graphics pipeline state object (PSO).
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
-		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		//psoDesc.DepthStencilState.DepthEnable = TRUE;
-		//psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
-		//psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-		//psoDesc.DepthStencilState.StencilEnable = FALSE;
-		//const D3D12_DEPTH_STENCIL_DESC&(ds);
-		psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-		psoDesc.SampleMask = UINT_MAX;
-		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		psoDesc.NumRenderTargets = 1;
-		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-		psoDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
-		psoDesc.SampleDesc.Count = 1;
-
-		psoDesc.VS = { binShader_BillboardVS, sizeof(binShader_BillboardVS) };
-		//psoDesc.GS = { binShader_LinetextGS, sizeof(binShader_LinetextGS) };
-		psoDesc.PS = { binShader_BillboardPS, sizeof(binShader_BillboardPS) };
-		//xapp().device->CreateRootSignature(0, binShader_LinetextGS, sizeof(binShader_LinetextGS), IID_PPV_ARGS(&rootSignature));
-		ThrowIfFailed(a->device->CreateRootSignature(0, binShader_BillboardVS, sizeof(binShader_BillboardVS), IID_PPV_ARGS(&fdb->rootSignature)));
-		//rootSignature.Get()->SetName(L"Linetext_root_signature");
-		psoDesc.pRootSignature = fdb->rootSignature.Get();
-		ThrowIfFailed(a->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&fdb->pipelineState)));
-		fdb->pipelineState.Get()->SetName(L"state_billboard_init");
-
-		createConstantBuffer((UINT) sizeof(cbv), L"Billboard_cbv_resource", fdb);
-		// set cbv data:
-		XMMATRIX ident = XMMatrixIdentity();
-		XMStoreFloat4x4(&cbv.wvp, ident);
-		memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
-	}
 
 	// Create command allocators and command lists for each frame.
 	static LPCWSTR fence_names[XApp::FrameCount] = {
@@ -97,13 +98,12 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 		}
 	}
 ***/
-	// init resources for update thread:
-	ThrowIfFailed(a->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&fdb->updateCommandAllocator)));
-	ThrowIfFailed(a->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, fdb->updateCommandAllocator.Get(), fdb->pipelineState.Get(), IID_PPV_ARGS(&fdb->updateCommandList)));
-	// Command lists are created in the recording state, but there is nothing
-	// to record yet. The main loop expects it to be closed, so close it now.
-	ThrowIfFailed(fdb->updateCommandList->Close());
-	// init fences: --> use from FrameDataGeneral
+	createConstantBuffer((UINT) sizeof(cbv), L"Billboard_cbv_resource", fdb);
+	// set cbv data:
+	XMMATRIX ident = XMMatrixIdentity();
+	XMStoreFloat4x4(&cbv.wvp, ident);
+	memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
+
 }
 
 // make inactive app data set active and vice versa
@@ -118,15 +118,16 @@ void Billboard::activateAppDataSet()
 		vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices);
 		size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
 		Log(" upload billboard vertex buffer, size " << vertexBufferSize << endl);
-		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), fdb->pipelineState.Get(),
-			L"Billboard2", bea->vertexBuffer, bea->vertexBufferUpload, fdb->updateCommandAllocator, fdb->updateCommandList, bea->vertexBufferView);
+		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
+			L"Billboard2", bea->vertexBuffer, bea->vertexBufferUpload, updateCommandAllocator, updateCommandList, bea->vertexBufferView);
 
 		// Close the command list and execute it to begin the vertex buffer copy into
 		// the default heap.
-		ThrowIfFailed(fdb->updateCommandList->Close());
-		ID3D12CommandList* ppCommandListsUpload[] = { fdb->updateCommandList.Get() };
+		ThrowIfFailed(updateCommandList->Close());
+		ID3D12CommandList* ppCommandListsUpload[] = { updateCommandList.Get() };
 		dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandListsUpload), ppCommandListsUpload);
-		dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
+		dxGlobal->createSyncPoint(&updateFenceData, dxGlobal->commandQueue);
+		dxGlobal->waitForSyncPoint(&updateFenceData);
 	}
 	// switch inactive and active data sets:
 	currentActiveAppDataSet = (currentActiveAppDataSet + 1) % 2;
@@ -165,7 +166,7 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 		auto bea = (BillboardEffectAppData*)getActiveAppDataSet();
 		if (bea->vertexBuffer == nullptr) {
 			Error(L"vertex buffer not initialized in billboard.draw(). Cannot continue.");
-			// prepare vertices:
+/*			// prepare vertices:
 			vector<Vertex> vertices;
 			vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices);
 			size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
@@ -179,11 +180,11 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 			ID3D12CommandList* ppCommandListsUpload[] = { fdb->updateCommandList.Get() };
 			dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandListsUpload), ppCommandListsUpload);
 			dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
-		}
+*/		}
 		// prepare drawing:
 		ID3D12GraphicsCommandList* commandList = fdg->commandListRenderTexture.Get();
 		ThrowIfFailed(fdg->commandAllocatorRenderTexture->Reset());
-		ThrowIfFailed(commandList->Reset(fdg->commandAllocatorRenderTexture.Get(), fdb->pipelineState.Get()));
+		ThrowIfFailed(commandList->Reset(fdg->commandAllocatorRenderTexture.Get(), pipelineState.Get()));
 		resourceStateHelper->toState(fdg->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fdg->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), 0, fdg->rtvDescriptorSizeRenderTexture);
 
@@ -205,7 +206,7 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 		scissorRect.bottom = static_cast<LONG>(height);
 
 		// Set necessary state.
-		commandList->SetGraphicsRootSignature(fdb->rootSignature.Get());
+		commandList->SetGraphicsRootSignature(rootSignature.Get());
 		commandList->RSSetViewports(1, &fdg->eyes.viewports[0]);
 		commandList->RSSetScissorRects(1, &fdg->eyes.scissorRects[0]);
 
