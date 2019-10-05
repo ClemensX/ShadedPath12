@@ -74,9 +74,6 @@ public:
 	virtual void activateAppDataSet() override;
 
 	~Billboard() {
-		getInactiveAppDataSet()->vertexBuffer->Release();
-		getInactiveAppDataSet()->vertexBufferUpload->Release();
-		//pipelineState->Release();
 	};
 
 private:

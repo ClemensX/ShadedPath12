@@ -203,6 +203,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// debug heap test
 	_RPTF0(_CRT_WARN, "heap report test\n");
 	_CrtCheckMemory();
+#ifdef _DEBUG
+	//ThrowIfFailed(DXGIGetDebugInterface1(0, ));
+	if (true) {
+		typedef HRESULT(__stdcall * fPtr)(const IID&, void**);
+		HMODULE hDll = GetModuleHandleW(L"dxgidebug.dll");
+		fPtr DXGIGetDebugInterface = (fPtr)GetProcAddress(hDll, "DXGIGetDebugInterface");
+		IDXGIDebug* pDxgiDebug;
+		DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**)& pDxgiDebug);
+
+		//pDxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+	}
+
+#endif
 	//int a, * b, c;
 	//if (1)
 	//	;// b = &a;

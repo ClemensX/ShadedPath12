@@ -88,6 +88,7 @@ void DXGlobal::init()
 		DXGI_ADAPTER_DESC adapterDesc;
 		pDXGIAdapter->GetDesc(&adapterDesc);
 		Log(L"ShadedPath Engine running on adapter: " << adapterDesc.Description << endl);
+		pDXGIAdapter->Release();
 	}
 #if defined(_DEBUG)
 	ComPtr<ID3D12InfoQueue> pInfoQueue;
