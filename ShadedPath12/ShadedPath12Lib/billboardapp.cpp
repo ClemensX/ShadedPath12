@@ -195,7 +195,7 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 
 void BillboardApp::update(Pipeline* pipeline)
 {
-	return;
+	//return;
 	auto now = chrono::high_resolution_clock::now();
 	auto millis = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 	//Log("BillboardApp update since game start [millis] " << millis << endl);

@@ -111,13 +111,19 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 void Billboard::activateAppDataSet()
 {
 	auto bea = (BillboardEffectAppData*)getInactiveAppDataSet();
-	if (bea->vertexBuffer == nullptr && !dxGlobal->pipeline->isShutdown()) {
+	if (/*bea->vertexBuffer == nullptr &&*/ !dxGlobal->pipeline->isShutdown()) {
 		//Error(L"vertex buffer not initialized in billboard.draw(). Cannot continue.");
 		// prepare vertices:
 		vector<Vertex> vertices;
 		vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices, bea);
 		size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
 		Log(" upload billboard vertex buffer, size " << vertexBufferSize << endl);
+		// delete old buffer
+		if (bea->vertexBuffer != nullptr) {
+			bea->vertexBufferUpload->Release();
+			bea->vertexBuffer->Release();
+		}
+		// upload changed data
 		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
 			L"Billboard2", bea->vertexBuffer, bea->vertexBufferUpload, updateCommandAllocator, updateCommandList, bea->vertexBufferView);
 
