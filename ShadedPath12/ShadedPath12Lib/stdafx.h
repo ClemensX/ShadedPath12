@@ -37,7 +37,7 @@ using namespace std;
 //#include <filesystem>  // moved to class containinf filesystem code due to strange header compile error
 //using namespace std::tr2::sys;
 #include <assert.h>
-#include <typeinfo.h>
+#include <typeinfo>
 
 #include <dxgidebug.h>
 #pragma comment(lib, "dxguid.lib")
