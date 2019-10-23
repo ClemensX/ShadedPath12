@@ -110,6 +110,7 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 // no synchronization, must not be called from multiple threads at the same time
 void Billboard::activateAppDataSet()
 {
+	unique_lock<mutex> lock(dataSetMutex);
 	auto bea = (BillboardEffectAppData*)getInactiveAppDataSet();
 	if (/*bea->vertexBuffer == nullptr &&*/ !dxGlobal->pipeline->isShutdown()) {
 		//Error(L"vertex buffer not initialized in billboard.draw(). Cannot continue.");
@@ -118,11 +119,11 @@ void Billboard::activateAppDataSet()
 		vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices, bea);
 		size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
 		Log(" upload billboard vertex buffer, size " << vertexBufferSize << endl);
-		// delete old buffer
-		if (bea->vertexBuffer != nullptr) {
-			bea->vertexBufferUpload->Release();
-			bea->vertexBuffer->Release();
-		}
+		//// delete old buffer
+		//if (bea->vertexBuffer != nullptr) {
+		//	bea->vertexBufferUpload->Release();
+		//	bea->vertexBuffer->Release();
+		//}
 		// upload changed data
 		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
 			L"Billboard2", bea->vertexBuffer, bea->vertexBufferUpload, updateCommandAllocator, updateCommandList, bea->vertexBufferView);
@@ -142,6 +143,8 @@ void Billboard::activateAppDataSet()
 
 void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* pipeline)
 {
+	// DON'T DO IT:
+	unique_lock<mutex> lock(dataSetMutex);
 	//Log("draw " << endl);
 	auto config = pipeline->getPipelineConfig();
 	//{
@@ -254,6 +257,10 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 
 		// draw
 		auto d = (BillboardEffectAppData*)getActiveAppDataSet();
+		// multi thread access problem:
+		if (d->billboards.size() != 13) {
+			Error(L"mult thread access problem");
+		}
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->IASetVertexBuffers(0, 1, &d->vertexBufferView);
 		// now draw all the billboards, one draw call per texture type 

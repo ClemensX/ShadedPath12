@@ -88,7 +88,7 @@ void BillboardApp::init(HWND hwnd) {
 	billboard.add("markings", be1);
 	billboard.add("markings", be2);
 	billboard.add("vac11", be3);
-	if (false) {
+	if (true) {
 		BillboardElement b;
 		b.pos = XMFLOAT3(15.0f, 0.0f, 2.0f);
 		b.normal = XMFLOAT4(-1.0f, 0.0f, -1.0f, 1.0f);
@@ -96,8 +96,8 @@ void BillboardApp::init(HWND hwnd) {
 		b.size = XMFLOAT2(3.629f, 2.4192f);
 		//	unsigned long total_billboards = 4000000;
 		//unsigned long total_billboards = 1000000;
-		//unsigned long total_billboards = 500000;
-		unsigned long total_billboards = 5000;
+		unsigned long total_billboards = 500000;
+		//unsigned long total_billboards = 5000;
 		// unsigned long total_billboards = 12;
 		unsigned long billboards_per_texture = total_billboards / 12;
 
@@ -195,6 +195,7 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 
 void BillboardApp::update(Pipeline* pipeline)
 {
+	unique_lock<mutex> lock(billboard.dataSetMutex);
 	//return;
 	auto now = chrono::high_resolution_clock::now();
 	auto millis = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();

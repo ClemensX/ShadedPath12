@@ -76,13 +76,13 @@ public:
 	~Billboard() {
 	};
 
+	mutex dataSetMutex; // to synchronize updates to billboard data (active/inactive)
 private:
 	// Inherited via Effect
 	virtual void updateInactiveDataSet() override;
 	void preDraw(int eyeNum);
 	void postDraw();
 	CBV cbv;
-	mutex mutex_Billboard;
 	void drawInternal(int eyeNum = 0);
 	void updateTask();
 	vector<Vertex>& recreateVertexBufferContent(vector<Vertex>& vertices, BillboardEffectAppData *);
