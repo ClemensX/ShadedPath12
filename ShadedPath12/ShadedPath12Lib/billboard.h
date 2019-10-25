@@ -32,7 +32,7 @@ public:
 	friend class DXGlobal;
 };
 
-class Billboard : Effect {
+class Billboard : public Effect {
 public:
 	struct Vertex {
 		XMFLOAT4 pos;
@@ -48,21 +48,24 @@ public:
 	// add billboard to inactive data set, billboardElement will be copied and order number will be returned
 	// order numbers are counted per texture and start with 0
 	// use get() to get/change existing billboard
-	size_t add(string texture_id, BillboardElement billboardEl);
+	size_t add(string texture_id, BillboardElement billboardEl, unsigned long& user);
 	// get billboard with order number order_num for texture_id
-	BillboardElement& get(string texture_id, int order_num);
+	BillboardElement& get(string texture_id, int order_num, unsigned long& user);
 	void update();
 	void draw(Frame* frame, FrameDataGeneral *dfg, FrameDataBillboard *fdb, Pipeline* pipeline);
 	void drawAll();
 	void destroy();
 
 	// Inherited via Effect
-	BillboardEffectAppData* getInactiveAppDataSet() override
+	BillboardEffectAppData* getInactiveAppDataSet(unsigned long &user) override
 	{
+		assert(updateQueue.has_inactiveLock(user));
 		return &appDataSets[currentInactiveAppDataSet];
 	};
 	BillboardEffectAppData* getActiveAppDataSet() override
 	{
+		updateQueue.activeUseCount++;
+		assert(updateQueue.activeUseCount <= 3);
 		if (currentActiveAppDataSet < 0) {
 			Error(L"active data set not available in Billboard. Cannot continue.");
 		}
@@ -75,6 +78,8 @@ public:
 
 	~Billboard() {
 	};
+
+	Update effectDataUpdate;
 
 	mutex dataSetMutex; // to synchronize updates to billboard data (active/inactive)
 private:

@@ -48,6 +48,7 @@
     </ClCompile>
     <ClCompile Include="texture.cpp" />
     <ClCompile Include="threads.cpp" />
+    <ClCompile Include="update.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="vr.cpp" />
     <ClCompile Include="world.cpp" />
@@ -92,6 +93,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="texture.h" />
     <ClInclude Include="threads.h" />
+    <ClInclude Include="update.h" />
     <ClInclude Include="util.h" />
     <ClInclude Include="vr.h" />
     <ClInclude Include="world.h" />

@@ -120,6 +120,9 @@
     <ClCompile Include="Matrices.cpp">
       <Filter>Source Files\NE3</Filter>
     </ClCompile>
+    <ClCompile Include="update.cpp">
+      <Filter>Source Files\NE3</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ShadedPath12\Resource.h">
@@ -250,6 +253,9 @@
     </ClInclude>
     <ClInclude Include="pre_proc.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="update.h">
+      <Filter>Source Files\NE3</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

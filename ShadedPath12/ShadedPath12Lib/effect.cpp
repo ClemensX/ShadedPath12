@@ -125,16 +125,16 @@ void Effect::createAndUploadIndexBuffer(size_t bufferSize, void* data, ID3D12Pip
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 }
 
-void Effect::update(vector<Effect*> effectList, Pipeline* pipeline)
+void Effect::update(vector<Effect*> effectList, Pipeline* pipeline, unsigned long& user)
 {
 	// initiating phase: trigger all effect update threads
 	for (Effect* eff : effectList) {
-		EffectAppData* inactiveDataSet = eff->getInactiveAppDataSet();
+		EffectAppData* inactiveDataSet = eff->getInactiveAppDataSet(user);
 		eff->updateQueue.push(inactiveDataSet, pipeline);
 	}
 	// synchronization phase: wait until all effect update threads have finished
 	for (Effect* eff : effectList) {
-		EffectAppData* inactiveDataSet = eff->getInactiveAppDataSet();
+		EffectAppData* inactiveDataSet = eff->getInactiveAppDataSet(user);
 		eff->updateQueue.waitForEffectUpdateFinish();
 		//Log("GOTSCHA" << endl);
 	}

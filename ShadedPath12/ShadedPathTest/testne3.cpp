@@ -102,13 +102,14 @@ TEST(TestNewEngine, FrameBuffer) {
 }
 
 TEST(TestNewEngine, Billboard) {
+	unsigned long user = 0;
 	Billboard b;
 	BillboardElement be1{ {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {1.0f, 2.0f} }; // pos, normal, size
 	BillboardElement be2{ {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {1.0f, 2.0f} }; // pos, normal, size
 	BillboardElement be3{ {2.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {1.0f, 2.0f} }; // pos, normal, size
-	int n1 = b.add("tex_01", be1);
-	int n2 = b.add("tex_01", be2);
-	int n3 = b.add("tex_02", be3);
+	size_t n1 = b.add("tex_01", be1, user);
+	size_t n2 = b.add("tex_01", be2, user);
+	size_t n3 = b.add("tex_02", be3, user);
 
 	// order numbers are counted per texture:
 	EXPECT_EQ(0, n1);
@@ -116,10 +117,10 @@ TEST(TestNewEngine, Billboard) {
 	EXPECT_EQ(0, n3);
 
 	b.activateAppDataSet();
-	EXPECT_NE(nullptr, b.getInactiveAppDataSet());
-	EXPECT_THROW(b.get("tex_01", 0), std::exception);
+	EXPECT_NE(nullptr, b.getInactiveAppDataSet(user));
+	EXPECT_THROW(b.get("tex_01", 0, user), std::exception);
 	//auto v = b.get("tex_01", 0);
-	n1 = b.add("tex_01", be1);
+	n1 = b.add("tex_01", be1, user);
 	EXPECT_EQ(0, n1);  // did we really restart from 0?
 	LogF("billboard finished" << endl);	//b.get()
 }

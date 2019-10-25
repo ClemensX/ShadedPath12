@@ -1,13 +1,13 @@
 #include "stdafx.h"
 
-BillboardElement& Billboard::get(string texture_id, int order_num) {
-	auto& billboards = getInactiveAppDataSet()->billboards;
+BillboardElement& Billboard::get(string texture_id, int order_num, unsigned long& user) {
+	auto& billboards = getInactiveAppDataSet(user)->billboards;
 	auto& v = billboards[texture_id];
 	return v.at(order_num);
 }
 
-size_t Billboard::add(string texture_id, BillboardElement billboardEl) {
-	auto& billboards = getInactiveAppDataSet()->billboards;
+size_t Billboard::add(string texture_id, BillboardElement billboardEl, unsigned long& user) {
+	auto& billboards = getInactiveAppDataSet(user)->billboards;
 	auto& v = billboards[texture_id];
 	v.push_back(billboardEl);
 	return v.size() - 1;
@@ -18,6 +18,8 @@ size_t Billboard::add(string texture_id, BillboardElement billboardEl) {
 
 void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_general_, Pipeline* pipeline) {
 	if (!initialized) {
+		updateQueue.init();
+		effectDataUpdate.init(&appDataSets[0]);
 		// update thread
 		void* native_handle = pipeline->getThreadGroup()->add_t(runUpdate, pipeline, (Effect*)this);
 		wstring mod_name = wstring(L"update_billboard");//.append(L"_").append(to_wstring(i));
@@ -111,7 +113,8 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 void Billboard::activateAppDataSet()
 {
 	unique_lock<mutex> lock(dataSetMutex);
-	auto bea = (BillboardEffectAppData*)getInactiveAppDataSet();
+	unsigned long user = 0;
+	auto bea = (BillboardEffectAppData*)getInactiveAppDataSet(user);
 	if (/*bea->vertexBuffer == nullptr &&*/ !dxGlobal->pipeline->isShutdown()) {
 		//Error(L"vertex buffer not initialized in billboard.draw(). Cannot continue.");
 		// prepare vertices:

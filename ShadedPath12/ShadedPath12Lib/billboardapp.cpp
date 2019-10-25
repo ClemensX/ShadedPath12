@@ -85,9 +85,11 @@ void BillboardApp::init(HWND hwnd) {
 	//BillboardElement be3{ {-3.5f, 0.0f, 14.0f}, {0.0f, 0.0f, 1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
 	BillboardElement be3{ {0.0f, 0.0f, 0.1f}, {0.0f, 0.0f, 1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
 	// add to inactive data set:
-	billboard.add("markings", be1);
-	billboard.add("markings", be2);
-	billboard.add("vac11", be3);
+	unsigned long user = 0;
+	billboard.updateQueue.getLockedInactiveDataSet(user);
+	billboard.add("markings", be1, user);
+	billboard.add("markings", be2, user);
+	billboard.add("vac11", be3, user);
 	if (true) {
 		BillboardElement b;
 		b.pos = XMFLOAT3(15.0f, 0.0f, 2.0f);
@@ -116,11 +118,12 @@ void BillboardApp::init(HWND hwnd) {
 				b.pos.x = rnd.x;
 				b.pos.y = rnd.y;
 				b.pos.z = rnd.z;
-				billboard.add(texName, b);
+				billboard.add(texName, b, user);
 			}
 		}
 
 	}
+	//billboard.
 	// activate changes:
 	billboard.activateAppDataSet();
 	//bdata->billboards.
@@ -196,12 +199,13 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 void BillboardApp::update(Pipeline* pipeline)
 {
 	unique_lock<mutex> lock(billboard.dataSetMutex);
+	unsigned long user = 0;
 	//return;
 	auto now = chrono::high_resolution_clock::now();
 	auto millis = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 	//Log("BillboardApp update since game start [millis] " << millis << endl);
 
-	auto& inactive = billboard.getInactiveAppDataSet()->billboards;
+	auto& inactive = billboard.getInactiveAppDataSet(user)->billboards;
 	auto& active = billboard.getActiveAppDataSet()->billboards;
 	// in each cycle we copy all the data from active and apply our changesdepending on duration that has passed
 	inactive.clear(); // remove entries - does not deallocate mem
@@ -212,13 +216,13 @@ void BillboardApp::update(Pipeline* pipeline)
 		for (auto& p : vec) {
 			BillboardElement moved_p = p;
 			moved_p.pos.x += 0.001f;
-			billboard.add(tex, moved_p);
+			billboard.add(tex, moved_p, user);
 			//Log(" x " << moved_p.pos.x << endl);
 		}
 	}
 	//Log(" inactive set: " << active.size() << endl);
 	assert(active.size() == inactive.size());
-	Effect::update(updateEffectList, pipeline);
+	Effect::update(updateEffectList, pipeline, user);
 	//billboard.activateAppDataSet();
 }
 

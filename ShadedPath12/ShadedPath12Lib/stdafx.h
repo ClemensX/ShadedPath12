@@ -222,6 +222,7 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 #include "threads.h"
 #include "rendercontrol.h"
 #include "applicationWindow.h"
+#include "update.h"
 #include "effect.h"
 #include "billboard.h"
 #include "stats.h"

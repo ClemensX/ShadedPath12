@@ -32,6 +32,10 @@ public:
 // the unprocessed will be replaced
 class UpdateQueue {
 public:
+	// prepare usage:
+	// init condition variable for inactive data set access
+	void init() {
+	};
 	// wait until next data set is available
 	// will only be called by update thread
 	EffectAppData* pop(Pipeline* pipeline);
@@ -56,12 +60,51 @@ public:
 		cond_finished.notify_one();
 	}
 
+	// get inactive data set
+	// only one thread can work on the inactive data set at one time, next caller will be blocked
+	// while caller has this lock he should upload inactive data set to GPU
+	EffectAppData* getLockedInactiveDataSet(unsigned long& user) {
+		unique_lock<mutex> lock(monitorMutex_inactiveDataSet);
+		if (inactive_in_use) {
+			cv_status status = cond_inactiveDataSet.wait_for(lock, chrono::milliseconds(3000));
+			if (status == cv_status::timeout) {
+				Log("ERROR: unexpected timeout in getLockedinactiveDataSet" << endl); // should not happen except during debugging
+			}
+			assert(inactive_in_use == false);
+		}
+		++inactiveUser;
+		if (inactiveUser == 0) ++inactiveUser;
+		user = inactiveUser;
+		return nullptr;
+	};
+
+	bool has_inactiveLock(unsigned long user) {
+		return user == inactiveUser;
+	}
+	// activate the inactive data set and make it active
+	// this will block the caller until active data set is no longer used by anyone
+	// also cleanup unused data sets (?)
+	// activate()
+
+	// get current active data set and increase use count
+	// accessActiveDataSet()
+
+	// release active data set and decrease use count
+	// realeaseActiveDataSet()
+
+	atomic<int> activeUseCount = 0;
+	// access protection for inactive data set:
+	mutex monitorMutex_inactiveDataSet;
+	condition_variable cond_inactiveDataSet;
+
 private:
+	atomic<unsigned long> inactiveUser = 1;  // simple user id, needed to check if caller has lock
 	queue<EffectAppData*> myqueue;
 	mutex monitorMutex;
 	mutex monitorMutex_finished;
 	condition_variable cond;
 	condition_variable cond_finished; // effect update thread finished
+	bool inactive_in_use = false;
 };
 
 /*
@@ -91,8 +134,9 @@ class Effect {
 	// 3) Per Frame data. Usually 3 sets. Frame specific resources the effect needs to run in parallel, like CBVs with per frame WVP matrix
 
 public:
+
 	// get inactive data set. It can be changed by effect or app code
-	virtual EffectAppData* getInactiveAppDataSet() = 0;
+	virtual EffectAppData* getInactiveAppDataSet(unsigned long& user) = 0;
 	// get data set that is currently used by render code, should never be changed
 	virtual EffectAppData* getActiveAppDataSet() = 0;
 	// activate the curerently inactive data set. Includes uploading to GPU
@@ -101,13 +145,14 @@ public:
 	virtual void activateAppDataSet() = 0;
 	// initate effect updates: Each effect is called with the inactive data set and triggers its update thread
 	// before returning all effect updates are guaranteed to have finished, so it is save to switch app data afterwards
-	static void update(vector<Effect*> effectList, Pipeline* pipeline);
+	static void update(vector<Effect*> effectList, Pipeline* pipeline, unsigned long& user);
 	// update thread of each effect runs this method:
 	static void runUpdate(Pipeline* pipeline, Effect* effectInstance);
 
 	virtual ~Effect() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors
 	//function<void(Frame*, Pipeline*)> updater = nullptr;
 	//void setFinishedFrameConsumer(function<void(Frame*, Pipeline*)> consumer) { this->consumer = consumer; }
+	UpdateQueue updateQueue;
 protected:
 	// copy effect data to GPU
 	// called only from effect update thread.
@@ -152,7 +197,6 @@ protected:
 	ComPtr<ID3D12Resource> vertexBufferUpload;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	// queue to handle updates to constant data
-	UpdateQueue updateQueue;
 	FenceData updateFenceData;
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
