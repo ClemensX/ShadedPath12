@@ -141,8 +141,8 @@ public:
 	virtual EffectAppData* getActiveAppDataSet() = 0;
 	// activate the curerently inactive data set. Includes uploading to GPU
 	// rendering after this call returns will use the new data set. 
-	// returns nullptr if there is no active set yet
-	virtual void activateAppDataSet() = 0;
+	// user id must have locked the data set previously
+	virtual void activateAppDataSet(unsigned long user) = 0;
 	// initate effect updates: Each effect is called with the inactive data set and triggers its update thread
 	// before returning all effect updates are guaranteed to have finished, so it is save to switch app data afterwards
 	static void update(vector<Effect*> effectList, Pipeline* pipeline, unsigned long& user);

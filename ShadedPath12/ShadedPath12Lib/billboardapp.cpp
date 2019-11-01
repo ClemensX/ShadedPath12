@@ -125,7 +125,7 @@ void BillboardApp::init(HWND hwnd) {
 	}
 	//billboard.
 	// activate changes:
-	billboard.activateAppDataSet();
+	billboard.activateAppDataSet(user);
 	//bdata->billboards.
 	input = Input::getInstance();
 	c.init();
@@ -200,7 +200,7 @@ void BillboardApp::update(Pipeline* pipeline)
 {
 	unique_lock<mutex> lock(billboard.dataSetMutex);
 	unsigned long user = 0;
-	//return;
+	return; // TODO here
 	auto now = chrono::high_resolution_clock::now();
 	auto millis = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 	//Log("BillboardApp update since game start [millis] " << millis << endl);

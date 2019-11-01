@@ -116,7 +116,7 @@ TEST(TestNewEngine, Billboard) {
 	EXPECT_EQ(1, n2);
 	EXPECT_EQ(0, n3);
 
-	b.activateAppDataSet();
+	b.activateAppDataSet(0);
 	EXPECT_NE(nullptr, b.getInactiveAppDataSet(user));
 	EXPECT_THROW(b.get("tex_01", 0, user), std::exception);
 	//auto v = b.get("tex_01", 0);

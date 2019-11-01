@@ -65,16 +65,24 @@ public:
 	BillboardEffectAppData* getActiveAppDataSet() override
 	{
 		updateQueue.activeUseCount++;
-		assert(updateQueue.activeUseCount <= 3);
+		//assert(updateQueue.activeUseCount <= 3);
 		if (currentActiveAppDataSet < 0) {
 			Error(L"active data set not available in Billboard. Cannot continue.");
 		}
 		return &appDataSets[currentActiveAppDataSet];
 	}
+	void releaseActiveAppDataSet() 
+	{
+		updateQueue.activeUseCount--;
+		assert(updateQueue.activeUseCount >= 0);
+		if (currentActiveAppDataSet < 0) {
+			Error(L"active data set not available in Billboard. Cannot continue.");
+		}
+	}
 
 	// make inactive app data set active and vice versa
 	// no synchronization, must not be called from multiple threads at the same time
-	virtual void activateAppDataSet() override;
+	virtual void activateAppDataSet(unsigned long user) override;
 
 	~Billboard() {
 	};
