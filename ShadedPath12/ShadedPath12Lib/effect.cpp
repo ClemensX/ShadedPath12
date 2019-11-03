@@ -131,10 +131,11 @@ void Effect::update(vector<Effect*> effectList, Pipeline* pipeline, unsigned lon
 	for (Effect* eff : effectList) {
 		EffectAppData* inactiveDataSet = eff->getInactiveAppDataSet(user);
 		eff->updateQueue.push(inactiveDataSet, pipeline);
+		eff->updateQueue.releaseLockedInactiveDataSet(user);
 	}
 	// synchronization phase: wait until all effect update threads have finished
 	for (Effect* eff : effectList) {
-		EffectAppData* inactiveDataSet = eff->getInactiveAppDataSet(user);
+		//EffectAppData* inactiveDataSet = eff->getInactiveAppDataSet(user);
 		eff->updateQueue.waitForEffectUpdateFinish();
 		//Log("GOTSCHA" << endl);
 	}
@@ -145,11 +146,20 @@ void Effect::runUpdate(Pipeline* pipeline, Effect *effectInstance) {
 	static long long calls = 0L;
 	while (!pipeline->isShutdown()) {
 		calls++;
+		Log(" Effect::runUpdate loop start " << endl);
 		EffectAppData* ead = effectInstance->updateQueue.pop(pipeline);
-		//Log(" EffectAppData " << ead << endl);
+		Log(" Effect::runUpdate EffectAppData " << ead << " calls == " << calls << endl);
+		unsigned long user = 0;
+		effectInstance->updateQueue.getLockedInactiveDataSet(user);
+		Log(" Effect::runUpdate getlocked data set" << endl);
 		effectInstance->updateInactiveDataSet();
-		effectInstance->activateAppDataSet(0);
+		Log(" Effect::runUpdate updateInactive" << endl);
+		effectInstance->activateAppDataSet(user);
+		Log(" Effect::runUpdate activate" << endl);
+		effectInstance->updateQueue.releaseLockedInactiveDataSet(user);
+		Log(" Effect::runUpdate release lock" << endl);
 		effectInstance->updateQueue.triggerEffectUpdateFinished();
+		Log(" Effect::runUpdate trigget finished" << endl);
 	}
 	Log("end effect update thread" << endl);
 	Log("   calls " << calls << endl);
@@ -188,9 +198,9 @@ inline void UpdateQueue::push(EffectAppData* ed, Pipeline* pipeline) {
 	// remove old entries - they are obsolete when new data set arrives
 	while (myqueue.size() > 0) {
 		myqueue.pop();
-		LogF("UpdateQueue removed obsolete entry " << ed << endl);
+		Log("UpdateQueue removed obsolete entry " << ed << endl);
 	}
 	myqueue.push(ed);
-	//LogF("UpdateQueue length " << myqueue.size() << endl);
+	Log("UpdateQueue length " << myqueue.size() << endl);
 	cond.notify_one();
 }

@@ -126,6 +126,7 @@ void BillboardApp::init(HWND hwnd) {
 	//billboard.
 	// activate changes:
 	billboard.activateAppDataSet(user);
+	billboard.updateQueue.releaseLockedInactiveDataSet(user);
 	//bdata->billboards.
 	input = Input::getInstance();
 	c.init();
@@ -172,8 +173,8 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 	KeyTicks ticks;
 	input->getAndClearKeyTicks(ticks);
 	//input->applyTicksToCameraPosition(ticks, &c, 0.00001f);
-	input->applyTicksToCameraPosition(ticks, &c, 0.001f);
-	input->applyMouseEvents(&c, 0.001f); // 0.003f
+	input->applyTicksToCameraPosition(ticks, &c, 0.011f);
+	input->applyMouseEvents(&c, 0.003f); // 0.003f
 	// draw effects;
 	BillboardAppFrameData* afd = (BillboardAppFrameData*)frame->frameData;
 	FrameDataGeneral* fdg = &afd->fd_general;
@@ -198,13 +199,14 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 
 void BillboardApp::update(Pipeline* pipeline)
 {
-	unique_lock<mutex> lock(billboard.dataSetMutex);
-	unsigned long user = 0;
-	return; // TODO here
+	//unique_lock<mutex> lock(billboard.dataSetMutex);
+	//return; // TODO here
 	auto now = chrono::high_resolution_clock::now();
 	auto millis = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count();
 	//Log("BillboardApp update since game start [millis] " << millis << endl);
 
+	unsigned long user = 0;
+	billboard.updateQueue.getLockedInactiveDataSet(user);
 	auto& inactive = billboard.getInactiveAppDataSet(user)->billboards;
 	auto& active = billboard.getActiveAppDataSet()->billboards;
 	// in each cycle we copy all the data from active and apply our changesdepending on duration that has passed
@@ -215,7 +217,7 @@ void BillboardApp::update(Pipeline* pipeline)
 		auto& vec = b.second;
 		for (auto& p : vec) {
 			BillboardElement moved_p = p;
-			moved_p.pos.x += 0.001f;
+			moved_p.pos.x += 0.101f;
 			billboard.add(tex, moved_p, user);
 			//Log(" x " << moved_p.pos.x << endl);
 		}
@@ -224,6 +226,7 @@ void BillboardApp::update(Pipeline* pipeline)
 	assert(active.size() == inactive.size());
 	Effect::update(updateEffectList, pipeline, user);
 	//billboard.activateAppDataSet();
+	//billboard.updateQueue.releaseLockedInactiveDataSet(user);
 }
 
 void BillboardApp::runTest() {

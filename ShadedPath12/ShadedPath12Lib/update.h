@@ -29,7 +29,7 @@ public:
 	// realeaseActiveDataSet()
 
 private:
-	mutex dataSetMutex; // to synchronize updates to effect data (active/inactive)
+	//mutex dataSetMutex; // to synchronize updates to effect data (active/inactive)
 	EffectAppData* effectAppData = nullptr;
 	int currentInactiveAppDataSet = 0;
 	int currentActiveAppDataSet = -1;

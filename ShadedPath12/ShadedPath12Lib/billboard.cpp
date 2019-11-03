@@ -109,10 +109,10 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 }
 
 // make inactive app data set active and vice versa
-// no synchronization, must not be called from multiple threads at the same time
+// synchronized
 void Billboard::activateAppDataSet(unsigned long user)
 {
-	unique_lock<mutex> lock(dataSetMutex);
+	//unique_lock<mutex> lock(dataSetMutex);
 	auto bea = (BillboardEffectAppData*)getInactiveAppDataSet(user);
 	if (/*bea->vertexBuffer == nullptr &&*/ !dxGlobal->pipeline->isShutdown()) {
 		//Error(L"vertex buffer not initialized in billboard.draw(). Cannot continue.");
@@ -146,7 +146,7 @@ void Billboard::activateAppDataSet(unsigned long user)
 void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fdb, Pipeline* pipeline)
 {
 	// DON'T DO IT:
-	unique_lock<mutex> lock(dataSetMutex);
+	//unique_lock<mutex> lock(dataSetMutex);
 	//Log("draw " << endl);
 	auto config = pipeline->getPipelineConfig();
 	//{

@@ -306,6 +306,9 @@ public:
 			unsigned long d = (unsigned long)(limitMicro - length) / 1000; // sleep time in millis
 			//Log(" limit length duration " << limitMicro << " " << length << " " << d << endl);
 			Sleep(d);
+		} else {
+			// sleep at least 10ms to give other update threads a chance
+			Sleep(10);
 		}
 		lastCallTime = chrono::high_resolution_clock::now();
 	};

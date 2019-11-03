@@ -47,17 +47,21 @@ public:
 		return myqueue.size();
 	}
 
+	long finishedGen = 1;
 	void waitForEffectUpdateFinish() {
 		unique_lock<mutex> lock(monitorMutex_finished);
-		cv_status status = cond_finished.wait_for(lock, chrono::milliseconds(3000));
+		cv_status status = cond_finished.wait_for(lock, chrono::milliseconds(30000));
 		if (status == cv_status::timeout) {
-			Log("ERROR: unexpected timeout in waitForEffectUpdateFinish" << endl); // should not happen except during debugging
+			Log("ERROR: unexpected timeout in waitForEffectUpdateFinish, gen == " << finishedGen << endl); // should not happen except during debugging
 		}
+		Log("waitForEffectUpdateFinish, gen == " << finishedGen << endl);
 	}
 
 	void triggerEffectUpdateFinished() {
 		unique_lock<mutex> lock(monitorMutex_finished);
 		cond_finished.notify_one();
+		Log("update finished gen == " << finishedGen << endl); // should not happen except during debugging
+		finishedGen++;
 	}
 
 	// get inactive data set
@@ -65,22 +69,37 @@ public:
 	// while caller has this lock he should upload inactive data set to GPU
 	EffectAppData* getLockedInactiveDataSet(unsigned long& user) {
 		unique_lock<mutex> lock(monitorMutex_inactiveDataSet);
-		if (inactive_in_use) {
+		while (inactive_in_use) {
 			cv_status status = cond_inactiveDataSet.wait_for(lock, chrono::milliseconds(3000));
 			if (status == cv_status::timeout) {
 				Log("ERROR: unexpected timeout in getLockedinactiveDataSet" << endl); // should not happen except during debugging
 			}
-			assert(inactive_in_use == false);
+			//assert(inactive_in_use == false);
 		}
 		++inactiveUser;
 		if (inactiveUser == 0) ++inactiveUser;
 		user = inactiveUser;
+		inactive_in_use = true;
+		Log("lock user " << user << endl);
 		return nullptr;
 	};
 
 	bool has_inactiveLock(unsigned long user) {
 		return user == inactiveUser;
 	}
+
+	// get inactive data set
+	// only one thread can work on the inactive data set at one time, next caller will be blocked
+	// while caller has this lock he should upload inactive data set to GPU
+	void releaseLockedInactiveDataSet(unsigned long& user) {
+		unique_lock<mutex> lock(monitorMutex_inactiveDataSet);
+		assert(inactive_in_use == true);
+		assert(has_inactiveLock(user));
+		assert(user > 0);
+		inactive_in_use = false;
+		Log("unlock user " << user << endl);
+	};
+
 	// activate the inactive data set and make it active
 	// this will block the caller until active data set is no longer used by anyone
 	// also cleanup unused data sets (?)
