@@ -50,17 +50,22 @@ public:
 	long finishedGen = 1;
 	void waitForEffectUpdateFinish() {
 		unique_lock<mutex> lock(monitorMutex_finished);
-		cv_status status = cond_finished.wait_for(lock, chrono::milliseconds(30000));
-		if (status == cv_status::timeout) {
-			Log("ERROR: unexpected timeout in waitForEffectUpdateFinish, gen == " << finishedGen << endl); // should not happen except during debugging
+		bool cont = true;
+		while (cont) {
+			cv_status status = cond_finished.wait_for(lock, chrono::milliseconds(3000));
+			if (status == cv_status::timeout) {
+				Log("ERROR: unexpected timeout in waitForEffectUpdateFinish, gen == " << finishedGen << endl); // should not happen except during debugging
+			} else {
+				//Log("waitForEffectUpdateFinish, gen == " << finishedGen << endl);
+				cont = false;
+			}
 		}
-		Log("waitForEffectUpdateFinish, gen == " << finishedGen << endl);
 	}
 
 	void triggerEffectUpdateFinished() {
 		unique_lock<mutex> lock(monitorMutex_finished);
 		cond_finished.notify_one();
-		Log("update finished gen == " << finishedGen << endl); // should not happen except during debugging
+		//Log("update finished gen == " << finishedGen << endl); // should not happen except during debugging
 		finishedGen++;
 	}
 
@@ -80,7 +85,7 @@ public:
 		if (inactiveUser == 0) ++inactiveUser;
 		user = inactiveUser;
 		inactive_in_use = true;
-		Log("lock user " << user << endl);
+		//Log("lock user " << user << endl);
 		return nullptr;
 	};
 
@@ -97,7 +102,7 @@ public:
 		assert(has_inactiveLock(user));
 		assert(user > 0);
 		inactive_in_use = false;
-		Log("unlock user " << user << endl);
+		//Log("unlock user " << user << endl);
 	};
 
 	// activate the inactive data set and make it active

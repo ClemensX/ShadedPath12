@@ -146,20 +146,22 @@ void Effect::runUpdate(Pipeline* pipeline, Effect *effectInstance) {
 	static long long calls = 0L;
 	while (!pipeline->isShutdown()) {
 		calls++;
-		Log(" Effect::runUpdate loop start " << endl);
+		PIXBeginEvent(PIX_COLOR_INDEX(6), "effect update %d", calls);
+		//Log(" Effect::runUpdate loop start " << endl);
 		EffectAppData* ead = effectInstance->updateQueue.pop(pipeline);
-		Log(" Effect::runUpdate EffectAppData " << ead << " calls == " << calls << endl);
+		//Log(" Effect::runUpdate EffectAppData " << ead << " calls == " << calls << endl);
 		unsigned long user = 0;
 		effectInstance->updateQueue.getLockedInactiveDataSet(user);
-		Log(" Effect::runUpdate getlocked data set" << endl);
+		//Log(" Effect::runUpdate getlocked data set" << endl);
 		effectInstance->updateInactiveDataSet();
-		Log(" Effect::runUpdate updateInactive" << endl);
+		//Log(" Effect::runUpdate updateInactive" << endl);
 		effectInstance->activateAppDataSet(user);
-		Log(" Effect::runUpdate activate" << endl);
+		//Log(" Effect::runUpdate activate" << endl);
 		effectInstance->updateQueue.releaseLockedInactiveDataSet(user);
-		Log(" Effect::runUpdate release lock" << endl);
+		//Log(" Effect::runUpdate release lock" << endl);
 		effectInstance->updateQueue.triggerEffectUpdateFinished();
-		Log(" Effect::runUpdate trigget finished" << endl);
+		//Log(" Effect::runUpdate trigget finished" << endl);
+		PIXEndEvent();
 	}
 	Log("end effect update thread" << endl);
 	Log("   calls " << calls << endl);
@@ -201,6 +203,6 @@ inline void UpdateQueue::push(EffectAppData* ed, Pipeline* pipeline) {
 		Log("UpdateQueue removed obsolete entry " << ed << endl);
 	}
 	myqueue.push(ed);
-	Log("UpdateQueue length " << myqueue.size() << endl);
+	//Log("UpdateQueue length " << myqueue.size() << endl);
 	cond.notify_one();
 }

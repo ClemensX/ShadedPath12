@@ -130,11 +130,14 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 
 void Pipeline::runUpdate(Pipeline* pipeline)
 {
+	static int index = 0;
 	ThreadLimiter limiter(pipeline->updatesPerSecond);
 	while (!pipeline->isShutdown()) {
 		//pipeline->gametime.advanceTime(); // TODO thread safe?  - apparently not
 		limiter.waitForLimit();
+		PIXBeginEvent(PIX_COLOR_INDEX(5), "app update %d", index++);
 		pipeline->updateCallback(pipeline);
+		PIXEndEvent();
 	}
 }
 

@@ -96,7 +96,7 @@ void BillboardApp::init(HWND hwnd) {
 		b.normal = XMFLOAT4(-1.0f, 0.0f, -1.0f, 1.0f);
 		//b.size = XMFLOAT2(1.5f, 1.0f);
 		b.size = XMFLOAT2(3.629f, 2.4192f);
-		//	unsigned long total_billboards = 4000000;
+		///	unsigned long total_billboards = 4000000;
 		//unsigned long total_billboards = 1000000;
 		unsigned long total_billboards = 500000;
 		//unsigned long total_billboards = 5000;
