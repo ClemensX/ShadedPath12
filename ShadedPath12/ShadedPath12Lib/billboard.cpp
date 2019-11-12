@@ -20,10 +20,12 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 	if (!initialized) {
 		updateQueue.init();
 		effectDataUpdate.init(&appDataSets[0]);
+#if !defined(DISABLE_UPDATE_THREADS)
 		// update thread
 		void* native_handle = pipeline->getThreadGroup()->add_t(runUpdate, pipeline, (Effect*)this);
 		wstring mod_name = wstring(L"update_billboard");//.append(L"_").append(to_wstring(i));
 		SetThreadDescription((HANDLE)native_handle, mod_name.c_str());
+#endif
 		DXGlobal::initSyncPoint(&updateFenceData, a->device);
 		// Create the pipeline state, which includes compiling and loading shaders.
 		{

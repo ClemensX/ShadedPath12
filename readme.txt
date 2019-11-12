@@ -1,3 +1,11 @@
+Update:
+Threads start points:
+Application update thread init: BillboardApp::start()
+
+Effect update threads init: from effect init: Billboard::init()
+Effects update threads: waked from BillboardApp::update()
+  --> Effect::update()
+
 pix settings:
 
 path to exe:

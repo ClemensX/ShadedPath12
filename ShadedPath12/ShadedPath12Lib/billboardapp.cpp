@@ -199,6 +199,9 @@ void BillboardApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 
 void BillboardApp::update(Pipeline* pipeline)
 {
+#if defined(DISABLE_UPDATE_THREADS)
+	return;
+#endif
 	//unique_lock<mutex> lock(billboard.dataSetMutex);
 	//return; // TODO here
 	auto now = chrono::high_resolution_clock::now();
@@ -253,8 +256,10 @@ void BillboardApp::start() {
 	pipeline.setFinishedFrameConsumer(bind(&BillboardApp::presentFrame, this, placeholders::_1, placeholders::_2));
 	pipeline.setApplicationFrameData(&afd);
 	pipeline.setCallbackDraw(bind(&BillboardApp::draw, this, placeholders::_1, placeholders::_2, placeholders::_3));
+#if !defined(DISABLE_UPDATE_THREADS)
 	pipeline.setCallbackUpdate(bind(&BillboardApp::update, this, placeholders::_1));
 	pipeline.startUpdateThread();
+#endif
 	pipeline.startRenderThreads();
 }
 

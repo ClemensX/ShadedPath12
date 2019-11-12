@@ -1,5 +1,15 @@
 timing:
 
+with and without update threads:
+
+P1 Laptop: .5 mio billboards
+created 4120 frames with average [microseconds] to draw/render: 69744/70029 tot FPS: 26 skipped 1610
+
+updates disabled:
+created 3522 frames with average [microseconds] to draw/render: 68367/68568 tot FPS: 23 skipped 1652
+
+
+old timings:
 microseconds:
 
 10362
