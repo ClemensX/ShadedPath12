@@ -212,9 +212,23 @@ void BillboardApp::update(Pipeline* pipeline)
 	billboard.updateQueue.getLockedInactiveDataSet(user);
 	auto& inactive = billboard.getInactiveAppDataSet(user)->billboards;
 	auto& active = billboard.getActiveAppDataSet()->billboards;
+
+	bool only_one = false; // only update one billboard - fast update for test - comment for normal operation
+
+	if (only_one && !inactive.size() == 0) {
+		static long count = 0;
+		size_t pos = active.bucket("markings");
+		auto b = active.begin(pos);
+		auto& tex = b->first;
+		auto& vec = b->second;
+		BillboardElement *inplace_el = &b->second.at(0);
+		inplace_el->pos.x += 0.101f * count++;
+		//billboard.add(tex, moved_p, user);
+		Effect::update(updateEffectList, pipeline, user);
+		return;
+	}
 	// in each cycle we copy all the data from active and apply our changesdepending on duration that has passed
 	inactive.clear(); // remove entries - does not deallocate mem
-
 	for (auto& b : active) {
 		auto& tex = b.first;
 		auto& vec = b.second;

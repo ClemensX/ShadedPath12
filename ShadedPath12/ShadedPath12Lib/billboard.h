@@ -66,6 +66,7 @@ public:
 	{
 		updateQueue.activeUseCount++;
 		//assert(updateQueue.activeUseCount <= 3);
+		Log("active data set counter " << updateQueue.activeUseCount << endl);
 		if (currentActiveAppDataSet < 0) {
 			Error(L"active data set not available in Billboard. Cannot continue.");
 		}
@@ -74,6 +75,7 @@ public:
 	void releaseActiveAppDataSet() 
 	{
 		updateQueue.activeUseCount--;
+		Log("active data set counter " << updateQueue.activeUseCount << endl);
 		assert(updateQueue.activeUseCount >= 0);
 		if (currentActiveAppDataSet < 0) {
 			Error(L"active data set not available in Billboard. Cannot continue.");

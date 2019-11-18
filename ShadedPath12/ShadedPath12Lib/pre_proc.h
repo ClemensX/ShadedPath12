@@ -10,7 +10,7 @@
 #endif
 
 // disable all update threads: for application and in all effects:
-#define DISABLE_UPDATE_THREADSXXX
+//#define DISABLE_UPDATE_THREADS
 
 // disable for final build, adds some perf penalty and need pix dll at runtime:
 #define USE_PIX

@@ -123,7 +123,7 @@ void Billboard::activateAppDataSet(unsigned long user)
 		vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices, bea);
 		size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
 		//Log(" upload billboard vertex buffer, size " << vertexBufferSize << endl);
-		//// delete old buffer
+		// delete old buffer
 		//if (bea->vertexBuffer != nullptr) {
 		//	bea->vertexBufferUpload->Release();
 		//	bea->vertexBuffer->Release();
