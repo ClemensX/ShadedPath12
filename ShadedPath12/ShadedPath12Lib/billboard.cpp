@@ -129,6 +129,9 @@ void Billboard::activateAppDataSet(unsigned long user)
 		//	bea->vertexBuffer->Release();
 		//}
 		// upload changed data
+		BufferResource* res = ResourceStore::getInstance()->getSlot();
+		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
+			L"Billboard2", res->vertexBuffer, res->vertexBufferUpload, updateCommandAllocator, updateCommandList, res->vertexBufferView);
 		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
 			L"Billboard2", bea->vertexBuffer, bea->vertexBufferUpload, updateCommandAllocator, updateCommandList, bea->vertexBufferView);
 

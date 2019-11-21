@@ -1,3 +1,69 @@
+// buffer handling
+struct BufferResource {
+	size_t bufferSize;
+	size_t vertexSize;
+	void* data;
+	ID3D12PipelineState* pipelineState;
+	LPCWSTR baseName;
+	ComPtr<ID3D12Resource> vertexBuffer;
+	ComPtr<ID3D12Resource> vertexBufferUpload;
+	ComPtr<ID3D12CommandAllocator> commandAllocator;
+	ComPtr<ID3D12GraphicsCommandList> commandList;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	bool is_free = true;
+};
+
+class ResourceStore {
+public:
+	//singleton:
+	static ResourceStore* getInstance() {
+		static ResourceStore singleton;
+		return &singleton;
+	};
+
+	// thread save public methods:
+
+	// find free slot, create one if necessary 
+	BufferResource* getSlot() {
+		unique_lock<mutex> lock(monitorMutex);
+		BufferResource* res = findFreeSlot();
+		if (res == nullptr) {
+			// create new slot
+			BufferResource r;
+			resourceList.push_back(r);
+			res = findFreeSlot();
+			assert(res != nullptr);
+		}
+		res->is_free = false;
+		return res;
+	}
+
+	// return slot to pool. Slots are never destroyed and can be reused after returning
+	void returnSlot(BufferResource* res) {
+		unique_lock<mutex> lock(monitorMutex);
+		res->is_free = true;
+	}
+private:
+
+	// find nesx tfree slot - null if none is available
+	// has to be synced externally
+	BufferResource* findFreeSlot() {
+		for (auto& res : resourceList) {
+			if (res.is_free) {
+				return &res;
+			}
+		}
+		return nullptr;
+	}
+
+	mutex monitorMutex;
+	list<BufferResource> resourceList;
+	ResourceStore() {};									// prevent creation outside this class
+	ResourceStore(const ResourceStore&);				// prevent creation via copy-constructor
+	ResourceStore& operator = (const ResourceStore&);	// prevent instance copies
+};
+
+
 // base class for App Data
 // frame independent data like certex buffers
 class EffectAppData {
