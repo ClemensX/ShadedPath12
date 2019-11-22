@@ -18,9 +18,10 @@ class BillboardEffectAppData : public EffectAppData {
 public:
 	unordered_map<string, vector<BillboardElement>> billboards;
 	~BillboardEffectAppData() override { };
-	ComPtr<ID3D12Resource> vertexBuffer;
-	ComPtr<ID3D12Resource> vertexBufferUpload;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	//ComPtr<ID3D12Resource> vertexBuffer;
+	//ComPtr<ID3D12Resource> vertexBufferUpload;
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	BufferResource* bufferResource = nullptr;
 };
 
 // per frame resources for this effect
@@ -66,20 +67,25 @@ public:
 	{
 		updateQueue.activeUseCount++;
 		//assert(updateQueue.activeUseCount <= 3);
-		Log("active data set counter " << updateQueue.activeUseCount << endl);
+		//Log("active data set counter " << updateQueue.activeUseCount << endl);
 		if (currentActiveAppDataSet < 0) {
 			Error(L"active data set not available in Billboard. Cannot continue.");
 		}
-		return &appDataSets[currentActiveAppDataSet];
+		BillboardEffectAppData* act = &appDataSets[currentActiveAppDataSet];
+		act->bufferResource->useCounter++;
+		//Log("active data set use counter increased: gen " << act->bufferResource->generation << " count " << act->bufferResource->useCounter << endl);
+		return act;
 	}
-	void releaseActiveAppDataSet() 
+	void releaseActiveAppDataSet(BillboardEffectAppData* act)
 	{
 		updateQueue.activeUseCount--;
-		Log("active data set counter " << updateQueue.activeUseCount << endl);
+		//Log("active data set counter " << updateQueue.activeUseCount << endl);
 		assert(updateQueue.activeUseCount >= 0);
 		if (currentActiveAppDataSet < 0) {
 			Error(L"active data set not available in Billboard. Cannot continue.");
 		}
+		act->bufferResource->useCounter--;
+		//Log("active data set use counter decreased: gen " << act->bufferResource->generation << " count " << act->bufferResource->useCounter << endl);
 	}
 
 	// make inactive app data set active and vice versa

@@ -130,10 +130,11 @@ void Billboard::activateAppDataSet(unsigned long user)
 		//}
 		// upload changed data
 		BufferResource* res = ResourceStore::getInstance()->getSlot();
+		bea->bufferResource = res;
 		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
 			L"Billboard2", res->vertexBuffer, res->vertexBufferUpload, updateCommandAllocator, updateCommandList, res->vertexBufferView);
-		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
-			L"Billboard2", bea->vertexBuffer, bea->vertexBufferUpload, updateCommandAllocator, updateCommandList, bea->vertexBufferView);
+		//createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
+		//	L"Billboard2", bea->vertexBuffer, bea->vertexBufferUpload, updateCommandAllocator, updateCommandList, bea->vertexBufferView);
 
 		// Close the command list and execute it to begin the vertex buffer copy into
 		// the default heap.
@@ -142,6 +143,7 @@ void Billboard::activateAppDataSet(unsigned long user)
 		dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandListsUpload), ppCommandListsUpload);
 		dxGlobal->createSyncPoint(&updateFenceData, dxGlobal->commandQueue);
 		dxGlobal->waitForSyncPoint(&updateFenceData);
+		ResourceStore::getInstance()->freeUnusedSlots(res->generation-1);
 	}
 	// switch inactive and active data sets:
 	currentActiveAppDataSet = (currentActiveAppDataSet + 1) % 2;
@@ -179,9 +181,9 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 		//	assert(fdg->rightCam. != nullptr);
 		//}
 		// TODO workaround for mem leak: only call this once:
-		auto bea = (BillboardEffectAppData*)getActiveAppDataSet();
-		if (bea->vertexBuffer == nullptr) {
-			Error(L"vertex buffer not initialized in billboard.draw(). Cannot continue.");
+		//auto bea = (BillboardEffectAppData*)getActiveAppDataSet();
+		//if (bea->bufferResource->vertexBuffer == nullptr) {
+		//	Error(L"vertex buffer not initialized in billboard.draw(). Cannot continue.");
 /*			// prepare vertices:
 			vector<Vertex> vertices;
 			vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices);
@@ -196,7 +198,7 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 			ID3D12CommandList* ppCommandListsUpload[] = { fdb->updateCommandList.Get() };
 			dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandListsUpload), ppCommandListsUpload);
 			dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
-*/		}
+*/		//}
 		// prepare drawing:
 		ID3D12GraphicsCommandList* commandList = fdg->commandListRenderTexture.Get();
 		ThrowIfFailed(fdg->commandAllocatorRenderTexture->Reset());
@@ -269,7 +271,7 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 			Error(L"mult thread access problem");
 		}
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		commandList->IASetVertexBuffers(0, 1, &d->vertexBufferView);
+		commandList->IASetVertexBuffers(0, 1, &d->bufferResource->vertexBufferView);
 		// now draw all the billboards, one draw call per texture type 
 		// iterate over billboard types
 		UINT cur_vertex_index = 0;
@@ -303,7 +305,7 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 			// now draw all the billboards, one draw call per texture type 
 			// iterate over billboard types
 			UINT cur_vertex_index = 0;
-			auto d = (BillboardEffectAppData*)getActiveAppDataSet();
+			//auto d = (BillboardEffectAppData*)getActiveAppDataSet();
 			for (auto& elvec : d->billboards) {
 				//Log(elvec.first.c_str() << endl);
 				auto tex = dxGlobal->getTextureStore()->getTexture(elvec.first);
@@ -326,7 +328,7 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 		commandList = fdg->commandListRenderTexture.Get();
 		//ThrowIfFailed(fdg->commandAllocatorRenderTexture->Reset());
 		//ThrowIfFailed(commandList->Reset(fdg->commandAllocatorRenderTexture.Get(), fdg->pipelineStateRenderTexture.Get()));
-		releaseActiveAppDataSet();
+		releaseActiveAppDataSet(d);
 	}
 }
 

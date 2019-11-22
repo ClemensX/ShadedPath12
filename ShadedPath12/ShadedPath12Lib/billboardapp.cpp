@@ -211,7 +211,8 @@ void BillboardApp::update(Pipeline* pipeline)
 	unsigned long user = 0;
 	billboard.updateQueue.getLockedInactiveDataSet(user);
 	auto& inactive = billboard.getInactiveAppDataSet(user)->billboards;
-	auto& active = billboard.getActiveAppDataSet()->billboards;
+	BillboardEffectAppData *actDataSet = billboard.getActiveAppDataSet();
+	auto& active = actDataSet->billboards;
 
 	bool only_one = false; // only update one billboard - fast update for test - comment for normal operation
 
@@ -242,6 +243,7 @@ void BillboardApp::update(Pipeline* pipeline)
 	//Log(" inactive set: " << active.size() << endl);
 	assert(active.size() == inactive.size());
 	Effect::update(updateEffectList, pipeline, user);
+	billboard.releaseActiveAppDataSet(actDataSet);
 	//billboard.activateAppDataSet();
 	//billboard.updateQueue.releaseLockedInactiveDataSet(user);
 }

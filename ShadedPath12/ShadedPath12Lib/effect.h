@@ -1,16 +1,24 @@
 // buffer handling
 struct BufferResource {
-	size_t bufferSize;
-	size_t vertexSize;
-	void* data;
-	ID3D12PipelineState* pipelineState;
-	LPCWSTR baseName;
-	ComPtr<ID3D12Resource> vertexBuffer;
-	ComPtr<ID3D12Resource> vertexBufferUpload;
-	ComPtr<ID3D12CommandAllocator> commandAllocator;
-	ComPtr<ID3D12GraphicsCommandList> commandList;
+	size_t bufferSize = 0;
+	size_t vertexSize = 0;
+	void* data = nullptr;
+	ID3D12PipelineState* pipelineState = nullptr;
+	LPCWSTR baseName = nullptr;
+	ComPtr<ID3D12Resource> vertexBuffer = nullptr;
+	ComPtr<ID3D12Resource> vertexBufferUpload = nullptr;
+	ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
+	ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	bool is_free = true;
+	atomic<int> useCounter;
+	int generation;
+	BufferResource(const BufferResource&) {
+		// nothing to do
+	}
+	BufferResource() {
+		// nothing to do
+	}
 };
 
 class ResourceStore {
@@ -26,6 +34,7 @@ public:
 	// find free slot, create one if necessary 
 	BufferResource* getSlot() {
 		unique_lock<mutex> lock(monitorMutex);
+		static int generation = 0;
 		BufferResource* res = findFreeSlot();
 		if (res == nullptr) {
 			// create new slot
@@ -35,17 +44,40 @@ public:
 			assert(res != nullptr);
 		}
 		res->is_free = false;
+		res->useCounter = 0;
+		res->generation = generation++;
 		return res;
 	}
 
-	// return slot to pool. Slots are never destroyed and can be reused after returning
-	void returnSlot(BufferResource* res) {
+	// return all free slots (useCount == 0) with given generation or lower
+	void freeUnusedSlots(int maxGeneration) {
 		unique_lock<mutex> lock(monitorMutex);
-		res->is_free = true;
+		for (auto& res : resourceList) {
+			if (!res.is_free && res.useCounter == 0 && res.generation <= maxGeneration) {
+				if (res.vertexBuffer != nullptr) {
+					res.vertexBufferView.BufferLocation = 0;
+					res.vertexBufferView.SizeInBytes= 0;
+					res.vertexBufferView.StrideInBytes = 0;
+					res.vertexBufferUpload->Release();
+					res.vertexBufferUpload = nullptr;
+					res.vertexBuffer->Release();
+					res.vertexBuffer = nullptr;
+					res.is_free = true;
+					//Log("freed buffer slot: gen " << res.generation << " count " << res.useCounter << endl);
+				}
+
+			}
+		}
 	}
+
+	//// return slot to pool. Slots are never destroyed and can be reused after returning
+	//void returnSlot(BufferResource* res) {
+	//	unique_lock<mutex> lock(monitorMutex);
+	//	res->is_free = true;
+	//}
 private:
 
-	// find nesx tfree slot - null if none is available
+	// find next free slot - null if none is available
 	// has to be synced externally
 	BufferResource* findFreeSlot() {
 		for (auto& res : resourceList) {
