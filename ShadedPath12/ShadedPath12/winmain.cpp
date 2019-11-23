@@ -222,7 +222,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	//c = a;  // No run-time error with /RTCu	//_CrtMemDumpAllObjectsSince(NULL);
 	// debug heap end
 	//xappDestroy();
-	Log("size of VR2: " << sizeof(VR2) << endl);
+	//Log("size of VR2: " << sizeof(VR2) << endl);
 	Log("size of VR: " << sizeof(VR) << endl);
     return (int) msg.wParam;
 }

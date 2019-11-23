@@ -15,6 +15,8 @@ void VR::init(Pipeline* pipeline, DXGlobal* dxglobal) {
 	this->pipeline = pipeline;
 	this->dxGlobal = dxglobal;
 	pipeline->setVRImplementation(this);  //	TODO reenable for this class to work!!!
+	Log("size of VR: " << sizeof(VR) << endl);
+	Log("size of VR: " << sizeof(*this) << endl);
 #if defined(_SVR_)
 	// Loading the SteamVR Runtime
 	vr::EVRInitError eError = vr::VRInitError_None;
@@ -1394,6 +1396,11 @@ void VR::submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral* fdg)
 #if defined(_SVR_)
 	vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture, &bounds, vr::Submit_Default);
 #endif	
+	static auto lastPresentTime = chrono::high_resolution_clock::now();
+	auto t1 = chrono::high_resolution_clock::now();
+	auto msSinceLastPresent = chrono::duration_cast<chrono::microseconds>(t1 - lastPresentTime).count();
+	lastPresentTime = t1;
+	LogF("ms since last VR submit: " << msSinceLastPresent << endl);
 }
 
 int VR::getCurrentFrameBufferIndex() {
@@ -1555,6 +1562,7 @@ Matrix4 VR::GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye)
 
 #endif
 
+#if defined(USEVR2)
 // VR2 test
 VR2::VR2()
 {
@@ -1844,5 +1852,7 @@ Matrix4 VR2::GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye)
 {
 	return Matrix4();
 }
+
+#endif
 
 #endif

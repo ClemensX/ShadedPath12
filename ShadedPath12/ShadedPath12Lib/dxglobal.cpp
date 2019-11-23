@@ -498,6 +498,11 @@ void DXGlobal::present2Window(Pipeline* pipeline, Frame* frame)
 
 	commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 	//Util::logThreadInfo(L"swapChain->Present");
+	static auto lastPresentTime = chrono::high_resolution_clock::now();
+	auto t1 = chrono::high_resolution_clock::now();
+	auto msSinceLastPresent = chrono::duration_cast<chrono::microseconds>(t1 - lastPresentTime).count();
+	lastPresentTime = t1;
+	//LogF("ms since last Present: " << msSinceLastPresent << endl);
 	ThrowIfFailedWithDevice(swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), device.Get());
 }
 

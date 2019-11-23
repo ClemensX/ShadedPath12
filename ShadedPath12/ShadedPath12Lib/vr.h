@@ -273,6 +273,7 @@ private:
 #endif
 };
 
+#if defined(USE_VR2)
 // global class  - only one instance  - used for global VR data and initialization
 class VR2 {
 public:
@@ -468,3 +469,5 @@ private:
 
 #endif
 };
+
+#endif
