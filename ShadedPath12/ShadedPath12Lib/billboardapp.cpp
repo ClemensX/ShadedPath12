@@ -286,4 +286,8 @@ void BillboardApp::stop() {
 	LogF("BillboardApp and pipeline stopped\n");
 	Log(s2w(pipeline.getStatistics()));
 	LogF(s2w(pipeline.getStatistics()));
+	Log("swap chain submit timings:");
+	ThemedTimer::getInstance()->logEntries("SwapChain");
+	Log("vr submit timings:");
+	ThemedTimer::getInstance()->logEntries("vr");
 }

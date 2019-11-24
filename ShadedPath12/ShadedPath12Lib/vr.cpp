@@ -2,6 +2,7 @@
 
 VR::VR()
 {
+	ThemedTimer::getInstance()->create("vr", 1000);
 #if defined(_SVR_)
 	m_rmat4DevicePose = new Matrix4[vr::k_unMaxTrackedDeviceCount];
 	m_rTrackedDevicePose = new vr::TrackedDevicePose_t[vr::k_unMaxTrackedDeviceCount];
@@ -1393,14 +1394,15 @@ void VR::submitFrame(Frame* frame, Pipeline* pipeline, FrameDataGeneral* fdg)
 	vr::Texture_t rightEyeTexture = { (void*)& d3d12RightEyeTexture, vr::TextureType_DirectX12, vr::ColorSpace_Gamma };
 #endif
 	//Util::logThreadInfo(wstring(L"VRCompositor()->Submit"));
-#if defined(_SVR_)
-	vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture, &bounds, vr::Submit_Default);
-#endif	
 	static auto lastPresentTime = chrono::high_resolution_clock::now();
 	auto t1 = chrono::high_resolution_clock::now();
 	auto msSinceLastPresent = chrono::duration_cast<chrono::microseconds>(t1 - lastPresentTime).count();
 	lastPresentTime = t1;
-	LogF("ms since last VR submit: " << msSinceLastPresent << endl);
+	ThemedTimer::getInstance()->add("vr", msSinceLastPresent);
+	//LogF("ms since last VR submit: " << msSinceLastPresent << endl);
+#if defined(_SVR_)
+	vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture, &bounds, vr::Submit_Default);
+#endif	
 }
 
 int VR::getCurrentFrameBufferIndex() {

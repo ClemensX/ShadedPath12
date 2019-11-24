@@ -41,6 +41,7 @@
     <ClInclude Include="renderplan.h" />
     <ClInclude Include="test.h" />
     <ClInclude Include="testne3.h" />
+    <ClInclude Include="test_misc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="queue.cpp" />
@@ -53,6 +54,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="testne3.cpp" />
+    <ClCompile Include="test_misc.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

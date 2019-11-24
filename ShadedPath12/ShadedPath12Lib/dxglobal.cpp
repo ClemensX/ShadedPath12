@@ -3,6 +3,7 @@
 
 void DXGlobal::init()
 {
+	ThemedTimer::getInstance()->create("SwapChain", 1000);
 #ifndef _DISABLE_GPU_DEBUG_
 	// Enable the D3D12 debug layer.
 	{
@@ -503,6 +504,7 @@ void DXGlobal::present2Window(Pipeline* pipeline, Frame* frame)
 	auto msSinceLastPresent = chrono::duration_cast<chrono::microseconds>(t1 - lastPresentTime).count();
 	lastPresentTime = t1;
 	//LogF("ms since last Present: " << msSinceLastPresent << endl);
+	ThemedTimer::getInstance()->add("SwapChain", msSinceLastPresent);
 	ThrowIfFailedWithDevice(swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), device.Get());
 }
 

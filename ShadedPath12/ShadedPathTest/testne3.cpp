@@ -101,12 +101,34 @@ TEST(TestNewEngine, FrameBuffer) {
 
 }
 
+/*// need full blown running env - disable this est for now, maybe activate it later...
 TEST(TestNewEngine, Billboard) {
-	unsigned long user = 0;
+	Pipeline pipeline;
+	initPipeline(pipeline);
+	DXGlobal dxGlobal;
+	dxGlobal.init();
 	Billboard b;
+	BillboardAppFrameData afd[3];
+	// init effect
+	VR vr;
+	dxGlobal.vr = &vr;
+	int i = 0;
+	pipeline.afManager.setAppDataForSlot(&afd[i], i);
+	BillboardAppFrameData* fd = (BillboardAppFrameData*)pipeline.afManager.getAppDataForSlot(i);
+	Dx2D* d2d = &fd->d2d;
+	FrameDataD2D* fd2d = &fd->d2d_fd;
+	FrameDataGeneral* fd_gen = &fd->fd_general;
+	FrameDataBillboard* fdb = &fd->billboard_fd;
+	dxGlobal.initFrameBufferResources(fd_gen, fd2d, i, &pipeline);
+	d2d->init(&dxGlobal, fd2d, fd_gen, &pipeline);
+	b.init(&dxGlobal, fdb, fd_gen, &pipeline);
+	// end effect init
+
 	BillboardElement be1{ {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {1.0f, 2.0f} }; // pos, normal, size
 	BillboardElement be2{ {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {1.0f, 2.0f} }; // pos, normal, size
 	BillboardElement be3{ {2.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {1.0f, 2.0f} }; // pos, normal, size
+	unsigned long user = 0;
+	b.updateQueue.getLockedInactiveDataSet(user);
 	size_t n1 = b.add("tex_01", be1, user);
 	size_t n2 = b.add("tex_01", be2, user);
 	size_t n3 = b.add("tex_02", be3, user);
@@ -116,7 +138,8 @@ TEST(TestNewEngine, Billboard) {
 	EXPECT_EQ(1, n2);
 	EXPECT_EQ(0, n3);
 
-	b.activateAppDataSet(0);
+	b.activateAppDataSet(user);
+	b.updateQueue.releaseLockedInactiveDataSet(user);
 	EXPECT_NE(nullptr, b.getInactiveAppDataSet(user));
 	EXPECT_THROW(b.get("tex_01", 0, user), std::exception);
 	//auto v = b.get("tex_01", 0);
@@ -124,3 +147,4 @@ TEST(TestNewEngine, Billboard) {
 	EXPECT_EQ(0, n1);  // did we really restart from 0?
 	LogF("billboard finished" << endl);	//b.get()
 }
+*/

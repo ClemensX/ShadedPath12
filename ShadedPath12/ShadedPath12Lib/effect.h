@@ -282,7 +282,7 @@ protected:
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
 	DXManager dxmanager;
 	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
-	DXGlobal* dxGlobal;
+	DXGlobal* dxGlobal = nullptr;
 	VR_Eyes eyes;
 	// constant buffers
 	// set cbv:
