@@ -113,7 +113,7 @@ public:
 			int checkPos = i % td.numSlots;
 			auto& t = td.entries[checkPos];
 			if (t.used) {
-				Log("" << t.time << endl);
+				LogF("" << t.time << endl);
 			}
 		}
 	}
@@ -122,7 +122,7 @@ private:
 	bool check_name(string name) {
 		if (timerMap.count(name) <= 0) {
 			// theme not found
-			Log("tried to access themed timer that does not exist: " << name.c_str() << endl);
+			LogF("tried to access themed timer that does not exist: " << name.c_str() << endl);
 			return false;
 		}
 		return true;

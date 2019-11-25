@@ -21,7 +21,9 @@ void BillboardApp::init(HWND hwnd) {
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	pc.setFrameBufferSize(FRAME_BUFFER_SIZE);
 	pc.setVRMode();
-	//pc.setSingleThreadMode();
+#if defined(SINGLE_THREAD_MODE)
+	pc.setSingleThreadMode();
+#endif
 	pc.setMaxUpdatesPerSecond(30); // limit update thread to 30 calls / second
 #if defined (_SVR_)
 	pc.setHMDMode();
@@ -286,8 +288,8 @@ void BillboardApp::stop() {
 	LogF("BillboardApp and pipeline stopped\n");
 	Log(s2w(pipeline.getStatistics()));
 	LogF(s2w(pipeline.getStatistics()));
-	Log("swap chain submit timings:");
+	LogF("swap chain submit timings:");
 	ThemedTimer::getInstance()->logEntries("SwapChain");
-	Log("vr submit timings:");
+	LogF("vr submit timings:");
 	ThemedTimer::getInstance()->logEntries("vr");
 }
