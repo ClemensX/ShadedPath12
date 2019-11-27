@@ -153,8 +153,6 @@ void Effect::runUpdate(Pipeline* pipeline, Effect *effectInstance) {
 		unsigned long user = 0;
 		effectInstance->updateQueue.getLockedInactiveDataSet(user);
 		//Log(" Effect::runUpdate getlocked data set" << endl);
-		effectInstance->updateInactiveDataSet();
-		//Log(" Effect::runUpdate updateInactive" << endl);
 		effectInstance->activateAppDataSet(user);
 		//Log(" Effect::runUpdate activate" << endl);
 		effectInstance->updateQueue.releaseLockedInactiveDataSet(user);

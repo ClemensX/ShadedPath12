@@ -358,12 +358,4 @@ void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement
 	}
 }
 
-// TODO remove
-void Billboard::updateInactiveDataSet()
-{
-	// update inactive data set
-	static bool doit = true;
-	if (doit) {
-	}
-}
 

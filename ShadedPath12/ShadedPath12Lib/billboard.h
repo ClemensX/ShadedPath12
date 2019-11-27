@@ -18,19 +18,13 @@ class BillboardEffectAppData : public EffectAppData {
 public:
 	unordered_map<string, vector<BillboardElement>> billboards;
 	~BillboardEffectAppData() override { };
-	//ComPtr<ID3D12Resource> vertexBuffer;
-	//ComPtr<ID3D12Resource> vertexBufferUpload;
-	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	BufferResource* bufferResource = nullptr;
 };
 
 // per frame resources for this effect
 struct FrameDataBillboard : FrameDataBase {
 public:
-	ComPtr<ID3D12Resource> vertexBufferX;
-	ComPtr<ID3D12Resource> vertexBufferUploadX;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewX;
-	friend class DXGlobal;
+	//friend class DXGlobal;
 };
 
 class Billboard : public Effect {
@@ -52,10 +46,7 @@ public:
 	size_t add(string texture_id, BillboardElement billboardEl, unsigned long& user);
 	// get billboard with order number order_num for texture_id
 	BillboardElement& get(string texture_id, int order_num, unsigned long& user);
-	void update();
 	void draw(Frame* frame, FrameDataGeneral *dfg, FrameDataBillboard *fdb, Pipeline* pipeline);
-	void drawAll();
-	void destroy();
 
 	// Inherited via Effect
 	BillboardEffectAppData* getInactiveAppDataSet(unsigned long &user) override
@@ -99,20 +90,11 @@ public:
 
 	mutex dataSetMutex; // to synchronize updates to billboard data (active/inactive)
 private:
-	// Inherited via Effect
-	// TODO remove
-	virtual void updateInactiveDataSet() override;
 	CBV cbv;
 	vector<Vertex>& recreateVertexBufferContent(vector<Vertex>& vertices, BillboardEffectAppData *);
 	void createBillbordVertexData(Vertex* cur_billboard, BillboardElement& bb);
-	//vector<BillboardElement> texts;
-	atomic<bool> updateRunning = false;
-	future<void> billboardFuture;
-	//FrameResource updateFrameData;
 	BillboardEffectAppData appDataSets[2];
 	int currentInactiveAppDataSet = 0;
 	int currentActiveAppDataSet = -1;
-
-	//UINT numberOfVertices = 0;
 };
 

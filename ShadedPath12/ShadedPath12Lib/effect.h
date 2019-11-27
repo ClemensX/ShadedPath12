@@ -112,17 +112,10 @@ public:
 // frame dependent data like CBV for MVP matrix
 struct FrameDataBase {
 public:
-	ComPtr<ID3D12PipelineState> pipelineStateX;
-	ComPtr<ID3D12RootSignature> rootSignatureX;
-	ComPtr<ID3D12CommandAllocator> updateCommandAllocatorX;
-	ComPtr<ID3D12GraphicsCommandList> updateCommandListX;
 	ComPtr<ID3D12Resource> cbvResource;
 	ComPtr<ID3D12Resource> cbvResource2;
 	UINT8* cbvGPUDest;  // memcpy() changed cbv data to this address before draw()
 	UINT8* cbvGPUDest2;  // memcpy() changed cbv data to this address before draw()
-	long long frameNumOfDataActivation; // ???
-
-	friend class DXGlobal;
 };
 
 // update queue for update threads (ech effect has its own):
@@ -276,9 +269,6 @@ public:
 	//void setFinishedFrameConsumer(function<void(Frame*, Pipeline*)> consumer) { this->consumer = consumer; }
 	UpdateQueue updateQueue;
 protected:
-	// copy effect data to GPU
-	// called only from effect update thread.
-	virtual void updateInactiveDataSet() = 0;
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
 	//DXManager dxmanager;
 	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
