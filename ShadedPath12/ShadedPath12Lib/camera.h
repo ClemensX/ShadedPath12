@@ -45,7 +45,9 @@ public:
 	bool ovrCamera = true;
 	//XMFLOAT4X4 viewOVR[2], projOVR[2];
 	int activeEye = 0;
+#if defined(_OVR_)
 	void recalcOVR(XApp &xapp);
+#endif
 	int eyeNum;
 	bool eyeNumUse = false;
 

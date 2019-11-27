@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-* Launch window based application
+* Launch window. Specify which app to run here.
 */
 class Launcher
 {

@@ -81,27 +81,9 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 	dxGlobal = a;
 
 	// Create command allocators and command lists for each frame.
-	static LPCWSTR fence_names[XApp::FrameCount] = {
+	static LPCWSTR fence_names[DXManager::FrameCount] = {
 		L"fence_Billboard_0", L"fence_Billboard_1", L"fence_Billboard_2"
 	};
-/***	for (UINT n = 0; n < XApp::FrameCount; n++)
-	{
-		ThrowIfFailed(xapp().device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocators[n])));
-		ThrowIfFailed(xapp().device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocators[n].Get(), pipelineState.Get(), IID_PPV_ARGS(&commandLists[n])));
-		// Command lists are created in the recording state, but there is nothing
-		// to record yet. The main loop expects it to be closed, so close it now.
-		ThrowIfFailed(commandLists[n]->Close());
-		// init fences:
-		//ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(frameData[n].fence.GetAddressOf())));
-		ThrowIfFailed(xapp().device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&frameData[n].fence)));
-		frameData[n].fence->SetName(fence_names[n]);
-		frameData[n].fenceValue = 0;
-		frameData[n].fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-		if (frameData[n].fenceEvent == nullptr) {
-			ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
-		}
-	}
-***/
 	createConstantBuffer((UINT) sizeof(cbv), L"Billboard_cbv_resource", fdb);
 	// set cbv data:
 	XMMATRIX ident = XMMatrixIdentity();
@@ -123,18 +105,11 @@ void Billboard::activateAppDataSet(unsigned long user)
 		vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices, bea);
 		size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
 		//Log(" upload billboard vertex buffer, size " << vertexBufferSize << endl);
-		// delete old buffer
-		//if (bea->vertexBuffer != nullptr) {
-		//	bea->vertexBufferUpload->Release();
-		//	bea->vertexBuffer->Release();
-		//}
 		// upload changed data
 		BufferResource* res = ResourceStore::getInstance()->getSlot();
 		bea->bufferResource = res;
 		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
 			L"Billboard2", res->vertexBuffer, res->vertexBufferUpload, updateCommandAllocator, updateCommandList, res->vertexBufferView);
-		//createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
-		//	L"Billboard2", bea->vertexBuffer, bea->vertexBufferUpload, updateCommandAllocator, updateCommandList, bea->vertexBufferView);
 
 		// Close the command list and execute it to begin the vertex buffer copy into
 		// the default heap.
@@ -156,49 +131,8 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 	//unique_lock<mutex> lock(dataSetMutex);
 	//Log("draw " << endl);
 	auto config = pipeline->getPipelineConfig();
-	//{
-	//	// test draw with chnaging background color:
-	//	// wait for last frame with this index to be finished:
-	//	dxGlobal->waitGPU(fd, dxGlobal->commandQueue);
-	//	// d3d12 present:
-	//	ID3D12GraphicsCommandList* commandList = fd->commandListRenderTexture.Get();
-	//	ThrowIfFailed(fd->commandAllocatorRenderTexture->Reset());
-	//	ThrowIfFailed(commandList->Reset(fd->commandAllocatorRenderTexture.Get(), fd->pipelineStateRenderTexture.Get()));
-	//	resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
-	//	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fd->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), 0, fd->rtvDescriptorSizeRenderTexture);
-	//	float clearColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f }; //will correctly produce warnings CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
-	//	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-	//	commandList->ClearDepthStencilView(fd->dsvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-	//	resourceStateHelper->toState(fd->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
-	//	ThrowIfFailed(commandList->Close());
-	//	ID3D12CommandList* ppCommandLists[] = { commandList };
-
-	//	dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-	//}
 	dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
 	{
-		//if (pipeline->vrMode) {
-		//	assert(fdg->rightCam. != nullptr);
-		//}
-		// TODO workaround for mem leak: only call this once:
-		//auto bea = (BillboardEffectAppData*)getActiveAppDataSet();
-		//if (bea->bufferResource->vertexBuffer == nullptr) {
-		//	Error(L"vertex buffer not initialized in billboard.draw(). Cannot continue.");
-/*			// prepare vertices:
-			vector<Vertex> vertices;
-			vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices);
-			size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
-			Log(" upload billboard vertex buffer for slot " << frame->slot << " size " << vertexBufferSize << endl);
-			createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), fdb->pipelineState.Get(),
-				L"Billboard2", bea->vertexBuffer, bea->vertexBufferUpload, fdb->updateCommandAllocator, fdb->updateCommandList, bea->vertexBufferView);
-
-			// Close the command list and execute it to begin the vertex buffer copy into
-			// the default heap.
-			ThrowIfFailed(fdb->updateCommandList->Close());
-			ID3D12CommandList* ppCommandListsUpload[] = { fdb->updateCommandList.Get() };
-			dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandListsUpload), ppCommandListsUpload);
-			dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
-*/		//}
 		// prepare drawing:
 		ID3D12GraphicsCommandList* commandList = fdg->commandListRenderTexture.Get();
 		ThrowIfFailed(fdg->commandAllocatorRenderTexture->Reset());
@@ -231,16 +165,9 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 		// Set CBV
 		commandList->SetGraphicsRootConstantBufferView(0, fdb->cbvResource->GetGPUVirtualAddress());
 
-		// Indicate that the back buffer will be used as a render target.
-		//	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(renderTargets[frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-
-		//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(xapp().rtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, xapp().rtvDescriptorSize);
-		//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fd->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
 		CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(fdg->dsvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
 		fdg->commandListRenderTexture->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 		ID3D12Resource* resource = fdg->renderTarget.Get();
-		//if (!xapp().ovrRendering) resource = xapp().renderTargets[frameIndex].Get();
-		//else resource = xapp().vrMode.texResource[frameIndex];
 
 		// prepare cbv:
 		if (pipeline->isHMD()) {
@@ -267,9 +194,9 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 		// draw
 		auto d = (BillboardEffectAppData*)getActiveAppDataSet();
 		// multi thread access problem:
-		if (d->billboards.size() != 13) {
-			Error(L"mult thread access problem");
-		}
+		//if (d->billboards.size() != 13) {
+		//	Error(L"mult thread access problem");
+		//}
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->IASetVertexBuffers(0, 1, &d->bufferResource->vertexBufferView);
 		// now draw all the billboards, one draw call per texture type 
@@ -326,8 +253,6 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 		dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 		dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
 		commandList = fdg->commandListRenderTexture.Get();
-		//ThrowIfFailed(fdg->commandAllocatorRenderTexture->Reset());
-		//ThrowIfFailed(commandList->Reset(fdg->commandAllocatorRenderTexture.Get(), fdg->pipelineStateRenderTexture.Get()));
 		releaseActiveAppDataSet(d);
 	}
 }
@@ -433,107 +358,12 @@ void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement
 	}
 }
 
+// TODO remove
 void Billboard::updateInactiveDataSet()
 {
 	// update inactive data set
 	static bool doit = true;
 	if (doit) {
-		//doit = false;
-		//int slot = 0;
-
-		//// prepare vertices:
-		//vector<Vertex> vertices;
-		//vector<Vertex>& vertexBuffer = recreateVertexBufferContent(vertices);
-		//size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
-		//Log(" upload billboard vertex buffer for slot " << slot << " size " << vertexBufferSize << endl);
-		//createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
-		//	L"Billboard2", fdb->vertexBuffer, fdb->vertexBufferUpload, fdb->updateCommandAllocator, fdb->updateCommandList, fdb->vertexBufferView);
-
-		//// Close the command list and execute it to begin the vertex buffer copy into
-		//// the default heap.
-		//ThrowIfFailed(fdb->updateCommandList->Close());
-		//ID3D12CommandList* ppCommandListsUpload[] = { fdb->updateCommandList.Get() };
-		//DXGlobal::createSyncPoint(&updateFenceData, dxGlobal->commandQueue);
-		//DXGlobal::waitForSyncPoint(&updateFenceData);
 	}
 }
 
-// strange version that uses normal parameters for triangle calculation 
-// probably left-over from old massive test
-/*
-void Billboard::createBillbordVertexData(Vertex* cur_billboard, BillboardElement& bb) {
-	// we know cur_billboard is a Vertex[6]
-	// first create billboard at origin in x/y plane with correct size:
-	float deltaw = bb.size.x / 2;
-	float deltah = bb.size.y / 2;
-	Vertex* cleft = cur_billboard; // use shorter name
-	// low left
-	cleft[0].pos.x = 0 - deltaw;
-	cleft[0].pos.y = 0 - deltah;
-	cleft[0].pos.z = 0;
-	cleft[0].pos.w = 1;
-	cleft[0].uv.x = 0;
-	cleft[0].uv.y = 1;
-	// top left
-	cleft[1].pos.x = 0 - deltaw;
-	cleft[1].pos.y = 0 + deltah;
-	cleft[1].pos.z = 0;
-	cleft[1].pos.w = 1;
-	cleft[1].uv.x = 0;
-	cleft[1].uv.y = 0;
-	// low right
-	cleft[2].pos.x = 0 + deltaw;
-	cleft[2].pos.y = 0 - deltah;
-	cleft[2].pos.z = 0;
-	cleft[2].pos.w = 1;
-	cleft[2].uv.x = 1;
-	cleft[2].uv.y = 1;
-	// 2nd triangle: copy low right
-	cleft[3] = cleft[2];
-	// 2nd triangle: copy top left
-	cleft[4] = cleft[1];
-	// 2nd triangle: top right
-	cleft[5].pos.x = 0 + deltaw;
-	cleft[5].pos.y = 0 + deltah;
-	cleft[5].pos.z = 0;
-	cleft[5].pos.w = 1;
-	cleft[5].uv.x = 1;
-	cleft[5].uv.y = 0;
-	// now translate to real position:
-	for (int i = 0; i < 6; i++) {
-		cleft[i].pos.x += bb.pos.x;
-		cleft[i].pos.y += bb.pos.y;
-		cleft[i].pos.z += bb.pos.z;
-	}
-	// layout of vertex input: 
-	// pos.x		P.x
-	// pos.y		P.y
-	// pos.z		P.z
-	// pos.w
-	// normal.x		factor.x
-	// normal.y		factor.y
-	// normal.z		w/2
-	// normal.w		h/2
-	//XMFLOAT4 cam = xapp().camera.pos;
-	for (int i = 0; i < 6; i++) {
-		cleft[i].pos.x = bb.pos.x;
-		cleft[i].pos.y = bb.pos.y;
-		cleft[i].pos.z = bb.pos.z;
-		cleft[i].normal.z = deltaw;
-		cleft[i].normal.w = deltah;
-	}
-	cleft[0].normal.x = -1;
-	cleft[0].normal.y = -1;
-	cleft[1].normal.x = -1;
-	cleft[1].normal.y = 1;
-	cleft[2].normal.x = 1;
-	cleft[2].normal.y = -1;
-
-	cleft[3].normal.x = 1;
-	cleft[3].normal.y = -1;
-	cleft[4].normal.x = -1;
-	cleft[4].normal.y = 1;
-	cleft[5].normal.x = 1;
-	cleft[5].normal.y = 1;
-}
-*/

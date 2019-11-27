@@ -45,14 +45,6 @@ void Pipeline::finallyProcessed(Frame* frame)
 	frameBuffer.returnFrame(frame);
 }
 
-/*Frame* Pipeline::waitForFinishedFrame(long long frameNum)
-{
-	if (!running) {
-		LogF("waitForFinishedFrame: pipeline not running\n");
-	}
-	return nullptr;
-}*/
-
 // run pipeline, expected to be called in its own thread
 // wait on queue until new frame is ready and return it (as a pointer)
 // frames are always pointers into the frame buffer - you should never copy a frame instance

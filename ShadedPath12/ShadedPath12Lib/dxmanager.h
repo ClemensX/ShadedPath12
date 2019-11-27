@@ -1,6 +1,5 @@
 #pragma once
 
-class XApp;
 /*
  * Ultility class to store state attributes for 3d objects.
  * Used to store info if objects already stored on GPU / compute buffer
@@ -107,71 +106,10 @@ private:
 
 class DXManager {
 public:
-	// create manager for number of frames
-	void init(XApp *xapp, int frameIndexes);
-	static void createSyncPoint(FrameResource &f, ComPtr<ID3D12CommandQueue> queue);
-	static void waitForSyncPoint(FrameResource &f);
-	// cretae sync point and wit for completion
-	void waitGPU(FrameResource &res, ComPtr<ID3D12CommandQueue> queue);
-	void createFrameResources(vector<AppWindowFrameResource> &res, int count, ComPtr<IDXGISwapChain3> &swapChain);
-	// wait until all frames have finished GPU usage
-	void destroy(vector<AppWindowFrameResource> &res, ComPtr<ID3D12CommandQueue> &queue);
-	void setCurrentFrame(int frameIndex) { currentFrameIndex = frameIndex; };
-	// Buffer sets are identified by number, should start from 0
-	void createConstantBufferSet(UINT setNum, UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name);
-	void uploadConstantBufferSet(UINT setNum, size_t singleObjectSize, void *mem_source);
-	D3D12_GPU_VIRTUAL_ADDRESS getConstantBufferSetVirtualAddress(UINT setNum, int eyeNum);
-	// buffer sets end
-
-	void createConstantBuffer(UINT maxThreads, UINT maxObjects, size_t singleObjectSize, wchar_t * name);
-	void createUploadBuffers();
-	void createGraphicsExecutionEnv(ID3D12PipelineState *ps);
-	void createComputeExecutionEnv();
-	UINT64 getOffsetInConstantBuffer(UINT objectIndex, int eyeNum = 0);
-	// copy data to upload buffer
-	void upload(UINT objectIndex, int eyeNum, void* mem_source);
-	// copy complete constant buffer to compute buffer
-	void copyToComputeBuffer(FrameResourceSimple & f);
-	void createPSO(EffectFrameResource & res, int frameIndex);
-	D3D12_GPU_VIRTUAL_ADDRESS getCBVVirtualAddress(UINT objectIndex, int eyeNum);
-	ID3D12Resource *getConstantBuffer() { return singleCBVResources[currentFrameIndex].Get(); };
-	//ID3D12CommandAllocator *getGraphicsCommandAllocator() { return commandAllocators[currentFrame].Get(); };
-	ComPtr<ID3D12CommandAllocator> &getGraphicsCommandAllocatorComPtr() { return commandAllocators[currentFrameIndex]; };
-	ComPtr<ID3D12GraphicsCommandList> &getGraphicsCommandListComPtr() { return commandLists[currentFrameIndex]; };
-	ComPtr<ID3D12CommandQueue> commandQueues[3];
 	// FrameCount should be a copy of XApp::FrameCount, but we don't want to reference XApp from here
 	// That the size is the same as in XApp is checked in intializer
 	static const UINT FrameCount = 3;
 private:
-	int currentFrameIndex = 0;
+	//int currentFrameIndex = 0;
 	int frameCount;
-	vector<ComPtr<ID3D12Resource>> singleCBVResources; // one for each thread and frame count
-	UINT maxObjects = 0;	// max number of entities allowed in this buffer
-	UINT slotSize = 0;      // allocated size for single CVB element (aligned size)
-	UINT totalSize = 0;     // tozal size of one constant buffer
-	// handle constant upload buffer as one large chunk (one buffer for all frames)
-	ComPtr<ID3D12Resource> constantBufferUpload;
-	UINT8* constantBufferUploadCPU;
-
-	ResourceStateHelper *resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
-	// Graphics objects:
-	
-	ComPtr<ID3D12CommandAllocator> commandAllocators[FrameCount];
-	ComPtr<ID3D12GraphicsCommandList> commandLists[FrameCount];
-	ID3D12PipelineState *graphics_ps;
-
-	// Compute objects.
-	ComPtr<ID3D12PipelineState> computePipelineState;
-	ComPtr<ID3D12RootSignature> computeRootSignature;
-	ComPtr<ID3D12CommandAllocator> computeAllocator[FrameCount];
-	//ComPtr<ID3D12CommandQueue> computeCommandQueue[FrameCount];
-	ComPtr<ID3D12GraphicsCommandList> computeCommandList[FrameCount];
-
-	ID3D12Device *device = nullptr;
-	vector<ComPtr<ID3D12Resource>> cbvSetResources; // for all numbered buffer sets
-	vector<UINT8*> cbvSetGPUDest;  // memcpy() changed cbv data to this address before draw()
-	UINT setSize = 0;
-	XApp *xapp;
-public:
-	ObjectStateList objectStateLists[FrameCount];
 };

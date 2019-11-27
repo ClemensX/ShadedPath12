@@ -100,12 +100,9 @@ public:
 	mutex dataSetMutex; // to synchronize updates to billboard data (active/inactive)
 private:
 	// Inherited via Effect
+	// TODO remove
 	virtual void updateInactiveDataSet() override;
-	void preDraw(int eyeNum);
-	void postDraw();
 	CBV cbv;
-	void drawInternal(int eyeNum = 0);
-	void updateTask();
 	vector<Vertex>& recreateVertexBufferContent(vector<Vertex>& vertices, BillboardEffectAppData *);
 	void createBillbordVertexData(Vertex* cur_billboard, BillboardElement& bb);
 	//vector<BillboardElement> texts;

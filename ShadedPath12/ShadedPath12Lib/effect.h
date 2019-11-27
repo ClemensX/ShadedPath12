@@ -9,10 +9,10 @@ struct BufferResource {
 	ComPtr<ID3D12Resource> vertexBufferUpload = nullptr;
 	ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
 	ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 	bool is_free = true;
 	atomic<int> useCounter;
-	int generation;
+	int generation = 0;
 	BufferResource(const BufferResource&) {
 		// nothing to do
 	}
@@ -280,7 +280,7 @@ protected:
 	// called only from effect update thread.
 	virtual void updateInactiveDataSet() = 0;
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
-	DXManager dxmanager;
+	//DXManager dxmanager;
 	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	DXGlobal* dxGlobal = nullptr;
 	VR_Eyes eyes;

@@ -7,5 +7,5 @@
 #pragma warning(disable : 4996)
 #include "gtest/gtest.h"
 #include "../ShadedPath12Lib/stdafx.h"
-#include "renderplan.h"
-#include "queue.h"
+//#include "renderplan.h"
+//#include "queue.h"

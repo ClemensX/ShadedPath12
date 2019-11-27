@@ -36,22 +36,10 @@
     <ClCompile Include="pipeline.cpp">
       <Filter>Source Files\NE3</Filter>
     </ClCompile>
-    <ClCompile Include="applicationWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="dxmanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="frameresource.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="gametime.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rendercontrol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stats.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
@@ -68,18 +56,6 @@
     </ClCompile>
     <ClCompile Include="world.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="xapp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sample1.cpp">
-      <Filter>Apps</Filter>
-    </ClCompile>
-    <ClCompile Include="Effects\copytexture.cpp">
-      <Filter>Effects</Filter>
-    </ClCompile>
-    <ClCompile Include="Effects\effectbase.cpp">
-      <Filter>Effects</Filter>
     </ClCompile>
     <ClCompile Include="DDSTextureLoader.cpp">
       <Filter>textures</Filter>
@@ -123,28 +99,22 @@
     <ClCompile Include="update.cpp">
       <Filter>Source Files\NE3</Filter>
     </ClCompile>
+    <ClCompile Include="Effects\effectbase.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ShadedPath12\Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\ShadedPath12\targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\ShadedPath12\winmain.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ShadedPath12\rendercontrol.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="frame.h">
       <Filter>Source Files\NE3</Filter>
     </ClInclude>
     <ClInclude Include="pipeline.h">
       <Filter>Source Files\NE3</Filter>
-    </ClInclude>
-    <ClInclude Include="applicationWindow.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="camera.h">
       <Filter>Header Files</Filter>
@@ -158,9 +128,6 @@
     <ClInclude Include="forward_structures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="frameresource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="gametime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -171,9 +138,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="path.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="stats.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
@@ -197,23 +161,8 @@
     <ClInclude Include="worldObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="xapp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sound.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sample1.h">
-      <Filter>Apps</Filter>
-    </ClInclude>
-    <ClInclude Include="Effects\copytexture.h">
-      <Filter>Effects</Filter>
-    </ClInclude>
-    <ClInclude Include="Effects\effectbase.h">
-      <Filter>Effects</Filter>
-    </ClInclude>
-    <ClInclude Include="Effects\posteffect.h">
-      <Filter>Effects</Filter>
     </ClInclude>
     <ClInclude Include="dds.h">
       <Filter>textures</Filter>
@@ -256,6 +205,9 @@
     </ClInclude>
     <ClInclude Include="update.h">
       <Filter>Source Files\NE3</Filter>
+    </ClInclude>
+    <ClInclude Include="Effects\effectbase.h">
+      <Filter>Effects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

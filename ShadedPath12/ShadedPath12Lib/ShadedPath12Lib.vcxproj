@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="applicationWindow.cpp" />
     <ClCompile Include="billboard.cpp" />
     <ClCompile Include="billboardapp.cpp" />
     <ClCompile Include="camera.cpp" />
@@ -28,20 +27,15 @@
     <ClCompile Include="dxglobal.cpp" />
     <ClCompile Include="dxmanager.cpp" />
     <ClCompile Include="effect.cpp" />
-    <ClCompile Include="Effects\copytexture.cpp" />
     <ClCompile Include="Effects\effectbase.cpp" />
     <ClCompile Include="emptyframes.cpp" />
     <ClCompile Include="frame.cpp" />
-    <ClCompile Include="frameresource.cpp" />
     <ClCompile Include="gametime.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="launcher.cpp" />
     <ClCompile Include="Matrices.cpp" />
     <ClCompile Include="pipeline.cpp" />
-    <ClCompile Include="rendercontrol.cpp" />
-    <ClCompile Include="sample1.cpp" />
     <ClCompile Include="simple2dframe.cpp" />
-    <ClCompile Include="stats.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -52,14 +46,10 @@
     <ClCompile Include="util.cpp" />
     <ClCompile Include="vr.cpp" />
     <ClCompile Include="world.cpp" />
-    <ClCompile Include="xapp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\ShadedPath12\rendercontrol.h" />
     <ClInclude Include="..\ShadedPath12\Resource.h" />
-    <ClInclude Include="..\ShadedPath12\targetver.h" />
     <ClInclude Include="..\ShadedPath12\winmain.h" />
-    <ClInclude Include="applicationWindow.h" />
     <ClInclude Include="billboard.h" />
     <ClInclude Include="billboardapp.h" />
     <ClInclude Include="camera.h" />
@@ -70,13 +60,10 @@
     <ClInclude Include="dxglobal.h" />
     <ClInclude Include="dxmanager.h" />
     <ClInclude Include="effect.h" />
-    <ClInclude Include="Effects\copytexture.h" />
     <ClInclude Include="Effects\effectbase.h" />
-    <ClInclude Include="Effects\posteffect.h" />
     <ClInclude Include="emptyframes.h" />
     <ClInclude Include="forward_structures.h" />
     <ClInclude Include="frame.h" />
-    <ClInclude Include="frameresource.h" />
     <ClInclude Include="gametime.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="launcher.h" />
@@ -86,10 +73,8 @@
     <ClInclude Include="path.h" />
     <ClInclude Include="pipeline.h" />
     <ClInclude Include="pre_proc.h" />
-    <ClInclude Include="sample1.h" />
     <ClInclude Include="simple2dframe.h" />
     <ClInclude Include="sound.h" />
-    <ClInclude Include="stats.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="texture.h" />
     <ClInclude Include="threads.h" />
@@ -98,7 +83,6 @@
     <ClInclude Include="vr.h" />
     <ClInclude Include="world.h" />
     <ClInclude Include="worldObject.h" />
-    <ClInclude Include="xapp.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\BillboardPS.hlsl">

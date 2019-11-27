@@ -137,7 +137,3 @@ private:
 	unordered_map<string, PakEntry> pak_content;
 };
 
-// log events to memory
-class MemLog {
-
-};
