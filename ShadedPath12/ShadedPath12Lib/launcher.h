@@ -10,6 +10,7 @@ public:
 	void start();
 	void stop();
 	//Simple2dFrame app;
-	BillboardApp app;
+	//BillboardApp app;
+	SkelApp app;
 };
 

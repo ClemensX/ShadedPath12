@@ -97,10 +97,11 @@ private:
 
 
 // base class for App Data
-// frame independent data like certex buffers
+// frame independent data like vertex buffers
 class EffectAppData {
 public:
 	virtual ~EffectAppData() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors
+	bool noUpdate = true;  // default is to signal that no update is necessary
 };
 
 // base class for Per Frame Data

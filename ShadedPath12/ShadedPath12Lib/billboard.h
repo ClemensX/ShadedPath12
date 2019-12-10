@@ -51,8 +51,12 @@ public:
 	// Inherited via Effect
 	BillboardEffectAppData* getInactiveAppDataSet(unsigned long &user) override
 	{
+		BillboardEffectAppData* inactive = &appDataSets[currentInactiveAppDataSet];
+		if (inactive->noUpdate) {
+			return inactive;
+		}
 		assert(updateQueue.has_inactiveLock(user));
-		return &appDataSets[currentInactiveAppDataSet];
+		return inactive;
 	};
 	BillboardEffectAppData* getActiveAppDataSet() override
 	{

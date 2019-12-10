@@ -102,6 +102,9 @@
     <ClCompile Include="Effects\effectbase.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
+    <ClCompile Include="skelapp.cpp">
+      <Filter>Apps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ShadedPath12\Resource.h">
@@ -208,6 +211,9 @@
     </ClInclude>
     <ClInclude Include="Effects\effectbase.h">
       <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="skelapp.h">
+      <Filter>Apps</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

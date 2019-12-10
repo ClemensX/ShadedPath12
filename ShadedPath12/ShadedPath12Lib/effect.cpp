@@ -130,13 +130,17 @@ void Effect::update(vector<Effect*> effectList, Pipeline* pipeline, unsigned lon
 	// initiating phase: trigger all effect update threads
 	for (Effect* eff : effectList) {
 		EffectAppData* inactiveDataSet = eff->getInactiveAppDataSet(user);
-		eff->updateQueue.push(inactiveDataSet, pipeline);
-		eff->updateQueue.releaseLockedInactiveDataSet(user);
+		if (!inactiveDataSet->noUpdate) {
+			eff->updateQueue.push(inactiveDataSet, pipeline);
+			eff->updateQueue.releaseLockedInactiveDataSet(user);
+		}
 	}
 	// synchronization phase: wait until all effect update threads have finished
 	for (Effect* eff : effectList) {
-		//EffectAppData* inactiveDataSet = eff->getInactiveAppDataSet(user);
-		eff->updateQueue.waitForEffectUpdateFinish();
+		EffectAppData* inactiveDataSet = eff->getInactiveAppDataSet(user);
+		if (!inactiveDataSet->noUpdate) {
+			eff->updateQueue.waitForEffectUpdateFinish();
+		}
 		//Log("GOTSCHA" << endl);
 	}
 }
