@@ -34,6 +34,7 @@
     <ClCompile Include="input.cpp" />
     <ClCompile Include="launcher.cpp" />
     <ClCompile Include="Matrices.cpp" />
+    <ClCompile Include="objects.cpp" />
     <ClCompile Include="pipeline.cpp" />
     <ClCompile Include="simple2dframe.cpp" />
     <ClCompile Include="skelapp.cpp" />
@@ -71,6 +72,7 @@
     <ClInclude Include="lights.h" />
     <ClInclude Include="Matrices.h" />
     <ClInclude Include="meshObject.h" />
+    <ClInclude Include="objects.h" />
     <ClInclude Include="path.h" />
     <ClInclude Include="pipeline.h" />
     <ClInclude Include="pre_proc.h" />

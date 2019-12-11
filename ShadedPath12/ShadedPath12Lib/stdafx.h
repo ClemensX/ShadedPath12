@@ -197,7 +197,7 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 // framework headers
 #include <XAudio2.h>
 #include <x3daudio.h>
-//#include "sound.h"
+#include "sound.h"
 #include "d3dx12.h"
 #include "d2d1_3.h"
 #include "dwrite_3.h"
@@ -214,11 +214,11 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 #include "texture.h"
 #include "gametime.h"
 #include "util.h"
-//#include "lights.h"
-////#include "animation.h"
-////#include "path.h"
+#include "lights.h"
+#include "animation.h"
+#include "path.h"
 #include "world.h"
-//#include "worldObject.h"
+#include "objects.h"
 #include "threads.h"
 //#include "rendercontrol.h"
 //#include "applicationWindow.h"
