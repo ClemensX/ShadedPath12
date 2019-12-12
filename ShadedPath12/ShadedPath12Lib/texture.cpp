@@ -176,8 +176,8 @@ void TextureStore::loadTexture(wstring filename, string id)
 
 	// Create synchronization objects and wait until assets have been uploaded to the GPU.
 	//Sleep(300);
-	EffectBase::createSyncPoint(updateFrameData, dx->commandQueue);
-	EffectBase::waitForSyncPoint(updateFrameData);
+	DXGlobal::createSyncPoint(&updateFrameData, dx->commandQueue);
+	DXGlobal::waitForSyncPoint(&updateFrameData);
 
 	//auto &f = frameData[frameIndex];
 	//createSyncPoint(f, xapp->commandQueue);

@@ -1,10 +1,4 @@
 
-struct FrameResourceSimple {
-	HANDLE fenceEvent;
-	ComPtr<ID3D12Fence> fence;
-	UINT64 fenceValue;
-};
-
 // WorldObjectEffect vertex definitions need to be known before objecteffect.h can be included,
 // so we define these Vertex structs here
 class WorldObjectVertex {

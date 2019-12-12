@@ -75,12 +75,6 @@
     <ClCompile Include="simple2dframe.cpp">
       <Filter>Apps</Filter>
     </ClCompile>
-    <ClCompile Include="effect.cpp">
-      <Filter>Source Files\NE3</Filter>
-    </ClCompile>
-    <ClCompile Include="billboard.cpp">
-      <Filter>Source Files\NE3</Filter>
-    </ClCompile>
     <ClCompile Include="billboardapp.cpp">
       <Filter>Apps</Filter>
     </ClCompile>
@@ -99,14 +93,20 @@
     <ClCompile Include="update.cpp">
       <Filter>Source Files\NE3</Filter>
     </ClCompile>
-    <ClCompile Include="Effects\effectbase.cpp">
-      <Filter>Effects</Filter>
-    </ClCompile>
     <ClCompile Include="skelapp.cpp">
       <Filter>Apps</Filter>
     </ClCompile>
     <ClCompile Include="objects.cpp">
       <Filter>Source Files\NE3</Filter>
+    </ClCompile>
+    <ClCompile Include="effect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="billboard.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="line.cpp">
+      <Filter>Effects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -191,12 +191,6 @@
     <ClInclude Include="simple2dframe.h">
       <Filter>Apps</Filter>
     </ClInclude>
-    <ClInclude Include="effect.h">
-      <Filter>Source Files\NE3</Filter>
-    </ClInclude>
-    <ClInclude Include="billboard.h">
-      <Filter>Source Files\NE3</Filter>
-    </ClInclude>
     <ClInclude Include="billboardapp.h">
       <Filter>Apps</Filter>
     </ClInclude>
@@ -212,14 +206,20 @@
     <ClInclude Include="update.h">
       <Filter>Source Files\NE3</Filter>
     </ClInclude>
-    <ClInclude Include="Effects\effectbase.h">
-      <Filter>Effects</Filter>
-    </ClInclude>
     <ClInclude Include="skelapp.h">
       <Filter>Apps</Filter>
     </ClInclude>
     <ClInclude Include="objects.h">
       <Filter>Source Files\NE3</Filter>
+    </ClInclude>
+    <ClInclude Include="effect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="billboard.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="line.h">
+      <Filter>Effects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

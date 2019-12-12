@@ -25,7 +25,7 @@ private:
 	ComPtr<ID3D12GraphicsCommandList> commandList;
 	ComPtr<ID3D12PipelineState> pipelineState;
 	ComPtr<ID3D12RootSignature> rootSignature;
-	FrameResourceSimple updateFrameData;
+	FenceData updateFrameData;
 	DXGlobal* dx = nullptr;
 	Util* util;
 };
