@@ -268,6 +268,7 @@ public:
 	virtual ~Effect() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors
 	//function<void(Frame*, Pipeline*)> updater = nullptr;
 	//void setFinishedFrameConsumer(function<void(Frame*, Pipeline*)> consumer) { this->consumer = consumer; }
+	Update effectDataUpdate;
 	UpdateQueue updateQueue;
 protected:
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
@@ -315,4 +316,6 @@ protected:
 	ComPtr<ID3D12RootSignature> rootSignature;
 	ComPtr<ID3D12CommandAllocator> updateCommandAllocator;
 	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
+	int currentInactiveAppDataSet = 0;
+	int currentActiveAppDataSet = -1;
 };

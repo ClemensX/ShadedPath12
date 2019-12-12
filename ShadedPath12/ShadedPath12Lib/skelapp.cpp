@@ -21,6 +21,7 @@ void SkelApp::init(HWND hwnd) {
 	pc.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	pc.setFrameBufferSize(FRAME_BUFFER_SIZE);
 	pc.setVRMode();
+	pc.setLineEffectUtilEnabled(true);
 #if defined(SINGLE_THREAD_MODE)
 	pc.setSingleThreadMode();
 #endif
@@ -53,17 +54,41 @@ void SkelApp::init(HWND hwnd) {
 	//afd->setData(&afd[0]);
 	for (int i = 0; i < FRAME_BUFFER_SIZE; i++) {
 		pipeline.afManager.setAppDataForSlot(&afd[i], i);
-		BillboardAppFrameData* fd = (BillboardAppFrameData*) pipeline.afManager.getAppDataForSlot(i);
+		SkelAppFrameData* fd = (SkelAppFrameData*) pipeline.afManager.getAppDataForSlot(i);
 		Dx2D* d2d = &fd->d2d;
 		FrameDataD2D *fd2d = &fd->d2d_fd;
 		FrameDataGeneral *fd_gen = &fd->fd_general;
 		FrameDataBillboard* fdb = &fd->billboard_fd;
+		FrameDataLine* fdl = &fd->line_fd;
 		dxGlobal.initFrameBufferResources(fd_gen, fd2d, i, &pipeline);
 		d2d->init(&dxGlobal, fd2d, fd_gen, &pipeline);
 		billboard.init(&dxGlobal, fdb, fd_gen, &pipeline);
+		lineEffect.init(&dxGlobal, fdl, fd_gen, &pipeline);
 	}
 	// store effects that will be called during data updates
 	updateEffectList.push_back((Effect*)&billboard);
+	updateEffectList.push_back((Effect*)&lineEffect);
+
+	// add some lines:
+	float aspectRatio = pipeline.getAspectRatio();
+	LineDef myLines[] = {
+		// start, end, color
+		{ XMFLOAT3(0.0f, 0.25f * aspectRatio, 0.0f), XMFLOAT3(0.25f, -0.25f * aspectRatio, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(0.25f, -0.25f * aspectRatio, 0.0f), XMFLOAT3(-0.25f, -0.25f * aspectRatio, 0.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(-0.25f, -0.25f * aspectRatio, 0.0f), XMFLOAT3(0.0f, 0.25f * aspectRatio, 0.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) }
+	};
+	vector<LineDef> lines;
+	// add all intializer objects to vector:
+	for_each(begin(myLines), end(myLines), [&lines](LineDef l) {lines.push_back(l); });
+
+	// add to inactive data set:
+	unsigned long lineUser = 0;
+	lineEffect.updateQueue.getLockedInactiveDataSet(lineUser);
+	lineEffect.add(lines, lineUser);
+	// activate changes:
+	lineEffect.activateAppDataSet(lineUser);
+	lineEffect.updateQueue.releaseLockedInactiveDataSet(lineUser);
+
 	// test texture packs:
 	util.initPakFiles();
 	textureStore.init(&dxGlobal, &util);
@@ -80,16 +105,15 @@ void SkelApp::init(HWND hwnd) {
 	BillboardElement be2{ {0.5f, 0.1f, 2.1f}, {0.2f, 0.0f, -1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
 	//BillboardElement be3{ {-3.5f, 0.0f, 14.0f}, {0.0f, 0.0f, 1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
 	BillboardElement be3{ {0.0f, 0.0f, 0.1f}, {0.0f, 0.0f, 1.0f, 0.0f}, {0.5f, 0.5f} }; // pos, normal, size
-	// add to inactive data set:
-	unsigned long user = 0;
-	billboard.updateQueue.getLockedInactiveDataSet(user);
-	billboard.add("markings", be1, user);
-	billboard.add("markings", be2, user);
-	billboard.add("markings", be3, user);
+	unsigned long billboardUser = 0;
+	billboard.updateQueue.getLockedInactiveDataSet(billboardUser);
+	billboard.add("markings", be1, billboardUser);
+	billboard.add("markings", be2, billboardUser);
+	billboard.add("markings", be3, billboardUser);
 
 	// activate changes:
-	billboard.activateAppDataSet(user);
-	billboard.updateQueue.releaseLockedInactiveDataSet(user);
+	billboard.activateAppDataSet(billboardUser);
+	billboard.updateQueue.releaseLockedInactiveDataSet(billboardUser);
 
 	TextureInfo* GrassTex, * HouseTex, * MetalTex, * WormTex, * PlanetTex, * Meteor1Tex, * AxistestTex;
 	MetalTex = textureStore.getTexture("metal");
@@ -127,7 +151,7 @@ void SkelApp::presentFrame(Frame* frame, Pipeline* pipeline) {
 	}
 
 	if (dxGlobal.isOutputWindowAvailable()) {
-		BillboardAppFrameData* afd = (BillboardAppFrameData*)frame->frameData;
+		SkelAppFrameData* afd = (SkelAppFrameData*)frame->frameData;
 		FrameDataGeneral* fdg = &afd->fd_general;
 		dxGlobal.present2Window(pipeline, frame);
 		dxGlobal.submitVR(frame, pipeline, fdg);
@@ -147,7 +171,7 @@ void SkelApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 	input->applyTicksToCameraPosition(ticks, &c, 0.011f);
 	input->applyMouseEvents(&c, 0.003f); // 0.003f
 	// draw effects;
-	BillboardAppFrameData* afd = (BillboardAppFrameData*)frame->frameData;
+	SkelAppFrameData* afd = (SkelAppFrameData*)frame->frameData;
 	FrameDataGeneral* fdg = &afd->fd_general;
 	FrameDataD2D* fd = &afd->d2d_fd;
 	Dx2D* d2d = &afd->d2d;

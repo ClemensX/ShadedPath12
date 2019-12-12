@@ -10,6 +10,7 @@ struct SkelAppFrameData : AppFrameDataBase
 	FrameDataGeneral fd_general;
 	FrameDataD2D d2d_fd;
 	FrameDataBillboard billboard_fd;
+	FrameDataLine line_fd;
 	Dx2D d2d;
 
 	// Inherited via AppFrameDataBase
@@ -45,12 +46,13 @@ private:
 	void update(Pipeline* pipeline);
 	Pipeline pipeline;
 	DXGlobal dxGlobal;
-	BillboardAppFrameData afd[FRAME_BUFFER_SIZE];
+	SkelAppFrameData afd[FRAME_BUFFER_SIZE];
 	boolean isAutomatedTestMode = false;
 
 	// Effects and other framework classes:
 	TextureStore textureStore;
 	Billboard billboard;
+	LinesEffect lineEffect;
 	Util util;
 	Camera c,c2; //cameras need to be local to threads, copy these in effects
 	Input* input = nullptr;
