@@ -131,7 +131,7 @@ void LinesEffect::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataLine* fdl, 
 		ID3D12GraphicsCommandList* commandList = fdg->commandListRenderTexture.Get();
 		ThrowIfFailed(fdg->commandAllocatorRenderTexture->Reset());
 		ThrowIfFailed(commandList->Reset(fdg->commandAllocatorRenderTexture.Get(), pipelineState.Get()));
-		resourceStateHelper->toState(fdg->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+		//resourceStateHelper->toState(fdg->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fdg->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), 0, fdg->rtvDescriptorSizeRenderTexture);
 
 		// prepare viewport and scissor rect:
@@ -210,7 +210,7 @@ void LinesEffect::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataLine* fdl, 
 				XMStoreFloat4x4(&cbv.wvp, fdg->rightCam.worldViewProjection());
 				memcpy(fdl->cbvGPUDest2, &cbv, sizeof(cbv));
 			}
-			commandList->DrawInstanced(d->numVericesToDraw, 1, 0, 0);
+			commandList->DrawInstanced(d->numVericesToDraw+5000, 1, 0, 0);
 		}
 
 		// execute commands:
