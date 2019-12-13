@@ -307,9 +307,9 @@ protected:
 		ComPtr<ID3D12GraphicsCommandList>& commandList,
 		D3D12_INDEX_BUFFER_VIEW& indexBufferView
 	);
-	ComPtr<ID3D12Resource> vertexBuffer;
-	ComPtr<ID3D12Resource> vertexBufferUpload;
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	//ComPtr<ID3D12Resource> vertexBuffer;
+	//ComPtr<ID3D12Resource> vertexBufferUpload;
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 	// queue to handle updates to constant data
 	FenceData updateFenceData;
 	ComPtr<ID3D12PipelineState> pipelineState;

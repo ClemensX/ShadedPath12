@@ -176,6 +176,7 @@ void SkelApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 	FrameDataD2D* fd = &afd->d2d_fd;
 	Dx2D* d2d = &afd->d2d;
 	FrameDataBillboard* fdb = &afd->billboard_fd;
+	FrameDataLine* fdl = &afd->line_fd;
 
 	dxGlobal.waitAndReset(fdg);
 	dxGlobal.startStatisticsDraw(fdg);
@@ -185,6 +186,7 @@ void SkelApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 	//Log("cam x y z: " << c.pos.x << " " << c.pos.y << " " << c.pos.z << endl);
 	dxGlobal.prepareCameras(frame, pipeline, &c, &c2);
 	billboard.draw(frame, fdg, fdb, pipeline);
+	lineEffect.draw(frame, fdg, fdl, pipeline);
 	dxGlobal.prepare2DRendering(frame, pipeline, fd);
 
 	d2d->drawStatisticsOverlay(frame, pipeline);

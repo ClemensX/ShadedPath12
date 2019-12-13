@@ -67,11 +67,168 @@ void LinesEffect::init(DXGlobal* a, FrameDataLine* fdl, FrameDataGeneral* fd_gen
 	memcpy(fdl->cbvGPUDest, &cbv, sizeof(cbv));
 }
 
-void LinesEffect::addOneTime(vector<LineDef>& linesToAdd) {
-	//add(linesToAdd);
+void LinesEffect::activateAppDataSet(unsigned long user)
+{
+	//unique_lock<mutex> lock(dataSetMutex);
+	auto lea = (LineEffectAppData*)getInactiveAppDataSet(user);
+	if (!dxGlobal->pipeline->isShutdown()) {
+		if (true /*dirty*/) {
+			//if (xapp().pGraphicsAnalysis != nullptr) xapp().pGraphicsAnalysis->BeginCapture();
+			// recreate vertex input buffer
+			dirty = false;
+			vector<Vertex> all;
+			// handle fixed lines:
+			for (LineDef& line : lea->lines) {
+				Vertex v1, v2;
+				v1.color = line.color;
+				v1.pos = line.start;
+				v2.color = line.color;
+				v2.pos = line.end;
+				all.push_back(v1);
+				all.push_back(v2);
+			}
+			// just add the one-time lines at this point (may be extra function later?
+			for (LineDef& line : lea->oneTimeLines) {
+				Vertex v1, v2;
+				v1.color = line.color;
+				v1.pos = line.start;
+				v2.color = line.color;
+				v2.pos = line.end;
+				all.push_back(v1);
+				all.push_back(v2);
+			}
+			lea->oneTimeLines.clear();
+			// one-time lines end
+			lea->numVericesToDraw = (UINT)all.size();
+			size_t vertexBufferSize = sizeof(Vertex) * all.size();//lines.size() * 2;
+
+			BufferResource* res = ResourceStore::getInstance()->getSlot();
+			lea->bufferResource = res;
+			createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(),
+				L"lines", res->vertexBuffer, res->vertexBufferUpload, updateCommandAllocator, updateCommandList, res->vertexBufferView);
+
+			// Close the command list and execute it to begin the vertex buffer copy into
+			// the default heap.
+			ThrowIfFailed(updateCommandList->Close());
+			ID3D12CommandList* ppCommandListsUpload[] = { updateCommandList.Get() };
+			dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandListsUpload), ppCommandListsUpload);
+			dxGlobal->createSyncPoint(&updateFenceData, dxGlobal->commandQueue);
+			dxGlobal->waitForSyncPoint(&updateFenceData);
+			ResourceStore::getInstance()->freeUnusedSlots(res->generation - 1);
+		}
+	}
+	// switch inactive and active data sets:
+	currentActiveAppDataSet = (currentActiveAppDataSet + 1) % 2;
+	currentInactiveAppDataSet = (currentInactiveAppDataSet + 1) % 2;
+}
+
+void LinesEffect::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataLine* fdl, Pipeline* pipeline)
+{
+	auto config = pipeline->getPipelineConfig();
+	dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
+	{
+		// prepare drawing:
+		ID3D12GraphicsCommandList* commandList = fdg->commandListRenderTexture.Get();
+		ThrowIfFailed(fdg->commandAllocatorRenderTexture->Reset());
+		ThrowIfFailed(commandList->Reset(fdg->commandAllocatorRenderTexture.Get(), pipelineState.Get()));
+		resourceStateHelper->toState(fdg->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fdg->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), 0, fdg->rtvDescriptorSizeRenderTexture);
+
+		// prepare viewport and scissor rect:
+		int width = config.backbufferWidth;
+		int height = config.backbufferHeight;
+		D3D12_VIEWPORT viewport;
+		viewport.MinDepth = 0.0f;
+		viewport.TopLeftX = 0.0f;
+		viewport.TopLeftY = 0.0f;
+		viewport.Width = static_cast<float>(width);
+		viewport.Height = static_cast<float>(height);
+		viewport.MaxDepth = 1.0f;
+
+		D3D12_RECT scissorRect;
+		scissorRect.left = 0;
+		scissorRect.top = 0;
+		scissorRect.right = static_cast<LONG>(width);
+		scissorRect.bottom = static_cast<LONG>(height);
+
+		// Set necessary state.
+		commandList->SetGraphicsRootSignature(rootSignature.Get());
+		commandList->RSSetViewports(1, &fdg->eyes.viewports[0]);
+		commandList->RSSetScissorRects(1, &fdg->eyes.scissorRects[0]);
+
+		// Set CBV
+		commandList->SetGraphicsRootConstantBufferView(0, fdl->cbvResource->GetGPUVirtualAddress());
+
+		CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(fdg->dsvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart());
+		fdg->commandListRenderTexture->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+		ID3D12Resource* resource = fdg->renderTarget.Get();
+
+		// prepare cbv:
+		if (pipeline->isHMD()) {
+#if defined(_SVR_)
+			//pipeline->getVR()->UpdateHMDMatrixPose(); // cam == null means no cam movement with keyboard
+			pipeline->getVR()->UpdateHMDMatrixPose(&fdg->leftCam);
+			pipeline->getVR()->SetupCameras();
+			Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Left);
+			frame->wvpTime = pipeline->gametime.getTimeAbs();
+			frame->wvpId = pipeline->getNextWVPNumber();
+			memcpy(&cbv.wvp, &wvp, sizeof(cbv.wvp));
+			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
+#endif
+		}
+		else {
+			XMStoreFloat4x4(&cbv.wvp, fdg->leftCam.worldViewProjection());
+			frame->wvpTime = pipeline->gametime.getTimeAbs();
+			frame->wvpId = pipeline->getNextWVPNumber();
+			memcpy(fdl->cbvGPUDest, &cbv, sizeof(cbv));
+		}
+		//Log("size my wvp: " << sizeof(cbv.wvp) << endl);
+		//Log("size Steam wvp: " << sizeof(Matrix4) << endl);
+		//assert(sizeof(cbv.wvp) == sizeof(Matrix4));
+
+		// draw
+		auto d = (LineEffectAppData*)getActiveAppDataSet();
+
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+		commandList->IASetVertexBuffers(0, 1, &d->bufferResource->vertexBufferView);
+		//auto numVertices = lines.size() * 2;
+		// now draw all the lines
+		commandList->DrawInstanced(d->numVericesToDraw, 1, 0, 0);
+		if (true && pipeline->isVR()) {
+			commandList->SetGraphicsRootConstantBufferView(0, fdl->cbvResource2->GetGPUVirtualAddress());
+			// draw right eye:
+			commandList->RSSetViewports(1, &fdg->eyes.viewports[1]);
+			commandList->RSSetScissorRects(1, &fdg->eyes.scissorRects[1]);
+			if (pipeline->isHMD()) {
+#if defined(_SVR_)
+				Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Right);
+				memcpy(&cbv.wvp, &wvp, sizeof(cbv.wvp));
+				memcpy(fdb->cbvGPUDest2, &cbv, sizeof(cbv));
+#endif
+			}
+			else {
+				XMStoreFloat4x4(&cbv.wvp, fdg->rightCam.worldViewProjection());
+				memcpy(fdl->cbvGPUDest2, &cbv, sizeof(cbv));
+			}
+			commandList->DrawInstanced(d->numVericesToDraw, 1, 0, 0);
+		}
+
+		// execute commands:
+		ThrowIfFailed(commandList->Close());
+		ID3D12CommandList* ppCommandLists[] = { commandList };
+
+		dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+		dxGlobal->waitGPU(fdg, dxGlobal->commandQueue);
+		commandList = fdg->commandListRenderTexture.Get();
+		releaseActiveAppDataSet(d);
+	}
+}
+
+void LinesEffect::addOneTime(vector<LineDef>& linesToAdd, unsigned long& user) {
+	auto& lines = getInactiveAppDataSet(user)->oneTimeLines;
 	if (linesToAdd.size() == 0 && lines.size() == 0)
 		return;
-	addLines.insert(addLines.end(), linesToAdd.begin(), linesToAdd.end());
+	lines.insert(lines.end(), linesToAdd.begin(), linesToAdd.end());
 	dirty = true;
 }
 
@@ -84,10 +241,10 @@ void LinesEffect::add(vector<LineDef>& linesToAdd, unsigned long& user) {
 }
 
 void LinesEffect::update() {
-	if (disabled) return;
-	//dirty = true; // uncomment to force CBV update every frame
-	LinesEffect* l = this;
-	//auto fut = async([l] { return l->updateTask(); });
+	//if (disabled) return;
+	////dirty = true; // uncomment to force CBV update every frame
+	//LinesEffect* l = this;
+	////auto fut = async([l] { return l->updateTask(); });
 }
 /*
 void LinesEffect::updateTask()
@@ -149,9 +306,9 @@ void LinesEffect::updateTask()
 */
 void LinesEffect::updateCBV(CBV newCBV)
 {
-	updatedCBV = newCBV;
-	signalUpdateCBV = true;
-	//cbv.wvp._11 += 2.0f;
+	//updatedCBV = newCBV;
+	//signalUpdateCBV = true;
+	////cbv.wvp._11 += 2.0f;
 }
 
 void LinesEffect::destroy()
