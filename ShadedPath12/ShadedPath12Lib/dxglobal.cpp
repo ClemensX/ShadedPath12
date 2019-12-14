@@ -98,7 +98,8 @@ void DXGlobal::init()
 		// Suppress messages based on their severity level
 		D3D12_MESSAGE_SEVERITY Severities[] =
 		{
-			D3D12_MESSAGE_SEVERITY_INFO
+			D3D12_MESSAGE_SEVERITY_MESSAGE
+			//D3D12_MESSAGE_SEVERITY_INFO
 			//D3D12_MESSAGE_SEVERITY_WARNING
 		};
 
@@ -115,7 +116,7 @@ void DXGlobal::init()
 		//NewFilter.DenyList.pCategoryList = Categories;
 		NewFilter.DenyList.NumSeverities = _countof(Severities);
 		NewFilter.DenyList.pSeverityList = Severities;
-		NewFilter.DenyList.NumIDs = _countof(DenyIds);
+		NewFilter.DenyList.NumIDs = 0; //_countof(DenyIds);
 		NewFilter.DenyList.pIDList = DenyIds;
 
 		ThrowIfFailed(pInfoQueue->PushStorageFilter(&NewFilter));

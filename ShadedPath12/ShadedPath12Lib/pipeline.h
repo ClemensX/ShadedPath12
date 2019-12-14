@@ -80,11 +80,16 @@ public:
 	size_t getFrameBufferSize() { return frameBufferSize; };
 	// all drawing takes place in backbuffer - output to whatever size the window currently has is only last step
 	unsigned int backbufferWidth = 0, backbufferHeight = 0;
-	float aspectRatio;
 	// limit update thread to 30 calls / second
 	void setMaxUpdatesPerSecond(float maxps) { updatesPerSecond = maxps; };
 	float getMaxUpdatesPerSecond() { return updatesPerSecond; };
+	void setLineEffectUtilEnabled(bool enable) {
+		this->lineEffectUtilEnabled = enable;
+	};
+	bool isEnabledLineEffectUtil() { return lineEffectUtilEnabled; };
+
 private:
+	bool lineEffectUtilEnabled = false;
 	// world size in absolute units around origin, e.g. x is from -x to x
 	float sizex = 0.0f, sizey = 0.0f, sizez = 0.0f;
 	int wait_timeout_ms = 100; // check for interruption 10 times per second
@@ -165,8 +170,14 @@ public:
 	GameTime gametime;
 	ThreadGroup* getThreadGroup() { return &threads; };
 	float getMaxUpdatesPerSecond() { return updatesPerSecond; };
+	void setLineEffectUtilEnabled(bool enable) {
+		this->lineEffectUtilEnabled = enable;
+	};
+	bool isEnabledLineEffectUtil() { return lineEffectUtilEnabled; };
+	float getAspectRatio() { return aspectRatio; };
 
 private:
+	bool lineEffectUtilEnabled = false;
 	bool vrMode = false; // VR == true: 2 render two half images
 	bool hmdMode = false;  // hmdMode == true: render to HMD
 	bool singleThreadMode = false; // use only one render thread if true
@@ -203,6 +214,8 @@ private:
 	double lastWVPTime = 0.0f; // time of WVP matrix generation for last rendered frame
 	long long wvpId = 0L;
 	long long lastWvpId = 0L;
+	float aspectRatio; // set in init()
+
 protected:
 };
 

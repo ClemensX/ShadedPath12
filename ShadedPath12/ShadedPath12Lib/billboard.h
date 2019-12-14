@@ -51,8 +51,12 @@ public:
 	// Inherited via Effect
 	BillboardEffectAppData* getInactiveAppDataSet(unsigned long &user) override
 	{
+		BillboardEffectAppData* inactive = &appDataSets[currentInactiveAppDataSet];
+		if (inactive->noUpdate) {
+			return inactive;
+		}
 		assert(updateQueue.has_inactiveLock(user));
-		return &appDataSets[currentInactiveAppDataSet];
+		return inactive;
 	};
 	BillboardEffectAppData* getActiveAppDataSet() override
 	{
@@ -86,15 +90,12 @@ public:
 	~Billboard() {
 	};
 
-	Update effectDataUpdate;
 
-	mutex dataSetMutex; // to synchronize updates to billboard data (active/inactive)
+	//mutex dataSetMutex; // to synchronize updates to billboard data (active/inactive)
 private:
 	CBV cbv;
 	vector<Vertex>& recreateVertexBufferContent(vector<Vertex>& vertices, BillboardEffectAppData *);
 	void createBillbordVertexData(Vertex* cur_billboard, BillboardElement& bb);
 	BillboardEffectAppData appDataSets[2];
-	int currentInactiveAppDataSet = 0;
-	int currentActiveAppDataSet = -1;
 };
 

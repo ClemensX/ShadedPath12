@@ -81,9 +81,9 @@ void Billboard::init(DXGlobal* a, FrameDataBillboard* fdb, FrameDataGeneral* fd_
 	dxGlobal = a;
 
 	// Create command allocators and command lists for each frame.
-	static LPCWSTR fence_names[DXManager::FrameCount] = {
-		L"fence_Billboard_0", L"fence_Billboard_1", L"fence_Billboard_2"
-	};
+	//static LPCWSTR fence_names[DXManager::FrameCount] = {
+	//	L"fence_Billboard_0", L"fence_Billboard_1", L"fence_Billboard_2"
+	//};
 	createConstantBuffer((UINT) sizeof(cbv), L"Billboard_cbv_resource", fdb);
 	// set cbv data:
 	XMMATRIX ident = XMMatrixIdentity();

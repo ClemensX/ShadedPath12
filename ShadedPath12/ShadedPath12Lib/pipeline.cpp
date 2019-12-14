@@ -27,6 +27,7 @@ void Pipeline::init()
 	if (pc.backbufferWidth <= 0) Error(L"backbuffer width cannot be 0");
 	if (pc.backbufferHeight <= 0) Error(L"backbuffer height cannot be 0");
 
+	aspectRatio = static_cast<float>(pc.backbufferWidth) / static_cast<float>(pc.backbufferHeight);
 	frameBuffer.resize(getPipelineConfig().getFrameBufferSize());
 	Log("Pipeline::init" << endl);
 	LogF("Pipeline::init with LogF" << endl);
@@ -38,6 +39,7 @@ void Pipeline::init()
 	gametime.init(pc.getGamedayFactor());
 	SetThreadDescription(GetCurrentThread(), L"main_pipeline_thread");
 	updatesPerSecond = pc.getMaxUpdatesPerSecond();
+	setLineEffectUtilEnabled(pc.isEnabledLineEffectUtil());
 }
 
 void Pipeline::finallyProcessed(Frame* frame)

@@ -27,15 +27,17 @@
     <ClCompile Include="dxglobal.cpp" />
     <ClCompile Include="dxmanager.cpp" />
     <ClCompile Include="effect.cpp" />
-    <ClCompile Include="Effects\effectbase.cpp" />
     <ClCompile Include="emptyframes.cpp" />
     <ClCompile Include="frame.cpp" />
     <ClCompile Include="gametime.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="launcher.cpp" />
+    <ClCompile Include="line.cpp" />
     <ClCompile Include="Matrices.cpp" />
+    <ClCompile Include="objects.cpp" />
     <ClCompile Include="pipeline.cpp" />
     <ClCompile Include="simple2dframe.cpp" />
+    <ClCompile Include="skelapp.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -60,7 +62,6 @@
     <ClInclude Include="dxglobal.h" />
     <ClInclude Include="dxmanager.h" />
     <ClInclude Include="effect.h" />
-    <ClInclude Include="Effects\effectbase.h" />
     <ClInclude Include="emptyframes.h" />
     <ClInclude Include="forward_structures.h" />
     <ClInclude Include="frame.h" />
@@ -68,12 +69,15 @@
     <ClInclude Include="input.h" />
     <ClInclude Include="launcher.h" />
     <ClInclude Include="lights.h" />
+    <ClInclude Include="line.h" />
     <ClInclude Include="Matrices.h" />
     <ClInclude Include="meshObject.h" />
+    <ClInclude Include="objects.h" />
     <ClInclude Include="path.h" />
     <ClInclude Include="pipeline.h" />
     <ClInclude Include="pre_proc.h" />
     <ClInclude Include="simple2dframe.h" />
+    <ClInclude Include="skelapp.h" />
     <ClInclude Include="sound.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="texture.h" />

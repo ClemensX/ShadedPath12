@@ -1,6 +1,13 @@
 # ShadedPath12
 DirectX 12 Framework and Applications for Oculus Rift
 
+## HowTo
+
+Create new application: 
+* create .h / .cpp in folder ShadedPath12Lib
+* add include to .h at the end of stdafx.h
+* Change Launcher to use new application class: In launcher.cpp define instance 'app'. Comment out other app instances - only one can be active
+
 ## Upcoming Changes in this branch
 
 * Abandon Oculus PC SDK in favor of OpenVR: While I liked the concept of using the lowest level API there is for Oculus Rift I now decided that going to OpenVR and support all PC HMDs at once makes more sense. As far as I can see DirectX 12 support is there and probably a lot more developers use OpenVR than Oculus PC SDK. Seems like a low enough C++ API so that I don't fear losing any speed. Hopefully it is better documented than Oculus PC SDK. It will be a long time until I restart with VR code anyway - so this decision will be again reviewed later, when the new engine is matured far enough to include VR functionality.
