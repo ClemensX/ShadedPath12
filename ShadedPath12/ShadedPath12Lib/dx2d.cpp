@@ -270,6 +270,7 @@ void Dx2D::drawStatisticsOverlay(Frame* frame, Pipeline* pipeline)
 	// draw to texture:
 	d2RenderTarget->BeginDraw();
 	auto desc = d2d->getTextureDesc();
+	// drawtext will produce resource reallocations (no workaround so far)
 	d2RenderTarget->DrawText(
 		s.str().c_str(),
 		(UINT32)s.str().length(),
