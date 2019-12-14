@@ -473,10 +473,13 @@ void DXGlobal::present2Window(Pipeline* pipeline, Frame* frame)
 	lastPresentTime = t1;
 	//LogF("ms since last Present: " << msSinceLastPresent << endl);
 	ThemedTimer::getInstance()->add("SwapChain", msSinceLastPresent);
+	if (msSinceLastPresent > 10000) {
+		PIXSetMarker(PIX_COLOR_INDEX(2), "was LONG Delay");
+	}
 	ThrowIfFailedWithDevice(swapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING), device.Get());
 }
 
-void DXGlobal::startStatisticsDraw(FrameDataGeneral* fd)
+void DXGlobal::startStatisticsDraw(FrameDataGeneral* fd, Frame* frame)
 {
 	// determine current thread index:
 	int index = 0; // 0 is default in case we cannot parse thread number at end of thread description
@@ -494,7 +497,8 @@ void DXGlobal::startStatisticsDraw(FrameDataGeneral* fd)
 	}
 
 	ID3D12GraphicsCommandList* commandList = fd->commandListRenderTexture.Get();
-	PIXBeginEvent(commandList, PIX_COLOR_INDEX(index), "draw thread %d", index);
+	//PIXBeginEvent(commandList, PIX_COLOR_INDEX(index), "draw thread %d", index);
+	PIXBeginEvent(PIX_COLOR_INDEX(index), "draw_frame thread %d # %lld", index, frame->absFrameNumber);
 }
 
 void DXGlobal::endStatisticsDraw(FrameDataGeneral* fdg)

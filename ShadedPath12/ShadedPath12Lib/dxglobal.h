@@ -71,7 +71,7 @@ public:
 	void submitVR(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg);
 	VR* vr = nullptr;
 	// PIX instrumentation:
-	void startStatisticsDraw(FrameDataGeneral* fd);
+	void startStatisticsDraw(FrameDataGeneral* fd, Frame* frame);
 	void endStatisticsDraw(FrameDataGeneral* fd);
 	Pipeline* pipeline = nullptr;
 
