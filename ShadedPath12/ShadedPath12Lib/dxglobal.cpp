@@ -604,6 +604,10 @@ void DXGlobal::copyTextureToCPUAndExport(Frame* frame, Pipeline* pipeline, strin
 
 void DXGlobal::prepareCameras(Frame* frame, Pipeline* pipeline, const Camera* cleft, const Camera* cright)
 {
+#if defined(_SVR_)
+	pipeline->getVR()->UpdateHMDMatrixPose(cleft);
+	pipeline->getVR()->SetupCameras();
+#endif
 	FrameDataGeneral* fd = pipeline->afManager.getAppDataForSlot(frame->slot)->getFrameDataGeneral();
 	fd->leftCam = *cleft;
 	if (cright != nullptr) {
@@ -611,6 +615,8 @@ void DXGlobal::prepareCameras(Frame* frame, Pipeline* pipeline, const Camera* cl
 		fd->rightCam.pos.x += 0.064f; // 64mm average pupil distance
 		//fd->rightCam.pos.y += 5.0f;
 	}
+	frame->wvpTime = pipeline->gametime.getTimeAbs();
+	frame->wvpId = pipeline->getNextWVPNumber();
 }
 
 void DXGlobal::submitVR(Frame* frame, Pipeline* pipeline, FrameDataGeneral *fdg)

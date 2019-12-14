@@ -179,7 +179,7 @@ void SkelApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 	FrameDataLine* fdl = &afd->line_fd;
 
 	dxGlobal.waitAndReset(fdg);
-	dxGlobal.startStatisticsDraw(fdg);
+	dxGlobal.startStatisticsDraw(fdg, frame);
 	dxGlobal.clearRenderTexture(fdg);
 	//cout << "  start draw() for frame: " << frame->absFrameNumber << " slot " << frame->slot << endl;
 	c2 = c; // TODO copy camera for now - get from HMD later

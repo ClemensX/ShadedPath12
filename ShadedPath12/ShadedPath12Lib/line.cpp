@@ -102,7 +102,7 @@ void LinesEffect::activateAppDataSet(unsigned long user)
 			lea->numVericesToDraw = (UINT)all.size();
 			size_t vertexBufferSize = sizeof(Vertex) * all.size();//lines.size() * 2;
 
-			BufferResource* res = ResourceStore::getInstance()->getSlot();
+			BufferResource* res = resourceStore.getSlot();
 			lea->bufferResource = res;
 			createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(),
 				L"lines", res->vertexBuffer, res->vertexBufferUpload, updateCommandAllocator, updateCommandList, res->vertexBufferView);
@@ -114,7 +114,7 @@ void LinesEffect::activateAppDataSet(unsigned long user)
 			dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandListsUpload), ppCommandListsUpload);
 			dxGlobal->createSyncPoint(&updateFenceData, dxGlobal->commandQueue);
 			dxGlobal->waitForSyncPoint(&updateFenceData);
-			ResourceStore::getInstance()->freeUnusedSlots(res->generation - 1);
+			resourceStore.freeUnusedSlots(res->generation - 1);
 		}
 	}
 	// switch inactive and active data sets:
@@ -131,7 +131,7 @@ void LinesEffect::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataLine* fdl, 
 		ID3D12GraphicsCommandList* commandList = fdg->commandListRenderTexture.Get();
 		ThrowIfFailed(fdg->commandAllocatorRenderTexture->Reset());
 		ThrowIfFailed(commandList->Reset(fdg->commandAllocatorRenderTexture.Get(), pipelineState.Get()));
-		//resourceStateHelper->toState(fdg->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
+		resourceStateHelper->toState(fdg->renderTargetRenderTexture.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, commandList);
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(fdg->rtvHeapRenderTexture->GetCPUDescriptorHandleForHeapStart(), 0, fdg->rtvDescriptorSizeRenderTexture);
 
 		// prepare viewport and scissor rect:
@@ -167,19 +167,13 @@ void LinesEffect::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataLine* fdl, 
 		if (pipeline->isHMD()) {
 #if defined(_SVR_)
 			//pipeline->getVR()->UpdateHMDMatrixPose(); // cam == null means no cam movement with keyboard
-			pipeline->getVR()->UpdateHMDMatrixPose(&fdg->leftCam);
-			pipeline->getVR()->SetupCameras();
 			Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Left);
-			frame->wvpTime = pipeline->gametime.getTimeAbs();
-			frame->wvpId = pipeline->getNextWVPNumber();
 			memcpy(&cbv.wvp, &wvp, sizeof(cbv.wvp));
-			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
+			memcpy(fdl->cbvGPUDest, &cbv, sizeof(cbv));
 #endif
 		}
 		else {
 			XMStoreFloat4x4(&cbv.wvp, fdg->leftCam.worldViewProjection());
-			frame->wvpTime = pipeline->gametime.getTimeAbs();
-			frame->wvpId = pipeline->getNextWVPNumber();
 			memcpy(fdl->cbvGPUDest, &cbv, sizeof(cbv));
 		}
 		//Log("size my wvp: " << sizeof(cbv.wvp) << endl);
@@ -203,14 +197,14 @@ void LinesEffect::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataLine* fdl, 
 #if defined(_SVR_)
 				Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Right);
 				memcpy(&cbv.wvp, &wvp, sizeof(cbv.wvp));
-				memcpy(fdb->cbvGPUDest2, &cbv, sizeof(cbv));
+				memcpy(fdl->cbvGPUDest2, &cbv, sizeof(cbv));
 #endif
 			}
 			else {
 				XMStoreFloat4x4(&cbv.wvp, fdg->rightCam.worldViewProjection());
 				memcpy(fdl->cbvGPUDest2, &cbv, sizeof(cbv));
 			}
-			commandList->DrawInstanced(d->numVericesToDraw+5000, 1, 0, 0);
+			commandList->DrawInstanced(d->numVericesToDraw, 1, 0, 0);
 		}
 
 		// execute commands:

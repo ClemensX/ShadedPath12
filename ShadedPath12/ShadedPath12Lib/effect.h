@@ -21,19 +21,15 @@ struct BufferResource {
 	}
 };
 
+// each effect needs its own resource store
+// because update frequency may be quite different
 class ResourceStore {
 public:
-	//singleton:
-	static ResourceStore* getInstance() {
-		static ResourceStore singleton;
-		return &singleton;
-	};
 
 	// thread save public methods:
 
 	// find free slot, create one if necessary 
 	BufferResource* getSlot() {
-		unique_lock<mutex> lock(monitorMutex);
 		static int generation = 0;
 		BufferResource* res = findFreeSlot();
 		if (res == nullptr) {
@@ -51,7 +47,6 @@ public:
 
 	// return all free slots (useCount == 0) with given generation or lower
 	void freeUnusedSlots(int maxGeneration) {
-		unique_lock<mutex> lock(monitorMutex);
 		for (auto& res : resourceList) {
 			if (!res.is_free && res.useCounter == 0 && res.generation <= maxGeneration) {
 				if (res.vertexBuffer != nullptr) {
@@ -70,11 +65,6 @@ public:
 		}
 	}
 
-	//// return slot to pool. Slots are never destroyed and can be reused after returning
-	//void returnSlot(BufferResource* res) {
-	//	unique_lock<mutex> lock(monitorMutex);
-	//	res->is_free = true;
-	//}
 private:
 
 	// find next free slot - null if none is available
@@ -88,11 +78,9 @@ private:
 		return nullptr;
 	}
 
-	mutex monitorMutex;
 	list<BufferResource> resourceList;
-	ResourceStore() {};									// prevent creation outside this class
-	ResourceStore(const ResourceStore&);				// prevent creation via copy-constructor
-	ResourceStore& operator = (const ResourceStore&);	// prevent instance copies
+	//ResourceStore(const ResourceStore&);				// prevent creation via copy-constructor
+	//ResourceStore& operator = (const ResourceStore&);	// prevent instance copies
 };
 
 
@@ -318,4 +306,5 @@ protected:
 	ComPtr<ID3D12GraphicsCommandList> updateCommandList;
 	int currentInactiveAppDataSet = 0;
 	int currentActiveAppDataSet = -1;
+	ResourceStore resourceStore;
 };

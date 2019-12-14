@@ -1430,7 +1430,7 @@ void VR::drawHand(bool isLeft)
    m[0][3] = x
 */
 #if defined(_SVR_)
-void VR::UpdateHMDMatrixPose(Camera* cam)
+void VR::UpdateHMDMatrixPose(const Camera* cam)
 {
 	if (!m_pHMD)
 		return;

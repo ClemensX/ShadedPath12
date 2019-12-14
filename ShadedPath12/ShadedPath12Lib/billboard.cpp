@@ -106,7 +106,7 @@ void Billboard::activateAppDataSet(unsigned long user)
 		size_t vertexBufferSize = sizeof(Vertex) * vertexBuffer.size();
 		//Log(" upload billboard vertex buffer, size " << vertexBufferSize << endl);
 		// upload changed data
-		BufferResource* res = ResourceStore::getInstance()->getSlot();
+		BufferResource* res = resourceStore.getSlot();
 		bea->bufferResource = res;
 		createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(vertexBuffer.at(0)), pipelineState.Get(),
 			L"Billboard2", res->vertexBuffer, res->vertexBufferUpload, updateCommandAllocator, updateCommandList, res->vertexBufferView);
@@ -118,7 +118,7 @@ void Billboard::activateAppDataSet(unsigned long user)
 		dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandListsUpload), ppCommandListsUpload);
 		dxGlobal->createSyncPoint(&updateFenceData, dxGlobal->commandQueue);
 		dxGlobal->waitForSyncPoint(&updateFenceData);
-		ResourceStore::getInstance()->freeUnusedSlots(res->generation-1);
+		resourceStore.freeUnusedSlots(res->generation-1);
 	}
 	// switch inactive and active data sets:
 	currentActiveAppDataSet = (currentActiveAppDataSet + 1) % 2;
@@ -173,18 +173,12 @@ void Billboard::draw(Frame* frame, FrameDataGeneral* fdg, FrameDataBillboard* fd
 		if (pipeline->isHMD()) {
 #if defined(_SVR_)
 			//pipeline->getVR()->UpdateHMDMatrixPose(); // cam == null means no cam movement with keyboard
-			pipeline->getVR()->UpdateHMDMatrixPose(&fdg->leftCam);
-			pipeline->getVR()->SetupCameras();
 			Matrix4 wvp = pipeline->getVR()->GetCurrentViewProjectionMatrix(vr::Eye_Left);
-			frame->wvpTime = pipeline->gametime.getTimeAbs();
-			frame->wvpId = pipeline->getNextWVPNumber();
 			memcpy(&cbv.wvp, &wvp, sizeof(cbv.wvp));
 			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
 #endif
 		} else {
 			XMStoreFloat4x4(&cbv.wvp, fdg->leftCam.worldViewProjection());
-			frame->wvpTime = pipeline->gametime.getTimeAbs();
-			frame->wvpId = pipeline->getNextWVPNumber();
 			memcpy(fdb->cbvGPUDest, &cbv, sizeof(cbv));
 		}
 		//Log("size my wvp: " << sizeof(cbv.wvp) << endl);
