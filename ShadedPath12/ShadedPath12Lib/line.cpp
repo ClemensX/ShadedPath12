@@ -71,11 +71,22 @@ void LinesEffect::activateAppDataSet(unsigned long user)
 {
 	//unique_lock<mutex> lock(dataSetMutex);
 	auto lea = (LineEffectAppData*)getInactiveAppDataSet(user);
+	LineEffectAppData* leaActive = nullptr;
+	if (isActiveDataSetAvailable()) {
+		leaActive = (LineEffectAppData*)getActiveAppDataSet();
+	}
 	if (!dxGlobal->pipeline->isShutdown()) {
 		if (true /*dirty*/) {
 			//if (xapp().pGraphicsAnalysis != nullptr) xapp().pGraphicsAnalysis->BeginCapture();
 			// recreate vertex input buffer
-			dirty = false;
+			dirty = false; // currently not used
+			// check that all permanent lines have already been copied to 2nd data set
+			// we only have to do this once...
+			if (leaActive != nullptr && (lea->lines.size() != leaActive->lines.size())) { // somewhat weak check, but I guess it will do...
+				for (auto l : leaActive->lines) { // no auto & - we need a copy
+					lea->lines.push_back(l);
+				}
+			}
 			vector<Vertex> all;
 			// handle fixed lines:
 			for (LineDef& line : lea->lines) {

@@ -60,5 +60,6 @@ private:
 	VR vr;
 	vector<Effect*> updateEffectList;
 	WorldObject object;
+	float aspectRatio = 0.0f;
 };
 

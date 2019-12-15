@@ -258,6 +258,7 @@ public:
 	//void setFinishedFrameConsumer(function<void(Frame*, Pipeline*)> consumer) { this->consumer = consumer; }
 	Update effectDataUpdate;
 	UpdateQueue updateQueue;
+	bool isActiveDataSetAvailable() { return currentActiveAppDataSet >= 0; };
 protected:
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
 	//DXManager dxmanager;

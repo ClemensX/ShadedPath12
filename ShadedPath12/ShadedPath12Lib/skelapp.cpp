@@ -70,7 +70,7 @@ void SkelApp::init(HWND hwnd) {
 	updateEffectList.push_back((Effect*)&lineEffect);
 
 	// add some lines:
-	float aspectRatio = pipeline.getAspectRatio();
+	aspectRatio = pipeline.getAspectRatio();
 	LineDef myLines[] = {
 		// start, end, color
 		{ XMFLOAT3(0.0f, 0.25f * aspectRatio, 0.0f), XMFLOAT3(0.25f, -0.25f * aspectRatio, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
@@ -211,6 +211,25 @@ void SkelApp::update(Pipeline* pipeline)
 	//BillboardEffectAppData *actDataSet = billboard.getActiveAppDataSet();
 	//auto& active = actDataSet->billboards;
 
+	static float plus = 0.0f;
+	LineDef myLines[] = {
+		// start, end, color
+		{ XMFLOAT3(0.0f, 0.25f * aspectRatio, 1.0f + plus), XMFLOAT3(0.25f, -0.25f * aspectRatio, 1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(0.25f, -0.25f * aspectRatio, 1.0f), XMFLOAT3(-0.25f, -0.25f * aspectRatio, 1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(-0.25f, -0.25f * aspectRatio, 1.0f), XMFLOAT3(0.0f, 0.25f * aspectRatio, 1.0f + plus), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) }
+	};
+	plus += 0.001f;
+	vector<LineDef> lines;
+	// add all intializer objects to vector:
+	for_each(begin(myLines), end(myLines), [&lines](LineDef l) {lines.push_back(l); });
+
+	// add to inactive data set:
+	unsigned long lineUser = 0;
+	lineEffect.updateQueue.getLockedInactiveDataSet(lineUser);
+	lineEffect.addOneTime(lines, lineUser);
+	// activate changes:
+	lineEffect.activateAppDataSet(lineUser);
+	lineEffect.updateQueue.releaseLockedInactiveDataSet(lineUser);
 	////Log(" inactive set: " << active.size() << endl);
 	//assert(active.size() == inactive.size());
 	Effect::update(updateEffectList, pipeline, user);
