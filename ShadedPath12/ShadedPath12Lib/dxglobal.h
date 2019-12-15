@@ -1,6 +1,8 @@
 class Pipeline;
 class Frame;
 class TextureStore;
+class Lights;
+class WorldObjectStore;
 struct FrameDataGeneral;
 struct FrameDataD2D;
 struct FenceData;
@@ -77,6 +79,8 @@ public:
 
 private:
 	TextureStore* textureStore = nullptr;
+	WorldObjectStore* objectStore = nullptr;
+	Lights* lights = nullptr;
 };
 
 // everything needed for creating and waiting for fence events

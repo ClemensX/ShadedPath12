@@ -13,7 +13,7 @@ struct SegmentInfo {
 	float cumulated_start;
 };
 
-enum PathMode
+enum class PathMode
 {
 	Path_SimpleMode,	// use path as is: stop at last pos forever
 	Path_Reverse,		// reverse path once end reached, play back and forth

@@ -51,6 +51,8 @@ private:
 
 	// Effects and other framework classes:
 	TextureStore textureStore;
+	WorldObjectStore objectStore;
+	Lights lights;
 	Billboard billboard;
 	LinesEffect lineEffect;
 	Util util;

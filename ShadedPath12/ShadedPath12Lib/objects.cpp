@@ -485,7 +485,7 @@ void WorldObject::setAction(string name) {
 	d->currentPos = XMFLOAT3(0.0, 0.0f, 0.0f);
 	d->fps = 25.0f; // blender default
 	d->segments = NULL;
-	d->pathMode = Path_Reverse;
+	d->pathMode = PathMode::Path_Reverse;
 	d->currentReverseRun = false;
 	Log(" this->action == " << this->action << endl);
 	Log(" this->boneAction == " << this->boneAction << endl);
@@ -521,12 +521,12 @@ WorldObject::~WorldObject() {
 
 // object store:
 void WorldObjectStore::loadObject(wstring filename, string id, float scale, XMFLOAT3 *displacement) {
-	//MeshLoader loader;
-	//wstring binFile = xapp().findFile(filename.c_str(), XApp::MESH);
-	//Mesh mesh;
-	//meshes[id] = mesh;
-	//loader.loadBinaryAsset(binFile, &meshes[id], scale, displacement);
-	//meshes[id].createVertexAndIndexBuffer(this->objectEffect);
+	MeshLoader loader;
+	wstring binFile = xapp().findFile(filename.c_str(), XApp::MESH);
+	Mesh mesh;
+	meshes[id] = mesh;
+	loader.loadBinaryAsset(binFile, &meshes[id], scale, displacement);
+	meshes[id].createVertexAndIndexBuffer(this->objectEffect);
 }
 
 void WorldObjectStore::createGroup(string groupname) {

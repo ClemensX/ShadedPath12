@@ -4,7 +4,7 @@
 
 #pragma once
 
-#define _SVR_
+#define _SVRXXX_
 #if !defined(_DEBUG)
 #define _DISABLE_GPU_DEBUG_
 #endif
