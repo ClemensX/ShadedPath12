@@ -29,6 +29,11 @@ struct DXGlobalParam{
 
 class DXGlobal {
 public:
+	//singleton:
+	static DXGlobal* getInstance() {
+		static DXGlobal singleton;
+		return &singleton;
+	};
 	void init();
 	void initFrameBufferResources(FrameDataGeneral* fd, FrameDataD2D* fd_d2d, int frameBufferNumber, Pipeline* pipeline);
 	void initSwapChain(Pipeline* pipeline, HWND hwnd);
@@ -76,11 +81,14 @@ public:
 	void startStatisticsDraw(FrameDataGeneral* fd, Frame* frame);
 	void endStatisticsDraw(FrameDataGeneral* fd);
 	Pipeline* pipeline = nullptr;
-
+	Util util;
 private:
 	TextureStore* textureStore = nullptr;
 	WorldObjectStore* objectStore = nullptr;
 	Lights* lights = nullptr;
+	DXGlobal() {};								// prevent creation outside this class
+	DXGlobal(const DXGlobal&);					// prevent creation via copy-constructor
+	DXGlobal& operator = (const DXGlobal&);		// prevent instance copies
 };
 
 // everything needed for creating and waiting for fence events

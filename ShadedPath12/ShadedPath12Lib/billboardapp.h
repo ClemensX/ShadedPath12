@@ -44,14 +44,13 @@ private:
 	void draw(Frame* frame, Pipeline* pipeline, void* afd);
 	void update(Pipeline* pipeline);
 	Pipeline pipeline;
-	DXGlobal dxGlobal;
+	DXGlobal &dxGlobal = *DXGlobal::getInstance();
 	BillboardAppFrameData afd[FRAME_BUFFER_SIZE];
 	boolean isAutomatedTestMode = false;
 
 	// Effects and other framework classes:
 	TextureStore textureStore;
 	Billboard billboard;
-	Util util;
 	Camera c,c2; //cameras need to be local to threads, copy these in effects
 	Input* input = nullptr;
 	//VR2 *vr = nullptr;

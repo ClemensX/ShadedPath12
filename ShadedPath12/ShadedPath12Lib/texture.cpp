@@ -1,10 +1,8 @@
 #include "stdafx.h"
 
-void TextureStore::init(DXGlobal *a, Util* util) {
-	assert(dx == nullptr); // only single call allowed
-	dx = a;
-	DXGlobal* xapp = dx;
-	this->util = util;
+void TextureStore::init() {
+	dxGlobal = DXGlobal::getInstance();
+	this->util = &dxGlobal->util;
 	// Create an empty root signature.
 	{
 		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
@@ -13,7 +11,7 @@ void TextureStore::init(DXGlobal *a, Util* util) {
 		ComPtr<ID3DBlob> signature;
 		ComPtr<ID3DBlob> error;
 		ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
-		ThrowIfFailed(xapp->device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
+		ThrowIfFailed(dxGlobal->device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
 	}
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
 	{
@@ -42,10 +40,10 @@ void TextureStore::init(DXGlobal *a, Util* util) {
 	//ComPtr<ID3DBlob> vShader;
 	//ThrowIfFailed(D3DReadFileToBlob(L"", &vShader));
 	psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
-	ThrowIfFailed(xapp->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
-	ThrowIfFailed(xapp->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
-	ThrowIfFailed(xapp->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), pipelineState.Get(), IID_PPV_ARGS(&commandList)));
-	ThrowIfFailed(xapp->device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&updateFrameData.fence)));
+	ThrowIfFailed(dxGlobal->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
+	ThrowIfFailed(dxGlobal->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
+	ThrowIfFailed(dxGlobal->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), pipelineState.Get(), IID_PPV_ARGS(&commandList)));
+	ThrowIfFailed(dxGlobal->device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&updateFrameData.fence)));
 	updateFrameData.fence->SetName(L"fence_texture_update");
 	updateFrameData.fenceValue = 0;
 	updateFrameData.fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
@@ -101,14 +99,14 @@ void TextureStore::loadTexture(wstring filename, string id)
 	srvHeapDesc.NumDescriptors = 1;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	ThrowIfFailed(dx->device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&texture->m_srvHeap)));
+	ThrowIfFailed(dxGlobal->device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&texture->m_srvHeap)));
 	NAME_D3D12_OBJECT(texture->m_srvHeap);
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE srvHandle(texture->m_srvHeap->GetCPUDescriptorHandleForHeapStart());
 	//CD3DX12_CPU_DESCRIPTOR_HANDLE(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	CreateDDSTextureFromMemory(
-		dx->device.Get(),
+		dxGlobal->device.Get(),
 		&file_buffer[0],
 		file_buffer.size(),
 		0,
@@ -118,7 +116,7 @@ void TextureStore::loadTexture(wstring filename, string id)
 		result
 	);
 	//CreateDDSTextureFromFile(
-	//	xapp->device.Get(),
+	//	dxGlobal->device.Get(),
 	//	texture->filename.c_str(),
 	//	0,
 	//	true,
@@ -154,7 +152,7 @@ void TextureStore::loadTexture(wstring filename, string id)
 	BufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 	BufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-	ThrowIfFailed(dx->device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE,
+	ThrowIfFailed(dxGlobal->device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE,
 		&BufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr, IID_PPV_ARGS(&result.UploadBuffer)));
 
@@ -172,15 +170,15 @@ void TextureStore::loadTexture(wstring filename, string id)
 	ThrowIfFailed(commandList->Close());
 	ID3D12CommandList* ppCommandLists[] = { this->commandList.Get() };
 	
-	dx->commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
 	// Create synchronization objects and wait until assets have been uploaded to the GPU.
 	//Sleep(300);
-	DXGlobal::createSyncPoint(&updateFrameData, dx->commandQueue);
+	DXGlobal::createSyncPoint(&updateFrameData, dxGlobal->commandQueue);
 	DXGlobal::waitForSyncPoint(&updateFrameData);
 
 	//auto &f = frameData[frameIndex];
-	//createSyncPoint(f, xapp->commandQueue);
+	//createSyncPoint(f, dxGlobal->commandQueue);
 	//waitForSyncPoint(f);
 	result.UploadBuffer->Release();
 	ThrowIfFailed(commandList->Reset(commandAllocator.Get(), pipelineState.Get()));

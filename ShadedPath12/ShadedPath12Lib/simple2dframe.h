@@ -40,7 +40,7 @@ private:
 	// usually the app just calls the draw methods of all used effects
 	void draw(Frame* frame, Pipeline* pipeline, void* afd);
 	Pipeline pipeline;
-	DXGlobal dxGlobal;
+	DXGlobal& dxGlobal = *DXGlobal::getInstance();
 	AppFrameData afd[FRAME_BUFFER_SIZE];
 	boolean isAutomatedTestMode = false;
 	//IDWriteTextFormat* pTextFormat_;

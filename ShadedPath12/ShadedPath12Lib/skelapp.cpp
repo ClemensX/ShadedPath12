@@ -90,8 +90,8 @@ void SkelApp::init(HWND hwnd) {
 	lineEffect.updateQueue.releaseLockedInactiveDataSet(lineUser);
 
 	// test texture packs:
-	util.initPakFiles();
-	textureStore.init(&dxGlobal, &util);
+	dxGlobal.util.initPakFiles();
+	textureStore.init();
 	textureStore.loadTexture(L"dirt6_markings.dds", "markings");
 	textureStore.loadTexture(L"metal1.dds", "metal");
 	//xapp().textureStore.loadTexture(L"worm1.dds", "worm");

@@ -65,8 +65,8 @@ void BillboardApp::init(HWND hwnd) {
 	// store effects that will be called during data updates
 	updateEffectList.push_back((Effect*)&billboard);
 	// test texture packs:
-	util.initPakFiles();
-	textureStore.init(&dxGlobal, &util);
+	dxGlobal.util.initPakFiles();
+	textureStore.init();
 	textureStore.loadTexture(L"dirt6_markings.dds", "markings");
 	textureStore.loadTexture(L"vac_00.dds", "vac00");
 	textureStore.loadTexture(L"vac_01.dds", "vac01");

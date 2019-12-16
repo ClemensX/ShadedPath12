@@ -522,11 +522,11 @@ WorldObject::~WorldObject() {
 // object store:
 void WorldObjectStore::loadObject(wstring filename, string id, float scale, XMFLOAT3 *displacement) {
 	MeshLoader loader;
-	wstring binFile = xapp().findFile(filename.c_str(), XApp::MESH);
+	wstring binFile = DXGlobal::getInstance()->util.findFile(filename.c_str(), Util::MESH);
 	Mesh mesh;
 	meshes[id] = mesh;
 	loader.loadBinaryAsset(binFile, &meshes[id], scale, displacement);
-	meshes[id].createVertexAndIndexBuffer(this->objectEffect);
+	//meshes[id].createVertexAndIndexBuffer(this->objectEffect);
 }
 
 void WorldObjectStore::createGroup(string groupname) {
