@@ -376,6 +376,27 @@ float getVLen(XMFLOAT3 &p0, XMFLOAT3 &p1) {
 	return XMVectorGetX(XMVector3Length(pv1-pv0));
 }
 
+void WorldObject::drawSkeleton(XMFLOAT4 color) {
+	if (mesh->skinnedVertices.size() > 0 && !disableSkinning) {
+		for (int skV = 0; skV < (int)mesh->skinnedVertices.size(); skV++) {
+			WorldObjectVertex::VertexSkinned* v = &mesh->skinnedVertices[skV];
+			XMVECTOR vfinal, normfinal;
+			//if (isNonKeyframeAnimated) xapp().world.path.skinNonKeyframe(vfinal, normfinal, v, pathDescBone);
+			//else xapp().world.path.skin(vfinal, normfinal, v, pathDescBone);
+			//// TODO handle cpu calculated normals after animation/skinning here
+			//XMFLOAT3 vfinal_flo;
+			//XMStoreFloat3(&vfinal_flo, vfinal);
+			//mesh->vertices[skV].Pos = vfinal_flo;
+			//XMFLOAT3 normfinal_flo;
+			//XMStoreFloat3(&normfinal_flo, normfinal);
+			//mesh->vertices[skV].Normal = normfinal_flo;
+		}
+	}
+	else {
+		Log("tried to draw skeleton for unskinned object");
+	}
+}
+
 void WorldObject::draw() {
 /*	WorldObjectEffect *worldObjectEffect = xapp().objectStore.getWorldObjectEffect();
 	

@@ -53,6 +53,8 @@ public:
 	XMFLOAT4 quaternion;
 	bool useQuaternionRotation = false;
 	void update(); // only relevant for bone objects
+	// draw skeleton with lines
+	void drawSkeleton(XMFLOAT4 color);
 	void draw();
 	Mesh *mesh;
 	TextureID textureID;

@@ -198,6 +198,7 @@ void SkelApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 	dxGlobal.prepareCameras(frame, pipeline, &c, &c2);
 	billboard.draw(frame, fdg, fdb, pipeline);
 	lineEffect.draw(frame, fdg, fdl, pipeline);
+	object.drawSkeleton(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f));  // blue skeleton
 	dxGlobal.prepare2DRendering(frame, pipeline, fd);
 
 	d2d->drawStatisticsOverlay(frame, pipeline);
