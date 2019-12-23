@@ -376,7 +376,29 @@ float getVLen(XMFLOAT3 &p0, XMFLOAT3 &p1) {
 	return XMVectorGetX(XMVector3Length(pv1-pv0));
 }
 
-void WorldObject::drawSkeleton(XMFLOAT4 color) {
+void WorldObject::drawMeshFromTriangleLines(vector<WorldObjectVertex::VertexSkinned>* vertices, LinesEffect* linesEffect, unsigned long user)
+{
+	vector<LineDef> lines;
+	for (size_t i = 0; i < vertices->size(); i+=3) {
+		// take set of 3 vertices and draw triangle:
+		LineDef a, b, c;
+		a.color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);  // blue
+		a.start = vertices->at(i).Pos;
+		a.end = vertices->at(i + 1).Pos;
+		b.start = vertices->at(i + 1).Pos;
+		b.end = vertices->at(i + 2).Pos;
+		c.start = vertices->at(i + 2).Pos;
+		c.end = vertices->at(i).Pos;
+		lines.push_back(a);
+		lines.push_back(b);
+		lines.push_back(c);
+	}
+	linesEffect->addOneTime(lines, user);
+}
+
+void WorldObject::drawSkeleton(XMFLOAT4 color, Path* path, LinesEffect* linesEffect, unsigned long user) {
+	path->recalculateBoneAnimation(this->pathDescBone, this, 0.0f);
+	drawMeshFromTriangleLines(&mesh->skinnedVertices, linesEffect, user);
 	if (mesh->skinnedVertices.size() > 0 && !disableSkinning) {
 		for (int skV = 0; skV < (int)mesh->skinnedVertices.size(); skV++) {
 			WorldObjectVertex::VertexSkinned* v = &mesh->skinnedVertices[skV];

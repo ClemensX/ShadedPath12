@@ -35,6 +35,7 @@
     <ClCompile Include="line.cpp" />
     <ClCompile Include="Matrices.cpp" />
     <ClCompile Include="objects.cpp" />
+    <ClCompile Include="path.cpp" />
     <ClCompile Include="pipeline.cpp" />
     <ClCompile Include="simple2dframe.cpp" />
     <ClCompile Include="skelapp.cpp" />

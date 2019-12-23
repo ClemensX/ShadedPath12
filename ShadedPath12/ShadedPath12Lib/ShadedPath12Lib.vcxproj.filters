@@ -108,6 +108,9 @@
     <ClCompile Include="line.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
+    <ClCompile Include="path.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ShadedPath12\Resource.h">

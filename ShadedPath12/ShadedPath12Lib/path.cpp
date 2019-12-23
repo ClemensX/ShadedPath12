@@ -54,7 +54,7 @@ PathDesc *Path::createNpcPath(char *name) {
 	PathDesc *p;
 	if (std::string(name).compare("WORM") == 0) {
 		p = &npcPaths[name];
-		p->pathMode = Path_Random;
+		p->pathMode = PathMode::Path_Random;
 		p->starttime = 0;
 		p->segments = 0;
 		p->speed = 0.3f;
@@ -73,7 +73,7 @@ PathDesc *Path::createNpcPath(char *name) {
 
 void Path::moveNpc(WorldObject *wo, LONGLONG now, LONGLONG ticks_per_second, Terrain *terrain) {
 	PathDesc *pd = wo->pathDescMove;
-	assert(pd->pathMode == Path_Random);
+	assert(pd->pathMode == PathMode::Path_Random);
 	if (pd->starttime == 0) {
 		// currently not moving, start this NPC:
 		pd->starttime = now;
@@ -302,14 +302,14 @@ void Path::updateTime(WorldObject *o, double nowf) {
 		//nowf += (total_path_length * 200);
 	//Log("nowf " << nowf << ", pathlen " << total_path_length << endl);
 	if (nowf > total_path_length) {
-		if (pd->pathMode == Path_SimpleMode) {
+		if (pd->pathMode == PathMode::Path_SimpleMode) {
 			// return last pos
 			//fillPosVector(o, pd->numSegments, pos);
 			pd->isLastPos = true;
 			return;
-		} else if (pd->pathMode == Path_Loop) {
+		} else if (pd->pathMode == PathMode::Path_Loop) {
 			nowf = fmod(nowf, total_path_length);
-		} else if (pd->pathMode == Path_Reverse) {
+		} else if (pd->pathMode == PathMode::Path_Reverse) {
 			nowf = fmod(nowf, total_path_length * 2);
 			if (nowf <= total_path_length) {
 				pd->currentReverseRun = false;
@@ -323,7 +323,7 @@ void Path::updateTime(WorldObject *o, double nowf) {
 				throw "error";
 		}
 	}
-	if (pd->pathMode == Path_Reverse && pd->currentReverseRun) {
+	if (pd->pathMode == PathMode::Path_Reverse && pd->currentReverseRun) {
 		nowf = total_path_length - nowf;
 	}
 	if (nowf > total_path_length)
@@ -365,7 +365,7 @@ void Path::getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
 	if (pd->segments == NULL) {
 		initSegments(o, pd);
 	}
-	if (pd->pathMode == Path_Stopped) {
+	if (pd->pathMode == PathMode::Path_Stopped) {
 		rot = o.rot();
 		pos = o.pos();
 		//pd->starttime_f += xapp().gametime.getDeltaTime();
@@ -380,16 +380,16 @@ void Path::getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
 		nowf = fabs(nowf);
 		//nowf += (total_path_length * 200);
 	if (nowf > total_path_length) {
-		if (pd->pathMode == Path_SimpleMode) {
+		if (pd->pathMode == PathMode::Path_SimpleMode) {
 			// return last pos
 			fillPosVector(o, pd->numSegments, pos);
 			pd->isLastPos = true;
 			rot = o.rot();
 			pos = o.pos();
 			return;
-		} else if (pd->pathMode == Path_Loop) {
+		} else if (pd->pathMode == PathMode::Path_Loop) {
 			nowf = fmod(nowf, total_path_length);
-		} else if (pd->pathMode == Path_Reverse) {
+		} else if (pd->pathMode == PathMode::Path_Reverse) {
 			nowf = fmod(nowf, total_path_length * 2);
 			if (nowf <= total_path_length) {
 				pd->currentReverseRun = false;
@@ -403,7 +403,7 @@ void Path::getPos(WorldObject &o, double nowf, XMFLOAT3 &pos, XMFLOAT3 &rot) {
 				throw "error";
 		}
 	}
-	if (pd->pathMode == Path_Reverse && pd->currentReverseRun) {
+	if (pd->pathMode == PathMode::Path_Reverse && pd->currentReverseRun) {
 		nowf = total_path_length - nowf;
 	}
 	if (nowf > total_path_length)

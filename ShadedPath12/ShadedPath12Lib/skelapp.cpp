@@ -25,6 +25,7 @@ void SkelApp::init(HWND hwnd) {
 #if defined(SINGLE_THREAD_MODE)
 	pc.setSingleThreadMode();
 #endif
+	pc.setSingleThreadMode();
 	pc.setMaxUpdatesPerSecond(30); // limit update thread to 30 calls / second
 #if defined (_SVR_)
 	pc.setHMDMode();
@@ -198,7 +199,6 @@ void SkelApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 	dxGlobal.prepareCameras(frame, pipeline, &c, &c2);
 	billboard.draw(frame, fdg, fdb, pipeline);
 	lineEffect.draw(frame, fdg, fdl, pipeline);
-	object.drawSkeleton(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f));  // blue skeleton
 	dxGlobal.prepare2DRendering(frame, pipeline, fd);
 
 	d2d->drawStatisticsOverlay(frame, pipeline);
@@ -220,7 +220,7 @@ void SkelApp::update(Pipeline* pipeline)
 	unsigned long user = 0;
 	//billboard.updateQueue.getLockedInactiveDataSet(user);
 	//auto& inactive = billboard.getInactiveAppDataSet(user)->billboards;
-	//BillboardEffectAppData *actDataSet = billboard.getActiveAppDataSet();
+	LineEffectAppData *actDataSet = lineEffect.getActiveAppDataSet();
 	//auto& active = actDataSet->billboards;
 
 	static float plus = 0.0f;
@@ -239,13 +239,15 @@ void SkelApp::update(Pipeline* pipeline)
 	unsigned long lineUser = 0;
 	lineEffect.updateQueue.getLockedInactiveDataSet(lineUser);
 	lineEffect.addOneTime(lines, lineUser);
+	// draw skeleton and/ ormesh wirefarme form lines:
+	object.drawSkeleton(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), &path, &lineEffect, lineUser);  // blue skeleton
 	// activate changes:
 	lineEffect.activateAppDataSet(lineUser);
 	lineEffect.updateQueue.releaseLockedInactiveDataSet(lineUser);
 	////Log(" inactive set: " << active.size() << endl);
 	//assert(active.size() == inactive.size());
 	Effect::update(updateEffectList, pipeline, user);
-	//billboard.releaseActiveAppDataSet(actDataSet);
+	lineEffect.releaseActiveAppDataSet(actDataSet);
 }
 
 void SkelApp::runTest() {

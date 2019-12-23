@@ -54,7 +54,10 @@ public:
 	bool useQuaternionRotation = false;
 	void update(); // only relevant for bone objects
 	// draw skeleton with lines
-	void drawSkeleton(XMFLOAT4 color);
+	void drawSkeleton(XMFLOAT4 color, Path* path, LinesEffect *linesEffect, unsigned long user);
+	// draw a mesh by going through vertices list
+	// each triangel is made up of 3 points from the list
+	void drawMeshFromTriangleLines(vector<WorldObjectVertex::VertexSkinned> *vertices, LinesEffect* linesEffect, unsigned long user);
 	void draw();
 	Mesh *mesh;
 	TextureID textureID;

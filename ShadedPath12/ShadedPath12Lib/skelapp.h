@@ -62,5 +62,6 @@ private:
 	vector<Effect*> updateEffectList;
 	WorldObject object;
 	float aspectRatio = 0.0f;
+	Path path; // calculate animation
 };
 

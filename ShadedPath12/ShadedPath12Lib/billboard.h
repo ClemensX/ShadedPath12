@@ -71,8 +71,9 @@ public:
 		//Log("active data set use counter increased: gen " << act->bufferResource->generation << " count " << act->bufferResource->useCounter << endl);
 		return act;
 	}
-	void releaseActiveAppDataSet(BillboardEffectAppData* act)
+	void releaseActiveAppDataSet(EffectAppData* act_base) override
 	{
+		BillboardEffectAppData *act = (BillboardEffectAppData *) act_base;
 		updateQueue.activeUseCount--;
 		//Log("active data set counter " << updateQueue.activeUseCount << endl);
 		assert(updateQueue.activeUseCount >= 0);

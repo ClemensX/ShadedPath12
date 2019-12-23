@@ -36,6 +36,7 @@ public:
 			// create new slot
 			BufferResource r;
 			resourceList.push_back(r);
+			assert(resourceList.size() < 20);  // we should not have many slots in us at the same time
 			res = findFreeSlot();
 			assert(res != nullptr);
 		}
@@ -247,6 +248,9 @@ public:
 	// rendering after this call returns will use the new data set. 
 	// user id must have locked the data set previously
 	virtual void activateAppDataSet(unsigned long user) = 0;
+	// at end of update process the old active data can be cleaned up
+	// if this is omitted resources of active data set will never be returned
+	virtual void releaseActiveAppDataSet(EffectAppData* act) = 0;
 	// initate effect updates: Each effect is called with the inactive data set and triggers its update thread
 	// before returning all effect updates are guaranteed to have finished, so it is save to switch app data afterwards
 	static void update(vector<Effect*> effectList, Pipeline* pipeline, unsigned long& user);

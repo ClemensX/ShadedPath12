@@ -64,8 +64,9 @@ public:
 		return act;
 	}
 
-	void releaseActiveAppDataSet(LineEffectAppData* act)
+	void releaseActiveAppDataSet(EffectAppData* act_base)
 	{
+		LineEffectAppData* act = (LineEffectAppData*)act_base;
 		updateQueue.activeUseCount--;
 		//Log("active data set counter " << updateQueue.activeUseCount << endl);
 		assert(updateQueue.activeUseCount >= 0);

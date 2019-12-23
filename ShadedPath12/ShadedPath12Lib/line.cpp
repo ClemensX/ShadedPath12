@@ -128,6 +128,10 @@ void LinesEffect::activateAppDataSet(unsigned long user)
 			resourceStore.freeUnusedSlots(res->generation - 1);
 		}
 	}
+	if (leaActive != nullptr) {
+		releaseActiveAppDataSet(leaActive); // TODO inefficient - think over
+	}
+
 	// switch inactive and active data sets:
 	currentActiveAppDataSet = (currentActiveAppDataSet + 1) % 2;
 	currentInactiveAppDataSet = (currentInactiveAppDataSet + 1) % 2;
