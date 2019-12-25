@@ -240,7 +240,7 @@ void SkelApp::update(Pipeline* pipeline)
 	lineEffect.updateQueue.getLockedInactiveDataSet(lineUser);
 	lineEffect.addOneTime(lines, lineUser);
 	// draw skeleton and/ ormesh wirefarme form lines:
-	object.drawSkeleton(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), &path, &lineEffect, lineUser);  // blue skeleton
+	object.drawSkeleton(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), &path, &lineEffect, plus, lineUser);  // blue skeleton
 	// activate changes:
 	lineEffect.activateAppDataSet(lineUser);
 	lineEffect.updateQueue.releaseLockedInactiveDataSet(lineUser);
