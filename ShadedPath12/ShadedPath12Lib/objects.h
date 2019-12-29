@@ -3,6 +3,7 @@
 struct AnimationClip {
 	std::string name;
 	std::vector<XMFLOAT4X4> invBindMatrices;
+	std::vector<XMFLOAT4X4> boneBindPoseMatrices;
 	int numBones;
 	int parents[128];
 };
@@ -59,6 +60,13 @@ public:
 	// each triangel is made up of 3 points from the list
 	//void drawMeshFromTriangleLines(vector<WorldObjectVertex::VertexSkinned>* vertices, LinesEffect* linesEffect, unsigned long user);
 	void drawMeshFromTriangleLines(vector<WorldObjectVertex::VertexTextured>* vertices, LinesEffect* linesEffect, float time, unsigned long user);
+	void drawSkeletonFromLines(PathDesc* pathDescBone, vector<WorldObjectVertex::VertexTextured>* vertices, LinesEffect* linesEffect, float time, unsigned long user);
+	// find root bone, then multiply all bone pose matrices together to get final transform
+	// for going from root bone space to bone space
+	XMMATRIX bonePoseTransform(int poseIndex, PathDesc* pathDescBone, float time, unsigned long user);
+	// transform an array of points along bones of a skeleton
+	template<size_t sz>
+	void transformAlongBones(array<XMFLOAT3,sz> &points, int poseIndex, PathDesc* pathDescBone, float time, unsigned long user);
 	void draw();
 	Mesh *mesh;
 	TextureID textureID;

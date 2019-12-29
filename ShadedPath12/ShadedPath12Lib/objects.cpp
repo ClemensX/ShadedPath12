@@ -56,6 +56,7 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale, XMFL
 				bfile.read((char*)&parentId, 4);
 				clip.parents[j] = parentId;
 				Curve curve;
+				// read inverse bind matrix
 				float f[16];
 				for (int n = 0; n < 16; n++) {
 					bfile.read((char*)&f[n], 4);
@@ -63,6 +64,12 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale, XMFL
 				XMFLOAT4X4 m = XMFLOAT4X4(f);
 				//XMMATRIX m4 = XMLoadFloat4x4(&m);
 				clip.invBindMatrices.push_back(toLeft(m));
+				// read bone bind pose (not used in animation - just to be able to display bone structure
+				for (int n = 0; n < 16; n++) {
+					bfile.read((char*)&f[n], 4);
+				}
+				m = XMFLOAT4X4(f);
+				clip.boneBindPoseMatrices.push_back(toLeft(m));
 				int keyframes;
 				bfile.read((char*)&keyframes, 4);
 				for (int m = 0; m < keyframes; m++) {
@@ -420,6 +427,106 @@ void WorldObject::drawMeshFromTriangleLines(vector<WorldObjectVertex::VertexText
 	linesEffect->addOneTime(lines, user);
 }
 
+XMMATRIX WorldObject::bonePoseTransform(int poseIndex, PathDesc* pathDescBone, float time, unsigned long user)
+{
+	static const int maxDepth = 10;
+	assert(poseIndex < maxDepth);
+
+	//auto& poses = pathDescBone->clip->boneBindPoseMatrices;
+	array<XMMATRIX, maxDepth> poseM;
+	int curMatrixIndex = 0;
+	do {
+		poseM[curMatrixIndex++] = XMMatrixTranspose(XMLoadFloat4x4(&pathDescBone->clip->boneBindPoseMatrices[poseIndex]));
+		poseIndex = pathDescBone->clip->parents[poseIndex];
+	} while (poseIndex != -1);
+	// now multiply all matrices along the bone structure:
+	XMMATRIX f = XMMatrixIdentity();
+	for (int i = curMatrixIndex-1; i >= 0; i--) {
+		f *= poseM[i];
+	}
+	return f;
+}
+
+template<size_t sz>
+inline void WorldObject::transformAlongBones(array<XMFLOAT3, sz> &points, int poseIndex, PathDesc* pathDescBone, float time, unsigned long user)
+{
+	auto& poses = pathDescBone->clip->boneBindPoseMatrices;
+	assert(poseIndex >= 0 && poseIndex < poses.size() );
+	XMMATRIX t = bonePoseTransform(poseIndex, pathDescBone, time, user);
+	for (int i = 0; i < sz; i++) {
+		XMVECTOR v = XMLoadFloat3(&points[i]);
+		v = XMVector3Transform(v, t);
+		XMStoreFloat3(&points[i], v);
+		// for unclear reasons we must flip y and z:
+		Util::flipYZ3(points[i]);
+	}
+}
+
+void WorldObject::drawSkeletonFromLines(PathDesc* pathDescBone, vector<WorldObjectVertex::VertexTextured>* vertices, LinesEffect* linesEffect, float time, unsigned long user)
+{
+	vector<LineDef> lines;
+	auto& poses = pathDescBone->clip->boneBindPoseMatrices;
+	XMVECTOR p = XMVectorZero(); // we start with root bone at origin
+	for (size_t i = 0; i < poses.size(); i++) {
+		int parentIndex = pathDescBone->clip->parents[i];
+		if (parentIndex == -1) {
+			continue;  // nothing to do for root bone
+		}
+		// from part: transform to parent bone space:
+		array<XMFLOAT3, 1> from;
+		array<XMFLOAT3, 1> to;
+		from[0] = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		transformAlongBones<1>(from, parentIndex, pathDescBone, time, user);
+		to[0] = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		transformAlongBones<1>(to, (int)i, pathDescBone, time, user);
+		LineDef a;
+		a.color = XMFLOAT4(0.0f, 1.0f, 1.0f, 0.0f);  // turque
+
+		a.start = from[0];
+		a.end = to[0];
+		lines.push_back(a);
+		//linesEffect->
+	}
+	linesEffect->addOneTime(lines, user);
+}
+/*
+void WorldObject::drawSkeletonFromLines(PathDesc* pathDescBone, vector<WorldObjectVertex::VertexTextured>* vertices, LinesEffect* linesEffect, float time, unsigned long user)
+{
+	vector<LineDef> lines;
+	auto& poses = pathDescBone->clip->boneBindPoseMatrices;
+	XMVECTOR p = XMVectorZero(); // we start with root bone at origin
+	for (size_t i = 0; i < poses.size(); i++) {
+		int parentIndex = pathDescBone->clip->parents[i];
+		if (parentIndex == -1) {
+			continue;  // nothing to do for root bone
+		}
+		// 2 matrices for this bone:
+		XMFLOAT4X4 fromF = poses.at(parentIndex);
+		XMFLOAT4X4 toF = poses.at(i);
+		XMMATRIX from = XMLoadFloat4x4(&fromF);
+		XMMATRIX to = XMLoadFloat4x4(&toF);
+		from = XMMatrixTranspose(from);
+		to = XMMatrixTranspose(to);
+		XMVECTOR rFrom = XMVector3Transform(p, from);
+		XMVECTOR rTo = XMVector3Transform(rFrom, to);
+		p = rFrom; // for next iteration
+		XMFLOAT3 start, end;
+		XMStoreFloat3(&start, rFrom);
+		XMStoreFloat3(&end, rTo);
+		// for unclear reasons we must flip y and z:
+		Util::flipYZ3(start);
+		Util::flipYZ3(end);
+		LineDef a;
+		a.color = XMFLOAT4(0.0f, 1.0f, 1.0f, 0.0f);  // turque
+
+		a.start = start;
+		a.end = end;
+		lines.push_back(a);
+		//linesEffect->
+	}
+	linesEffect->addOneTime(lines, user);
+}
+*/
 void WorldObject::drawSkeleton(XMFLOAT4 color, Path* path, LinesEffect* linesEffect, float time, unsigned long user) {
 	path->updateTime(this, time);
 	path->recalculateBoneAnimation(this->pathDescBone, this, this->pathDescBone->percentage);
@@ -439,6 +546,7 @@ void WorldObject::drawSkeleton(XMFLOAT4 color, Path* path, LinesEffect* linesEff
 			mesh->vertices[skV].Normal = normfinal_flo;
 		}
 		drawMeshFromTriangleLines(&mesh->vertices, linesEffect, time, user);
+		drawSkeletonFromLines(this->pathDescBone, &mesh->vertices, linesEffect, time, user);
 	}
 	else {
 		Log("tried to draw skeleton for unskinned object");

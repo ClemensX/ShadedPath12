@@ -112,7 +112,7 @@ public:
 	//static bool isTargetHit(WorldObject *source, XMVECTOR beamStartModelPose, XMVECTOR beamPoint2ModelPose, WorldObject *target, float hittingDist = 0.1f);
 
 	// move control point to specific distance to start point along line formed by the two
-	// If you consider a beam starting from 1st point going through the second you will have the same beam afterwards, but the second crontrol 
+	// If you consider a beam starting from 1st point going through the second you will have the same beam afterwards, but the second control 
 	// point is at a specific distance to the start point
 	static XMVECTOR movePointToDistance(XMVECTOR start, XMVECTOR controlPoint, float dist);
 
@@ -121,6 +121,13 @@ public:
 		XMVECTOR bv = XMLoadFloat3(b);
 		return XMVectorGetX(XMVector3Length(bv - av));
 	};
+
+	static void flipYZ3(XMFLOAT3& p) {
+		float f = p.y;
+		p.y = p.z;
+		p.z = f;
+	}
+
 	// asset handling
 	enum FileCategory { FX, TEXTURE, MESH, SOUND, TEXTUREPAK };
 	// find absolute filename for a name and category, defaults to display error dialog, returns empty filename if not found and errorIfNotFound is set to false,

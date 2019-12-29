@@ -382,10 +382,11 @@ public class ColladaImport {
                         assert a.joints.size() == a.bones.size();
                         writeInt(oos, a.joints.size());
                         for (int j = 0; j < a.joints.size(); j++) {
-                            Joint joint = a.joints.get(j);
-                            writeInt(oos, a.bones.get(j).parentId);
-                            writeMatrix(oos, joint.invBindMatrix);
                             Bone bone = a.bones.get(j);
+                            Joint joint = a.joints.get(j);
+                            writeInt(oos, bone.parentId);
+                            writeMatrix(oos, joint.invBindMatrix);
+                            writeMatrix(oos, bone.bindPose);
                             int numKey = 0;
                             List<BezTriple> curves = null;
                             if (bone.transformations.size() > 0) {
