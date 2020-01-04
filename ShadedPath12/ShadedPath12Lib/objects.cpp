@@ -464,6 +464,10 @@ inline void WorldObject::transformAlongBones(array<XMFLOAT3, sz> &points, int po
 
 void WorldObject::drawSkeletonFromLines(PathDesc* pathDescBone, vector<WorldObjectVertex::VertexTextured>* vertices, LinesEffect* linesEffect, float time, unsigned long user)
 {
+	if (pathDescBone == nullptr) {
+		// nothing to do for non-animated objects
+		return;
+	}
 	vector<LineDef> lines;
 	auto& poses = pathDescBone->clip->boneBindPoseMatrices;
 	XMVECTOR p = XMVectorZero(); // we start with root bone at origin
@@ -528,8 +532,10 @@ void WorldObject::drawSkeletonFromLines(PathDesc* pathDescBone, vector<WorldObje
 }
 */
 void WorldObject::drawSkeleton(XMFLOAT4 color, Path* path, LinesEffect* linesEffect, float time, unsigned long user) {
-	path->updateTime(this, time);
-	path->recalculateBoneAnimation(this->pathDescBone, this, this->pathDescBone->percentage);
+	if (this->pathDescBone != nullptr) {
+		path->updateTime(this, time);
+		path->recalculateBoneAnimation(this->pathDescBone, this, this->pathDescBone->percentage);
+	}
 	//drawMeshFromTriangleLines(&mesh->skinnedVertices, linesEffect, user);
 	if (mesh->skinnedVertices.size() > 0 && !disableSkinning) {
 		for (int skV = 0; skV < (int)mesh->skinnedVertices.size(); skV++) {
