@@ -54,6 +54,7 @@ public:
 	XMFLOAT4 quaternion;
 	bool useQuaternionRotation = false;
 	void update(); // only relevant for bone objects
+	constexpr static float BoneBaseDisplacement = 0.2f;
 	// draw skeleton with lines
 	void drawSkeleton(XMFLOAT4 color, Path* path, LinesEffect *linesEffect, float time, unsigned long user);
 	// draw a mesh by going through vertices list

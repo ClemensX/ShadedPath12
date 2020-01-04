@@ -477,19 +477,42 @@ void WorldObject::drawSkeletonFromLines(PathDesc* pathDescBone, vector<WorldObje
 			continue;  // nothing to do for root bone
 		}
 		// from part: transform to parent bone space:
-		array<XMFLOAT3, 1> from;
+		array<XMFLOAT3, 4> from;
 		array<XMFLOAT3, 1> to;
-		from[0] = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		transformAlongBones<1>(from, parentIndex, pathDescBone, time, user);
+		from[0] = XMFLOAT3(-BoneBaseDisplacement, 0.0f, 0.0f);
+		from[2] = XMFLOAT3(BoneBaseDisplacement, 0.0f, 0.0f);
+		from[3] = XMFLOAT3(0.0f, -BoneBaseDisplacement, 0.0f);
+		from[1] = XMFLOAT3(0.0f, BoneBaseDisplacement, 0.0f);
+		transformAlongBones<4>(from, parentIndex, pathDescBone, time, user);
 		to[0] = XMFLOAT3(0.0f, 0.0f, 0.0f);
 		transformAlongBones<1>(to, (int)i, pathDescBone, time, user);
 		LineDef a;
 		a.color = XMFLOAT4(0.0f, 1.0f, 1.0f, 0.0f);  // turque
 
+		// draw 4 lines from base to end
 		a.start = from[0];
 		a.end = to[0];
 		lines.push_back(a);
-		//linesEffect->
+		a.start = from[1];
+		lines.push_back(a);
+		a.start = from[2];
+		lines.push_back(a);
+		a.start = from[3];
+		lines.push_back(a);
+
+		// draw 4 lines to form a base
+		a.start = from[0];
+		a.end = from[1];
+		lines.push_back(a);
+		a.start = from[1];
+		a.end = from[2];
+		lines.push_back(a);
+		a.start = from[2];
+		a.end = from[3];
+		lines.push_back(a);
+		a.start = from[3];
+		a.end = from[0];
+		lines.push_back(a);
 	}
 	linesEffect->addOneTime(lines, user);
 }
