@@ -285,6 +285,10 @@ void initSegments(WorldObject &o, PathDesc *pd) {
 
 void Path::updateTime(WorldObject *o, double nowf) {
 	PathDesc *pd = o->pathDescBone;
+	if (pd == nullptr) {
+		// nothing to do for non-animated objects
+		return;
+	}
 	if (pd->segments == NULL) {
 		initSegments(*o, pd);
 	}
@@ -629,6 +633,12 @@ void  Path::skinNonKeyframe(XMVECTOR &pos, XMVECTOR &norm, const WorldObjectVert
 
 void  Path::skin(XMVECTOR &pos, XMVECTOR &norm, const WorldObjectVertex::VertexSkinned *v, PathDesc *pd)
 {
+	if (pd == nullptr) {
+		// no skinning to do for non-animated objects - just use pose
+		pos = XMLoadFloat3(&v->Pos);
+		norm = XMLoadFloat3(&v->Normal);
+		return;
+	}
 	XMVECTOR vskin = XMVectorZero();
 	XMVECTOR normskin = XMVectorZero();
 	for (int i = 0; i < 4; i++) {

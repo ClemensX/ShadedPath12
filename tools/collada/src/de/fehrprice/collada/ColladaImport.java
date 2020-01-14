@@ -272,15 +272,29 @@ public class ColladaImport {
                 parse_floats(mesh.verts, float_array);
                 
                 // now parse faces (polylist) for vertex, normal and texcoord index
+                boolean modeTriangle = false;  // signal polylist or triangle use
                 Element pel = (Element) eElement.getElementsByTagName("polylist").item(0);
-                NodeList inputList = pel.getElementsByTagName("input");
-                for (int i = 0; i < inputList.getLength(); i++) {
-                    Node node = inputList.item(i);
-                    if (node instanceof Element) {
-                        Element child = (Element) node;
-                        parseInput(child, inputTypes);
-                    }
+                // if we could not find polylist try triangles:
+                if (pel == null) {
+                	pel = (Element) eElement.getElementsByTagName("triangles").item(0);
+                	if (pel != null) {
+                		modeTriangle = true;
+                	}
                 }
+                // if pel still null we could not parse geometry:
+                if (pel == null) {
+                	fail("neither polygons nor triangles found. Cannot parse.");
+                }
+                if (pel != null) {
+	                NodeList inputList = pel.getElementsByTagName("input");
+	                for (int i = 0; i < inputList.getLength(); i++) {
+	                    Node node = inputList.item(i);
+	                    if (node instanceof Element) {
+	                        Element child = (Element) node;
+	                        parseInput(child, inputTypes);
+	                    }
+	                }
+                } 
                 if (inputTypes[input_el_type.TEXCOORD.ordinal()].source == null) {
                     System.out.println("WARNING: input file does not include texture coordinates. Use UV mapping and re-export.");
                     fakeTextureMapping = true;
@@ -313,11 +327,13 @@ public class ColladaImport {
                 }
                 
                 // indexes in polylist
-                Element vcount_el = (Element) pel.getElementsByTagName("vcount").item(0);
-                int[] vcount = new int[mesh.numFaces];
-                parse_ints(vcount, vcount_el.getTextContent()); 
-                for (int i = 0; i < vcount.length; i++) {
-                    if (vcount[i] != 3) fail("cannot handle arbitrary polyons - only triangles allowes");
+                if (!modeTriangle) {
+	                Element vcount_el = (Element) pel.getElementsByTagName("vcount").item(0);
+	                int[] vcount = new int[mesh.numFaces];
+	                parse_ints(vcount, vcount_el.getTextContent()); 
+	                for (int i = 0; i < vcount.length; i++) {
+	                    if (vcount[i] != 3) fail("cannot handle arbitrary polyons - only triangles allowed");
+	                }
                 }
                 Element p_el = (Element) pel.getElementsByTagName("p").item(0);
                 Integer[] p = parse_ints(p_el.getTextContent()); 
