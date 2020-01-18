@@ -542,34 +542,47 @@ public class ColladaImport {
     private List<SkinnedAnimation> parseSkinnedAnimations(String mesh_name, Document doc, D3DMeshdata mesh) {
         List<SkinnedAnimation> anis = new ArrayList<SkinnedAnimation>();
         System.out.println("Skinned Animations for " + mesh_name + ":");
-        Element vis_scenes = (Element)doc.getElementsByTagName("library_visual_scenes").item(0);
-        Element meshNode = (Element) getChildElement(vis_scenes, "node", "id", mesh_name, false);
-        Element inst_controller = (Element) vis_scenes.getElementsByTagName("instance_controller").item(0);
+        NodeList library_visual_scenes = doc.getElementsByTagName("library_visual_scenes");
+        if (library_visual_scenes.getLength() > 1) {
+            System.out.println("WARNING found multiple scene libraries: " + library_visual_scenes.getLength() +  " Only first will be used");
+        }
+        Element vis_scene = (Element)library_visual_scenes.item(0);
+        Element meshNode = (Element) getChildElement(vis_scene, "node", "id", mesh_name, false);
+        NodeList inst_controllers = vis_scene.getElementsByTagName("instance_controller");
+        if (inst_controllers.getLength() > 1) {
+            System.out.println("WARNING found multiple instance_controllers: " + inst_controllers.getLength() +  " Only first will be used");
+        }
+        Element inst_controller = (Element) inst_controllers.item(0);
         if (inst_controller == null) {
             // no skinned animations available
             return anis;
         }
         String instControllerName = inst_controller.getAttribute("url").substring(1);
         Element skeleton = (Element) inst_controller.getElementsByTagName("skeleton").item(0);
+        assert(skeleton.getTextContent().startsWith("#")); // we only can handle internal links 
         String skeletonName = skeleton.getTextContent().substring(1);  
         System.out.println("found controller: " + instControllerName +  " skeleton: " + skeletonName);
-        // skeletonName is root bone, instControllerName begins with node name from visual_scenes
-        // get node with bones:
-        Element bonesNode = null;
-        Element scene = (Element) vis_scenes.getElementsByTagName("visual_scene").item(0);
-        for (int temp = 0; temp < scene.getChildNodes().getLength(); temp++) {
-            Node child = scene.getChildNodes().item(temp);
-            if (child.getNodeType() != Node.ELEMENT_NODE) continue;
-            Element child_el = (Element) child;
-            //System.out.println(" vis_scene child: " + child_el.getNodeName());
-            String node_name = child.getAttributes().getNamedItem("id").getTextContent();
-            if (instControllerName.startsWith(node_name)) {
-                System.out.println("Bone info here: " + node_name);
-                bonesNode = child_el;
-            }
+        // find root bone by skeletonName inside this visual_scene
+        Element bonesNode = getChildElement(vis_scene, "node", "id", skeletonName, false);
+        if (bonesNode != null) {
+            String node_name = bonesNode.getAttributes().getNamedItem("id").getTextContent();
+            System.out.println("Bone info here: " + node_name);
         }
-        
-        NodeList possibleRootBones = bonesNode.getChildNodes();//bonesNode.getElementsByTagName("node");
+        //Element scene = (Element) vis_scene.getElementsByTagName("visual_scene").item(0);
+//        for (int temp = 0; temp < vis_scene.getChildNodes().getLength(); temp++) {
+//            Node child = vis_scene.getChildNodes().item(temp);
+//            if (child.getNodeType() != Node.ELEMENT_NODE) continue;
+//            Element child_el = (Element) child;
+//            System.out.println(" vis_scene child: " + child_el.getNodeName());
+//            String node_name = child.getAttributes().getNamedItem("id").getTextContent();
+//            //if (instControllerName.startsWith(node_name)) {
+//            if (skeletonName.equals(node_name)) {
+//                System.out.println("Bone info here: " + node_name);
+//                bonesNode = child_el;
+//            }
+//        }
+        // bones_node should be directly the root bone, following search is no longer necessary
+        /*NodeList possibleRootBones = bonesNode.getChildNodes();//bonesNode.getElementsByTagName("node");
         for (int temp = 0; temp < possibleRootBones.getLength(); temp++) {
             if (possibleRootBones.item(temp).getNodeType() != Node.ELEMENT_NODE) {
                 continue;
@@ -582,7 +595,10 @@ public class ColladaImport {
             //Element rootBone = getChildElement(bonesNode, "node", "id", skeletonName, true);
             parseBoneHierarchy(rootBone, boneList, -1);
             assertBoneHierarchy(boneList);
-        }        
+        } */       
+        parseBoneHierarchy(bonesNode, boneList, -1);
+        assertBoneHierarchy(boneList);
+        printBoneHierarchy(boneList);
         
         Element controller = (Element)doc.getElementsByTagName("library_controllers").item(0);
         Element skin = (Element) getChildElement(controller, "skin", "source", "#" + mesh.geometryId, false);
@@ -668,9 +684,17 @@ public class ColladaImport {
     
     private void assertBoneHierarchy(List<Bone> bones) {
         // assert correct hierarchy (parent bones have to come before child bones)
-        assert bones.get(0).parentId == -1;  // root is a t index 0
+        assert bones.get(0).parentId == -1;  // root is at index 0
         for (int i = 1; i < bones.size(); i++) {
             assert bones.get(i).parentId < i;
+        }
+    }
+
+    // print table of bone / parent dependencies
+    private void printBoneHierarchy(List<Bone> bones) {
+    	System.out.println("| Bone #  | Parent #|");
+        for (int i = 0; i < bones.size(); i++) {
+        	System.out.println(String.format("|%8d |%8d |", bones.get(i).id, bones.get(i).parentId));
         }
     }
 
