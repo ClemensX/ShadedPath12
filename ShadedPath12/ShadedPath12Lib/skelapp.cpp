@@ -123,9 +123,11 @@ void SkelApp::init(HWND hwnd) {
 	//xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	if (true) {
-		objectStore.loadObject(L"joint6_anim.b", "Joint");
+		//objectStore.loadObject(L"joint6_anim.b", "Joint");
+		objectStore.loadObject(L"Walking3.b", "Joint");
 		objectStore.addObject(object, "Joint", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
-		object.setAction("Armature");
+		//object.setAction("Armature");
+
 		//object.pathDescBone->pathMode = PathMode::Path_Reverse;
 		//object.forceBoundingBox(BoundingBox(XMFLOAT3(3.16211f, 3.16214f, 7.28022f), XMFLOAT3(4.51012f, 4.51011f, 7.6599f)));
 		object.material.specExp = 1.0f;       // no spec color
