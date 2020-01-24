@@ -627,13 +627,14 @@ public class ColladaImport {
         // now gather data for all joints:
         Element joint_names_el = getChildElement(skin, "source", "id", jointSource, true);
         String flatJointNames = joint_names_el.getElementsByTagName("Name_array").item(0).getTextContent();
-        String[] jointNames = parse_strings(flatJointNames);
-        for (int i = 0; i < jointNames.length; i++) {
-            Joint j = new Joint();
-            a.joints.add(j);
-            j.name = jointNames[i];
-            assert a.joints.get(i).name.equals(boneList.get(i).name); // if this differs we need mapping
-        }
+        // joint names not used at all
+//        String[] jointNames = parse_strings(flatJointNames);
+//        for (int i = 0; i < jointNames.length; i++) {
+//            Joint j = new Joint();
+//            a.joints.add(j);
+//            j.name = jointNames[i];
+//            assert a.joints.get(i).name.equals(boneList.get(i).name); // if this differs we need mapping
+//        }
         Element inv_bind_matrix_source_el = getChildElement(skin, "source", "id", invBindSource, true);
         String flatMatrices = inv_bind_matrix_source_el.getElementsByTagName("float_array").item(0).getTextContent();
         Float[] invBindMatrices = parse_floats(flatMatrices);
