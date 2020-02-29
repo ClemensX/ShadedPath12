@@ -628,13 +628,14 @@ public class ColladaImport {
         Element joint_names_el = getChildElement(skin, "source", "id", jointSource, true);
         String flatJointNames = joint_names_el.getElementsByTagName("Name_array").item(0).getTextContent();
         // joint names not used at all
-//        String[] jointNames = parse_strings(flatJointNames);
-//        for (int i = 0; i < jointNames.length; i++) {
-//            Joint j = new Joint();
-//            a.joints.add(j);
-//            j.name = jointNames[i];
-//            assert a.joints.get(i).name.equals(boneList.get(i).name); // if this differs we need mapping
-//        }
+        String[] jointNames = parse_strings(flatJointNames);
+        printJointNames(jointNames);
+        for (int i = 0; i < jointNames.length; i++) {
+            Joint j = new Joint();
+            a.joints.add(j);
+            j.name = jointNames[i];
+            assert a.joints.get(i).name.equals(boneList.get(i).name); // if this differs we need mapping
+        }
         Element inv_bind_matrix_source_el = getChildElement(skin, "source", "id", invBindSource, true);
         String flatMatrices = inv_bind_matrix_source_el.getElementsByTagName("float_array").item(0).getTextContent();
         Float[] invBindMatrices = parse_floats(flatMatrices);
@@ -683,7 +684,14 @@ public class ColladaImport {
         return anis;
     }
     
-    private void assertBoneHierarchy(List<Bone> bones) {
+    private void printJointNames(String[] joints) {
+    	System.out.println("| Joint #  | Name #|");
+        for (int i = 0; i < joints.length; i++) {
+        	System.out.println(String.format("|%8d | %s", i, joints[i]));
+        }
+	}
+
+	private void assertBoneHierarchy(List<Bone> bones) {
         // assert correct hierarchy (parent bones have to come before child bones)
         assert bones.get(0).parentId == -1;  // root is at index 0
         for (int i = 1; i < bones.size(); i++) {
@@ -695,7 +703,8 @@ public class ColladaImport {
     private void printBoneHierarchy(List<Bone> bones) {
     	System.out.println("| Bone #  | Parent #|");
         for (int i = 0; i < bones.size(); i++) {
-        	System.out.println(String.format("|%8d |%8d |", bones.get(i).id, bones.get(i).parentId));
+        	Bone b = bones.get(i);
+        	System.out.println(String.format("|%8d |%8d | %s", b.id, b.parentId, b.name));
         }
     }
 
