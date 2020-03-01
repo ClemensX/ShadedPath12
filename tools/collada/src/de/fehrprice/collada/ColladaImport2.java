@@ -271,7 +271,8 @@ public class ColladaImport2 {
     	loadGeometry(el);
     	el = getSingleAssertedChildElement(docEl, "library_controllers");
     	loadControllers(el);
-    	el = getSingleAssertedChildElement(docEl, "instance_visual_scene");
+    	el = getSingleAssertedChildElement(docEl, "scene");
+    	el = getSingleAssertedChildElement(el, "instance_visual_scene");
     	String ivsURL = getInternalURL(el);
     	loadVisualScene(ivsURL, docEl);
     }
@@ -340,6 +341,7 @@ public class ColladaImport2 {
 
     // depending on node type load specific values or continue tree parsing
 	private boolean loadNode(Element e) {
+		//log(" parse node: " + e.getAttribute("id"));
 		if (e.getAttribute("type").equalsIgnoreCase("JOINT")) {
 			loadBoneHierarchy(e);
 			return true;
@@ -373,7 +375,7 @@ public class ColladaImport2 {
         node.parentId = parentId;
         assert(parentId < node.id);
         node.name = node_el.getAttribute("id");
-        log(" parsing node: " + node.name);
+        //log(" parsing node: " + node.name);
         nodes.add(node);
 //      NodeList children = bone_el.getElementsByTagName("node");
 //      for (int i = 0; i < children.getLength(); i++) {
@@ -1323,9 +1325,25 @@ public class ColladaImport2 {
     }
 
     private Element getSingleAssertedChildElement(Element parent, String tagname) {
-        NodeList list = parent.getElementsByTagName(tagname);
-        assert(list != null && list.getLength() == 1);
-        return (Element) list.item(0);
+    	return getDirectSingleAssertedChildElement(parent, tagname);
+//        NodeList list = parent.getElementsByTagName(tagname);
+//        assert(list != null && list.getLength() == 1);
+//        return (Element) list.item(0);
+    }
+
+    private Element getDirectSingleAssertedChildElement(Element parent, String tagname) {
+    	List<Element> list = getChildElements(parent);
+//    	log("---");
+//    	for ( Element e : list) {
+//    		log(" child: " + e.getTagName());
+//    	}
+//    	log(":---");
+    	for ( Element e : list) {
+    		if (e.getTagName().equals(tagname)) {
+    			return e;
+    		}
+    	}
+        return null;
     }
 
     static private void failUsage(String string) {
