@@ -277,23 +277,29 @@ public class ColladaImport2 {
     	loadVisualScene(ivsURL, docEl);
     }
     
+    // library_geometries
     private void loadGeometry(Element el) {
     	List<Element> le = getChildElements(el);
     	// load all meshes:
     	for (Element e : le) {
+    		// library_geometries / geometry
     		assert("geometry".equals(e.getTagName()));
     		Geometry g = new Geometry();
     		g.geometryId = e.getAttribute("id");
     		log(" load geometry: " + g.geometryId);
+    		// library_geometries / geometry / mesh
     		Element meshNode = getSingleAssertedChildElement(e, "mesh");
     		// determine position source
+    		// library_geometries / geometry / mesh / vertices
     		Element v = getSingleAssertedChildElement(meshNode, "vertices");
     		Element posInput = getChildElement(v, "input", "semantic", "POSITION", true);
+    		// library_geometries / geometry / mesh / source
     		String source = getInternalAttribute(posInput, "source");
     		Element positionSource = getChildElement(meshNode, "source", "id", source, true);
     		log(" found geometry positions: " + positionSource.getAttribute("id"));
 
     		// load vertices
+    		// library_geometries / geometry / mesh / source / float_array
     		Element floatArrayNode = getSingleAssertedChildElement(positionSource, "float_array");//(Element) mesh_pos.getElementsByTagName("float_array").item(0); 
             String float_array = floatArrayNode.getTextContent();
             g.numVerts = Integer.valueOf(floatArrayNode.getAttribute("count"));
@@ -302,7 +308,33 @@ public class ColladaImport2 {
             g.verts = new float[g.numVerts];
             parse_floats(g.verts, float_array);
             
-            
+            // now parse faces (polylist) for vertex, normal and texcoord index
+            boolean modeTriangle = false;  // signal polylist or triangle use
+    		// library_geometries / geometry / mesh / polylist
+            Element pel = getSingleAssertedChildElement(meshNode, "polylist");
+            // if we could not find polylist try triangles:
+            if (pel == null) {
+            	// library_geometries / geometry / mesh / triangles
+            	pel = getSingleAssertedChildElement(meshNode, "triangles");
+            	if (pel != null) {
+            		modeTriangle = true;
+            	}
+            }
+            // if pel still null we could not parse geometry:
+            if (pel == null) {
+            	fail("neither polygons nor triangles found. Cannot parse.");
+            }
+            if (pel != null) {
+                NodeList inputList = pel.getElementsByTagName("input");
+                for (int i = 0; i < inputList.getLength(); i++) {
+                    Node node = inputList.item(i);
+                    if (node instanceof Element) {
+                        Element child = (Element) node;
+                        parseInput(child, null);
+                    }
+                }
+            } 
+           
             
             collada.geometryMap.put(g.geometryId, g);
     	}
@@ -1209,13 +1241,14 @@ public class ColladaImport2 {
         return null;
     }
 
+    // parse single input element and put attributes to map:
+    // map SEMANTIC to input_attributes (semantic, offset, source)
     private void parseInput(Element input, input_el[] inputTypes) {
         String semantic = input.getAttribute("semantic");
         String source = input.getAttribute("source");
         String offset = input.getAttribute("offset");
-        input_el_type cur;
         try {
-            cur = input_el_type.valueOf(semantic);
+            log("parse semantic: " + semantic);
         } catch (IllegalArgumentException e) {
             // we don't parse unknown input types - just return
             return;
@@ -1223,11 +1256,13 @@ public class ColladaImport2 {
         if (source != null && source.length() > 0) {
             if (source.startsWith("#"))
                 source = source.substring(1);
-            inputTypes[cur.ordinal()].source = source; 
+            //inputTypes[cur.ordinal()].source = source;
+            log(" parse source: " + source);
         }
         if (offset != null && offset.length() > 0) {
             int intOffset = Integer.valueOf(offset);
-            inputTypes[cur.ordinal()].offset = intOffset; 
+            //inputTypes[cur.ordinal()].offset = intOffset;
+            log(" parse offset: " + intOffset);
         }
     }
 
