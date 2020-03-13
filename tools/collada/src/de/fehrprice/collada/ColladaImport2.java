@@ -10,6 +10,7 @@ package de.fehrprice.collada;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -31,7 +33,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+//import de.fehrprice.collada.ColladaImport.Animation;
+//import de.fehrprice.collada.ColladaImport.BezTriple;
+//import de.fehrprice.collada.ColladaImport.Bone;
+//import de.fehrprice.collada.ColladaImport.D3DVertex;
+//import de.fehrprice.collada.ColladaImport.Joint;
+//import de.fehrprice.collada.ColladaImport.SkinnedAnimation;
+import de.fehrprice.collada.ColladaImport.input_el_type;
+
 import java.util.Arrays;
+import java.util.Collections;
 
 public class ColladaImport2 {
 
@@ -275,6 +286,8 @@ public class ColladaImport2 {
     	el = getSingleAssertedChildElement(el, "instance_visual_scene");
     	String ivsURL = getInternalURL(el);
     	loadVisualScene(ivsURL, docEl);
+    	
+    	writeOutputFile(outfile);
     }
     
     // library_geometries
@@ -286,7 +299,8 @@ public class ColladaImport2 {
     		assert("geometry".equals(e.getTagName()));
     		Geometry g = new Geometry();
     		g.geometryId = e.getAttribute("id");
-    		log(" load geometry: " + g.geometryId);
+    		g.meshName = e.getAttribute("name");
+    		log(" load geometry: " + g.meshName);
     		// library_geometries / geometry / mesh
     		Element meshNode = getSingleAssertedChildElement(e, "mesh");
     		// determine position source
@@ -324,19 +338,89 @@ public class ColladaImport2 {
             if (pel == null) {
             	fail("neither polygons nor triangles found. Cannot parse.");
             }
+            Map<String,input_el> inputMap = new HashMap<>();
             if (pel != null) {
                 NodeList inputList = pel.getElementsByTagName("input");
                 for (int i = 0; i < inputList.getLength(); i++) {
                     Node node = inputList.item(i);
                     if (node instanceof Element) {
                         Element child = (Element) node;
-                        parseInput(child, null);
+                        parseInput(child, inputMap);
                     }
                 }
             } 
+            if (inputMap.get("TEXCOORD").source == null) {
+                System.out.println("WARNING: input file does not include texture coordinates. Use UV mapping and re-export.");
+                fakeTextureMapping = true;
+            }
+            g.numFaces = Integer.parseInt(pel.getAttribute("count"));
+            System.out.println("numFaces = " + g.numFaces);
            
+            // normals
+            input_el cur;
+            cur = inputMap.get("NORMAL");
+            Element normal_source = getChildElement(meshNode, "source", "id", cur.source, true);
+            floatArrayNode = (Element) normal_source.getElementsByTagName("float_array").item(0); 
+            float_array = floatArrayNode.getTextContent();
+            g.numNormals = Integer.valueOf(floatArrayNode.getAttribute("count"));
+            System.out.println(" num normals: " + g.numNormals);
+            //System.out.println(" normals: " + float_array);
+            g.normals = new float[g.numNormals];
+            parse_floats(g.normals, float_array);
             
-            collada.geometryMap.put(g.geometryId, g);
+            // texcoord
+            if (!fakeTextureMapping) {
+                cur = inputMap.get("TEXCOORD");
+                Element texcoord_source = getChildElement(meshNode, "source", "id", cur.source, true);
+                floatArrayNode = (Element) texcoord_source.getElementsByTagName("float_array").item(0); 
+                float_array = floatArrayNode.getTextContent();
+                g.numTexcoords = Integer.valueOf(floatArrayNode.getAttribute("count"));
+                System.out.println(" num texture coords: " + g.numTexcoords);
+                //System.out.println(" coords: " + float_array);
+                g.texcoords = new float[g.numTexcoords];
+                parse_floats(g.texcoords, float_array);
+            }
+
+            // indexes in polylist
+            if (!modeTriangle) {
+                Element vcount_el = (Element) pel.getElementsByTagName("vcount").item(0);
+                int[] vcount = new int[g.numFaces];
+                parse_ints(vcount, vcount_el.getTextContent()); 
+                for (int i = 0; i < vcount.length; i++) {
+                    if (vcount[i] != 3) fail("cannot handle arbitrary polyons - only triangles allowed");
+                }
+            }
+            Element p_el = (Element) pel.getElementsByTagName("p").item(0);
+            Integer[] p = parse_ints(p_el.getTextContent()); 
+            int groupSize = p.length / g.numFaces / 3; // inputs in <p> are grouped together in this size
+
+            // index buffer for triangles
+            g.indexBuffer = new ArrayList<Integer>();
+            int vertexOffset = inputMap.get("VERTEX").offset;
+            for (int i = 0; i < p.length; i += groupSize) {
+                g.indexBuffer.add(p[i + vertexOffset]);
+            }
+            if (!fakeTextureMapping) {
+                // texture coordinate index buffer for vertices
+                g.texIndexBuffer = new ArrayList<Integer>();
+                int textureOffset = inputMap.get("TEXCOORD").offset;
+                for (int i = 0; i < p.length; i += groupSize) {
+                    g.texIndexBuffer.add(p[i + textureOffset]);
+                }
+            }
+            // normal index buffer for vertices
+            g.normalIndexBuffer = new ArrayList<Integer>();
+            int normalOffset = inputMap.get("NORMAL").offset;
+            for (int i = 0; i < p.length; i += groupSize) {
+                g.normalIndexBuffer.add(p[i + normalOffset]);
+            }
+
+            // TODO animation parsing goes here
+            
+            // post processing collada data:
+            createD3DVertexList(g, null /*skinnedAnis*/);
+            
+            collada.geometryMap.put(g.meshName, g);
     	}
 	}
 
@@ -465,315 +549,6 @@ public class ColladaImport2 {
     	assert (id != null && id.startsWith("#"));
 		return id.substring(1);
 	}
-
-	private void importColladaXXX(String filename) throws ParserConfigurationException, SAXException, IOException {
-        // create output file name:
-        File infile = new File(filename);
-        String outfileName = infile.getName();
-        int dotPos = outfileName.indexOf('.');
-        if (dotPos >= 0) {
-            outfileName = outfileName.substring(0, dotPos) + ".b";
-        } else {
-            outfileName = outfileName + ".b";
-        }
-        File outfile = new File(new File(outdir).getAbsolutePath() + File.separator + outfileName);
-        System.out.println("Writing to to this file: " + outfile.getAbsolutePath());
-        
-        // DOM parsing:
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(filename);
-
-        // optional, but recommended
-        // read this -
-        // http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
-        doc.getDocumentElement().normalize();
-
-        // System.out.println("Root element :" +
-        // doc.getDocumentElement().getNodeName());
-
-        Geometry mesh = new Geometry();;
-        NodeList nList = doc.getElementsByTagName("geometry");
-
-        for (int temp = 0; temp < nList.getLength(); temp++) {
-
-            Node nNode = nList.item(temp);
-
-            String node_name = nNode.getAttributes().getNamedItem("name").getNodeValue();
-            String node_id = nNode.getAttributes().getNamedItem("id").getNodeValue();
-            mesh.geometryId = node_id;
-            System.out.println("\nGeometry found :" + nNode.getNodeName() + " " + node_name + " " + node_id);
-
-            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-
-                Element eElement = (Element) nNode;
-
-                input_el[] inputTypes = getEmptyInputTable();
-                // first get vertices source:
-                Node v = eElement.getElementsByTagName("vertices").item(0);
-                Element vpos = getChildElement(eElement, "input", "semantic", "POSITION", true);
-                parseInput(vpos, inputTypes);
-                int cur = input_el_type.POSITION.ordinal();
-                System.out.println("vertex positions are in node id " + inputTypes[cur].source);
-                //System.out.println("by id: " + doc.getElementById(positions_id)); would not work as we have no schema loaded
-                NodeList sourceList = eElement.getElementsByTagName("source");
-                Element mesh_pos = getElement(sourceList, "source", "id", inputTypes[cur].source, true);
-                Element floatArrayNode = (Element) mesh_pos.getElementsByTagName("float_array").item(0); 
-                String float_array = floatArrayNode.getTextContent();
-                mesh.numVerts = Integer.valueOf(floatArrayNode.getAttribute("count"));
-                System.out.println(" num verts: " + mesh.numVerts);
-                //System.out.println(" verts: " + float_array);
-                mesh.verts = new float[mesh.numVerts];
-                parse_floats(mesh.verts, float_array);
-                
-                // now parse faces (polylist) for vertex, normal and texcoord index
-                boolean modeTriangle = false;  // signal polylist or triangle use
-                Element pel = (Element) eElement.getElementsByTagName("polylist").item(0);
-                // if we could not find polylist try triangles:
-                if (pel == null) {
-                	pel = (Element) eElement.getElementsByTagName("triangles").item(0);
-                	if (pel != null) {
-                		modeTriangle = true;
-                	}
-                }
-                // if pel still null we could not parse geometry:
-                if (pel == null) {
-                	fail("neither polygons nor triangles found. Cannot parse.");
-                }
-                if (pel != null) {
-	                NodeList inputList = pel.getElementsByTagName("input");
-	                for (int i = 0; i < inputList.getLength(); i++) {
-	                    Node node = inputList.item(i);
-	                    if (node instanceof Element) {
-	                        Element child = (Element) node;
-	                        parseInput(child, inputTypes);
-	                    }
-	                }
-                } 
-                if (inputTypes[input_el_type.TEXCOORD.ordinal()].source == null) {
-                    System.out.println("WARNING: input file does not include texture coordinates. Use UV mapping and re-export.");
-                    fakeTextureMapping = true;
-                }
-                mesh.numFaces = Integer.parseInt(pel.getAttribute("count"));
-                System.out.println("numFaces = " + mesh.numFaces);
-                
-                // normals
-                cur = input_el_type.NORMAL.ordinal();
-                Element normal_source = getElement(sourceList, "source", "id", inputTypes[cur].source, true);
-                floatArrayNode = (Element) normal_source.getElementsByTagName("float_array").item(0); 
-                float_array = floatArrayNode.getTextContent();
-                mesh.numNormals = Integer.valueOf(floatArrayNode.getAttribute("count"));
-                System.out.println(" num normals: " + mesh.numNormals);
-                //System.out.println(" normals: " + float_array);
-                mesh.normals = new float[mesh.numNormals];
-                parse_floats(mesh.normals, float_array);
-                
-                // texcoord
-                if (!fakeTextureMapping) {
-                    cur = input_el_type.TEXCOORD.ordinal();
-                    Element texcoord_source = getElement(sourceList, "source", "id", inputTypes[cur].source, true);
-                    floatArrayNode = (Element) texcoord_source.getElementsByTagName("float_array").item(0); 
-                    float_array = floatArrayNode.getTextContent();
-                    mesh.numTexcoords = Integer.valueOf(floatArrayNode.getAttribute("count"));
-                    System.out.println(" num texture coords: " + mesh.numTexcoords);
-                    //System.out.println(" coords: " + float_array);
-                    mesh.texcoords = new float[mesh.numTexcoords];
-                    parse_floats(mesh.texcoords, float_array);
-                }
-                
-                // indexes in polylist
-                if (!modeTriangle) {
-	                Element vcount_el = (Element) pel.getElementsByTagName("vcount").item(0);
-	                int[] vcount = new int[mesh.numFaces];
-	                parse_ints(vcount, vcount_el.getTextContent()); 
-	                for (int i = 0; i < vcount.length; i++) {
-	                    if (vcount[i] != 3) fail("cannot handle arbitrary polyons - only triangles allowed");
-	                }
-                }
-                Element p_el = (Element) pel.getElementsByTagName("p").item(0);
-                Integer[] p = parse_ints(p_el.getTextContent()); 
-                int groupSize = p.length / mesh.numFaces / 3; // inputs in <p> are grouped together in this size
-
-                // index buffer for triangles
-                mesh.indexBuffer = new ArrayList<Integer>();
-                int vertexOffset = inputTypes[input_el_type.VERTEX.ordinal()].offset;
-                for (int i = 0; i < p.length; i += groupSize) {
-                    mesh.indexBuffer.add(p[i + vertexOffset]);
-                }
-                if (!fakeTextureMapping) {
-                    // texture coordinate index buffer for vertices
-                    mesh.texIndexBuffer = new ArrayList<Integer>();
-                    int textureOffset = inputTypes[input_el_type.TEXCOORD.ordinal()].offset;
-                    for (int i = 0; i < p.length; i += groupSize) {
-                        mesh.texIndexBuffer.add(p[i + textureOffset]);
-                    }
-                }
-                // normal index buffer for vertices
-                mesh.normalIndexBuffer = new ArrayList<Integer>();
-                int normalOffset = inputTypes[input_el_type.NORMAL.ordinal()].offset;
-                for (int i = 0; i < p.length; i += groupSize) {
-                    mesh.normalIndexBuffer.add(p[i + normalOffset]);
-                }
-                
-                mesh.meshName = node_name;
-                List<Animation> anis = parseAnimations(node_name, doc, false);
-                if (!anis.isEmpty()) {
-                    anis = orderAndConvert(anis);
-                }
-                
-                List<SkinnedAnimation> skinnedAnis = parseSkinnedAnimations(node_name, doc, mesh);
-                if (!skinnedAnis.isEmpty()) {
-                    finishBonesSetup(boneList, skinnedAnis, doc);
-                }
-                
-                // post processing collada data:
-                createD3DVertexList(mesh, skinnedAnis);
-                
-                // write binary file:
-                //ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(outfile)));
-                DataOutputStream oos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(outfile)));
-                List<D3DVertex> all = mesh.d3dVertexList;
-                boolean isSkinned = false;
-                // write type: 0 means not skinned, 1 means skinned
-                if (all.size() > 0 && all.get(0).weight != null) {
-                    writeInt(oos, 1);
-                    isSkinned = true;
-                } else {
-                    writeInt(oos, 0);
-                }
-                if (isSkinned) {
-                    // for skinned animations we begin with joints list
-                    assert !skinnedAnis.isEmpty();
-                    writeInt(oos, skinnedAnis.size());
-                    for (int i = 0; i < skinnedAnis.size(); i++) {
-                        SkinnedAnimation a = skinnedAnis.get(i);
-                        writeInt(oos, a.name.length());
-                        writeString(oos, a.name);
-                        // Joints/Bones
-                        assert a.joints.size() == a.bones.size();
-                        writeInt(oos, a.joints.size());
-                        for (int j = 0; j < a.joints.size(); j++) {
-                            Bone bone = a.bones.get(j);
-                            Joint joint = a.joints.get(j);
-                            writeInt(oos, bone.parentId);
-                            writeMatrix(oos, joint.invBindMatrix);
-                            writeMatrix(oos, bone.bindPose);
-                            int numKey = 0;
-                            List<BezTriple> curves = null;
-                            if (bone.transformations.size() > 0) {
-                                curves = bone.transformations.get(0).beziers;
-                                numKey = curves.size();
-                            }
-                            writeInt(oos, numKey);  // number of keyframes
-                            for (int c = 0; c < numKey; c++) {
-                                writeFloat(oos, curves.get(c).cp[0] * FPS);
-                                writeMatrix(oos, curves.get(c).keyFrameMatrix);
-                            }
-                        }
-                        // now write transformations for this clip
-                        // #number of keyframes
-                        //writeInt(oos, a.bones.get(0).transformations.size());
-                        
-                    }
-                }
-                assert (all.size() % 3 == 0); // assert we have triples
-                // fix triangle order:
-                if (fixaxis) {
-                    for (int i = 0; i < all.size(); i+=3) {
-                    	D3DVertex s = all.get(i+1);
-                    	all.set(i+1, all.get(i+2));
-                    	all.set(i+2, s);
-                    }
-                }
-                // vertices length + data
-                writeInt(oos, all.size()*3);
-                for (int i = 0; i < all.size(); i++) {
-                	if (fixaxis) {
-	                    writeFloat(oos, all.get(i).x);
-	                    writeFloat(oos, all.get(i).z);
-	                    writeFloat(oos, all.get(i).y);
-                	} else {
-                        writeFloat(oos, all.get(i).x);
-                        writeFloat(oos, all.get(i).y);
-                        writeFloat(oos, all.get(i).z);
-                	}
-                }
-                for (int i = 0; i < all.size(); i++) {
-                    writeFloat(oos, all.get(i).cu);
-                    writeFloat(oos, 1.0f - all.get(i).cv);
-                }
-                // write normals
-                for (int i = 0; i < all.size(); i++) {
-                	if (fixaxis) {
-	                    writeFloat(oos, all.get(i).nx);
-	                    writeFloat(oos, all.get(i).nz);
-	                    writeFloat(oos, all.get(i).ny);
-                	} else {
-	                    writeFloat(oos, all.get(i).nx);
-	                    writeFloat(oos, all.get(i).ny);
-	                    writeFloat(oos, all.get(i).nz);
-                	}
-                }
-                if (isSkinned) {
-                    for (int i = 0; i < all.size(); i++) {
-                        int bonePack = pack(all.get(i).weight);
-                        writeInt(oos, bonePack);
-                    }
-                    for (int i = 0; i < all.size(); i++) {
-                        writeFloat(oos, all.get(i).weight[0].weight);
-                        writeFloat(oos, all.get(i).weight[1].weight);
-                        writeFloat(oos, all.get(i).weight[2].weight);
-                        writeFloat(oos, all.get(i).weight[3].weight);
-                    }
-                }
-                // vert index length + data
-                writeInt(oos, all.size());
-                for (int i = 0; i < mesh.indexBuffer.size(); i++) {
-                    writeInt(oos, i);
-                }
-                // animations (movement, no clips)
-                if (anis.size() == 0) {
-                    // write 0 to indicate that no animation is present
-                    writeInt(oos, 0);
-                } else {
-                    String ani_name = node_name;
-                    writeInt(oos, ani_name.length());
-                    writeString(oos, ani_name);
-                    // write bezTriple data
-                    assert anis.size() == 9;
-                    for (int i = 0; i < 9; i++) {
-                        Animation a = anis.get(i);
-                        writeInt(oos, a.beziers.size());
-                        for (int j = 0; j < a.beziers.size(); j++) {
-                            BezTriple b = a.beziers.get(j);
-                            writeFloat(oos, b.h1[0]);
-                            writeFloat(oos, b.h1[1]);
-                            writeFloat(oos, b.cp[0]);
-                            writeFloat(oos, b.cp[1]);
-                            writeFloat(oos, b.h2[0]);
-                            writeFloat(oos, b.h2[1]);
-                        }
-                    }
-                }
-                
-                // write number of available animations
-                //oos.writeFloat(pi); // uses big endian
-                oos.close();
-                //File out = new File(outdir + File.separator + )
-                
-                
-                // System.out.println("mesh : " + eElement.getAttribute("id"));
-                //System.out.println("mesh : " + eElement.getElementsByTagName("mesh").item(0));
-                //System.out.println("source : " + eElement.getElementsByTagName("source").item(0).getAttributes().getNamedItem("id"));
-                // System.out.println("Nick Name : " +
-                // eElement.getElementsByTagName("nickname").item(0).getTextContent());
-                // System.out.println("Salary : " +
-                // eElement.getElementsByTagName("salary").item(0).getTextContent());
-                fakeTextureMapping = false;
-            }
-        }
-
-    }
 
     private void finishBonesSetup(List<Bone> bones, List<SkinnedAnimation> skinnedAnis, Document doc) {
         assert skinnedAnis.size() == 1;
@@ -1187,8 +962,17 @@ public class ColladaImport2 {
             assert mesh.indexBuffer.size() == mesh.texIndexBuffer.size();
         assert mesh.verts.length / 3 <= numVertices;
         assert mesh.normals.length / 3 <= numVertices;
-        if (!fakeTextureMapping)
-            assert mesh.texcoords.length / 2 == numVertices;
+        if (!fakeTextureMapping) {
+            //assert mesh.texcoords.length / 2 == numVertices;
+        	if (mesh.texcoords.length / 2 != numVertices) {
+        		// maybe we reuse texcoords: make sure by searching max index
+        		Integer mx = Collections.max(mesh.texIndexBuffer);
+        		mx *= 2;
+        		if (mx >= mesh.texcoords.length) {
+        			fail("invalid texture coordinates");
+        		}
+        	}
+        }
         //int numDistinctVerts = mesh.numFaces * 3;
         mesh.d3dVertexList = new ArrayList<D3DVertex>(numVertices);  // indexes describe one vertex
         // go through indexes and create d3d vertexes on the fly (no optimization)
@@ -1234,6 +1018,7 @@ public class ColladaImport2 {
     }
 
     private SkinnedAnimation findAnimation(String meshName, List<SkinnedAnimation> animations) {
+    	if (animations == null) return null;
         for (SkinnedAnimation skinnedAnimation : animations) {
             if (skinnedAnimation.meshName.equals(meshName))
                     return skinnedAnimation;
@@ -1243,7 +1028,7 @@ public class ColladaImport2 {
 
     // parse single input element and put attributes to map:
     // map SEMANTIC to input_attributes (semantic, offset, source)
-    private void parseInput(Element input, input_el[] inputTypes) {
+    private void parseInput(Element input, Map<String, input_el> inputMap) {
         String semantic = input.getAttribute("semantic");
         String source = input.getAttribute("source");
         String offset = input.getAttribute("offset");
@@ -1259,11 +1044,17 @@ public class ColladaImport2 {
             //inputTypes[cur.ordinal()].source = source;
             log(" parse source: " + source);
         }
+        int intOffset = 0;
         if (offset != null && offset.length() > 0) {
-            int intOffset = Integer.valueOf(offset);
+            intOffset = Integer.valueOf(offset);
             //inputTypes[cur.ordinal()].offset = intOffset;
             log(" parse offset: " + intOffset);
         }
+        input_el inputEl = new input_el();
+        inputEl.type = semantic;
+        inputEl.offset = intOffset;
+        inputEl.source = source;
+        inputMap.put(semantic, inputEl);
     }
 
     private void writeMatrix(DataOutputStream oos, Float[] matrix) throws IOException {
@@ -1399,22 +1190,186 @@ public class ColladaImport2 {
         System.out.println("     Use Apply for bones and mesh objects in blender before exporting!");
     }
 
-    input_el[] getEmptyInputTable() {
-        int len = input_el_type.values().length;
-        input_el[] in = new input_el[len];
-        for (int i = 0; i < len; i++) {
-            in[i] = new input_el();
-            in[i].type = input_el_type.values()[i];
-            in[i].offset = 0;
-            in[i].source = null;
-        }
-        return in;
-    }
+//    input_el[] getEmptyInputTable() {
+//        int len = input_el_type.values().length;
+//        input_el[] in = new input_el[len];
+//        for (int i = 0; i < len; i++) {
+//            in[i] = new input_el();
+//            in[i].type = input_el_type.values()[i];
+//            in[i].offset = 0;
+//            in[i].source = null;
+//        }
+//        return in;
+//    }
     // local data structures
     enum input_el_type { POSITION, VERTEX, NORMAL, TEXCOORD};
     private class input_el {
-        input_el_type type;
+        String type;
         int offset;
         String source;
     }
+    
+    // write Output file
+    void writeOutputFile(File outfile) {
+        // write binary file:
+        //ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(outfile)));
+        DataOutputStream oos;
+		try {
+			oos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(outfile)));
+	        Set<Entry<String, Geometry>> geom = collada.geometryMap.entrySet();
+	        // first entry in bin file is number of entries:
+	        writeInt(oos, geom.size());
+	        for (Entry<String, Geometry> g : geom) {
+	        	Geometry mesh = g.getValue();
+	        	log("writing geometry: " + mesh.meshName);
+	        	// add mesh name to binary file
+                writeInt(oos, mesh.meshName.length());
+                writeString(oos, mesh.meshName);
+	            List<D3DVertex> all = mesh.d3dVertexList;
+	            boolean isSkinned = false;
+	            // write type: 0 means not skinned, 1 means skinned
+	            if (all.size() > 0 && all.get(0).weight != null) {
+	                writeInt(oos, 1);
+	                isSkinned = true;
+	            } else {
+	                writeInt(oos, 0);
+	            }
+	            /*        if (isSkinned) {
+	            // for skinned animations we begin with joints list
+	            assert !skinnedAnis.isEmpty();
+	            writeInt(oos, skinnedAnis.size());
+	            for (int i = 0; i < skinnedAnis.size(); i++) {
+	                SkinnedAnimation a = skinnedAnis.get(i);
+	                writeInt(oos, a.name.length());
+	                writeString(oos, a.name);
+	                // Joints/Bones
+	                assert a.joints.size() == a.bones.size();
+	                writeInt(oos, a.joints.size());
+	                for (int j = 0; j < a.joints.size(); j++) {
+	                    Bone bone = a.bones.get(j);
+	                    Joint joint = a.joints.get(j);
+	                    writeInt(oos, bone.parentId);
+	                    writeMatrix(oos, joint.invBindMatrix);
+	                    writeMatrix(oos, bone.bindPose);
+	                    int numKey = 0;
+	                    List<BezTriple> curves = null;
+	                    if (bone.transformations.size() > 0) {
+	                        curves = bone.transformations.get(0).beziers;
+	                        numKey = curves.size();
+	                    }
+	                    writeInt(oos, numKey);  // number of keyframes
+	                    for (int c = 0; c < numKey; c++) {
+	                        writeFloat(oos, curves.get(c).cp[0] * FPS);
+	                        writeMatrix(oos, curves.get(c).keyFrameMatrix);
+	                    }
+	                }
+	                // now write transformations for this clip
+	                // #number of keyframes
+	                //writeInt(oos, a.bones.get(0).transformations.size());
+	                
+	            }
+	        }*/
+	        assert (all.size() % 3 == 0); // assert we have triples
+	        // fix triangle order:
+	        if (fixaxis) {
+	            for (int i = 0; i < all.size(); i+=3) {
+	            	D3DVertex s = all.get(i+1);
+	            	all.set(i+1, all.get(i+2));
+	            	all.set(i+2, s);
+	            }
+	        }
+	        // vertices length + data
+	        writeInt(oos, all.size()*3);
+	        for (int i = 0; i < all.size(); i++) {
+	        	if (fixaxis) {
+	                writeFloat(oos, all.get(i).x);
+	                writeFloat(oos, all.get(i).z);
+	                writeFloat(oos, all.get(i).y);
+	        	} else {
+	                writeFloat(oos, all.get(i).x);
+	                writeFloat(oos, all.get(i).y);
+	                writeFloat(oos, all.get(i).z);
+	        	}
+	        }
+	        for (int i = 0; i < all.size(); i++) {
+	            writeFloat(oos, all.get(i).cu);
+	            writeFloat(oos, 1.0f - all.get(i).cv);
+	        }
+	        // write normals
+	        for (int i = 0; i < all.size(); i++) {
+	        	if (fixaxis) {
+	                writeFloat(oos, all.get(i).nx);
+	                writeFloat(oos, all.get(i).nz);
+	                writeFloat(oos, all.get(i).ny);
+	        	} else {
+	                writeFloat(oos, all.get(i).nx);
+	                writeFloat(oos, all.get(i).ny);
+	                writeFloat(oos, all.get(i).nz);
+	        	}
+	        }
+	        if (isSkinned) {
+	            for (int i = 0; i < all.size(); i++) {
+	                int bonePack = pack(all.get(i).weight);
+	                writeInt(oos, bonePack);
+	            }
+	            for (int i = 0; i < all.size(); i++) {
+	                writeFloat(oos, all.get(i).weight[0].weight);
+	                writeFloat(oos, all.get(i).weight[1].weight);
+	                writeFloat(oos, all.get(i).weight[2].weight);
+	                writeFloat(oos, all.get(i).weight[3].weight);
+	            }
+	        }
+	        // vert index length + data
+	        writeInt(oos, all.size());
+	        for (int i = 0; i < mesh.indexBuffer.size(); i++) {
+	            writeInt(oos, i);
+	        }
+	        // animations (movement, no clips)
+	        if (true/*anis.size() == 0*/) {
+	            // write 0 to indicate that no animation is present
+	            writeInt(oos, 0);
+	        } else {
+	            /*String ani_name = node_name;
+	            writeInt(oos, ani_name.length());
+	            writeString(oos, ani_name);
+	            // write bezTriple data
+	            assert anis.size() == 9;
+	            for (int i = 0; i < 9; i++) {
+	                Animation a = anis.get(i);
+	                writeInt(oos, a.beziers.size());
+	                for (int j = 0; j < a.beziers.size(); j++) {
+	                    BezTriple b = a.beziers.get(j);
+	                    writeFloat(oos, b.h1[0]);
+	                    writeFloat(oos, b.h1[1]);
+	                    writeFloat(oos, b.cp[0]);
+	                    writeFloat(oos, b.cp[1]);
+	                    writeFloat(oos, b.h2[0]);
+	                    writeFloat(oos, b.h2[1]);
+	                }
+	            } */
+	        }
+	        
+	        // write number of available animations
+	        //oos.writeFloat(pi); // uses big endian
+	        //File out = new File(outdir + File.separator + )
+	        
+	        
+	        // System.out.println("mesh : " + eElement.getAttribute("id"));
+	        //System.out.println("mesh : " + eElement.getElementsByTagName("mesh").item(0));
+	        //System.out.println("source : " + eElement.getElementsByTagName("source").item(0).getAttributes().getNamedItem("id"));
+	        // System.out.println("Nick Name : " +
+	        // eElement.getElementsByTagName("nickname").item(0).getTextContent());
+	        // System.out.println("Salary : " +
+	        // eElement.getElementsByTagName("salary").item(0).getTextContent());
+	        fakeTextureMapping = false;
+	    }
+	    oos.close();
+	    	
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 }
+
+

@@ -30,6 +30,7 @@ public:
 	void initBoundigBox();
 	void addToBoundingBox(XMFLOAT3 p);
 	void getBoundingBox(BoundingBox &b);
+	string nameFromCollada;
 private:
 	// for calculating bounding box:
 	XMFLOAT3 bboxVertexMin;
@@ -39,7 +40,9 @@ private:
 class MeshLoader {
 public:
 	// load asset from full path/filename
-	void loadBinaryAsset(wstring filename, Mesh *mesh, float scale = 1.0f, XMFLOAT3 *displacement = nullptr);
+	void loadBinaryAssets(wstring filename, vector<Mesh*> meshes, vector<string> colladaNames, float scale = 1.0f, XMFLOAT3 *displacement = nullptr);
+private:
+	Mesh* findWithName(vector<Mesh*> meshes, string meshName);
 };
 
 
@@ -120,8 +123,10 @@ private:
 class WorldObjectStore {
 public:
 	// objects
-	// load object definition from .b file, save under given hash name
-	void loadObject(wstring filename, string id, float scale = 1.0f, XMFLOAT3 *displacement = nullptr);
+	// load object definition from .b file, save under given hash name. will fail if more than one mesh is found
+	void loadObject(wstring filename, string id, float scale = 1.0f, XMFLOAT3* displacement = nullptr);
+	// load objects definition from .b file, use given colladaNames to search and then save under given hash names
+	void loadObjects(wstring filename, vector<string> colladaNames, vector<string> ids, float scale = 1.0f, XMFLOAT3* displacement = nullptr);
 	// add loaded object to scene
 	void addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid = 0);
 	void addObject(WorldObject &w, string id, XMFLOAT3 pos, TextureID tid = 0);

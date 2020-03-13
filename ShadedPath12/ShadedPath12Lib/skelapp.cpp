@@ -124,7 +124,16 @@ void SkelApp::init(HWND hwnd) {
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	if (true) {
 		//objectStore.loadObject(L"joint6_anim.b", "Joint");
-		objectStore.loadObject(L"Walking3.b", "Joint");
+		//objectStore.loadObject(L"Walking3.b", "Joint");
+
+		//objectStore.loadObject(L"Walking2.b", "Joint");
+		vector<string> colladaNames;
+		vector<string> ids;
+		colladaNames.push_back(string("Beta_JointsMesh"));
+		colladaNames.push_back(string("Beta_SurfaceMesh"));
+		ids.push_back(string("Joint"));
+		ids.push_back(string("Surface"));
+		objectStore.loadObjects(L"Walking2.b", colladaNames, ids);
 		objectStore.addObject(object, "Joint", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
 		//object.setAction("Armature");
 

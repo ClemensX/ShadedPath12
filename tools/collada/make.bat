@@ -26,4 +26,5 @@ rem java -cp bin de.fehrprice.collada.ColladaImport -fixaxis -outdir ..\..\data\
 rem can't use fixaxis on animations:
 rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ joint5_anim.dae
 rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ joint6_anim.dae
-java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ Walking3.dae
+rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ Walking3.dae
+java -cp bin de.fehrprice.collada.ColladaImport2 -outdir ..\..\data\mesh\ C:\dev\repos\Walking2.dae

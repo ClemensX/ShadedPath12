@@ -18,7 +18,19 @@ XMFLOAT4X4 toLeft(XMFLOAT4X4 r) {
 	l._43 *= -1.0f;
 	return l;
 }
-void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale, XMFLOAT3 *displacement) {
+
+Mesh* MeshLoader::findWithName(vector<Mesh*> meshes, string meshName)
+{
+	for (Mesh* m : meshes) {
+		if (meshName.compare(m->nameFromCollada) == 0) {
+			// found
+			return m;
+		}
+	}
+	return nullptr;
+}
+
+void MeshLoader::loadBinaryAssets(wstring filename, vector<Mesh*> meshes, vector<string> colladaNames, float scale, XMFLOAT3* displacement) {
 	ifstream bfile(filename.c_str(), ios::in | ios::binary);
 	if (debug_basic) Log("file opened: " << filename.c_str() << "\n");
 
@@ -28,175 +40,176 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale, XMFL
 		return;
 	}
 
-	// mesh processing:
-	int mode;
-	bfile.read((char*)&mode, 4);
+	// load number of meshes:
+	int meshCount;
+	bfile.read((char*)&meshCount, 4);
+	if (meshCount != colladaNames.size() || meshCount != meshes.size()) {
+		Log("mesh count in binary: " << meshCount << " parameters: " << meshes.size() << " " << colladaNames.size() << endl);
+		Error(L"Cannot load meshes from binary file. Parameters do not match mesh count.");
+	}
+	int count = 0;
+	while (count < meshCount) {
+		count++;
+		int numMeshNameLength;
+		bfile.read((char*)&numMeshNameLength, 4);
+		char* mesh_name = new char[numMeshNameLength + 1];
+		mesh_name[numMeshNameLength] = '\0';
+		bfile.read((char*)mesh_name, numMeshNameLength);
+		string meshName = std::string(mesh_name);
+		Mesh* mesh = findWithName(meshes, meshName);
+		if (mesh == nullptr) {
+			Log("not found in binary file: " << meshName.c_str() << endl);
+			Error(L"cannot find requested collada mesh in binary file.");
+		}
+		Log("loading mesh: " << mesh->nameFromCollada.c_str() << endl);
+		delete mesh_name;
+		// mesh processing:
+		int mode;
+		bfile.read((char*)&mode, 4);
 
-	// read animation clips
-	if (mode == 1) {
-		int numAniClips;
-		bfile.read((char*)&numAniClips, 4);
-		//aniClips = new AnimationClip[numAniClips];
-		for (int i = 0; i < numAniClips; i++) {
-			int numAnimationNameLength;
-			bfile.read((char*)&numAnimationNameLength, 4);
-			char *clip_name = new char[numAnimationNameLength + 1];
-			clip_name[numAnimationNameLength] = '\0';
-			bfile.read((char*)clip_name, numAnimationNameLength);
-			Log("animation clip name: " << clip_name << "\n");
-			AnimationClip clip;
-			clip.name = std::string(clip_name);
-			Action *action = new Action();
-			action->name = std::string(clip_name);// 'Armature'
-			int numJoints;
-			bfile.read((char*)&numJoints, 4);
-			clip.numBones = numJoints;
-			for (int j = 0; j < numJoints; j++) {
-				int parentId;
-				bfile.read((char*)&parentId, 4);
-				clip.parents[j] = parentId;
-				Curve curve;
-				// read inverse bind matrix
-				float f[16];
-				for (int n = 0; n < 16; n++) {
-					bfile.read((char*)&f[n], 4);
-				}
-				XMFLOAT4X4 m = XMFLOAT4X4(f);
-				//XMMATRIX m4 = XMLoadFloat4x4(&m);
-				clip.invBindMatrices.push_back(toLeft(m));
-				// read bone bind pose (not used in animation - just to be able to display bone structure
-				for (int n = 0; n < 16; n++) {
-					bfile.read((char*)&f[n], 4);
-				}
-				m = XMFLOAT4X4(f);
-				clip.boneBindPoseMatrices.push_back(toLeft(m));
-				int keyframes;
-				bfile.read((char*)&keyframes, 4);
-				for (int m = 0; m < keyframes; m++) {
-					float time;
-					bfile.read((char*)&time, 4);
-					BezTriple b;
-					b.isBoneAnimation = true;
-					b.cp[0] = time;
-					float f2[16];
+		// read animation clips
+		if (mode == 1) {
+			int numAniClips;
+			bfile.read((char*)&numAniClips, 4);
+			//aniClips = new AnimationClip[numAniClips];
+			for (int i = 0; i < numAniClips; i++) {
+				int numAnimationNameLength;
+				bfile.read((char*)&numAnimationNameLength, 4);
+				char* clip_name = new char[numAnimationNameLength + 1];
+				clip_name[numAnimationNameLength] = '\0';
+				bfile.read((char*)clip_name, numAnimationNameLength);
+				Log("animation clip name: " << clip_name << "\n");
+				AnimationClip clip;
+				clip.name = std::string(clip_name);
+				Action* action = new Action();
+				action->name = std::string(clip_name);// 'Armature'
+				int numJoints;
+				bfile.read((char*)&numJoints, 4);
+				clip.numBones = numJoints;
+				for (int j = 0; j < numJoints; j++) {
+					int parentId;
+					bfile.read((char*)&parentId, 4);
+					clip.parents[j] = parentId;
+					Curve curve;
+					// read inverse bind matrix
+					float f[16];
 					for (int n = 0; n < 16; n++) {
-						bfile.read((char*)&f2[n], 4);
-						b.transMatrix[n] = f2[n];
+						bfile.read((char*)&f[n], 4);
 					}
-					//XMFLOAT4X4 m = XMFLOAT4X4(f);
-					//b.poseMatrix = m;
+					XMFLOAT4X4 m = XMFLOAT4X4(f);
+					//XMMATRIX m4 = XMLoadFloat4x4(&m);
+					clip.invBindMatrices.push_back(toLeft(m));
+					// read bone bind pose (not used in animation - just to be able to display bone structure
+					for (int n = 0; n < 16; n++) {
+						bfile.read((char*)&f[n], 4);
+					}
+					m = XMFLOAT4X4(f);
+					clip.boneBindPoseMatrices.push_back(toLeft(m));
+					int keyframes;
+					bfile.read((char*)&keyframes, 4);
+					for (int m = 0; m < keyframes; m++) {
+						float time;
+						bfile.read((char*)&time, 4);
+						BezTriple b;
+						b.isBoneAnimation = true;
+						b.cp[0] = time;
+						float f2[16];
+						for (int n = 0; n < 16; n++) {
+							bfile.read((char*)&f2[n], 4);
+							b.transMatrix[n] = f2[n];
+						}
+						//XMFLOAT4X4 m = XMFLOAT4X4(f);
+						//b.poseMatrix = m;
+						curve.bezTriples.push_back(b);
+					}
+					action->curves.push_back(curve);
+				}
+				mesh->clips[clip.name] = clip;
+				if (true /*actions != NULL*/)
+					mesh->actions[action->name] = *action;
+				delete action;
+				delete clip_name;
+			}
+		}
+		// read number and verts
+		int numVerts;
+		bfile.read((char*)&numVerts, 4);
+		float* verts = new float[numVerts];
+		bfile.read((char*)verts, 4 * numVerts);
+		//oss << "reading float: " << verts[0] << "\n";
+		//Blender::Log(oss.str());
+
+		// texture coords:
+		int numTex = (numVerts * 2) / 3;
+		float* tex = new float[numTex];
+		bfile.read((char*)tex, 4 * numTex);
+
+		// normals:
+		int numNormals = numVerts;
+		float* norm = new float[numNormals];
+		bfile.read((char*)norm, 4 * numNormals);
+
+		// bones and their weights:
+		int* bones = 0;
+		float* bone_weights = 0;
+		if (mode == 1) {
+			// we have skinned animation weights
+			// for all vertices we have one int packed with the indices of the 4 bone influencing it
+			int numBonePacks = numTex / 2;
+			bones = new int[numBonePacks];
+			bfile.read((char*)bones, 4 * numBonePacks);
+			// for each bonePack we have the 4 weights:
+			bone_weights = new float[4 * numBonePacks];
+			bfile.read((char*)bone_weights, 4 * 4 * numBonePacks);
+		}
+
+		// vertices index buffer
+		int numIndex;
+		bfile.read((char*)&numIndex, 4);
+		int* ints = new int[numIndex];
+		bfile.read((char*)ints, 4 * numIndex);
+		int numAnimationNameLength = 0;
+		bfile.read((char*)&numAnimationNameLength, 4);
+		// load animations:
+		Action* action = 0;
+		if (numAnimationNameLength != 0) {
+			char* ani_name = new char[numAnimationNameLength + 1];
+			ani_name[numAnimationNameLength] = '\0';
+			bfile.read((char*)ani_name, numAnimationNameLength);
+			Log("animation name: " << ani_name << "\n");
+			action = new Action();
+			action->name = std::string(ani_name);
+			for (int i = 0; i < 9; i++) {
+				Curve curve;
+				int numSegments;
+				bfile.read((char*)&numSegments, 4);
+				for (int j = 0; j < numSegments; j++) {
+					BezTriple b;
+					b.isBoneAnimation = false;
+					bfile.read((char*)&b.h1[0], 4);
+					bfile.read((char*)&b.h1[1], 4);
+					bfile.read((char*)&b.cp[0], 4);
+					bfile.read((char*)&b.cp[1], 4);
+					bfile.read((char*)&b.h2[0], 4);
+					bfile.read((char*)&b.h2[1], 4);
 					curve.bezTriples.push_back(b);
 				}
 				action->curves.push_back(curve);
 			}
-			mesh->clips[clip.name] = clip;
-			if (true /*actions != NULL*/)
-				mesh->actions[action->name] = *action;
+			mesh->actions[action->name] = *action;
 			delete action;
-			delete clip_name;
+			delete ani_name;
 		}
-	}
-	// read number and verts
-	int numVerts;
-	bfile.read((char*)&numVerts, 4);
-	float *verts = new float[numVerts];
-	bfile.read((char*)verts, 4 * numVerts);
-	//oss << "reading float: " << verts[0] << "\n";
-	//Blender::Log(oss.str());
+		// process loaded mesh:
+		//Mesh m;
+		//Mesh *mesh = &this->mesh;
+		mesh->initBoundigBox();
+		mesh->numVertices = numVerts / 3;
+		mesh->vertices.reserve(mesh->numVertices);
+		mesh->numIndexes = numIndex;
+		mesh->indexes.reserve(mesh->numIndexes);
 
-	// texture coords:
-	int numTex = (numVerts * 2) / 3;
-	float *tex = new float[numTex];
-	bfile.read((char*)tex, 4 * numTex);
-
-	// normals:
-	int numNormals = numVerts;
-	float *norm = new float[numNormals];
-	bfile.read((char*)norm, 4 * numNormals);
-
-	// bones and their weights:
-	int *bones = 0;
-	float *bone_weights = 0;
-	if (mode == 1) {
-		// we have skinned animation weights
-		// for all vertices we have one int packed with the indices of the 4 bone influencing it
-		int numBonePacks = numTex / 2;
-		bones = new int[numBonePacks];
-		bfile.read((char*)bones, 4 * numBonePacks);
-		// for each bonePack we have the 4 weights:
-		bone_weights = new float[4 * numBonePacks];
-		bfile.read((char*)bone_weights, 4 * 4 * numBonePacks);
-	}
-
-	// vertices index buffer
-	int numIndex;
-	bfile.read((char*)&numIndex, 4);
-	int *ints = new int[numIndex];
-	bfile.read((char*)ints, 4 * numIndex);
-	int numAnimationNameLength = 0;
-	bfile.read((char*)&numAnimationNameLength, 4);
-	// load animations:
-	Action *action = 0;
-	if (numAnimationNameLength != 0) {
-		char *ani_name = new char[numAnimationNameLength + 1];
-		ani_name[numAnimationNameLength] = '\0';
-		bfile.read((char*)ani_name, numAnimationNameLength);
-		Log("animation name: " << ani_name << "\n");
-		action = new Action();
-		action->name = std::string(ani_name);
-		for (int i = 0; i < 9; i++) {
-			Curve curve;
-			int numSegments;
-			bfile.read((char*)&numSegments, 4);
-			for (int j = 0; j < numSegments; j++) {
-				BezTriple b;
-				b.isBoneAnimation = false;
-				bfile.read((char*)&b.h1[0], 4);
-				bfile.read((char*)&b.h1[1], 4);
-				bfile.read((char*)&b.cp[0], 4);
-				bfile.read((char*)&b.cp[1], 4);
-				bfile.read((char*)&b.h2[0], 4);
-				bfile.read((char*)&b.h2[1], 4);
-				curve.bezTriples.push_back(b);
-			}
-			action->curves.push_back(curve);
-		}
-		mesh->actions[action->name] = *action;
-		delete action;
-		delete ani_name;
-	}
-	bfile.close();
-	// process loaded mesh:
-	//Mesh m;
-	//Mesh *mesh = &this->mesh;
-	mesh->initBoundigBox();
-	mesh->numVertices = numVerts / 3;
-	mesh->vertices.reserve(mesh->numVertices);
-	mesh->numIndexes = numIndex;
-	mesh->indexes.reserve(mesh->numIndexes);
-
-	WorldObjectVertex::VertexTextured vertex;
-	for (int i = 0; i < mesh->numVertices; i++) {
-		vertex.Pos.x = verts[i * 3] * scale;
-		vertex.Pos.y = verts[i * 3 + 1] * scale;
-		vertex.Pos.z = verts[i * 3 + 2] * scale;
-		if (displacement != nullptr) {
-			vertex.Pos.x += displacement->x;
-			vertex.Pos.y += displacement->y;
-			vertex.Pos.z += displacement->z;
-		}
-		mesh->addToBoundingBox(vertex.Pos);
-		vertex.Normal.x = norm[i * 3];
-		vertex.Normal.y = norm[i * 3 + 1];
-		vertex.Normal.z = norm[i * 3 + 2];
-		vertex.Tex.x = tex[i * 2];
-		vertex.Tex.y = tex[i * 2 + 1];
-		mesh->vertices.push_back(vertex);
-	}
-	std::vector<WorldObjectVertex::VertexSkinned> *skinnedVertices = 0;
-	if (mode == 1) {
-		mesh->skinnedVertices.reserve(mesh->numVertices);
-		WorldObjectVertex::VertexSkinned vertex;
+		WorldObjectVertex::VertexTextured vertex;
 		for (int i = 0; i < mesh->numVertices; i++) {
 			vertex.Pos.x = verts[i * 3] * scale;
 			vertex.Pos.y = verts[i * 3 + 1] * scale;
@@ -207,37 +220,60 @@ void MeshLoader::loadBinaryAsset(wstring filename, Mesh* mesh, float scale, XMFL
 				vertex.Pos.z += displacement->z;
 			}
 			mesh->addToBoundingBox(vertex.Pos);
-			vertex.Tex.x = tex[i * 2];
-			vertex.Tex.y = tex[i * 2 + 1];
 			vertex.Normal.x = norm[i * 3];
 			vertex.Normal.y = norm[i * 3 + 1];
 			vertex.Normal.z = norm[i * 3 + 2];
-			vertex.Weights.x = bone_weights[i * 4];
-			vertex.Weights.y = bone_weights[i * 4 + 1];
-			vertex.Weights.z = bone_weights[i * 4 + 2];
-			vertex.Weights.w = bone_weights[i * 4 + 3];
-			unsigned int ui = bones[i];
-			vertex.BoneIndices[0] = ui & 0xff;
-			vertex.BoneIndices[1] = (ui & 0xff00) >> 8;
-			vertex.BoneIndices[2] = (ui & 0xff0000) >> 16;
-			vertex.BoneIndices[3] = (ui & 0xff000000) >> 24;
-			mesh->skinnedVertices.push_back(vertex);
+			vertex.Tex.x = tex[i * 2];
+			vertex.Tex.y = tex[i * 2 + 1];
+			mesh->vertices.push_back(vertex);
+		}
+		std::vector<WorldObjectVertex::VertexSkinned>* skinnedVertices = 0;
+		if (mode == 1) {
+			mesh->skinnedVertices.reserve(mesh->numVertices);
+			WorldObjectVertex::VertexSkinned vertex;
+			for (int i = 0; i < mesh->numVertices; i++) {
+				vertex.Pos.x = verts[i * 3] * scale;
+				vertex.Pos.y = verts[i * 3 + 1] * scale;
+				vertex.Pos.z = verts[i * 3 + 2] * scale;
+				if (displacement != nullptr) {
+					vertex.Pos.x += displacement->x;
+					vertex.Pos.y += displacement->y;
+					vertex.Pos.z += displacement->z;
+				}
+				mesh->addToBoundingBox(vertex.Pos);
+				vertex.Tex.x = tex[i * 2];
+				vertex.Tex.y = tex[i * 2 + 1];
+				vertex.Normal.x = norm[i * 3];
+				vertex.Normal.y = norm[i * 3 + 1];
+				vertex.Normal.z = norm[i * 3 + 2];
+				vertex.Weights.x = bone_weights[i * 4];
+				vertex.Weights.y = bone_weights[i * 4 + 1];
+				vertex.Weights.z = bone_weights[i * 4 + 2];
+				vertex.Weights.w = bone_weights[i * 4 + 3];
+				unsigned int ui = bones[i];
+				vertex.BoneIndices[0] = ui & 0xff;
+				vertex.BoneIndices[1] = (ui & 0xff00) >> 8;
+				vertex.BoneIndices[2] = (ui & 0xff0000) >> 16;
+				vertex.BoneIndices[3] = (ui & 0xff000000) >> 24;
+				mesh->skinnedVertices.push_back(vertex);
+			}
+		}
+		for (int i = 0; i < mesh->numIndexes; i++) {
+			mesh->indexes.push_back(ints[i]);
+		}
+
+		// free mem
+		delete verts;
+		delete ints;
+		delete tex;
+		delete norm;
+		if (mode == 1) {
+			delete bones;
+			delete bone_weights;
+			//delete skinnedVertices;
 		}
 	}
-	for (int i = 0; i < mesh->numIndexes; i++) {
-		mesh->indexes.push_back(ints[i]);
-	}
-
-	// free mem
-	delete verts;
-	delete ints;
-	delete tex;
-	delete norm;
-	if (mode == 1) {
-		delete bones;
-		delete bone_weights;
-		//delete skinnedVertices;
-	}
+	bfile.close();
 }
 
 //void Mesh::createVertexAndIndexBuffer(WorldObjectEffect *worldObjectEffect) {
@@ -577,8 +613,23 @@ void WorldObject::drawSkeleton(XMFLOAT4 color, Path* path, LinesEffect* linesEff
 		drawMeshFromTriangleLines(&mesh->vertices, linesEffect, time, user);
 		drawSkeletonFromLines(this->pathDescBone, &mesh->vertices, linesEffect, time, user);
 	}
-	else {
-		Log("tried to draw skeleton for unskinned object");
+	else if (mesh->vertices.size() > 0 && !disableSkinning) {
+		//Log("draw skeleton for unskinned object");
+		for (int skV = 0; skV < (int)mesh->skinnedVertices.size(); skV++) {
+			WorldObjectVertex::VertexTextured* v = &mesh->vertices[skV];
+			XMVECTOR vfinal, normfinal;
+			// no skinning to do for non-animated objects - just use pose
+			vfinal = XMLoadFloat3(&v->Pos);
+			normfinal = XMLoadFloat3(&v->Normal);
+			// TODO handle cpu calculated normals after animation/skinning here
+			XMFLOAT3 vfinal_flo;
+			XMStoreFloat3(&vfinal_flo, vfinal);
+			mesh->vertices[skV].Pos = vfinal_flo;
+			XMFLOAT3 normfinal_flo;
+			XMStoreFloat3(&normfinal_flo, normfinal);
+			mesh->vertices[skV].Normal = normfinal_flo;
+		}
+		drawMeshFromTriangleLines(&mesh->vertices, linesEffect, time, user);
 	}
 }
 
@@ -731,8 +782,22 @@ void WorldObjectStore::loadObject(wstring filename, string id, float scale, XMFL
 	wstring binFile = DXGlobal::getInstance()->util.findFile(filename.c_str(), Util::MESH);
 	Mesh mesh;
 	meshes[id] = mesh;
-	loader.loadBinaryAsset(binFile, &meshes[id], scale, displacement);
+	//loader.loadBinaryAsset(binFile, &meshes[id], scale, displacement);
 	//meshes[id].createVertexAndIndexBuffer(this->objectEffect);
+}
+
+void WorldObjectStore::loadObjects(wstring filename, vector<string> colladaNames, vector<string> ids, float scale, XMFLOAT3* displacement)
+{
+	MeshLoader loader;
+	wstring binFile = DXGlobal::getInstance()->util.findFile(filename.c_str(), Util::MESH);
+	vector<Mesh*> meshes_vec; // local for calling loadBinaryAssets
+	for (auto& id : colladaNames) {
+		Mesh mesh;
+		mesh.nameFromCollada = id;
+		meshes[id] = mesh;
+		meshes_vec.push_back(&meshes[id]); // store address
+	}
+	loader.loadBinaryAssets(binFile, meshes_vec, ids, scale, displacement);
 }
 
 void WorldObjectStore::createGroup(string groupname) {
