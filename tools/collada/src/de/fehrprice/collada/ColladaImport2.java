@@ -434,9 +434,9 @@ public class ColladaImport2 {
     		collada.controllerMap.put(c.name, c);
     		Element skin = getSingleAssertedChildElement(e, "skin");
     		// TODO load skin like in parseSkinnedAnimations()
-    		String meshId = getInternalAttribute(skin, "source");
-    		Geometry g = collada.geometryMap.get(meshId);
-    		assert(g != null);
+//    		String meshId = getInternalAttribute(skin, "source");
+//    		Geometry g = collada.geometryMap.get(meshId);
+//    		assert(g != null);
     		//log(" with geometry: " + meshId);
     	}
 	}

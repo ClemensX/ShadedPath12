@@ -60,7 +60,8 @@ private:
 	//VR2 *vr = nullptr;
 	VR vr;
 	vector<Effect*> updateEffectList;
-	WorldObject object;
+	WorldObject object, object2;
+	boolean use2ndObject = true;
 	float aspectRatio = 0.0f;
 	Path path; // calculate animation
 };

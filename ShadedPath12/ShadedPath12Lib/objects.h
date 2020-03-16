@@ -37,12 +37,27 @@ private:
 	XMFLOAT3 bboxVertexMax;
 };
 
+// define which/how objects should be loaded from binary file
+class ObjectDef {
+public:
+	// mandatory id for this mesh in Obejct Store
+	string objectStoreId;
+	// Collada geometry name. For multiple meshes in collada file setting this is mandatory
+	string colladaName;
+	// pointer to meshes map in object store
+	Mesh* mesh;
+	// rescale mesh (default is no scaling)
+	float scale = 1.0f;
+	// relocate object away from bind pose position:
+	XMFLOAT3 * displacement = nullptr;
+};
+
 class MeshLoader {
 public:
 	// load asset from full path/filename
-	void loadBinaryAssets(wstring filename, vector<Mesh*> meshes, vector<string> colladaNames, float scale = 1.0f, XMFLOAT3 *displacement = nullptr);
+	void loadBinaryAssets(wstring filename, vector<ObjectDef> &objectDefs);
 private:
-	Mesh* findWithName(vector<Mesh*> meshes, string meshName);
+	ObjectDef* findWithName(vector<ObjectDef> &objectDefs, string meshName);
 };
 
 
@@ -126,7 +141,7 @@ public:
 	// load object definition from .b file, save under given hash name. will fail if more than one mesh is found
 	void loadObject(wstring filename, string id, float scale = 1.0f, XMFLOAT3* displacement = nullptr);
 	// load objects definition from .b file, use given colladaNames to search and then save under given hash names
-	void loadObjects(wstring filename, vector<string> colladaNames, vector<string> ids, float scale = 1.0f, XMFLOAT3* displacement = nullptr);
+	void loadObjects(wstring filename, vector<ObjectDef> &objectDefs);
 	// add loaded object to scene
 	void addObject(string groupname, string id, XMFLOAT3 pos, TextureID tid = 0);
 	void addObject(WorldObject &w, string id, XMFLOAT3 pos, TextureID tid = 0);

@@ -123,17 +123,11 @@ void SkelApp::init(HWND hwnd) {
 	//xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	if (true) {
-		//objectStore.loadObject(L"joint6_anim.b", "Joint");
-		//objectStore.loadObject(L"Walking3.b", "Joint");
-
-		//objectStore.loadObject(L"Walking2.b", "Joint");
-		vector<string> colladaNames;
-		vector<string> ids;
-		colladaNames.push_back(string("Beta_JointsMesh"));
-		colladaNames.push_back(string("Beta_SurfaceMesh"));
-		ids.push_back(string("Joint"));
-		ids.push_back(string("Surface"));
-		objectStore.loadObjects(L"Walking2.b", colladaNames, ids);
+		vector<ObjectDef> ods {
+			{ string("Joint"), string("Beta_JointsMesh")  },
+			{ string("Surface"), string("Beta_SurfaceMesh"), }
+		};
+		objectStore.loadObjects(L"Walking2.b", ods);
 		objectStore.addObject(object, "Joint", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
 		//object.setAction("Armature");
 
@@ -143,6 +137,18 @@ void SkelApp::init(HWND hwnd) {
 		object.material.specIntensity = 0.0f; // no spec color
 		object.drawNormals = true;
 		object.drawBoundingBox = true;
+	}
+	if (use2ndObject) {
+		object2.material.ambient = XMFLOAT4(1, 1, 1, 1);
+		objectStore.addObject(object2, "Surface", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
+		//object.setAction("Armature");
+
+		//object.pathDescBone->pathMode = PathMode::Path_Reverse;
+		//object.forceBoundingBox(BoundingBox(XMFLOAT3(3.16211f, 3.16214f, 7.28022f), XMFLOAT3(4.51012f, 4.51011f, 7.6599f)));
+		object2.material.specExp = 1.0f;       // no spec color
+		object2.material.specIntensity = 0.0f; // no spec color
+		object2.drawNormals = true;
+		object2.drawBoundingBox = true;
 	}
 
 
@@ -252,6 +258,9 @@ void SkelApp::update(Pipeline* pipeline)
 	lineEffect.addOneTime(lines, lineUser);
 	// draw skeleton and/ ormesh wirefarme form lines:
 	object.drawSkeleton(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), &path, &lineEffect, plus, lineUser);  // blue skeleton
+	if (use2ndObject) {
+		object2.drawSkeleton(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), &path, &lineEffect, plus, lineUser);  // blue skeleton
+	}
 	// activate changes:
 	lineEffect.activateAppDataSet(lineUser);
 	lineEffect.updateQueue.releaseLockedInactiveDataSet(lineUser);

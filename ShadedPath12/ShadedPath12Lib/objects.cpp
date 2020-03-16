@@ -19,18 +19,19 @@ XMFLOAT4X4 toLeft(XMFLOAT4X4 r) {
 	return l;
 }
 
-Mesh* MeshLoader::findWithName(vector<Mesh*> meshes, string meshName)
+ObjectDef* MeshLoader::findWithName(vector<ObjectDef> &objectDefs, string meshName)
 {
-	for (Mesh* m : meshes) {
+	for (auto& od : objectDefs) {
+		Mesh* m = od.mesh;
 		if (meshName.compare(m->nameFromCollada) == 0) {
 			// found
-			return m;
+			return &od;
 		}
 	}
 	return nullptr;
 }
 
-void MeshLoader::loadBinaryAssets(wstring filename, vector<Mesh*> meshes, vector<string> colladaNames, float scale, XMFLOAT3* displacement) {
+void MeshLoader::loadBinaryAssets(wstring filename, vector<ObjectDef> &objectDefs) {
 	ifstream bfile(filename.c_str(), ios::in | ios::binary);
 	if (debug_basic) Log("file opened: " << filename.c_str() << "\n");
 
@@ -43,8 +44,8 @@ void MeshLoader::loadBinaryAssets(wstring filename, vector<Mesh*> meshes, vector
 	// load number of meshes:
 	int meshCount;
 	bfile.read((char*)&meshCount, 4);
-	if (meshCount != colladaNames.size() || meshCount != meshes.size()) {
-		Log("mesh count in binary: " << meshCount << " parameters: " << meshes.size() << " " << colladaNames.size() << endl);
+	if (meshCount != objectDefs.size()) {
+		Log("mesh count in binary: " << meshCount << " parameters list: " << objectDefs.size() << endl);
 		Error(L"Cannot load meshes from binary file. Parameters do not match mesh count.");
 	}
 	int count = 0;
@@ -56,7 +57,10 @@ void MeshLoader::loadBinaryAssets(wstring filename, vector<Mesh*> meshes, vector
 		mesh_name[numMeshNameLength] = '\0';
 		bfile.read((char*)mesh_name, numMeshNameLength);
 		string meshName = std::string(mesh_name);
-		Mesh* mesh = findWithName(meshes, meshName);
+		ObjectDef *odef = findWithName(objectDefs, meshName);
+		Mesh* mesh = odef->mesh;
+		float scale = odef->scale;
+		XMFLOAT3* displacement = odef->displacement;
 		if (mesh == nullptr) {
 			Log("not found in binary file: " << meshName.c_str() << endl);
 			Error(L"cannot find requested collada mesh in binary file.");
@@ -786,18 +790,17 @@ void WorldObjectStore::loadObject(wstring filename, string id, float scale, XMFL
 	//meshes[id].createVertexAndIndexBuffer(this->objectEffect);
 }
 
-void WorldObjectStore::loadObjects(wstring filename, vector<string> colladaNames, vector<string> ids, float scale, XMFLOAT3* displacement)
+void WorldObjectStore::loadObjects(wstring filename, vector<ObjectDef> &objectDefs)
 {
 	MeshLoader loader;
 	wstring binFile = DXGlobal::getInstance()->util.findFile(filename.c_str(), Util::MESH);
-	vector<Mesh*> meshes_vec; // local for calling loadBinaryAssets
-	for (auto& id : colladaNames) {
+	for (auto& od : objectDefs) {
 		Mesh mesh;
-		mesh.nameFromCollada = id;
-		meshes[id] = mesh;
-		meshes_vec.push_back(&meshes[id]); // store address
+		mesh.nameFromCollada = od.colladaName;
+		meshes[od.objectStoreId] = mesh;
+		od.mesh = &meshes[od.objectStoreId]; // store address
 	}
-	loader.loadBinaryAssets(binFile, meshes_vec, ids, scale, displacement);
+	loader.loadBinaryAssets(binFile, objectDefs);
 }
 
 void WorldObjectStore::createGroup(string groupname) {
