@@ -123,6 +123,22 @@ void SkelApp::init(HWND hwnd) {
 	//xapp().lights.init();
 	object.material.ambient = XMFLOAT4(1, 1, 1, 1);
 	if (true) {
+		use2ndObject = false;
+		vector<ObjectDef> ods{
+			{ string("Arm"), string("Cube.001")  }
+		};
+		objectStore.loadObjects(L"joint6_anim.b", ods);
+		objectStore.addObject(object, "Arm", XMFLOAT3(10.0f, 10.0f, 10.0f), MetalTex);
+		//object.setAction("Armature");
+
+		//object.pathDescBone->pathMode = PathMode::Path_Reverse;
+		//object.forceBoundingBox(BoundingBox(XMFLOAT3(3.16211f, 3.16214f, 7.28022f), XMFLOAT3(4.51012f, 4.51011f, 7.6599f)));
+		object.material.specExp = 1.0f;       // no spec color
+		object.material.specIntensity = 0.0f; // no spec color
+		object.drawNormals = true;
+		object.drawBoundingBox = true;
+	}
+	if (false) {
 		vector<ObjectDef> ods {
 			{ string("Joint"), string("Beta_JointsMesh")  },
 			{ string("Surface"), string("Beta_SurfaceMesh"), }
