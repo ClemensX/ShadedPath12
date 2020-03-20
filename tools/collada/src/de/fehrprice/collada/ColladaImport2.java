@@ -177,6 +177,7 @@ public class ColladaImport2 {
     private class RenderObject {
     	String boneHierarchyId;
     	String name;
+		public Controller controller;
     }
     
     // parse all needed data from collada file into this
@@ -286,11 +287,12 @@ public class ColladaImport2 {
     	el = getSingleAssertedChildElement(el, "instance_visual_scene");
     	String ivsURL = getInternalURL(el);
     	loadVisualScene(ivsURL, docEl);
+    	displayLoadedObjectInfo();
     	
     	writeOutputFile(outfile);
     }
     
-    // library_geometries
+	// library_geometries
     private void loadGeometry(Element el) {
     	List<Element> le = getChildElements(el);
     	// load all meshes:
@@ -458,14 +460,17 @@ public class ColladaImport2 {
     // depending on node type load specific values or continue tree parsing
 	private boolean loadNode(Element e) {
 		//log(" parse node: " + e.getAttribute("id"));
+		// parse joints
 		if (e.getAttribute("type").equalsIgnoreCase("JOINT")) {
 			loadBoneHierarchy(e);
 			return true;
 		}
+		
+		// parse objects
 		Element ic = getSingleAssertedChildElement(e, "instance_controller");
 		if (ic != null) {
 			String controllerId = getInternalURL(ic);
-			log(" found instance_controller: " + controllerId);
+			//log(" found instance_controller: " + controllerId);
 			RenderObject ro = new RenderObject(); 
 			Element skEl = getSingleAssertedChildElement(ic, "skeleton");
 			if (skEl != null) {
@@ -473,11 +478,32 @@ public class ColladaImport2 {
 				List<Bone> root = collada.boneRootsMap.get(skelId);
 				assert(root != null);
 				ro.boneHierarchyId = skelId;
-				log(" using skeleton: " + skelId);
+				ro.name = e.getAttribute("id");
+				//log(" using skeleton: " + skelId);
 			}
 			assert(collada.controllerMap.get(controllerId) != null);
+			ro.controller = collada.controllerMap.get(controllerId);
+			// store this object
+			collada.renderObjectMap.put(ro.name, ro);
 		}
 		return false;
+	}
+
+	// display info about loaded objects
+	// should be called after all parsing
+    private void displayLoadedObjectInfo() {
+		for ( Entry<String, RenderObject> m : collada.renderObjectMap.entrySet()) {
+			RenderObject o = m.getValue();
+			log("Render object: " + o.name);
+			if (o.controller != null) {
+				log("  controller: " + o.controller.name);
+			}
+			if (o.boneHierarchyId != null) {
+				List<Bone> root = collada.boneRootsMap.get(o.boneHierarchyId);
+				log("  root bone: " + o.boneHierarchyId + ", total bone count:" + root.size());
+			}
+		}
+		
 	}
 
 	// parse node hierarchy, -1 as parent id means top level
@@ -506,12 +532,12 @@ public class ColladaImport2 {
 
 	private void loadBoneHierarchy(Element e) {
 		String rootBoneId = e.getAttribute("id"); 
-		log(" parse bone hierarchy from root: " + rootBoneId);
+		//log(" parse bone hierarchy from root: " + rootBoneId);
 		
 		List<Bone> bones = new ArrayList<>();
 		parseBoneHierarchy(e, bones , -1);
 		collada.boneRootsMap.put(rootBoneId, bones);
-		log("  --> loaded bones: " + bones.size());
+		//log("  --> loaded bones: " + bones.size());
 		//printBoneHierarchy(bones);
 	}
 

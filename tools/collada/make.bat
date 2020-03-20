@@ -28,3 +28,4 @@ rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ joi
 rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ joint6_anim.dae
 rem java -cp bin de.fehrprice.collada.ColladaImport -outdir ..\..\data\mesh\ Walking3.dae
 java -cp bin de.fehrprice.collada.ColladaImport2 -outdir ..\..\data\mesh\ C:\dev\repos\Walking2.dae
+java -cp bin de.fehrprice.collada.ColladaImport2 -outdir ..\..\data\mesh\ joint6_anim.dae
