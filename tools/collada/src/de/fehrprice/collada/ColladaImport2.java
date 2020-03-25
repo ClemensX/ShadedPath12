@@ -23,6 +23,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.naming.OperationNotSupportedException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -40,6 +41,8 @@ import org.xml.sax.SAXException;
 //import de.fehrprice.collada.ColladaImport.Joint;
 //import de.fehrprice.collada.ColladaImport.SkinnedAnimation;
 import de.fehrprice.collada.ColladaImport.input_el_type;
+import de.fehrprice.util.ListTree;
+import de.fehrprice.util.ListTree.ListTreeNode;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -184,7 +187,7 @@ public class ColladaImport2 {
     // mixture of dom elemnts and parsed data
     private class Collada {
 		public String sceneName;
-		public Map<String,List<Bone>> boneRootsMap = new HashMap<>();
+		public Map<String,ListTree<Bone>> boneRootsMap2 = new HashMap<>();
 	    // store node tree
 	    private List<ColladaNode> colladaNodeList = new ArrayList<>();
 	    // direct access to nodes via id 
@@ -250,10 +253,13 @@ public class ColladaImport2 {
         } catch (IOException e) {
             System.out.println(e);
             e.printStackTrace();
-        }
+        } catch (OperationNotSupportedException e) {
+            System.out.println(e);
+			e.printStackTrace();
+		}
     }
 
-    private void importCollada(String filename) throws ParserConfigurationException, SAXException, IOException {
+    private void importCollada(String filename) throws ParserConfigurationException, SAXException, IOException, OperationNotSupportedException {
         // create output file name:
         File infile = new File(filename);
         String outfileName = infile.getName();
@@ -443,7 +449,7 @@ public class ColladaImport2 {
     	}
 	}
 
-	private void loadVisualScene(String ivsURL, Element docEl) {
+	private void loadVisualScene(String ivsURL, Element docEl) throws OperationNotSupportedException {
     	Element el = getSingleAssertedChildElement(docEl, "library_visual_scenes");
     	el = getChildElement(el, "visual_scene", "id", ivsURL, true);
     	collada.sceneName = ivsURL;
@@ -458,7 +464,7 @@ public class ColladaImport2 {
 	}
 
     // depending on node type load specific values or continue tree parsing
-	private boolean loadNode(Element e) {
+	private boolean loadNode(Element e) throws OperationNotSupportedException {
 		//log(" parse node: " + e.getAttribute("id"));
 		// parse joints
 		if (e.getAttribute("type").equalsIgnoreCase("JOINT")) {
@@ -475,7 +481,7 @@ public class ColladaImport2 {
 			Element skEl = getSingleAssertedChildElement(ic, "skeleton");
 			if (skEl != null) {
 				String skelId = getInternalText(skEl);
-				List<Bone> root = collada.boneRootsMap.get(skelId);
+				ListTree<Bone> root = collada.boneRootsMap2.get(skelId);
 				assert(root != null);
 				ro.boneHierarchyId = skelId;
 				ro.name = e.getAttribute("id");
@@ -499,16 +505,23 @@ public class ColladaImport2 {
 				log("  controller: " + o.controller.name);
 			}
 			if (o.boneHierarchyId != null) {
-				List<Bone> root = collada.boneRootsMap.get(o.boneHierarchyId);
+				ListTree<Bone> root = collada.boneRootsMap2.get(o.boneHierarchyId);
 				log("  root bone: " + o.boneHierarchyId + ", total bone count:" + root.size());
 			}
+		}
+		// list joints/bones hierarchies:
+		for ( Entry<String, ListTree<Bone>> m : collada.boneRootsMap2.entrySet()) {
+			ListTree<Bone> b = m.getValue();
+			List<ListTreeNode<Bone>> bl = b.getNodesTopDown();
+			assertBoneHierarchy(bl);
+			printBoneHierarchy(bl);
 		}
 		
 	}
 
 	// parse node hierarchy, -1 as parent id means top level
 	// referencing a non-existing id is an error
-    private void parseNodeHierarchy(Element node_el, List<ColladaNode> nodes, int parentId) {
+    private void parseNodeHierarchy(Element node_el, List<ColladaNode> nodes, int parentId) throws OperationNotSupportedException {
     	boolean done = loadNode(node_el);
     	if (done) return;
         // recursively parse node hierarchy
@@ -530,15 +543,14 @@ public class ColladaImport2 {
       }
     }
 
-	private void loadBoneHierarchy(Element e) {
+	private void loadBoneHierarchy(Element e) throws OperationNotSupportedException {
 		String rootBoneId = e.getAttribute("id"); 
 		//log(" parse bone hierarchy from root: " + rootBoneId);
 		
-		List<Bone> bones = new ArrayList<>();
-		parseBoneHierarchy(e, bones , -1);
-		collada.boneRootsMap.put(rootBoneId, bones);
-		//log("  --> loaded bones: " + bones.size());
-		//printBoneHierarchy(bones);
+		ListTree<Bone> tree = new ListTree<>();
+		parseBoneHierarchy2(e, tree, null);
+		collada.boneRootsMap2.put(rootBoneId, tree);
+		tree.printNodesTopDown(Bone::print);
 	}
 
 	private List<Element> getChildElements(Element el) {
@@ -652,9 +664,9 @@ public class ColladaImport2 {
             parseBoneHierarchy(rootBone, boneList, -1);
             assertBoneHierarchy(boneList);
         } */       
-        parseBoneHierarchy(bonesNode, boneList, -1);
-        assertBoneHierarchy(boneList);
-        printBoneHierarchy(boneList);
+        //parseBoneHierarchy(bonesNode, boneList, -1);
+        //assertBoneHierarchy(boneList);
+        //printBoneHierarchy(boneList);
         
         Element controller = (Element)doc.getElementsByTagName("library_controllers").item(0);
         Element skin = (Element) getChildElement(controller, "skin", "source", "#" + mesh.geometryId, false);
@@ -739,41 +751,41 @@ public class ColladaImport2 {
         return anis;
     }
     
-    private void assertBoneHierarchy(List<Bone> bones) {
+    private void assertBoneHierarchy(List<ListTreeNode<Bone>> bl) {
         // assert correct hierarchy (parent bones have to come before child bones)
-        assert bones.get(0).parentId == -1;  // root is at index 0
-        for (int i = 1; i < bones.size(); i++) {
-            assert bones.get(i).parentId < i;
+        assert bl.get(0).getParent() == null;  // root is at index 0
+        assert bl.get(0).get().id == 0;
+        for (int i = 1; i < bl.size(); i++) {
+            assert bl.get(i).getParent().get().id < i;
         }
     }
 
     // print table of bone / parent dependencies
-    private void printBoneHierarchy(List<Bone> bones) {
+    private void printBoneHierarchy(List<ListTreeNode<Bone>> bl) {
     	System.out.println("| Bone #  | Parent #|");
-        for (int i = 0; i < bones.size(); i++) {
-        	System.out.println(String.format("|%8d |%8d |", bones.get(i).id, bones.get(i).parentId));
+        for (int i = 0; i < bl.size(); i++) {
+        	ListTreeNode<Bone> p = bl.get(i).getParent();
+        	int pid = p == null || p.get() == null? -1 : p.get().id;
+        	System.out.println(String.format("|%8d |%8d |", bl.get(i).get().id, pid));
         }
     }
 
-    private void parseBoneHierarchy(Element bone_el, List<Bone> bones, int parentId) {
-        // recursively parse bone hierarchy
-        Bone bone = new Bone();
-        bone.id = bones.size();
-        bone.parentId = parentId;
-        bone.name = bone_el.getAttribute("id");
-        Element matrix = (Element)bone_el.getElementsByTagName("matrix").item(0);
-        bone.bindPose = parse_floats(matrix.getTextContent());
-        bones.add(bone);
-//      NodeList children = bone_el.getElementsByTagName("node");
-//      for (int i = 0; i < children.getLength(); i++) {
-//          parseBoneHierarchy((Element)children.item(i), bones, bone.id);
-//      }
-      NodeList children = bone_el.getChildNodes();
-      for (int i = 0; i < children.getLength(); i++) {
-          Node possibleChild = children.item(i);
-          if (possibleChild.getNodeName().equals("node"))
-              parseBoneHierarchy((Element)possibleChild, bones, bone.id);
-      }
+    private void parseBoneHierarchy2(Element bone_el, ListTree<Bone> bones, ListTreeNode<Bone> parentNode) throws OperationNotSupportedException {
+	    // recursively parse bone hierarchy
+		int parentId = parentNode == null ? -1 : parentNode.get().id;
+	    Bone bone = new Bone();
+	    bone.id = bones.size();
+	    bone.parentId = parentId;
+	    bone.name = bone_el.getAttribute("id");
+	    Element matrix = (Element)bone_el.getElementsByTagName("matrix").item(0);
+	    bone.bindPose = parse_floats(matrix.getTextContent());
+	    ListTreeNode<Bone> node = bones.add(parentNode, bone);
+		NodeList children = bone_el.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+		    Node possibleChild = children.item(i);
+		    if (possibleChild.getNodeName().equals("node"))
+		        parseBoneHierarchy2((Element)possibleChild, bones, node);
+		}
     }
 
     private class BoneWeight {
@@ -887,10 +899,13 @@ public class ColladaImport2 {
     private class Bone extends ColladaNode {
         public List<Animation> transformations;
         Float[] bindPose;
+        String print() {
+        	return name;
+        }
     }
 
     // store bone tree
-    private List<Bone> boneList = new ArrayList<>();
+    //private List<Bone> boneList = new ArrayList<>();
 
     private List<Animation> parseAnimations(String mesh, Document doc, boolean isMatrixMode) {
         List<Animation> anis = new ArrayList<Animation>();

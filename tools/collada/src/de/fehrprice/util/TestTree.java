@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.stream.Stream;
+
+import javax.naming.OperationNotSupportedException;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -25,45 +28,57 @@ class TestTree {
 			return "" + num;
 		}
 	}
-	
-	@Test
-	void testTree() {
-		int num = 1; // count number of created elements
-		ListTree<Anything> tree = new ListTree<>();
-		assertTrue(tree.isEmpty());
-		//fail("Not yet implemented");
-		
-		Anything a = new Anything();
-		a.num = num++;
-		ListTreeNode<Anything> e1 = tree.add(null, a);
-		a = new Anything();
-		a.num = num++;
-		tree.add(null, a); // 2nd child of root
-		
-		a = new Anything();
-		a.num = num++;
-		tree.add(e1, a); // one child at first element under root 
-		
-		//List<Anything> l = tree.flattenedTopDown().map(ListTree.ListTreeNode::get).filter(Objects::nonNull).collect(Collectors.toList());
-		List<Anything> l = tree.getElementsTopDown();
-		assertTrue(l.size() == 3);
-		
+
+	public static String getFlatStringFromIds(List<Anything> l) {
 		String s = "";
 		for (Anything any : l) {
 			s += any.num + " ";
 		}
-		System.out.println(s);
-		assertEquals("1 3 2 ", s);
+		return s;
+	}
+	
+	@Test
+	void testTree() throws OperationNotSupportedException {
+		int num = 1; // count number of created elements
+		ListTree<Anything> tree = new ListTree<>();
+		assertTrue(tree.isEmpty());
+		assertTrue(tree.size() == 0);
+		//fail("Not yet implemented");
 		
-		List<ListTreeNode<Anything>> ln = tree.getNodesTopDown();
-		for (ListTreeNode<Anything> any : ln) {
-			//String spaces = String.format("%1$"+(any.layer)+"s", "");
-			int count = any.layer+1;
-			String spaces = String.format("%"+ count +"s", " ");
-			//String spaces = String.format("%1$"+count+"s", "");
-			String v = any.e == null ? "root" : ""+any.e.num;
-			System.out.println(spaces + v);
-		}
+		Anything a = new Anything();
+		a.num = num++;
+		ListTreeNode<Anything> e1 = tree.add(null, a); // now a is root
+		final Anything x = new Anything();
+		x.num = num++;
+		assertThrows(OperationNotSupportedException.class, () -> {
+			tree.add(null, x); // 2nd child of root
+		  });
+		
+		var b1 = new Anything();
+		b1.num = num++;
+		var b1Node = tree.add(e1, b1); // one child at first element under root
+		assertEquals(2, tree.size());
+		
+		var b2 = new Anything();
+		b2.num = num++;
+		tree.add(e1, b2); // one child at first element under root
+		assertEquals(3, tree.size());
+
+		//List<Anything> l = tree.flattenedTopDown().map(ListTree.ListTreeNode::get).filter(Objects::nonNull).collect(Collectors.toList());
+		List<Anything> l = tree.getElementsTopDown();
+		assertEquals(3, l.size());
+		
+		String s = getFlatStringFromIds(l);
+		//System.out.println(s);
+		assertEquals("1 3 4 ", s);
+		
+		// now add child to b1:
+		Anything c = new Anything();
+		c.num = num++;
+		tree.add(b1Node, c);
+		l = tree.getElementsTopDown();
+		s = getFlatStringFromIds(l);
+		assertEquals("1 3 5 4 ", s);
 		
 		tree.printNodesTopDown(Anything::print);
 	}
