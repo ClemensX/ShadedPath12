@@ -441,12 +441,21 @@ public class ColladaImport2 {
     		c.name = e.getAttribute("id");
     		collada.controllerMap.put(c.name, c);
     		Element skin = getSingleAssertedChildElement(e, "skin");
+    		if (skin == null) {
+    			fail("controller has no skin: " + c.name);
+    		}
+    		Controller_skin(c, skin, skin.getAttribute("source"));
     		// TODO load skin like in parseSkinnedAnimations()
 //    		String meshId = getInternalAttribute(skin, "source");
 //    		Geometry g = collada.geometryMap.get(meshId);
 //    		assert(g != null);
     		//log(" with geometry: " + meshId);
     	}
+	}
+
+	private void Controller_skin(Controller c, Element skin, String source) {
+		log("controller: " + c.name + " skin source:" + source);
+		
 	}
 
 	private void loadVisualScene(String ivsURL, Element docEl) throws OperationNotSupportedException {
