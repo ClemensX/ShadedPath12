@@ -7,7 +7,7 @@
 <details><summary></summary>
 ```plantuml
 @startuml
-|Application|
+|ApplicationX|
 |Pipeline|
 |DXGlobal|
 |Direct2D|
