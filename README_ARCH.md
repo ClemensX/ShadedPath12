@@ -2,64 +2,83 @@
 
 ### Application and Framework Initialization
 
-![Initialization](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/ClemensX/ShadedPath12/master2/README_ARCH.md&idx=0)
+![Initialization](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/ClemensX/ShadedPath12/s_docu/README_ARCH.md&idx=0)
 
 <details><summary></summary>
 ```plantuml
 @startuml
-|ApplicationX|
-|Pipeline|
-|DXGlobal|
-|Direct2D|
-    |Application|
+|Job Service|
+|RBSC Backend|
+|Repositories|
+|SWDC|
+    |Job Service|
     start
-    :pipeline.init();
-    |Pipeline|
-    :init;
-    :world size
-    framebuffer size (3)
-    backbuffer width
-    backbuffer height;
-    |Application|
-    :dxGlobal.init();
-    |DXGlobal|
-    :init;
-    :create global instances:
-    ID3D12Debug
-    IDXGIFactory4
-    ID3D12CommandQueue;
-    |Application|
-    if (hwnd != null?) then (yes)
-        |DXGlobal|
-        :init swap chain;
-    endif
-    |Application|
-    :init frame data;
-    :pipeline.setAppDataForSlot();
-    |Pipeline|
-    :AppFrameDataMananger.setAppDataForSlot();
-    |Application|
-    :init Global Per Frame Data;
-    |DXGlobal|
-    :initFrameBufferResources();
-    :create instances for each frame buffer slot:
-    ID3D11on12Device
-    ID3D11Device
-    ID3D11DeviceContext
-    DX12 types for background render texture:
-    DescriptorHeap for Depth/Stencil
-    Tex2D Resource for Depth/Stencil
-    DescriptorHeap for texture
-    Tex2D Resource for texture
-    root signature
-    fences
-    similar instances for swap chain;
-    |Application|
-    :init Direct2D Per Frame Data;
-    |Direct2D|
-    :init();
-    :create Texture2D and SurfaceRenderTarget
-    on wrapped DX12 background texture;
+    ://**/rest/regservice/jobs/visibilityupdate**//
+    RegServiceRS.jobs_visibilityupdate();
+    |RBSC Backend|
+    :JobService.visibilityupdate();
+    :VisibilityUpdate.phaseCollect();
+        :User 0
+        User 1
+        User 2
+        User 3
+        User 4
+        ...;
+    repeat
+    :phaseDivideSWDC();
+    fork
+        :User 0
+        User 10
+        User 20
+        ...;
+    fork again
+        :User 1
+        User 11
+        User 21
+        ...;
+    fork again
+        :User 2
+        User 12
+        User 22
+        ...;
+    end fork
+    :phaseSWDCCalls();
+    |SWDC|
+    fork
+        :/visibility?userid
+        //stack//
+        //componentversion//
+        //productversion//
+        ;
+    fork again
+        :/visibility?userid
+        //stack//
+        //componentversion//
+        //productversion//
+        ;
+    fork again
+        :/visibility?userid
+        //stack//
+        //componentversion//
+        //productversion//
+        ;
+    end fork
+    |RBSC Backend|
+    :wait for all calls to finish;
+        :
+				
+				phaseDivideRepo(info)
+				phaseRepoCalls(info)
+				phaseUpdateDB(info)
+				phaseRemoveUnregisteredPV(info.jobLogger)
+				phaseRemoveUnregisteredSCV(info.jobLogger)
+        ;
+    repeat while (finished ok || try_count > 3 ?) is (no)
+    ->yes;
+    |Job Service|
+    :write AuditLogs;
+    :write SystemAlerts;
+    stop
 @enduml
 ```
 </details>
