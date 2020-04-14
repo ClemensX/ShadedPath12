@@ -65,10 +65,43 @@
     end fork
     |RBSC Backend|
     :wait for all calls to finish;
+    :phaseDivideRepo();
+    fork
+        :CheckResult 0
+        CheckResult 40
+        CheckResult 80
+        ...;
+    fork again
+        :CheckResult 1
+        CheckResult 41
+        CheckResult 81
+        ...;
+    fork again
+        :CheckResult 2
+        CheckResult 42
+        CheckResult 82
+        ...;
+    end fork
+    :phaseRepoCalls();
+    |Repositories|
+    fork
+        :JSON: {
+            User: 1
+            pvlicense list
+            spslicense list 
+            scvlicense list
+        };
+    fork again
+        :JSON: {
+            User: 2
+            pvlicense list
+            spslicense list 
+            scvlicense list
+        };
+    end fork
+    |RBSC Backend|
+    :wait for all calls to finish;
         :
-				
-				phaseDivideRepo(info)
-				phaseRepoCalls(info)
 				phaseUpdateDB(info)
 				phaseRemoveUnregisteredPV(info.jobLogger)
 				phaseRemoveUnregisteredSCV(info.jobLogger)
