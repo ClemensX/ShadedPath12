@@ -33,6 +33,7 @@
     <ClCompile Include="input.cpp" />
     <ClCompile Include="launcher.cpp" />
     <ClCompile Include="line.cpp" />
+    <ClCompile Include="lineapp.cpp" />
     <ClCompile Include="Matrices.cpp" />
     <ClCompile Include="objects.cpp" />
     <ClCompile Include="path.cpp" />
@@ -71,6 +72,7 @@
     <ClInclude Include="launcher.h" />
     <ClInclude Include="lights.h" />
     <ClInclude Include="line.h" />
+    <ClInclude Include="lineapp.h" />
     <ClInclude Include="Matrices.h" />
     <ClInclude Include="meshObject.h" />
     <ClInclude Include="objects.h" />

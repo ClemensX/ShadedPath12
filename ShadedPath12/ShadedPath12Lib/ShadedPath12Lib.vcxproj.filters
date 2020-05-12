@@ -111,6 +111,9 @@
     <ClCompile Include="path.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lineapp.cpp">
+      <Filter>Apps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ShadedPath12\Resource.h">
@@ -223,6 +226,9 @@
     </ClInclude>
     <ClInclude Include="line.h">
       <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="lineapp.h">
+      <Filter>Apps</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

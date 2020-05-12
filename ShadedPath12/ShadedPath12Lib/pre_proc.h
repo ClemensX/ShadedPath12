@@ -13,7 +13,7 @@
 //#define DISABLE_UPDATE_THREADS
 
 // disable multi thread rendering:
-//#define SINGLE_THREAD_MODE
+#define SINGLE_THREAD_MODE
 
 // disable for final build, adds some perf penalty and need pix dll at runtime:
-#define USE_PIX
+//#define USE_PIX

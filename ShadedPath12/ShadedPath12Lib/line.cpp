@@ -99,16 +99,16 @@ void LinesEffect::activateAppDataSet(unsigned long user)
 				all.push_back(v2);
 			}
 			// just add the one-time lines at this point (may be extra function later?
-			for (LineDef& line : lea->oneTimeLines) {
-				Vertex v1, v2;
-				v1.color = line.color;
-				v1.pos = line.start;
-				v2.color = line.color;
-				v2.pos = line.end;
-				all.push_back(v1);
-				all.push_back(v2);
-			}
-			lea->oneTimeLines.clear();
+			//for (LineDef& line : lea->oneTimeLines) {
+			//	Vertex v1, v2;
+			//	v1.color = line.color;
+			//	v1.pos = line.start;
+			//	v2.color = line.color;
+			//	v2.pos = line.end;
+			//	all.push_back(v1);
+			//	all.push_back(v2);
+			//}
+			//lea->oneTimeLines.clear();
 			// one-time lines end
 			lea->numVericesToDraw = (UINT)all.size();
 			size_t vertexBufferSize = sizeof(Vertex) * all.size();//lines.size() * 2;
@@ -116,7 +116,7 @@ void LinesEffect::activateAppDataSet(unsigned long user)
 			BufferResource* res = resourceStore.getSlot();
 			lea->bufferResource = res;
 			createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(),
-				L"lines", res->vertexBuffer, res->vertexBufferUpload, updateCommandAllocator, updateCommandList, res->vertexBufferView);
+				L"linesActivateAppDataSet", res->vertexBuffer, res->vertexBufferUpload, updateCommandAllocator, updateCommandList, res->vertexBufferView);
 
 			// Close the command list and execute it to begin the vertex buffer copy into
 			// the default heap.

@@ -242,4 +242,5 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 //#include "simple2dframe.h"
 #include "billboardapp.h"
 #include "skelapp.h"
+#include "lineapp.h"
 #include "launcher.h"

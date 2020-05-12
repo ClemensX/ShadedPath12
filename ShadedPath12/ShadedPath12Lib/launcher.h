@@ -11,6 +11,7 @@ public:
 	void stop();
 	//Simple2dFrame app;
 	//BillboardApp app;
-	SkelApp app;
+	//SkelApp app;
+	LineApp app;
 };
 

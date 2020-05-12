@@ -59,7 +59,7 @@ public:
 					res.vertexBuffer->Release();
 					res.vertexBuffer = nullptr;
 					res.is_free = true;
-					//Log("freed buffer slot: gen " << res.generation << " count " << res.useCounter << endl);
+					Log("freed buffer slot: gen " << res.generation << " count " << res.useCounter << endl);
 				}
 
 			}
