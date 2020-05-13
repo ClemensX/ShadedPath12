@@ -3,12 +3,14 @@ struct BufferResource {
 	size_t bufferSize = 0;
 	size_t vertexSize = 0;
 	void* data = nullptr;
-	ID3D12PipelineState* pipelineState = nullptr;
+	ComPtr<ID3D12PipelineState> pipelineState = nullptr;
+	ComPtr<ID3D12RootSignature> rootSignature = nullptr;
 	LPCWSTR baseName = nullptr;
 	ComPtr<ID3D12Resource> vertexBuffer = nullptr;
 	ComPtr<ID3D12Resource> vertexBufferUpload = nullptr;
 	ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
 	ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	FenceData fenceData;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 	bool is_free = true;
 	atomic<int> useCounter;
@@ -235,7 +237,7 @@ class Effect {
 	// effects need 3 kinds of data:
 	// 1) Global data for the effect, only needed once. Like PipelineState and RootSignature
 	// 2) Application data thats resembles the application state with regards for an effect. Like position and normal for billboard elements
-	//    Needs to be there twice: there is alway an acive data set used for rendering, the inacive set can be manipulated by the application until it is uploaded to GPU and made active
+	//    Needs to be there twice: there is alway an active data set used for rendering, the inactive set can be manipulated by the application until it is uploaded to GPU and made active
 	// 3) Per Frame data. Usually 3 sets. Frame specific resources the effect needs to run in parallel, like CBVs with per frame WVP matrix
 
 public:
@@ -282,6 +284,8 @@ protected:
 	// -->SetGraphicsRootConstantBufferView(0, D3D12_GPU_VIRTUAL_ADDRESS); // on command list
 	// -->memcpy(GPUAdress, changed constant buffer content)
 
+	void createBufferUploadResources(BufferResource* res);
+	void releaseBufferUploadResources(BufferResource* res);
 	void createConstantBuffer(size_t s, LPCWSTR name, FrameDataBase *frameData);
 
 	// vertex buffer

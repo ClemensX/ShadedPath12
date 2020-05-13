@@ -8,10 +8,7 @@ class Pipeline;
 struct LineAppFrameData : AppFrameDataBase
 {
 	FrameDataGeneral fd_general;
-	FrameDataD2D d2d_fd;
-	FrameDataBillboard billboard_fd;
 	FrameDataLine line_fd;
-	Dx2D d2d;
 
 	// Inherited via AppFrameDataBase
 	virtual FrameDataGeneral* getFrameDataGeneral() override {
@@ -46,7 +43,7 @@ private:
 	void update(Pipeline* pipeline);
 	Pipeline pipeline;
 	DXGlobal& dxGlobal = *DXGlobal::getInstance();
-	SkelAppFrameData afd[FRAME_BUFFER_SIZE];
+	LineAppFrameData afd[FRAME_BUFFER_SIZE];
 	boolean isAutomatedTestMode = false;
 
 	// Effects and other framework classes:

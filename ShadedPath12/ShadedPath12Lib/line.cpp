@@ -47,6 +47,7 @@ void LinesEffect::init(DXGlobal* a, FrameDataLine* fdl, FrameDataGeneral* fd_gen
 			rootSignature.Get()->SetName(L"lines_root_signature");
 			psoDesc.pRootSignature = rootSignature.Get();
 			ThrowIfFailed(dxGlobal->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState)));
+			Log(" create PSO LinesEffect::init &pipelineState: " << std::hex << pipelineState.Get() << endl);
 			pipelineState.Get()->SetName(L"state_lines_init");
 
 			// init resources for update thread:
@@ -114,17 +115,22 @@ void LinesEffect::activateAppDataSet(unsigned long user)
 			size_t vertexBufferSize = sizeof(Vertex) * all.size();//lines.size() * 2;
 
 			BufferResource* res = resourceStore.getSlot();
+			res->bufferSize = vertexBufferSize;
+			res->vertexSize = sizeof(Vertex);
+			res->data = &(all.at(0));
+			res->baseName = L"linesActivateAppDataSet";
+			createBufferUploadResources(res);
 			lea->bufferResource = res;
-			createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(),
-				L"linesActivateAppDataSet", res->vertexBuffer, res->vertexBufferUpload, updateCommandAllocator, updateCommandList, res->vertexBufferView);
+			//createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(),
+			//	L"linesActivateAppDataSet", res->vertexBuffer, res->vertexBufferUpload, updateCommandAllocator, updateCommandList, res->vertexBufferView);
 
-			// Close the command list and execute it to begin the vertex buffer copy into
-			// the default heap.
-			ThrowIfFailed(updateCommandList->Close());
-			ID3D12CommandList* ppCommandListsUpload[] = { updateCommandList.Get() };
-			dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandListsUpload), ppCommandListsUpload);
-			dxGlobal->createSyncPoint(&updateFenceData, dxGlobal->commandQueue);
-			dxGlobal->waitForSyncPoint(&updateFenceData);
+			//// Close the command list and execute it to begin the vertex buffer copy into
+			//// the default heap.
+			//ThrowIfFailed(updateCommandList->Close());
+			//ID3D12CommandList* ppCommandListsUpload[] = { updateCommandList.Get() };
+			//dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandListsUpload), ppCommandListsUpload);
+			//dxGlobal->createSyncPoint(&updateFenceData, dxGlobal->commandQueue);
+			//dxGlobal->waitForSyncPoint(&updateFenceData);
 			resourceStore.freeUnusedSlots(res->generation - 1);
 		}
 	}

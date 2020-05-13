@@ -15,6 +15,7 @@ void DXGlobal::init()
 			debugController->QueryInterface(IID_PPV_ARGS(&debugController1));
 			if (debugController1) {
 				debugController1->SetEnableGPUBasedValidation(true);
+				debugController1->SetEnableSynchronizedCommandQueueValidation(true);
 			}
 			else {
 				Log("WARNING: Could not enable GPU validation - ID3D12Debug1 controller not available" << endl);
@@ -114,10 +115,10 @@ void DXGlobal::init()
 		D3D12_INFO_QUEUE_FILTER NewFilter = {};
 		//NewFilter.DenyList.NumCategories = _countof(Categories);
 		//NewFilter.DenyList.pCategoryList = Categories;
-		NewFilter.DenyList.NumSeverities = _countof(Severities);
-		NewFilter.DenyList.pSeverityList = Severities;
-		NewFilter.DenyList.NumIDs = 0; //_countof(DenyIds);
-		NewFilter.DenyList.pIDList = DenyIds;
+		//NewFilter.DenyList.NumSeverities = _countof(Severities);
+		//NewFilter.DenyList.pSeverityList = Severities;
+		//NewFilter.DenyList.NumIDs = 0; //_countof(DenyIds);
+		//NewFilter.DenyList.pIDList = DenyIds;
 
 		ThrowIfFailed(pInfoQueue->PushStorageFilter(&NewFilter));
 	}
@@ -164,6 +165,7 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 	ThrowIfFailed(fd->device11.As(&fd->device11On12));
 
 	// Create D2D/DWrite components.
+	if (fd_d2d != nullptr)
 	{
 		D2D1_DEVICE_CONTEXT_OPTIONS deviceOptions = D2D1_DEVICE_CONTEXT_OPTIONS_NONE;
 		ThrowIfFailed(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory3), &d2dFactoryOptions, &fd_d2d->d2dFactory));
@@ -257,6 +259,7 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 	psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
 	//psoDesc.VS = { nullptr, 0 };
 	ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&fd->pipelineStateRenderTexture)));
+	Log(" create PSO framebuffer &fd->pipelineStateRenderTexture: " << std::hex << fd->pipelineStateRenderTexture.Get() << endl);
 	NAME_D3D12_OBJECT_SUFF(fd->pipelineStateRenderTexture, i);
 	ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&fd->commandAllocatorRenderTexture)));
 	NAME_D3D12_OBJECT_SUFF(fd->commandAllocatorRenderTexture, i);
@@ -334,6 +337,7 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 		ThrowIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&fd->rootSignature)));
 	}
 	ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&fd->pipelineState)));
+	Log(" create PSO framebuffer &fd->pipelineState: " << std::hex << fd->pipelineState.Get() << endl);
 	NAME_D3D12_OBJECT_SUFF(fd->pipelineState, i);
 	ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&fd->commandAllocator)));
 	NAME_D3D12_OBJECT_SUFF(fd->commandAllocator, i);

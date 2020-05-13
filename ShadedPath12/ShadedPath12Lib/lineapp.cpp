@@ -54,14 +54,10 @@ void LineApp::init(HWND hwnd) {
 	//afd->setData(&afd[0]);
 	for (int i = 0; i < FRAME_BUFFER_SIZE; i++) {
 		pipeline.afManager.setAppDataForSlot(&afd[i], i);
-		SkelAppFrameData* fd = (SkelAppFrameData*) pipeline.afManager.getAppDataForSlot(i);
-		Dx2D* d2d = &fd->d2d;
-		FrameDataD2D *fd2d = &fd->d2d_fd;
+		LineAppFrameData* fd = (LineAppFrameData*) pipeline.afManager.getAppDataForSlot(i);
 		FrameDataGeneral *fd_gen = &fd->fd_general;
-		FrameDataBillboard* fdb = &fd->billboard_fd;
 		FrameDataLine* fdl = &fd->line_fd;
-		dxGlobal.initFrameBufferResources(fd_gen, fd2d, i, &pipeline);
-		d2d->init(&dxGlobal, fd2d, fd_gen, &pipeline);
+		dxGlobal.initFrameBufferResources(fd_gen, nullptr, i, &pipeline);
 		lineEffect.init(&dxGlobal, fdl, fd_gen, &pipeline);
 	}
 	// store effects that will be called during data updates
@@ -117,7 +113,7 @@ void LineApp::presentFrame(Frame* frame, Pipeline* pipeline) {
 	}
 
 	if (dxGlobal.isOutputWindowAvailable()) {
-		SkelAppFrameData* afd = (SkelAppFrameData*)frame->frameData;
+		LineAppFrameData* afd = (LineAppFrameData*)frame->frameData;
 		FrameDataGeneral* fdg = &afd->fd_general;
 		dxGlobal.present2Window(pipeline, frame);
 		dxGlobal.submitVR(frame, pipeline, fdg);
@@ -137,11 +133,8 @@ void LineApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 	input->applyTicksToCameraPosition(ticks, &c, 0.011f);
 	input->applyMouseEvents(&c, 0.003f); // 0.003f
 	// draw effects;
-	SkelAppFrameData* afd = (SkelAppFrameData*)frame->frameData;
+	LineAppFrameData* afd = (LineAppFrameData*)frame->frameData;
 	FrameDataGeneral* fdg = &afd->fd_general;
-	FrameDataD2D* fd = &afd->d2d_fd;
-	Dx2D* d2d = &afd->d2d;
-	FrameDataBillboard* fdb = &afd->billboard_fd;
 	FrameDataLine* fdl = &afd->line_fd;
 
 	dxGlobal.waitAndReset(fdg);
@@ -152,11 +145,7 @@ void LineApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 	//Log("cam x y z: " << c.pos.x << " " << c.pos.y << " " << c.pos.z << endl);
 	dxGlobal.prepareCameras(frame, pipeline, &c, &c2);
 	lineEffect.draw(frame, fdg, fdl, pipeline);
-	dxGlobal.prepare2DRendering(frame, pipeline, fd);
 
-	//d2d->drawStatisticsOverlay(frame, pipeline);
-	//dxGlobal.end2DRendering(frame, pipeline, fd);
-	dxGlobal.endStatisticsDraw(fdg);
 }
 
 void LineApp::update(Pipeline* pipeline)
@@ -186,17 +175,24 @@ void LineApp::update(Pipeline* pipeline)
 
 	// add to inactive data set:
 	unsigned long lineUser = 0;
-	lineEffect.updateQueue.getLockedInactiveDataSet(lineUser);
-	lineEffect.addOneTime(lines, lineUser);
+	//lineEffect.updateQueue.getLockedInactiveDataSet(lineUser);
+	//lineEffect.addOneTime(lines, lineUser);
+
+	_CrtMemState s1,s2,s3;
+	_CrtMemCheckpoint(&s1);
 
 	// activate changes:
 	static int count = 0;
 	//if (count < 5)
-	lineEffect.activateAppDataSet(lineUser);
-	lineEffect.updateQueue.releaseLockedInactiveDataSet(lineUser);
+	//lineEffect.updateQueue.releaseLockedInactiveDataSet(lineUser);
 	////Log(" inactive set: " << active.size() << endl);
 	//assert(active.size() == inactive.size());
-	Effect::update(updateEffectList, pipeline, user);
+	//Effect::update(updateEffectList, pipeline, user);
+	_CrtMemCheckpoint(&s2);
+	if (_CrtMemDifference(&s3, &s1, &s2))
+		_CrtMemDumpStatistics(&s3);
+	lineEffect.activateAppDataSet(lineUser);
+
 	//if (count < 5)
 	lineEffect.releaseActiveAppDataSet(actDataSet);
 	count++;
