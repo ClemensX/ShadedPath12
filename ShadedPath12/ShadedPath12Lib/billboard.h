@@ -43,6 +43,10 @@ public:
 	// add billboard to inactive data set, billboardElement will be copied and order number will be returned
 	// order numbers are counted per texture and start with 0
 	// use get() to get/change existing billboard
+	void reinitializeThreadResources() {
+		Error(L"not implemented");
+	}
+
 	size_t add(string texture_id, BillboardElement billboardEl, unsigned long& user);
 	// get billboard with order number order_num for texture_id
 	BillboardElement& get(string texture_id, int order_num, unsigned long& user);

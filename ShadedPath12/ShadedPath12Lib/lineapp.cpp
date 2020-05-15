@@ -94,6 +94,7 @@ void LineApp::init(HWND hwnd) {
 	c.fieldOfViewAngleY = 1.289f;
 	//world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	c.projectionTransform();
+	lineEffect.reinitializeThreadResources();
 }
 
 void LineApp::presentFrame(Frame* frame, Pipeline* pipeline) {

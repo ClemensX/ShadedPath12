@@ -258,6 +258,9 @@ public:
 	static void update(vector<Effect*> effectList, Pipeline* pipeline, unsigned long& user);
 	// update thread of each effect runs this method:
 	static void runUpdate(Pipeline* pipeline, Effect* effectInstance);
+	// if effect needs to re-initialize some resources this method needs to be called to give the effect the chance to do that
+	// usually this is done at end of init() before the regular updtae thread kicks in
+	virtual void reinitializeThreadResources() = 0;
 
 	virtual ~Effect() = 0 {}; // still need to provide an (empty) base class destructor implementation even for pure virtual destructors
 	//function<void(Frame*, Pipeline*)> updater = nullptr;
@@ -267,6 +270,29 @@ public:
 	bool isActiveDataSetAvailable() { return currentActiveAppDataSet >= 0; };
 protected:
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
+	DWORD updateThreadId = 0;
+	bool detectThreadChange() {
+		DWORD thisId = GetCurrentThreadId();
+		if (thisId != 0 && updateThreadId != thisId) {
+			if (updateThreadId != 0) {
+				Log("Warning: other thread used effect update: " << updateThreadId << endl);
+				updateThreadId = thisId;
+				return true;
+			} else {
+				// first setting of threadId is not considered a thread change
+				updateThreadId = thisId;
+				return false;
+			}
+		}
+		return false;
+	}
+	void errorOnThreadChange() {
+		if (detectThreadChange()) {
+			Log("error Thread: " << GetCurrentThreadId() << endl);
+			Log("other Thread: " << updateThreadId << endl);
+			Error(L"illegal thread change detected. You may want to re-initialize thread resources after init()");
+		}
+	}
 	//DXManager dxmanager;
 	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	DXGlobal* dxGlobal = nullptr;
@@ -284,7 +310,9 @@ protected:
 	// -->SetGraphicsRootConstantBufferView(0, D3D12_GPU_VIRTUAL_ADDRESS); // on command list
 	// -->memcpy(GPUAdress, changed constant buffer content)
 
-	void createBufferUploadResources(BufferResource* res);
+	void createBufferUploadResources(BufferResource* res, void* anything,
+		ComPtr<ID3D12CommandAllocator>& commandAllocator,
+		ComPtr<ID3D12GraphicsCommandList>& commandList);
 	void releaseBufferUploadResources(BufferResource* res);
 	void createConstantBuffer(size_t s, LPCWSTR name, FrameDataBase *frameData);
 

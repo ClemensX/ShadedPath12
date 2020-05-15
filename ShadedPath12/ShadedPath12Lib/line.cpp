@@ -71,6 +71,7 @@ void LinesEffect::init(DXGlobal* a, FrameDataLine* fdl, FrameDataGeneral* fd_gen
 void LinesEffect::activateAppDataSet(unsigned long user)
 {
 	//unique_lock<mutex> lock(dataSetMutex);
+	errorOnThreadChange();
 	auto lea = (LineEffectAppData*)getInactiveAppDataSet(user);
 	LineEffectAppData* leaActive = nullptr;
 	if (isActiveDataSetAvailable()) {
@@ -119,7 +120,7 @@ void LinesEffect::activateAppDataSet(unsigned long user)
 			res->vertexSize = sizeof(Vertex);
 			res->data = &(all.at(0));
 			res->baseName = L"linesActivateAppDataSet";
-			createBufferUploadResources(res);
+			createBufferUploadResources(res, pipelineState.Get(), updateCommandAllocator, updateCommandList);
 			lea->bufferResource = res;
 			//createAndUploadVertexBuffer(vertexBufferSize, sizeof(Vertex), &(all.at(0)), pipelineState.Get(),
 			//	L"linesActivateAppDataSet", res->vertexBuffer, res->vertexBufferUpload, updateCommandAllocator, updateCommandList, res->vertexBufferView);

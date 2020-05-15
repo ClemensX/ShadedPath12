@@ -43,6 +43,7 @@ public:
 	// Inherited via Effect
 	LineEffectAppData* getInactiveAppDataSet(unsigned long& user) override
 	{
+		//errorOnThreadChange();
 		LineEffectAppData* inactive = &appDataSets[currentInactiveAppDataSet];
 		if (inactive->noUpdate) {
 			return inactive;
@@ -52,6 +53,7 @@ public:
 	};
 	LineEffectAppData* getActiveAppDataSet() override
 	{
+		//errorOnThreadChange();
 		updateQueue.activeUseCount++;
 		//assert(updateQueue.activeUseCount <= 3);
 		//Log("active data set counter " << updateQueue.activeUseCount << endl);
@@ -80,6 +82,22 @@ public:
 	// make inactive app data set active and vice versa
 	// synchronized
 	void activateAppDataSet(unsigned long user) override;
+
+	void reinitializeThreadResources() {
+		//Error(L"not implemented");
+		Log("Warning: other thread used effect update: " << updateThreadId << endl);
+		//updateCommandAllocator = nullptr;
+		updateCommandList->Release();
+		updateCommandAllocator->Release();
+		//updateCommandList = nullptr;
+		ThrowIfFailed(dxGlobal->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&updateCommandAllocator)));
+		//NAME_D3D12_OBJECT_SUFF(updateCommandAllocator, res->generation);
+		ThrowIfFailed(dxGlobal->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, updateCommandAllocator.Get(), pipelineState.Get(), IID_PPV_ARGS(&updateCommandList)));
+		//NAME_D3D12_OBJECT_SUFF(updateCommandList, res->generation);
+		updateCommandList->Close();
+
+		updateThreadId = 0;
+	}
 
 private:
 	//vector<LineDef> lines;

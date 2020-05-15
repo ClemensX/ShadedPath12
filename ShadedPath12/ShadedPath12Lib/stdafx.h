@@ -145,10 +145,12 @@ inline void ErrorExt(wstring msg, const char* file, DWORD line)
 	s << "ERROR " << msg << '\n';
 	s << file << " " << line << '\n';
 	Log(s.str());
-	s << "\n\nClick 'yes' to break and 'no' to continue.";
+	exit(0);
+	s << "\n\nClick 'yes' to debug break and 'no' to hard exit.";
 	int nResult = MessageBoxW(GetForegroundWindow(), s.str().c_str(), L"Unexpected error encountered", MB_YESNO | MB_ICONERROR);
 	if (nResult == IDYES)
 		DebugBreak();
+	else exit(0);
 }
 
 #define Error(x) ErrorExt((x), __FILE__,  (DWORD)__LINE__)

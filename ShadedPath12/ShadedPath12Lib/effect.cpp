@@ -1,7 +1,13 @@
 #include "stdafx.h"
 
-void Effect::createBufferUploadResources(BufferResource* res)
+void Effect::createBufferUploadResources(BufferResource* res, void *anything,
+	ComPtr<ID3D12CommandAllocator>& commandAllocator,
+	ComPtr<ID3D12GraphicsCommandList>& commandList
+	)
 {
+	Log("this thread: " << GetCurrentThreadId() << endl);
+	ID3D12PipelineState* pipelineState = (ID3D12PipelineState*)anything;
+
 	DXGlobal::initSyncPoint(&res->fenceData, dxGlobal->device);
 	UINT vertexBufferSize = (UINT)res->bufferSize;
 	ThrowIfFailed(dxGlobal->device->CreateCommittedResource(
@@ -32,51 +38,54 @@ void Effect::createBufferUploadResources(BufferResource* res)
 	vertexData.RowPitch = vertexBufferSize;
 	vertexData.SlicePitch = vertexData.RowPitch;
 
-	// Create an empty root signature.
-	{
-		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-		rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-		ComPtr<ID3DBlob> signature;
-		ComPtr<ID3DBlob> error;
-		ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
-		ThrowIfFailed(dxGlobal->device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&res->rootSignature)));
-	}
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-	};
-	// Describe and create the graphics pipeline state object (PSO).
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-	psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
-	psoDesc.pRootSignature = res->rootSignature.Get();
-	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	psoDesc.DepthStencilState.DepthEnable = FALSE;
-	psoDesc.DepthStencilState.StencilEnable = FALSE;
-	psoDesc.SampleMask = UINT_MAX;
-	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	psoDesc.NumRenderTargets = 1;
-	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.SampleDesc.Count = 1;
-#include "CompiledShaders/PostVS.h"
-	psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
-	//psoDesc.VS = { nullptr, 0 };
-	ThrowIfFailed(dxGlobal->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&res->pipelineState)));
-	Log(" create PSO BufferResource &fres->pipelineState: " << std::hex << res->pipelineState.Get() << endl);
-	NAME_D3D12_OBJECT_SUFF(res->pipelineState, res->generation);
-	ThrowIfFailed(dxGlobal->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&res->commandAllocator)));
-	NAME_D3D12_OBJECT_SUFF(res->commandAllocator, res->generation);
-	ThrowIfFailed(dxGlobal->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, res->commandAllocator.Get(), res->pipelineState.Get(), IID_PPV_ARGS(&res->commandList)));
-	NAME_D3D12_OBJECT_SUFF(res->commandList, res->generation);
-	res->commandList->Close();
+//	// Create an empty root signature.
+//	{
+//		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+//		rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+//
+//		ComPtr<ID3DBlob> signature;
+//		ComPtr<ID3DBlob> error;
+//		ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
+//		ThrowIfFailed(dxGlobal->device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&res->rootSignature)));
+//	}
+//	D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
+//	{
+//		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+//		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+//	};
+//	// Describe and create the graphics pipeline state object (PSO).
+//	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+//	psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
+//	psoDesc.pRootSignature = res->rootSignature.Get();
+//	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+//	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+//	psoDesc.DepthStencilState.DepthEnable = FALSE;
+//	psoDesc.DepthStencilState.StencilEnable = FALSE;
+//	psoDesc.SampleMask = UINT_MAX;
+//	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+//	psoDesc.NumRenderTargets = 1;
+//	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+//	psoDesc.SampleDesc.Count = 1;
+//#include "CompiledShaders/PostVS.h"
+//	psoDesc.VS = { binShader_PostVS, sizeof(binShader_PostVS) };
+//	//psoDesc.VS = { nullptr, 0 };
+//	ThrowIfFailed(dxGlobal->device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&res->pipelineState)));
+//	Log(" create PSO BufferResource &fres->pipelineState: " << std::hex << pipelineState << endl);
+//	NAME_D3D12_OBJECT_SUFF(res->pipelineState, res->generation);
+	//ThrowIfFailed(dxGlobal->device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&res->commandAllocator)));
+	//NAME_D3D12_OBJECT_SUFF(res->commandAllocator, res->generation);
+	//ThrowIfFailed(dxGlobal->device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, res->commandAllocator.Get(), pipelineState, IID_PPV_ARGS(&res->commandList)));
+	//NAME_D3D12_OBJECT_SUFF(res->commandList, res->generation);
+	//res->commandList->Close();
 
 	//PIXBeginEvent(commandLists[frameIndex].Get(), 0, L"lines: update vertex buffer");
-	Log(" upload PSO: " << std::hex << res->pipelineState.Get() << endl);
-	res->commandList.Get()->Reset(res->commandAllocator.Get(), res->pipelineState.Get());
-	UpdateSubresources<1>(res->commandList.Get(), res->vertexBuffer.Get(), res->vertexBufferUpload.Get(), 0, 0, 1, &vertexData); // TODO
-	res->commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(res->vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+	Log(" upload PSO: " << std::hex << pipelineState << endl);
+	//res->commandList.Get()->Reset(res->commandAllocator.Get(), pipelineState);
+	//UpdateSubresources<1>(res->commandList.Get(), res->vertexBuffer.Get(), res->vertexBufferUpload.Get(), 0, 0, 1, &vertexData); // TODO
+	//res->commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(res->vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+	commandList.Get()->Reset(commandAllocator.Get(), pipelineState);
+	UpdateSubresources<1>(commandList.Get(), res->vertexBuffer.Get(), res->vertexBufferUpload.Get(), 0, 0, 1, &vertexData); // TODO
+	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(res->vertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 	// produce before state error: commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 	//PIXEndEvent(commandList.Get());
 
@@ -87,8 +96,10 @@ void Effect::createBufferUploadResources(BufferResource* res)
 
 	// Close the command list and execute it to begin the vertex buffer copy into
 	// the default heap.
-	ThrowIfFailed(res->commandList->Close());
-	ID3D12CommandList* ppCommandListsUpload[] = { res->commandList.Get() };
+	//ThrowIfFailed(res->commandList->Close());
+	//ID3D12CommandList* ppCommandListsUpload[] = { res->commandList.Get() };
+	ThrowIfFailed(commandList->Close());
+	ID3D12CommandList* ppCommandListsUpload[] = { commandList.Get() };
 	dxGlobal->commandQueue->ExecuteCommandLists(_countof(ppCommandListsUpload), ppCommandListsUpload);
 	dxGlobal->createSyncPoint(&res->fenceData, dxGlobal->commandQueue);
 	dxGlobal->waitForSyncPoint(&res->fenceData);
