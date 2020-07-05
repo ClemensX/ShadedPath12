@@ -71,7 +71,7 @@ void LinesEffect::init(DXGlobal* a, FrameDataLine* fdl, FrameDataGeneral* fd_gen
 void LinesEffect::activateAppDataSet(unsigned long user)
 {
 	//unique_lock<mutex> lock(dataSetMutex);
-	errorOnThreadChange();
+	threadHelper.errorOnThreadChange();
 	auto lea = (LineEffectAppData*)getInactiveAppDataSet(user);
 	LineEffectAppData* leaActive = nullptr;
 	if (isActiveDataSetAvailable()) {

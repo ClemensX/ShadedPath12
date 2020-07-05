@@ -61,7 +61,8 @@ public:
 					res.vertexBuffer->Release();
 					res.vertexBuffer = nullptr;
 					res.is_free = true;
-					Log("freed buffer slot: gen " << res.generation << " count " << res.useCounter << endl);
+					Log("freed buffer slot: gen " << res.generation << " count " << res.useCounter << " thread " << GetCurrentThreadId() << endl);
+					//	Log("this thread: " << GetCurrentThreadId() << endl);
 				}
 
 			}
@@ -270,30 +271,8 @@ public:
 	bool isActiveDataSetAvailable() { return currentActiveAppDataSet >= 0; };
 protected:
 	bool initialized = false;  // set to true in init(). All effects that need to do something in destructor should check if effect was used at all...
-	DWORD updateThreadId = 0;
-	bool detectThreadChange() {
-		DWORD thisId = GetCurrentThreadId();
-		if (thisId != 0 && updateThreadId != thisId) {
-			if (updateThreadId != 0) {
-				Log("Warning: other thread used effect update: " << updateThreadId << endl);
-				updateThreadId = thisId;
-				return true;
-			} else {
-				// first setting of threadId is not considered a thread change
-				updateThreadId = thisId;
-				return false;
-			}
-		}
-		return false;
-	}
-	void errorOnThreadChange() {
-		if (detectThreadChange()) {
-			Log("error Thread: " << GetCurrentThreadId() << endl);
-			Log("other Thread: " << updateThreadId << endl);
-			Error(L"illegal thread change detected. You may want to re-initialize thread resources after init()");
-		}
-	}
 	//DXManager dxmanager;
+	ThreadHelper threadHelper;
 	ResourceStateHelper* resourceStateHelper = ResourceStateHelper::getResourceStateHelper();
 	DXGlobal* dxGlobal = nullptr;
 	VR_Eyes eyes;

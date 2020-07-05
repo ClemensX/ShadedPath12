@@ -144,3 +144,38 @@ private:
 	unordered_map<string, PakEntry> pak_content;
 };
 
+// Help keeping track for resource allocation per thread:
+// there should only be one thread using them.
+class ThreadHelper {
+private:
+	DWORD threadId = 0;
+public:
+	bool detectThreadChange() {
+		DWORD thisId = GetCurrentThreadId();
+		if (thisId != 0 && threadId != thisId) {
+			if (threadId != 0) {
+				Log("Warning: other thread used local resources: " << threadId << endl);
+				//threadId = thisId;
+				return true;
+			}
+			else {
+				// first setting of threadId is not considered a thread change
+				threadId = thisId;
+				return false;
+			}
+		}
+		return false;
+	}
+	void errorOnThreadChange() {
+		if (detectThreadChange()) {
+			//Log("error Thread: " << GetCurrentThreadId() << endl);
+			//Log("other Thread: " << threadId << endl);
+			Error(L"illegal thread change detected.");
+		}
+	}
+
+	DWORD getWorkerThreadId() {
+		return threadId;
+	}
+
+};

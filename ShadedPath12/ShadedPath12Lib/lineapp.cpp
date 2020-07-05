@@ -25,7 +25,7 @@ void LineApp::init(HWND hwnd) {
 #if defined(SINGLE_THREAD_MODE)
 	pc.setSingleThreadMode();
 #endif
-	pc.setSingleThreadMode();
+	//pc.setSingleThreadMode();
 	pc.setMaxUpdatesPerSecond(30); // limit update thread to 30 calls / second
 #if defined (_SVR_)
 	pc.setHMDMode();
@@ -94,7 +94,7 @@ void LineApp::init(HWND hwnd) {
 	c.fieldOfViewAngleY = 1.289f;
 	//world.setWorldSize(2048.0f, 382.0f, 2048.0f);
 	c.projectionTransform();
-	lineEffect.reinitializeThreadResources();
+	//lineEffect.reinitializeThreadResources();
 }
 
 void LineApp::presentFrame(Frame* frame, Pipeline* pipeline) {
@@ -136,7 +136,9 @@ void LineApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 	// draw effects;
 	LineAppFrameData* afd = (LineAppFrameData*)frame->frameData;
 	FrameDataGeneral* fdg = &afd->fd_general;
+	fdg->threadHelper.errorOnThreadChange();
 	FrameDataLine* fdl = &afd->line_fd;
+	Log("draw Thread: " << GetCurrentThreadId() << " frame: " << fdg << endl);
 
 	dxGlobal.waitAndReset(fdg);
 	//dxGlobal.startStatisticsDraw(fdg, frame);
@@ -146,7 +148,6 @@ void LineApp::draw(Frame* frame, Pipeline* pipeline, void* data)
 	//Log("cam x y z: " << c.pos.x << " " << c.pos.y << " " << c.pos.z << endl);
 	dxGlobal.prepareCameras(frame, pipeline, &c, &c2);
 	lineEffect.draw(frame, fdg, fdl, pipeline);
-
 }
 
 void LineApp::update(Pipeline* pipeline)

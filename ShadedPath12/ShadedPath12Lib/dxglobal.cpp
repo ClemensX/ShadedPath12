@@ -41,7 +41,6 @@ void DXGlobal::init()
 		// enum adapters:
 		UINT i = 0;
 		IDXGIAdapter* pAdapter;
-		std::vector <IDXGIAdapter*> vAdapters;
 		while (factory->EnumAdapters(i, &pAdapter) != DXGI_ERROR_NOT_FOUND)
 		{
 			vAdapters.push_back(pAdapter);
@@ -52,7 +51,7 @@ void DXGlobal::init()
 		}
 		// release adapters
 		for (auto& ad : vAdapters) {
-			ad->Release();
+			//ad->Release();
 		}
 	}
 
@@ -71,7 +70,7 @@ void DXGlobal::init()
 	else {
 		// if this fails in debug run: enable win 10 dev mode and/or disable d3d12 debug layer via command line parameter -disableDX12Debug 
 		ThrowIfFailed(D3D12CreateDevice(
-			nullptr,
+			vAdapters[0],//nullptr,
 			D3D_FEATURE_LEVEL_12_1,
 			IID_PPV_ARGS(&device)
 		));
@@ -345,6 +344,7 @@ void DXGlobal::initFrameBufferResources(FrameDataGeneral *fd, FrameDataD2D* fd_d
 	NAME_D3D12_OBJECT_SUFF(fd->commandList, i);
 	fd->commandList->Close();
 	initSyncPoint(&fd->fenceData, device);
+	fd->threadHelper.errorOnThreadChange();
 }
 
 void DXGlobal::initSwapChain(Pipeline* pipeline, HWND hwnd)

@@ -89,6 +89,7 @@ private:
 	DXGlobal() {};								// prevent creation outside this class
 	DXGlobal(const DXGlobal&);					// prevent creation via copy-constructor
 	DXGlobal& operator = (const DXGlobal&);		// prevent instance copies
+	std::vector <IDXGIAdapter*> vAdapters;
 };
 
 // everything needed for creating and waiting for fence events
@@ -125,4 +126,5 @@ struct FrameDataGeneral {
 	VR_Eyes eyes;
 	Camera leftCam;
 	Camera rightCam;
+	ThreadHelper threadHelper;
 };
