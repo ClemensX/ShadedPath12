@@ -145,7 +145,7 @@ inline void ErrorExt(wstring msg, const char* file, DWORD line)
 	s << "ERROR " << msg << '\n';
 	s << file << " " << line << '\n';
 	Log(s.str());
-	exit(0);
+	//exit(0);
 	s << "\n\nClick 'yes' to debug break and 'no' to hard exit.";
 	int nResult = MessageBoxW(GetForegroundWindow(), s.str().c_str(), L"Unexpected error encountered", MB_YESNO | MB_ICONERROR);
 	if (nResult == IDYES)

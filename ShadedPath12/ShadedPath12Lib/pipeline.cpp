@@ -78,6 +78,12 @@ void Pipeline::runFrameSlot(Pipeline* pipeline, Frame* frame, int slot)
 		frame->absFrameNumber = frameNum;
 		frame->slot = slot;
 		frame->frameData = pipeline->afManager.getAppDataForSlot(slot);
+		FrameDataGeneral* fdg = frame->frameData->getFrameDataGeneral();
+		if (!fdg->readyToRender) {
+			Sleep(100); // nothing to do - be gentle to other threads
+			continue;
+		}
+		fdg->threadHelper.errorOnThreadChange();
 		// let application draw:
 		
 		pipeline->drawCallback(frame, pipeline, pipeline->applicationFrameData);
@@ -129,9 +135,11 @@ void Pipeline::runUpdate(Pipeline* pipeline)
 	while (!pipeline->isShutdown()) {
 		//pipeline->gametime.advanceTime(); // TODO thread safe?  - apparently not
 		limiter.waitForLimit();
-		PIXBeginEvent(PIX_COLOR_INDEX(5), "app update %d", index++);
-		pipeline->updateCallback(pipeline);
-		PIXEndEvent();
+		if (pipeline->readyToUpdate) {
+			PIXBeginEvent(PIX_COLOR_INDEX(5), "app update %d", index++);
+			pipeline->updateCallback(pipeline);
+			PIXEndEvent();
+		}
 	}
 }
 

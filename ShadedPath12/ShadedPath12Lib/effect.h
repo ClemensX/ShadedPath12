@@ -323,4 +323,5 @@ protected:
 	int currentInactiveAppDataSet = 0;
 	int currentActiveAppDataSet = -1;
 	ResourceStore resourceStore;
+	bool readyToUpdate = false;
 };
