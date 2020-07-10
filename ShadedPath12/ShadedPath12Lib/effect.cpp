@@ -260,6 +260,10 @@ void Effect::runUpdate(Pipeline* pipeline, Effect *effectInstance) {
 	Log("start effect update thread" << endl);
 	static long long calls = 0L;
 	while (!pipeline->isShutdown()) {
+		if (!effectInstance->readyToUpdate) {
+			Sleep(100);
+			continue;
+		}
 		calls++;
 		PIXBeginEvent(PIX_COLOR_INDEX(6), "effect update %d", calls);
 		//Log(" Effect::runUpdate loop start " << endl);

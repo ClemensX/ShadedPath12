@@ -127,4 +127,5 @@ struct FrameDataGeneral {
 	Camera leftCam;
 	Camera rightCam;
 	ThreadHelper threadHelper;
+	bool readyToRender = false; // if set to flase rendering on this thread is prevented
 };

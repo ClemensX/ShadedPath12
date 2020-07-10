@@ -215,6 +215,7 @@ private:
 	long long wvpId = 0L;
 	long long lastWvpId = 0L;
 	float aspectRatio; // set in init()
+	bool readyToUpdate = false;
 
 protected:
 };
