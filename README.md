@@ -1,3 +1,6 @@
+# Important Note
+This project is currently stopped - I began a new Vulkan based engine here: https://github.com/ClemensX/ShadedPathV
+
 # ShadedPath12
 DirectX 12 Framework and Applications for Oculus Rift
 
